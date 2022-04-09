@@ -1,0 +1,69 @@
+WHILE LOOP
+-----------
+
+
+DO-WHILE LOOP
+-------------
+
+
+FOR LOOP
+---------
+
+
+FUNCTION
+--------
+
+
+FUNCTION CALL
+-------------
+
+
+IF STATEMENT
+------------
+
+
+SWITCH STATEMENT
+----------------
+__switch_start_NUMBER:
+; load expression result into R0
+mov R1, VALUE_1
+ieq R1, R0
+jt R1, __switch_NUMBER_case_VALUE_1
+mov R1, R0
+...
+ieq R1, VALUE_N
+jt __switch_NUMBER_case_VALUE_N
+jmp __switch_NUMBER_default
+
+__switch_NUMBER_case_VALUE1:
+...
+__switch_NUMBER_case_VALUEN:
+...
+__switch_NUMBER_default:
+...
+jmp __switch_NUMBER_end  ; break
+
+__switch_NUMBER_end:
+
+
+GOTO STATEMENT
+--------------
+__label_NUMBER_NAME:
+jmp __label_NUMBER_NAME
+
+
+BLOCK STATEMENT
+---------------
+
+
+SHORT-CIRCUIT BOOLEAN AND
+-------------------------
+
+
+SHORT-CIRCUIT BOOLEAN OR
+------------------------
+
+
+GLOBAL VARIABLE
+---------------
+

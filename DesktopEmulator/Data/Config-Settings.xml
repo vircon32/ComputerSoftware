@@ -1,0 +1,17 @@
+<settings version="1">
+    <language>english</language>
+    <video size="1" fullscreen="no" />
+    <audio mute="no" volume="100" />
+    <gamepad-1 profile="Keyboard" />
+    <gamepad-2 profile="None" />
+    <gamepad-3 profile="None" />
+    <gamepad-4 profile="None" />
+    <load-folders>
+        <cartridges path="" />
+        <memory-cards path="" />
+    </load-folders>
+    <recent-cartridges>
+    </recent-cartridges>
+    <recent-memory-cards>
+    </recent-memory-cards>
+</settings>

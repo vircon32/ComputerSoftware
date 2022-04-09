@@ -1,0 +1,43 @@
+Functions:
+
+  __function_NAME
+  __function_NAME_return
+----------------------------
+Global variables:
+
+  __global_NAME
+----------------------------
+If structures:
+
+  __if_NUMBER_start
+  __if_NUMBER_else
+  __if_NUMBER_end
+----------------------------
+While structures:
+
+  __while_NUMBER_start
+  __while_NUMBER_continue
+  __while_NUMBER_end
+----------------------------
+Do structures:
+
+  __do_NUMBER_start
+  __do_NUMBER_continue
+  __do_NUMBER_end
+----------------------------
+For structures:
+
+  __for_NUMBER_start
+  __for_NUMBER_continue
+  __for_NUMBER_end
+----------------------------
+Switch structures:
+
+  __switch_NUMBER_start
+  __switch_NUMBER_case_VALUE   ; if negative: __switch_case_minus_VALUE_NUMBER
+  __switch_NUMBER_default
+  __switch_NUMBER_end
+----------------------------
+Goto labels:
+
+  __label_NUMBER_NAME

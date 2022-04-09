@@ -1,0 +1,3 @@
+The code in this folder captures the properties and constraints of the console itself, which are stated by the console design and specifications. These definitions are not likely to change, unless a major flaw in the console design forces an updated version. 
+
+These definitions will be used at some point by most computer software related to Vircon32. For that reason they were made independent from other projects.

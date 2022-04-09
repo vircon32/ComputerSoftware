@@ -1,0 +1,15 @@
+<controls version="2">
+    <keyboard>
+        <left key="left" />
+        <right key="right" />
+        <up key="up" />
+        <down key="down" />
+        <button-a key="x" />
+        <button-b key="z" />
+        <button-x key="s" />
+        <button-y key="a" />
+        <button-l key="q" />
+        <button-r key="w" />
+        <button-start key="return" />
+    </keyboard>
+</controls>

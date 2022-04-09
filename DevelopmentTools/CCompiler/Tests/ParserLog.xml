@@ -1,0 +1,2 @@
+<?xml version="1.0"?>
+<program><variable-list><variable type="int" name="number">7</variable></variable-list><variable-list><variable type="int" name="number2">15</variable></variable-list><function name="main" return-type="void"><arguments></arguments><body><operator name="AdditionAssignment"><left>number</left><right>3</right></operator><operator name="AdditionAssignment"><left>number2</left><right>5</right></operator></body></function></program>
