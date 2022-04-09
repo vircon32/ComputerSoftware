@@ -34,3 +34,24 @@ All C++ projects in this repository are prepared to compile using CMake. The CMa
 5. `cmake --install .` to install the built software
 
 At that point, if no errors happened, your programs should be installed and able to run correctly. Install folder will be named "Vircon32" and placed in your system's default program path. You can then delete the temporary 'build' directory: it is no longer needed.
+
+--------------------------------------------
+### Dependencies on other libraries
+
+To correctly build the software in this repository you will need to have at least the following libraries available in your build system. Note that these may in turn have dependencies themselves, which you will also need.
+
+##### General purpose libraries:
+* SDL2
+* SDL2_image
+* TinyXML2
+
+##### Video libraries:
+* OpenGL
+* GLUT
+* LibPNG
+
+##### Audio libraries:
+* OpenAL
+* ALUT / FreeALUT
+
+These programs also use 3 other libraries that are already included in the sources as external libraries: osdialog, imgui and glad.
