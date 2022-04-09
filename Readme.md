@@ -17,8 +17,8 @@ However, it does not include console software such as the following:
 
 Most of these projects are written in C++ version 2011, and use portable libraries (SDL, OpenGL, OpenAL) along with CMake in an attempt to support multiplatform compilation.
 
-### Where to learn about Vircon32?
 ----------------------------------
+### Where to learn about Vircon32?
 
 If you are not familiar with Vircon32, a 32-bit virtual game console, you can visit its website [www.vircon32.com](http://www.vircon32.com "Vircon32 Homepage") for more information. There you will also find everything you may need to try ouy the console and to make games for it.
 

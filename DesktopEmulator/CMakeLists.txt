@@ -365,10 +365,12 @@ install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
     COMPONENT binaries
     DESTINATION Emulator)
 
-# Copy contents of the data folder
+# Copy the needed data files
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
     DESTINATION Emulator)
     
-# Copy contents of the runtime folder
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${RUNTIME_DIR}/
-    DESTINATION Emulator)
+# On Windows, copy the needed runtime files (DLLs)
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${RUNTIME_DIR}/
+        DESTINATION Emulator)
+endif()
