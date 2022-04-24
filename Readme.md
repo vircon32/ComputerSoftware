@@ -20,7 +20,7 @@ Most of these projects are written in C++ version 2011, and use portable librari
 ----------------------------------
 ### Where to learn about Vircon32?
 
-If you are not familiar with Vircon32, a 32-bit virtual game console, you can visit its website [www.vircon32.com](http://www.vircon32.com "Vircon32 Homepage") for more information. There you will also find everything you may need to try ouy the console and to make games for it.
+If you are not familiar with Vircon32, a 32-bit virtual game console, you can visit its website [www.vircon32.com](http://www.vircon32.com "Vircon32 Homepage") for more information. There you will also find everything you may need to try out the console and to make games for it.
 
 --------------------------------------------
 ### How to build these programs from source?
@@ -42,10 +42,10 @@ To correctly build the software in this repository you will need to have at leas
 
 ##### General purpose libraries:
 * SDL2
-* SDL2_image
 * TinyXML2
 
 ##### Video libraries:
+* SDL2_image
 * OpenGL
 * GLUT
 * LibPNG
