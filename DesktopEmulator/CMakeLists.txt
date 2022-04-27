@@ -360,7 +360,6 @@ if(TARGET_OS STREQUAL "linux")
     target_link_libraries(${EDITCONTROLS_BINARY_NAME} ${GTK2_LIBRARIES})
 endif()
 
-
 # -----------------------------------------------------
 #   ON WINDOWS, CONFIGURE APPLICATION PROPERTIES
 # -----------------------------------------------------
@@ -396,7 +395,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
     DESTINATION Emulator)
     
 # On Windows, copy the needed runtime files (DLLs)
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+if(TARGET_OS STREQUAL "windows")
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${RUNTIME_DIR}/
         DESTINATION Emulator)
 endif()
