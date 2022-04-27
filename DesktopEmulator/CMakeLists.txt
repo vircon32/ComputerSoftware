@@ -18,11 +18,54 @@ if(POLICY CMP0074)
 endif()
 
 # -----------------------------------------------------
+#   DEFINE THE PROJECT
+# -----------------------------------------------------
+
+# Declare the project
+# This will make installation create a folder named Vircon32
+project("Vircon32")
+
+# Define version
+set(PROJECT_VERSION_MAJOR 2022)
+set(PROJECT_VERSION_MINOR 04)
+set(PROJECT_VERSION_PATCH 09)
+
+# Set names for final executables
+set(EMULATOR_BINARY_NAME "Vircon32")
+set(EDITCONTROLS_BINARY_NAME "EditControls")
+
+# -----------------------------------------------------
+#   IDENTIFY HOST ENVIRONMENT
+# -----------------------------------------------------
+
+# Detect architecture bits
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(TARGET_BITS "64")
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(TARGET_BITS "32")
+endif()
+
+# Detect operating system
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(TARGET_OS "windows")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(TARGET_OS "linux")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(TARGET_OS "mac")
+endif()
+
+# -----------------------------------------------------
 #   BASIC PROJECT CONFIGURATION
 # -----------------------------------------------------
 
-# Library osdialog can target differeng GUI systems (win/gtk2/gtk3/zenity)
-set(OSDIALOG_TARGET win CACHE STRING "osdialog target env")
+# Library osdialog can target differeng GUI systems (win/mac/gtk2/gtk3/zenity)
+if(TARGET_OS STREQUAL "windows")
+    set(OSDIALOG_TARGET win CACHE STRING "osdialog target env")
+elseif(TARGET_OS STREQUAL "linux")
+    set(OSDIALOG_TARGET gtk2 CACHE STRING "osdialog target env")
+elseif(TARGET_OS STREQUAL "mac")
+    set(OSDIALOG_TARGET mac CACHE STRING "osdialog target env")
+endif()
 
 # These general project variables should be cached
 set(LIBRARIES_DIR "ExternalLibraries/"
@@ -63,51 +106,14 @@ if(POLICY CMP0074)
 endif()
 
 # -----------------------------------------------------
-#   DEFINE THE PROJECT
-# -----------------------------------------------------
-
-# Declare the project
-# This will make installation create a folder named Vircon32
-project("Vircon32")
-
-# Define version
-set(PROJECT_VERSION_MAJOR 2022)
-set(PROJECT_VERSION_MINOR 04)
-set(PROJECT_VERSION_PATCH 09)
-
-# Set names for final executables
-set(EMULATOR_BINARY_NAME "Vircon32")
-set(EDITCONTROLS_BINARY_NAME "EditControls")
-
-# -----------------------------------------------------
-#   IDENTIFY HOST ENVIRONMENT
-# -----------------------------------------------------
-
-# Detect architecture bits
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(TARGET_BITS "64")
-elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    set(TARGET_BITS "32")
-endif()
-
-# Detect operating system
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(TARGET_OS "windows")
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(TARGET_OS "linux")
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(TARGET_OS "mac")
-endif()
-
-# -----------------------------------------------------
 #   BUILD FLAGS / CONFIGURATION
 # -----------------------------------------------------
 
 # Set compilation flags for C and C++
-if (MINGW OR TARGET_OS STREQUAL "linux")
+if(MINGW OR TARGET_OS STREQUAL "linux")
     set(cxx_flags "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -Wextra -Wno-unused-parameter")
     set(c_flags "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter")
-elseif (MSVC)
+elseif(MSVC)
     set(cxx_flags "${CMAKE_CXX_FLAGS} /W3 /EHsc /MP /GS /wd4267 /wd4244")
     set(c_flags "${CMAKE_C_FLAGS} /W3 /MP /GS /wd4267 /wd4244")
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
@@ -119,10 +125,10 @@ set(CMAKE_C_FLAGS "${c_flags}"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
 
 # Mark executables as debug (*_d) when debug build is selected
-if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" OR CMAKE_CFG_INTDIR STREQUAL "Debug" OR CMAKE_CFG_INTDIR STREQUAL "RelWithDebInfo")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" OR CMAKE_CFG_INTDIR STREQUAL "Debug" OR CMAKE_CFG_INTDIR STREQUAL "RelWithDebInfo")
 	set(IS_DEBUG TRUE)
 	set(CMAKE_DEBUG_POSTFIX "_d")
-	if (TARGET_OS STREQUAL "windows")
+	if(TARGET_OS STREQUAL "windows")
 		set(CMAKE_EXECUTABLE_SUFFIX "_d.exe")
 	else()
 		set(CMAKE_EXECUTABLE_SUFFIX "_d")
@@ -145,6 +151,11 @@ find_package(GLUT REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(OpenAL REQUIRED)
+
+# On Linux we will need to find GTK too
+if(TARGET_OS STREQUAL "linux")
+    find_package(GTK2 COMPONENTS gtk REQUIRED)
+endif()
 
 # These are treated as independent (they don't depend on anything else)
 find_library(PNG_LIBRARY NAMES png REQUIRED)
@@ -191,6 +202,10 @@ show_dependency_status("PNG" PNG)
 show_dependency_status("FREEALUT" FREEALUT)
 show_dependency_status("TINYXML2" TINYXML2)
 
+if(TARGET_OS STREQUAL "linux")
+    show_dependency_status("GTK2" GTK2)
+endif()
+
 # -----------------------------------------------------
 #   FOLDERS FOR INCLUDES
 # -----------------------------------------------------
@@ -207,8 +222,12 @@ set(ALL_INCLUDE_DIRS
     ${EDITCONTROLS_DIR}
     ${INFRASTRUCTURE_DIR}
     ${DEFINITIONS_DIR})
-
+  
 include_directories(${ALL_INCLUDE_DIRS})
+
+if(TARGET_OS STREQUAL "linux")
+    include_directories (${GTK2_INCLUDE_DIRS})
+endif()
 
 # -----------------------------------------------------
 #   LINKED LIBRARIES FILES
@@ -334,6 +353,13 @@ if(TARGET_OS STREQUAL "windows")
     target_link_libraries(${EMULATOR_BINARY_NAME} imm32)
     target_link_libraries(${EDITCONTROLS_BINARY_NAME} imm32)
 endif()
+
+# On Linux both binaries will also need this library
+if(TARGET_OS STREQUAL "linux")
+    target_link_libraries(${EMULATOR_BINARY_NAME} ${GTK2_LIBRARIES})
+    target_link_libraries(${EDITCONTROLS_BINARY_NAME} ${GTK2_LIBRARIES})
+endif()
+
 
 # -----------------------------------------------------
 #   ON WINDOWS, CONFIGURE APPLICATION PROPERTIES
