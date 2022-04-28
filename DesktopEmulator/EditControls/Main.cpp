@@ -1,6 +1,7 @@
 // *****************************************************************************
     // include infrastructure headers
     #include "../DesktopInfrastructure/OpenGL2D.hpp"
+    #include "../DesktopInfrastructure/FilePaths.hpp"
     #include "../DesktopInfrastructure/LogStream.hpp"
     
     // include project headers
@@ -328,7 +329,7 @@ int main()
         GlyphBuilder.BuildRanges( &GlyphRanges );
         
         // ImGui needs to use a custom font to render non-default characters
-        string FontPath = ProgramFolder + "\\GuiFont.ttf";
+        string FontPath = ProgramFolder + "GuiFont.ttf";
         ImGui::GetIO().Fonts->AddFontFromFileTTF( FontPath.c_str(), 15, NULL, GlyphRanges.Data );
         ImGui::GetIO().Fonts->Build();
         
@@ -341,10 +342,10 @@ int main()
         Languages[ "Spanish" ] = LanguageSpanish;
         
         // load our gamepad texture
-        GamepadTexture.Load( ProgramFolder + "Images\\GamepadMapping.png" );
+        GamepadTexture.Load( ProgramFolder + "Images" + PathSeparator + "GamepadMapping.png" );
         
         // load our configuration from XML file
-        LoadControls( ProgramFolder + "\\Config-Controls.xml" );
+        LoadControls( ProgramFolder + "Config-Controls.xml" );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // Main loop 

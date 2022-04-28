@@ -313,6 +313,7 @@ set(EDITCONTROLS_SRC
     ${EDITCONTROLS_DIR}/Languages.cpp
     ${EDITCONTROLS_DIR}/Main.cpp
     ${INFRASTRUCTURE_DIR}/Definitions.cpp
+    ${INFRASTRUCTURE_DIR}/FilePaths.cpp
     ${INFRASTRUCTURE_DIR}/LogStream.cpp
     ${INFRASTRUCTURE_DIR}/OpenGL2D.cpp
     ${INFRASTRUCTURE_DIR}/StringFunctions.cpp
@@ -354,7 +355,7 @@ if(TARGET_OS STREQUAL "windows")
     target_link_libraries(${EDITCONTROLS_BINARY_NAME} imm32)
 endif()
 
-# On Linux both binaries will also need this library
+# On Linux both binaries will also need this set of libraries
 if(TARGET_OS STREQUAL "linux")
     target_link_libraries(${EMULATOR_BINARY_NAME} ${GTK2_LIBRARIES})
     target_link_libraries(${EDITCONTROLS_BINARY_NAME} ${GTK2_LIBRARIES})

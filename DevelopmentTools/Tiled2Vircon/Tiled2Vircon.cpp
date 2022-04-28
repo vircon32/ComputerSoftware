@@ -1,4 +1,7 @@
 // *****************************************************************************
+    // include infrastructure headers
+    #include "../DevToolsInfrastructure/FilePaths.hpp"
+    
     // include C/C++ headers
     #include <string>           // [ C++ STL ] Strings
     #include <stdexcept>        // [ C++ STL ] Exceptions
@@ -180,7 +183,7 @@ int main( int NumberOfArguments, char** Arguments )
         // replace the extension in the input
         if( OutputFolder.empty() )
         {
-            OutputFolder = ".\\";
+            OutputFolder = string(".") + PathSeparator;
             
             if( VerboseMode )
               cout << "using output folder: \"" << OutputFolder << "\"" << endl;

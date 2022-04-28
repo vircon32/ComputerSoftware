@@ -14,6 +14,19 @@
 
 
 // =============================================================================
+//      PATH SEPARATOR CHARACTER
+// =============================================================================
+
+
+// this is dependent on the host operating system
+#if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+    char PathSeparator = '\\';
+#else
+    char PathSeparator = '/';
+#endif
+
+
+// =============================================================================
 //      STRING MANIPULATION FUNCTIONS
 // =============================================================================
 
@@ -54,7 +67,7 @@ string ReplaceFileExtension( const string& FilePath, const string& NewExtension 
 
 string GetPathDirectory( const string& FilePath )
 {
-    size_t SlashPosition = FilePath.rfind( '\\' );
+    size_t SlashPosition = FilePath.rfind( PathSeparator );
     
     if( SlashPosition == string::npos )
       return "";
@@ -66,7 +79,7 @@ string GetPathDirectory( const string& FilePath )
 
 string GetPathFileName( const string& FilePath )
 {
-    size_t SlashPosition = FilePath.rfind( '\\' );
+    size_t SlashPosition = FilePath.rfind( PathSeparator );
     
     if( SlashPosition == string::npos )
       return "";

@@ -311,7 +311,8 @@ set(WAV_CONVERTER_SRC
 
 # Source files to compile for the Tiled converter
 set(TILED_CONVERTER_SRC
-    ${TILED_CONVERTER_DIR}/Tiled2Vircon.cpp)
+    ${TILED_CONVERTER_DIR}/Tiled2Vircon.cpp
+    ${INFRASTRUCTURE_DIR}/FilePaths.cpp)
 
 # -----------------------------------------------------
 #   EXECUTABLES

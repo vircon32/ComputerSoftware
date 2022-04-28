@@ -133,7 +133,7 @@ void RomDefinition::ProcessBinary( string& BinaryPath, vector< uint32_t >& Progr
 {
     // correction for path folder (only if relative)
     if( BinaryPath.find(':') == string::npos )
-      BinaryPath = BaseFolder + "/" + BinaryPath;
+      BinaryPath = BaseFolder + PathSeparator + BinaryPath;
     
     // open the file
     ifstream BinaryFile;
@@ -185,7 +185,7 @@ void RomDefinition::ProcessTexture( string& TexturePath, vector< uint32_t >& Tex
 {
     // correction for path folder (only if relative)
     if( TexturePath.find(':') == string::npos )
-      TexturePath = BaseFolder + "/" + TexturePath;
+      TexturePath = BaseFolder + PathSeparator + TexturePath;
     
     // open the file
     ifstream TextureFile;
@@ -243,7 +243,7 @@ void RomDefinition::ProcessSound( string& SoundPath, vector< uint32_t >& SoundRO
 {
     // correction for path folder (only if relative)
     if( SoundPath.find(':') == string::npos )
-      SoundPath = BaseFolder + "/" + SoundPath;
+      SoundPath = BaseFolder + PathSeparator + SoundPath;
     
     // open the file
     ifstream SoundFile;

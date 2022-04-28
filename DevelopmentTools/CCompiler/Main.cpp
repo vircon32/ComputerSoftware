@@ -95,8 +95,8 @@ int main( int NumberOfArguments, char* Arguments[] )
         CompilerFolder = GetProgramFolder();
         
         // if it is empty, we need at least a dot
-        if( CompilerFolder == "" || CompilerFolder == "\\" )
-          CompilerFolder == ".\\";
+        if( CompilerFolder == "" || CompilerFolder == string(1,PathSeparator) )
+          CompilerFolder = string(".") + PathSeparator;
         
         // variables to capture input parameters
         string InputPath, OutputPath;

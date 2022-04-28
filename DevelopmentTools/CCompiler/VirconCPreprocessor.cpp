@@ -132,11 +132,11 @@ void VirconCPreprocessor::PushContext( VirconCLexer& Lexer )
 void VirconCPreprocessor::PushContext( SourceLocation Location, const std::string& FilePath )
 {
     // first, look for the file in the current reference directory
-    string PathToInclude = ContextStack.back().ReferenceFolder + "\\" + FilePath;
+    string PathToInclude = ContextStack.back().ReferenceFolder + PathSeparator + FilePath;
     
     // if not found, then look in the compiler's include directory
     if( !FileExists( PathToInclude ) )
-      PathToInclude = CompilerFolder + "include\\" + FilePath;
+      PathToInclude = CompilerFolder + "include" + PathSeparator + FilePath;
     
     // if not found either, report the error
     if( !FileExists( PathToInclude ) )

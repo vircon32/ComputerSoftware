@@ -426,12 +426,12 @@ void ProcessMenuFile()
        
     if( ImGui::MenuItem( Texts(TextIDs::File_ReloadControls) ) )
       if( ShowMessageBoxYesNo( Texts(TextIDs::Dialogs_AreYouSure), Texts(TextIDs::Dialogs_Reload_Label) ) )
-        LoadControls( ProgramFolder + "\\Config-Controls.xml" );
+        LoadControls( ProgramFolder + "Config-Controls.xml" );
        
     if( ImGui::MenuItem( Texts(TextIDs::File_ExitSave) ) )
       if( ShowMessageBoxYesNo( Texts(TextIDs::Dialogs_AreYouSure), Texts(TextIDs::Dialogs_ExitSave_Label) ) )
       {
-          SaveControls( ProgramFolder + "\\Config-Controls.xml" );
+          SaveControls( ProgramFolder + "Config-Controls.xml" );
           GlobalLoopActive = false;
       }
     

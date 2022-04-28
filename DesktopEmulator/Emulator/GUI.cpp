@@ -489,7 +489,7 @@ void GUI_SaveScreenshot( string FilePath )
             );
             
             // place the screenshot in the screenshots subfolder
-            FilePath = EmulatorFolder + "\\Screenshots\\" + FileName;
+            FilePath = EmulatorFolder + "Screenshots" + PathSeparator + FileName;
         }
         
         // now just call the screenshot save function

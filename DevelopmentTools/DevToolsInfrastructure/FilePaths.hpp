@@ -13,6 +13,9 @@
 // =============================================================================
 
 
+// path separactor character
+extern char PathSeparator;
+
 // extension detection and replacement
 std::string GetFileExtension( const std::string& FilePath );
 std::string GetFileWithoutExtension( const std::string& FilePath );

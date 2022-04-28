@@ -185,7 +185,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         GlyphBuilder.BuildRanges( &GlyphRanges );
         
         // ImGui needs to use a custom font to render non-default characters
-        string FontPath = EmulatorFolder + "\\GuiFont.ttf";
+        string FontPath = EmulatorFolder + "GuiFont.ttf";
         ImGui::GetIO().Fonts->AddFontFromFileTTF( FontPath.c_str(), 16, NULL, GlyphRanges.Data );
         ImGui::GetIO().Fonts->Build();
         
@@ -226,13 +226,13 @@ int main( int NumberOfArguments, char* Arguments[] )
                 (MAY STILL BE NEEDED UNDER LINUX OR MAC?)
             
                 // load and set the window icon
-                string IconPath = string(EmulatorFolder) + "\\Images\\Vircon32Icon.png";
+                string IconPath = string(EmulatorFolder) + "Images" + PathSeparator + "Vircon32Icon.png";
                 SDL_Surface* WindowIcon = IMG_Load( IconPath.c_str() );
                 SDL_SetWindowIcon( Window, WindowIcon );
             */
             
             // load the no signal image
-            NoSignalTexture.Load( string(EmulatorFolder) + "\\Images\\NoSignal.png" );
+            NoSignalTexture.Load( string(EmulatorFolder) + "Images" + PathSeparator + "NoSignal.png" );
         }
         catch( exception& e )
         {
@@ -240,8 +240,8 @@ int main( int NumberOfArguments, char* Arguments[] )
         }
         
         // load our configuration from XML files
-        LoadControls( EmulatorFolder + "\\Config-Controls.xml" );
-        LoadSettings( EmulatorFolder + "\\Config-Settings.xml" );
+        LoadControls( EmulatorFolder + "Config-Controls.xml" );
+        LoadSettings( EmulatorFolder + "Config-Settings.xml" );
         
         // initialize the window
         string WindowTitle = string("Vircon32: ") + Texts(TextIDs::Status_NoCartridge);
@@ -251,7 +251,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         // -----------------------------------------------------------------------------
         
         // load the standard bios from the emulator's local bios folder
-        Vircon.LoadBios( EmulatorFolder + "\\Bios\\StandardBios.v32" );
+        Vircon.LoadBios( EmulatorFolder + "Bios" + PathSeparator + "StandardBios.v32" );
         
         // turn on Vircon VM
         Vircon.Initialize();
@@ -471,7 +471,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         Vircon.Terminate();
         
         // save settings
-        SaveSettings( EmulatorFolder + "\\Config-Settings.xml" );
+        SaveSettings( EmulatorFolder + "Config-Settings.xml" );
         
         // free scene resources
         LOG( "---------------------------------------------------------------------" );
