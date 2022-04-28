@@ -99,7 +99,7 @@ void OpenGL2DContext::CreateOpenGLWindow()
     
     Window = SDL_CreateWindow
     (
-       "Input test",
+       "OpenGL Window",
        SDL_WINDOWPOS_UNDEFINED,
        SDL_WINDOWPOS_UNDEFINED,
        WindowWidth,

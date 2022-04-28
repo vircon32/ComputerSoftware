@@ -347,6 +347,10 @@ int main()
         // load our configuration from XML file
         LoadControls( ProgramFolder + "Config-Controls.xml" );
         
+        // initialize the window
+        SDL_SetWindowTitle( OpenGL2D.Window, "Vircon32: Edit Controls" );
+        SDL_SetWindowPosition( OpenGL2D.Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED );
+        
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // Main loop 
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
