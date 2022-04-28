@@ -5,6 +5,9 @@
     // include project headers
     #include "VirconGamepadController.hpp"
     
+    // include C/C++ headers
+    #include <string.h>         // [ ANSI C ] Strings
+    
     // declare used namespaces
     using namespace std;
 // *****************************************************************************
