@@ -69,10 +69,12 @@ string GetPathDirectory( const string& FilePath )
 {
     size_t SlashPosition = FilePath.rfind( PathSeparator );
     
+    // careful, if the path is empty (i.e. current folder)
+    // we need to return a dot or else paths will be wrong
     if( SlashPosition == string::npos )
-      return "";
+      return string(".") + PathSeparator;
     
-    return FilePath.substr( 0, SlashPosition );
+    return FilePath.substr( 0, SlashPosition+1 );
 }
 
 // -----------------------------------------------------------------------------

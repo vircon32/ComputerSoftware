@@ -171,10 +171,6 @@ int main( int NumberOfArguments, char* Arguments[] )
         RomDefinition Definition;
         Definition.BaseFolder = GetPathDirectory( InputPath );
         
-        // in case it is empty we want it to be "."
-        if( Definition.BaseFolder.empty() )
-          Definition.BaseFolder = ".";
-        
         // load the XML file into our rom definition class
         if( VerboseMode )
           cout << "loading ROM definition from input file" << endl;

@@ -709,9 +709,6 @@ void VirconCLexer::OpenFile( const string& FilePath )
     // capture the input file directory
     InputDirectory = GetPathDirectory( FilePath );
     
-    if( InputDirectory == "" )
-      InputDirectory = string(".") + PathSeparator;
-    
     // reset any previous reads
     ReadLocation.FilePath = FilePath;
     ReadLocation.Line = 1;
