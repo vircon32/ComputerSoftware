@@ -21,6 +21,11 @@
     #include <AL/al.h>              // [ OpenAL ] Main header
     #include <AL/alut.h>            // [ OpenAL ] Utility Toolkit
     
+    // on Linux, include GTK headers
+    #if defined(__linux__)
+    #include <gtk/gtk.h>            // [ GTK ] Main header
+    #endif
+    
     // declare used namespaces
     using namespace std;
     
@@ -198,8 +203,6 @@ int main( int NumberOfArguments, char* Arguments[] )
         // create a framebuffer object
         OpenGL2D.CreateFramebuffer();
         OpenGL2D.RenderToScreen();
-        // select the actual screen as render target
-        //glBindFramebuffer( GL_FRAMEBUFFER, 0 );
         
         // set alpha blending
         LOG( "Enabling alpha blending" );
@@ -247,6 +250,12 @@ int main( int NumberOfArguments, char* Arguments[] )
         string WindowTitle = string("Vircon32: ") + Texts(TextIDs::Status_NoCartridge);
         SDL_SetWindowTitle( OpenGL2D.Window, WindowTitle.c_str() );
         SDL_SetWindowPosition( OpenGL2D.Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED );
+        
+        // on linux, initialize GTK
+        #if defined(__linux__)
+          LOG( "Initializing GTK" );
+          gtk_init( &NumberOfArguments, &Arguments );
+        #endif
         
         // -----------------------------------------------------------------------------
         
