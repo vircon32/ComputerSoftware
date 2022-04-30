@@ -105,7 +105,7 @@ void ParseVersionString( const string& VersionText, uint32_t& Version, uint32_t&
         throw runtime_error( "ROM version string contains invalid characters" );
     
     // locate the dot
-    unsigned DotPosition = VersionText.find( '.' );
+    size_t DotPosition = VersionText.find( '.' );
     
     if( DotPosition == string::npos )
       throw runtime_error( "ROM version string should contain a dot as separator" );

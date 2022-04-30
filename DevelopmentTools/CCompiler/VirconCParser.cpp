@@ -315,12 +315,12 @@ AssemblyBlockNode* VirconCParser::ParseAssemblyBlock( CNode* Parent, CTokenItera
         AddedLine.EmbeddedAtom = nullptr;
         
         // check if there is an embedded atom
-        unsigned OpenBracePosition = LineText.find( '{' );
+        size_t OpenBracePosition = LineText.find( '{' );
         
         if( OpenBracePosition != string::npos )
         {
-            // fint closing brace
-            unsigned CloseBracePosition = LineText.find( '}', OpenBracePosition );
+            // find closing brace
+            size_t CloseBracePosition = LineText.find( '}', OpenBracePosition );
             
             if( CloseBracePosition == string::npos )
             {
