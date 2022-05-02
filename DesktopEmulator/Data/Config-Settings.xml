@@ -2,6 +2,7 @@
     <language>english</language>
     <video size="1" fullscreen="no" />
     <audio mute="no" volume="100" />
+    <audio-buffers number="4" samples="512" />
     <gamepad-1 profile="Keyboard" />
     <gamepad-2 profile="None" />
     <gamepad-3 profile="None" />

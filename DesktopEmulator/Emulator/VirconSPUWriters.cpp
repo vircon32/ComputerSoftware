@@ -56,13 +56,6 @@ void WriteSPUGlobalVolume( VirconSPU& SPU, VirconWord Value )
     // out of range values are accepted, but they are clamped
     Clamp( Value.AsFloat, 0, 1 );
     SPU.GlobalVolume = Value.AsFloat;
-    
-    // we have to keep in mind the external volume controls
-    float ExternalMultiplier = (SPU.Mute? 0 : SPU.OutputVolume);
-    float TotalVolume = SPU.GlobalVolume * ExternalMultiplier;
-    
-    // now adjust the actual volume
-    alSourcef( SPU.SoundSourceID, AL_GAIN, TotalVolume );
 }
 
 // -----------------------------------------------------------------------------

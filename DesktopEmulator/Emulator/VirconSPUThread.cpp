@@ -44,20 +44,23 @@ int SPUPlaybackThread( void* Parameters )
     
     try
     {
-        // (3) keep thread alive until the SPU stops it
+        // (2) keep thread alive until the SPU stops it
         while( !SPUInstance->ThreadExitFlag )
         {
+            // (2.1) if not paused, update sound buffers
             if( !SPUInstance->ThreadPauseFlag )
             {
                 // signal start of playing actions to the main thread
                 // (to avoid buffer corruption)
                 SPUInstance->ThreadUsingBuffers = true;
                 
-                // when UpdateBufferQueue returned true, the audio continues
-                SPUInstance->UpdateBufferQueue();
+                // when UpdateBufferQueue returned true, the audio
+                // buffers were correctly updated; do a single retry if not
+                if( !SPUInstance->UpdateBufferQueue() )
+                  SPUInstance->UpdateBufferQueue();
             }
             
-            // (3.2) when idle, sleep and re-check playback state periodically
+            // (2.2) when idle, sleep and re-check playback state periodically
             SPUInstance->ThreadUsingBuffers = false;
             SDL_Delay( 5 );
         }

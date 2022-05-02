@@ -21,10 +21,20 @@
 // *****************************************************************************
 
 
-// component parametrization
-#define NUMBER_OF_BUFFERS    4
-#define BUFFER_SAMPLES     512      // 512 samples = 11.6 ms
-#define BUFFER_BYTES      2048      // 2048 bytes = 512 samples * 2 bytes/sample * 2 channels
+// Our sound system uses a set of sound buffers that are
+// continuously re-filled and re-queued to prevent audio
+// output from ever running out of sound samples (which
+// would produce clicks, silences, or terminate audio).
+// Buffers can be configured in number and size within
+// these limits to adapt audio timing to each system.
+// Increasing the total samples will increase audio latency
+// but will ensure that less capable systems have enough
+// time to update audio and therefore prevent sound problems
+#define MIN_BUFFERS            2
+#define MAX_BUFFERS           16
+#define MIN_BUFFER_SAMPLES   256
+#define MAX_BUFFER_SAMPLES  4096
+#define BYTES_PER_SAMPLE       4   // 1 sample = 2 channels with a 16-bit value each
 
 
 // =============================================================================
@@ -145,7 +155,11 @@ class VirconSPU: public VirconControlInterface
         
         // OpenAL mixer objects
         ALuint SoundSourceID;
-        ALuint SoundBufferIDs[ NUMBER_OF_BUFFERS ];
+        ALuint SoundBufferIDs[ MAX_BUFFERS ];
+        
+        // sound buffer configuration
+        int NumberOfBuffers;
+        int SamplesPerBuffer;
         
         // Variables for playback thread
         friend int SPUPlaybackThread( void* );
@@ -215,6 +229,10 @@ class VirconSPU: public VirconControlInterface
         void PauseAllChannels();
         void ResumeAllChannels();
         void StopAllChannels();
+        
+        // output volume configuration
+        void SetMute( bool NewMute );
+        void SetOutputVolume( float NewVolume );
 };
 
 

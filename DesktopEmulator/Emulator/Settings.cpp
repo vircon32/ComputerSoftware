@@ -626,6 +626,17 @@ void LoadSettings( const string& FilePath )
         Vircon.SetMute( Mute );
         Vircon.SetOutputVolume( Volume / 100.0 );
         
+        // load audio buffers settings
+        XMLElement* AudioBuffersElement = GetRequiredElement( SettingsRoot, "audio-buffers" );
+        int NumberOfBuffers = GetRequiredIntegerAttribute( AudioBuffersElement, "number" );
+        int SamplesPerBuffer = GetRequiredIntegerAttribute( AudioBuffersElement, "samples" );
+        Clamp( NumberOfBuffers, MIN_BUFFERS, MAX_BUFFERS );
+        Clamp( SamplesPerBuffer, MIN_BUFFER_SAMPLES, MAX_BUFFER_SAMPLES );
+        
+        // apply audio buffers settings
+        Vircon.SPU.NumberOfBuffers = NumberOfBuffers;
+        Vircon.SPU.SamplesPerBuffer = SamplesPerBuffer;      
+        
         // configure gamepads
         for( int Gamepad = 0; Gamepad < Constants::MaximumGamepads; Gamepad++ )
         {
@@ -771,17 +782,23 @@ void SaveSettings( const string& FilePath )
         LanguageElement->SetText( LanguageName.c_str() );
         SettingsRoot->LinkEndChild( LanguageElement );
         
-        // save video options
+        // save video settings
         XMLElement* VideoElement = CreatedDoc.NewElement( "video" );
         VideoElement->SetAttribute( "size", (unsigned)OpenGL2D.WindowedZoomFactor );
         VideoElement->SetAttribute( "fullscreen", OpenGL2D.FullScreen? "yes" : "no" );
         SettingsRoot->LinkEndChild( VideoElement );
         
-        // save audio options
+        // save audio settings
         XMLElement* AudioElement = CreatedDoc.NewElement( "audio" );
         AudioElement->SetAttribute( "mute", Vircon.IsMuted()? "yes" : "no" );
         AudioElement->SetAttribute( "volume", (unsigned)(100.0 * Vircon.GetOutputVolume()) );
         SettingsRoot->LinkEndChild( AudioElement );
+        
+        // save audio buffers settings
+        XMLElement* AudioBuffersElement = CreatedDoc.NewElement( "audio-buffers" );
+        AudioBuffersElement->SetAttribute( "number", Vircon.SPU.NumberOfBuffers );
+        AudioBuffersElement->SetAttribute( "samples", Vircon.SPU.SamplesPerBuffer );
+        SettingsRoot->LinkEndChild( AudioBuffersElement );
         
         // save gamepad profiles
         for( int Gamepad = 0; Gamepad < Constants::MaximumGamepads; Gamepad++ )

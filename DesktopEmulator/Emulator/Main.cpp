@@ -498,6 +498,10 @@ int main( int NumberOfArguments, char* Arguments[] )
             SDL_JoystickClose( ClosedJoystick );
         }
         
+        // shut down ALUT
+        LOG( "Terminating audio" );
+        alutExit();
+        
         // shut down imgui
         LOG( "Shutting down ImGui" );
         ImGui_ImplOpenGL2_Shutdown();

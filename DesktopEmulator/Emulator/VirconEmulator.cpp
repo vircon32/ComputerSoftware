@@ -738,19 +738,30 @@ bool VirconEmulator::HasGamepad( int Number )
 
 float VirconEmulator::GetOutputVolume()
 {
-    return SPU.OutputVolume;
+    float SPUVolume = SPU.OutputVolume;
+    
+    // within SPU output volume works linearly
+    // (it is just a gain level) but here we
+    // will treat it quadratically to get the
+    // human-perceived output volume level
+    // vary in a more progressive way
+    Clamp( SPUVolume, 0, 1 );
+    return sqrt( SPUVolume );
 }
 
 // -----------------------------------------------------------------------------
 
 void VirconEmulator::SetOutputVolume( float Volume )
 {
-    SPU.OutputVolume = Volume;
+    // within SPU output volume works linearly
+    // (it is just a gain level) but here we
+    // will treat it quadratically to get the
+    // human-perceived output volume level
+    // vary in a more progressive way
+    Clamp( Volume, 0, 1 );
+    Volume = Volume * Volume;
     
-    // make an empty port write to adjust volume
-    VirconWord Value;
-    Value.AsFloat = SPU.GlobalVolume;
-    WriteSPUGlobalVolume( SPU, Value );
+    SPU.SetOutputVolume( Volume );
 }
 
 // -----------------------------------------------------------------------------
@@ -764,12 +775,7 @@ bool VirconEmulator::IsMuted()
 
 void VirconEmulator::SetMute( bool Mute )
 {
-    SPU.Mute = Mute;
-    
-    // make an empty port write to adjust volume
-    VirconWord Value;
-    Value.AsFloat = SPU.GlobalVolume;
-    WriteSPUGlobalVolume( SPU, Value );
+    SPU.SetMute( Mute );
 }
 
 
