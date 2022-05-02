@@ -513,6 +513,32 @@ void GUI_SaveScreenshot( string FilePath )
 
 
 // =============================================================================
+//      SUPPORT FOR DELAYED FILE GUI ACTIONS
+// =============================================================================
+// Under Linux there is a risk that performing I/O
+// actions related to emulator resource files will
+// crash the emulator if they are performed during
+// GUI processing. To prevent that, we will instead
+// store the requested action to perform it after
+// GUI processing has finished for the current frame
+
+enum class DelayedFileActions
+{
+    None,
+    UnloadCartridge,
+    LoadCartridge,
+    ChangeCartridge,
+    CreateMemoryCard,
+    UnloadMemoryCard,
+    LoadMemoryCard,
+    ChangeMemoryCard
+};
+
+DelayedFileActions PendingAction = DelayedFileActions::None;
+string PendingActionPath = "";
+
+
+// =============================================================================
 //      INDIVIDUAL MENUS IN THE MENU BAR
 // =============================================================================
 
@@ -578,16 +604,16 @@ void ProcessMenuCartridge()
         if( !Vircon.HasCartridge() )
         {
             if( ImGui::MenuItem( Texts(TextIDs::Cartridge_Load) ) )
-              GUI_LoadCartridge();
+              PendingAction = DelayedFileActions::LoadCartridge;
         }
         
         else
         {
             if( ImGui::MenuItem( Texts(TextIDs::Cartridge_Change) ) )
-              GUI_ChangeCartridge();
+              PendingAction = DelayedFileActions::ChangeCartridge;
             
             if( ImGui::MenuItem( Texts(TextIDs::Cartridge_Unload) ) )
-              GUI_UnloadCartridge();
+              PendingAction = DelayedFileActions::UnloadCartridge;
         }
     }
     
@@ -620,7 +646,10 @@ void ProcessMenuCartridge()
             FileName = to_string( OrderNumber++ ) + ") " + FileName;
             
             if( ImGui::MenuItem( FileName.c_str() ) )
-              GUI_ChangeCartridge( CartridgePath );
+            {
+                PendingAction = DelayedFileActions::ChangeCartridge;
+                PendingActionPath = CartridgePath;
+            }
         }
         
         // add the option to clear the list
@@ -658,21 +687,21 @@ void ProcessMenuMemoryCard()
     
     // now display the actual options
     if( ImGui::MenuItem( Texts(TextIDs::Card_Create) ) )
-      GUI_CreateMemoryCard();
+      PendingAction = DelayedFileActions::CreateMemoryCard;
     
     if( !Vircon.HasMemoryCard() )
     {
         if( ImGui::MenuItem( Texts(TextIDs::Card_Load) ) )
-          GUI_LoadMemoryCard();
+          PendingAction = DelayedFileActions::LoadMemoryCard;
     }
     
     else
     {
         if( ImGui::MenuItem( Texts(TextIDs::Card_Change) ) )
-          GUI_ChangeMemoryCard();
+          PendingAction = DelayedFileActions::ChangeMemoryCard;
         
         if( ImGui::MenuItem( Texts(TextIDs::Card_Unload) ) )
-          GUI_UnloadMemoryCard();
+          PendingAction = DelayedFileActions::UnloadMemoryCard;
     }
     
     // show title for recent files list
@@ -695,7 +724,10 @@ void ProcessMenuMemoryCard()
         FileName = to_string( OrderNumber++ ) + ") " + FileName;
         
         if( ImGui::MenuItem( FileName.c_str() ) )
-          GUI_ChangeMemoryCard( MemoryCardPath );
+        {
+            PendingAction = DelayedFileActions::ChangeMemoryCard;
+            PendingActionPath = MemoryCardPath;
+        }
     }
     
     // add the option to clear the list
@@ -990,6 +1022,10 @@ void ShowEmulatorWindow()
 // to wrap this to ensure the framebuffer is rendered correctly
 void RenderGUI()
 {
+    // delete any previous pending actions
+    PendingAction = DelayedFileActions::None;
+    PendingActionPath = "";
+    
     // remove any emulator blending modes
     SetBlendingMode( BlendingMode::Alpha );
     
@@ -1033,4 +1069,39 @@ void RenderGUI()
     VirconWord BlendValue;
     BlendValue.AsInteger = Vircon.GPU.ActiveBlending;
     Vircon.GPU.WritePort( (int32_t)GPU_LocalPorts::ActiveBlending, BlendValue );
+    
+    // only after GUI processing is done, we can
+    // safely perform any file processing actions
+    // that were requested from menu options
+    switch( PendingAction )
+    {
+        // cartridge file actions
+        case DelayedFileActions::UnloadCartridge:
+            GUI_UnloadCartridge();
+            break;
+        case DelayedFileActions::LoadCartridge:
+            GUI_LoadCartridge( PendingActionPath );
+            break;
+        case DelayedFileActions::ChangeCartridge:
+            GUI_ChangeCartridge( PendingActionPath );
+            break;
+            
+        // memory card file actions
+        case DelayedFileActions::CreateMemoryCard:
+            GUI_CreateMemoryCard();
+            break;
+        case DelayedFileActions::UnloadMemoryCard:
+            GUI_UnloadMemoryCard();
+            break;
+        case DelayedFileActions::LoadMemoryCard:
+            GUI_LoadMemoryCard( PendingActionPath );
+            break;
+        case DelayedFileActions::ChangeMemoryCard:
+            GUI_ChangeMemoryCard( PendingActionPath );
+            break;
+        
+        // in other cases no actions are performed
+        case DelayedFileActions::None: break;
+        default: break;
+    }
 }
