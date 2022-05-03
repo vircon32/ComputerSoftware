@@ -366,7 +366,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
     DESTINATION DevTools)
     
 # On Windows, copy the needed runtime files (DLLs)
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+if(TARGET_OS STREQUAL "windows")
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${RUNTIME_DIR}/
         DESTINATION DevTools)
 endif()
