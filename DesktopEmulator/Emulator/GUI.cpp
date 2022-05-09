@@ -891,7 +891,7 @@ void ProcessMenuHelp()
         #elif defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
           string ReadmePath = "start notepad \"" + EmulatorFolder + Texts(TextIDs::FileNames_Readme) + "\"";
         
-        #elif defined(__Darwin__)
+        #elif defined(__APPLE__)
           string ReadmePath = "open -a TextEdit \"" + EmulatorFolder + Texts(TextIDs::FileNames_Readme) + "\"";
         
         #else

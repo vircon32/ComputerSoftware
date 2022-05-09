@@ -325,7 +325,7 @@ int main()
         ImVector< ImWchar > GlyphRanges;
         ImFontGlyphRangesBuilder GlyphBuilder;
         GlyphBuilder.AddRanges( ImGui::GetIO().Fonts->GetGlyphRangesDefault() );  // add all the standard characters
-        GlyphBuilder.AddText( u8"àèìòùÁÉÍÓÚñÑ¡¿üÜ" );                             // add all specific Spanish characters
+        GlyphBuilder.AddText( u8"\u00E1\u00E9\u00ED\u00F3\u00FA\u00C1\u00C9\u00CD\u00D3\u00DA\u00FC\u00DC\u00F1\u00D1\u00A1\u00BF" );  // add all specific Spanish characters
         GlyphBuilder.BuildRanges( &GlyphRanges );
         
         // ImGui needs to use a custom font to render non-default characters
