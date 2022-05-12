@@ -23,7 +23,7 @@ endif()
 
 # Declare the project
 # This will make installation create a folder named Vircon32
-project("Vircon32")
+project("Vircon32" LANGUAGES C CXX)
 
 # Define version
 set(PROJECT_VERSION_MAJOR 2022)
@@ -65,6 +65,7 @@ elseif(TARGET_OS STREQUAL "linux")
     set(OSDIALOG_TARGET gtk2 CACHE STRING "osdialog target env")
 elseif(TARGET_OS STREQUAL "mac")
     set(OSDIALOG_TARGET mac CACHE STRING "osdialog target env")
+    enable_language(OBJC)
 endif()
 
 # These general project variables should be cached
@@ -355,10 +356,16 @@ if(TARGET_OS STREQUAL "windows")
     target_link_libraries(${EDITCONTROLS_BINARY_NAME} imm32)
 endif()
 
-# On Linux both binaries will also need this set of libraries
+# On linux both binaries will also need this set of libraries
 if(TARGET_OS STREQUAL "linux")
     target_link_libraries(${EMULATOR_BINARY_NAME} ${GTK2_LIBRARIES})
     target_link_libraries(${EDITCONTROLS_BINARY_NAME} ${GTK2_LIBRARIES})
+endif()
+
+# On mac both binaries will also need this framework
+if(TARGET_OS STREQUAL "mac")
+    target_link_libraries(${EMULATOR_BINARY_NAME} "-framework AppKit")
+    target_link_libraries(${EDITCONTROLS_BINARY_NAME} "-framework AppKit")
 endif()
 
 # -----------------------------------------------------
@@ -389,7 +396,8 @@ endif()
 install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
     RUNTIME
     COMPONENT binaries
-    DESTINATION Emulator)
+    DESTINATION Emulator
+    BUNDLE DESTINATION .)
 
 # Copy the needed data files
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/

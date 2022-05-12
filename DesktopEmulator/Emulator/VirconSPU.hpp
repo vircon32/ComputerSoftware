@@ -13,8 +13,13 @@
     #include "VirconBuses.hpp"
     
     // include OpenAL headers
-    #include <AL/al.h>          // [ OpenAL ] Main header
-    #include <AL/alut.h>        // [ OpenAL ] Utility Toolkit
+    #if defined(__APPLE__)
+      #include <OpenAL/al.h>      // [ OpenAL ] Main header
+      #include <OpenAL/alc.h>     // [ OpenAL ] Audio contexts
+    #else
+      #include <AL/al.h>          // [ OpenAL ] Main header
+      #include <AL/alc.h>         // [ OpenAL ] Audio contexts
+    #endif
     
     // include SDL2 headers
     #include <SDL2/SDL.h>       // [ SDL2 ] Main header

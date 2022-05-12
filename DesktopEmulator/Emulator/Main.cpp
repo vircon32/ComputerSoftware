@@ -19,11 +19,11 @@
     
     // include OpenAL headers
     #if defined(__APPLE__)
-      #include <OpenAL/al.h>          // [ OpenAL ] Main header
-      #include <OpenAL/alut.h>        // [ OpenAL ] Utility Toolkit
+      #include <OpenAL/al.h>      // [ OpenAL ] Main header
+      #include <AL/alut.h>        // [ OpenAL ] Utility Toolkit
     #else
-      #include <AL/al.h>              // [ OpenAL ] Main header
-      #include <AL/alut.h>            // [ OpenAL ] Utility Toolkit
+      #include <AL/al.h>          // [ OpenAL ] Main header
+      #include <AL/alut.h>        // [ OpenAL ] Utility Toolkit
     #endif
     
     // on Linux, include GTK headers

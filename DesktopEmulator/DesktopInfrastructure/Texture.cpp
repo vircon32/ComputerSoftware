@@ -95,24 +95,22 @@ void Texture::Load( const string& FileName )
     // clear OpenGL errors
     glGetError();
     
-    // this will automatically generate mipmaps on texture modifications
-    //glTexParameteri( GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE );
-    
-    // build the OpenGL texture from the SDL surface:
+    // format configuration to build the OpenGL texture from the SDL surface
     GLenum Type = (LoadedImage->format->BytesPerPixel == 4)? GL_RGBA : GL_RGB;
+    GLint InternalFormat = (Type == GL_RGBA)? GL_RGBA8 : GL_RGB8;
     
     // (1) first we build an empty texture of the extented size
     glTexImage2D
     (
-        GL_TEXTURE_2D,                          // texture is a 2D rectangle
-        0,                                      // level of detail (0 = normal size)
-        LoadedImage->format->BytesPerPixel,     // color components
-        TextureWidth,                           // texture width in pixels
-        TextureHeight,                          // texture height in pixels
-        0,                                      // border width (must be 0 or 1)
-        Type,                                   // buffer format for color components
-        GL_UNSIGNED_BYTE,                       // each color component is a byte
-        nullptr                                 // buffer storing the texture data
+        GL_TEXTURE_2D,          // texture is a 2D rectangle
+        0,                      // level of detail (0 = normal size)
+        InternalFormat,         // color components
+        TextureWidth,           // texture width in pixels
+        TextureHeight,          // texture height in pixels
+        0,                      // border width (must be 0 or 1)
+        Type,                   // buffer format for color components
+        GL_UNSIGNED_BYTE,       // each color component is a byte
+        nullptr                 // buffer storing the texture data
     );
     
     // check correct conversion
@@ -121,16 +119,16 @@ void Texture::Load( const string& FileName )
     
     // (2) then we modify the part of our image
     glTexSubImage2D
-    (
-        GL_TEXTURE_2D,                          // texture is a 2D rectangle
-        0,                                      // level of detail (0 = normal size)
-        0,                                      // x offset
-        0,                                      // y offset
-        ImageWidth,                             // image width in pixels
-        ImageHeight,                            // image height in pixels
-        Type,                                   // buffer format for color components
-        GL_UNSIGNED_BYTE,                       // each color component is a byte
-        LoadedImage->pixels                     // buffer storing the texture data
+    (   
+        GL_TEXTURE_2D,          // texture is a 2D rectangle
+        0,                      // level of detail (0 = normal size)
+        0,                      // x offset
+        0,                      // y offset
+        ImageWidth,             // image width in pixels
+        ImageHeight,            // image height in pixels
+        Type,                   // buffer format for color components
+        GL_UNSIGNED_BYTE,       // each color component is a byte
+        LoadedImage->pixels     // buffer storing the texture data
     );
     
     // check correct conversion
@@ -140,17 +138,9 @@ void Texture::Load( const string& FileName )
     // delete the original SDL surface loaded by SDL_Image
     delete LoadedImage;
     
-    // we can now disable mipmap updates
-    //glTexParameteri( GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_FALSE );
-    
-    // specify a linear filter for both the minification and magnification
-    //glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );         
-    //glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR );
-    
-    // for this game none of our textures will be smoothed
+    // for this console none of our textures will be smoothed
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );         
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-    
     
     // configure texture edges to NOT wrap (clamp)
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
