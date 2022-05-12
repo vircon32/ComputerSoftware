@@ -9,9 +9,6 @@
 
 void WriteSPUCommand( VirconSPU& SPU, VirconWord Value )
 {
-    // first write the value
-    SPU.Command = Value.AsInteger;
-    
     // now execute the command, if valid
     switch( Value.AsInteger )
     {
@@ -42,6 +39,9 @@ void WriteSPUCommand( VirconSPU& SPU, VirconWord Value )
         // (unknown command codes are just ignored)
         default: return;
     }
+    
+    // do not write the value;
+    // it is useless anyway (this port is write-only)
 }
 
 // -----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ void WriteSPUGlobalVolume( VirconSPU& SPU, VirconWord Value )
       return;
     
     // out of range values are accepted, but they are clamped
-    Clamp( Value.AsFloat, 0, 1 );
+    Clamp( Value.AsFloat, 0, 2 );
     SPU.GlobalVolume = Value.AsFloat;
 }
 
@@ -181,7 +181,7 @@ void WriteSPUChannelVolume( VirconSPU& SPU, VirconWord Value )
       return;
     
     // out of range values are accepted, but they are clamped
-    Clamp( Value.AsFloat, 0, 10 );
+    Clamp( Value.AsFloat, 0, 8 );
     SPU.PointedChannel->Volume = Value.AsFloat;
 }
 
@@ -195,7 +195,7 @@ void WriteSPUChannelSpeed( VirconSPU& SPU, VirconWord Value )
       return;
     
     // out of range values are accepted, but they are clamped
-    Clamp( Value.AsFloat, 0, 100 );
+    Clamp( Value.AsFloat, 0, 128 );
     SPU.PointedChannel->Speed = Value.AsFloat;
 }
 

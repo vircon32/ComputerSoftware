@@ -15,9 +15,6 @@
 
 void WriteGPUCommand( VirconGPU& GPU, VirconWord Value )
 {
-    // first write the value
-    GPU.Command = Value.AsInteger;
-    
     // now execute the command, if valid
     switch( Value.AsInteger )
     {
@@ -44,6 +41,9 @@ void WriteGPUCommand( VirconGPU& GPU, VirconWord Value )
         // (unknown command codes are just ignored)
         default: return;
     }
+    
+    // do not write the value;
+    // it is useless anyway (this port is write-only)
 }
 
 // -----------------------------------------------------------------------------
@@ -155,7 +155,8 @@ void WriteGPUSelectedRegion( VirconGPU& GPU, VirconWord Value )
 
 void WriteGPUDrawingPointX( VirconGPU& GPU, VirconWord Value )
 {
-    // just write it: any value is considered valid
+    // out of range values are accepted, but they are clamped
+    Clamp( Value.AsInteger, -1000, Constants::ScreenWidth + 1000 );
     GPU.DrawingPointX = Value.AsInteger;
 }
 
@@ -163,7 +164,8 @@ void WriteGPUDrawingPointX( VirconGPU& GPU, VirconWord Value )
 
 void WriteGPUDrawingPointY( VirconGPU& GPU, VirconWord Value )
 {
-    // just write it: any value is considered valid
+    // out of range values are accepted, but they are clamped
+    Clamp( Value.AsInteger, -1000, Constants::ScreenHeight + 1000 );
     GPU.DrawingPointY = Value.AsInteger;
 }
 
@@ -171,32 +173,39 @@ void WriteGPUDrawingPointY( VirconGPU& GPU, VirconWord Value )
 
 void WriteGPUDrawingScaleX( VirconGPU& GPU, VirconWord Value )
 {
-    // Float parameters are only written if they are valid
-    // numeric values (otherwise the request is ignored).
-    // Negative values are valid, they just mirror coordinates
-    if( !isnan( Value.AsFloat ) && !isinf( Value.AsFloat ) )
-      GPU.DrawingScaleX = Value.AsFloat;
+    // ignore non-numeric values
+    if( isnan( Value.AsFloat ) || isinf( Value.AsFloat ) )
+      return;
+    
+    // out of range values are accepted, but they are clamped
+    Clamp( Value.AsFloat, -1024, 1024 );
+    GPU.DrawingScaleX = Value.AsFloat;
 }
 
 // -----------------------------------------------------------------------------
 
 void WriteGPUDrawingScaleY( VirconGPU& GPU, VirconWord Value )
 {
-    // Float parameters are only written if they are valid
-    // numeric values (otherwise the request is ignored).
-    // Negative values are valid, they just mirror coordinates
-    if( !isnan( Value.AsFloat ) && !isinf( Value.AsFloat ) )
-      GPU.DrawingScaleY = Value.AsFloat;
+    // ignore non-numeric values
+    if( isnan( Value.AsFloat ) || isinf( Value.AsFloat ) )
+      return;
+    
+    // out of range values are accepted, but they are clamped
+    Clamp( Value.AsFloat, -1024, 1024 );
+    GPU.DrawingScaleY = Value.AsFloat;
 }
 
 // -----------------------------------------------------------------------------
 
 void WriteGPUDrawingAngle( VirconGPU& GPU, VirconWord Value )
 {
-    // float parameters are only written if they are valid numeric values
-    // (otherwise the request is ignored)
-    if( !isnan( Value.AsFloat ) && !isinf( Value.AsFloat ) )
-      GPU.DrawingAngle = Value.AsFloat;
+    // ignore non-numeric values
+    if( isnan( Value.AsFloat ) || isinf( Value.AsFloat ) )
+      return;
+    
+    // out of range values are accepted, but they are clamped
+    Clamp( Value.AsFloat, -1024, 1024 );
+    GPU.DrawingAngle = Value.AsFloat;
 }
 
 // -----------------------------------------------------------------------------
@@ -205,10 +214,8 @@ void WriteGPURegionMinX( VirconGPU& GPU, VirconWord Value )
 {
     // out of texture values are accepted,
     // but they are clamped to texture limits
-    int32_t ValidX = Value.AsInteger;
-    Clamp( ValidX, 0, Constants::GPUTextureSize-1 );
-    
-    GPU.PointedRegion->MinX = ValidX;
+    Clamp( Value.AsInteger, 0, Constants::GPUTextureSize-1 );
+    GPU.PointedRegion->MinX = Value.AsInteger;
 }
 
 // -----------------------------------------------------------------------------
@@ -217,10 +224,8 @@ void WriteGPURegionMinY( VirconGPU& GPU, VirconWord Value )
 {
     // out of texture values are accepted,
     // but they are clamped to texture limits
-    int32_t ValidY = Value.AsInteger;
-    Clamp( ValidY, 0, Constants::GPUTextureSize-1 );
-    
-    GPU.PointedRegion->MinY = ValidY;
+    Clamp( Value.AsInteger, 0, Constants::GPUTextureSize-1 );
+    GPU.PointedRegion->MinY = Value.AsInteger;
 }
 
 // -----------------------------------------------------------------------------
@@ -241,17 +246,17 @@ void WriteGPURegionMaxY( VirconGPU& GPU, VirconWord Value )
 {
     // out of texture values are accepted,
     // but they are clamped to texture limits
-    int32_t ValidY = Value.AsInteger;
-    Clamp( ValidY, 0, Constants::GPUTextureSize-1 );
-    
-    GPU.PointedRegion->MaxY = ValidY;
+    Clamp( Value.AsInteger, 0, Constants::GPUTextureSize-1 );
+    GPU.PointedRegion->MaxY = Value.AsInteger;
 }
 
 // -----------------------------------------------------------------------------
 
 void WriteGPURegionHotspotX( VirconGPU& GPU, VirconWord Value )
 {
-    // out of texture values are valid
+    // out of texture values are valid up to
+    // a certain range, then they get clamped
+    Clamp( Value.AsInteger, -Constants::GPUTextureSize, (2*Constants::GPUTextureSize)-1 );
     GPU.PointedRegion->HotspotX = Value.AsInteger;
 }
 
@@ -260,5 +265,6 @@ void WriteGPURegionHotspotX( VirconGPU& GPU, VirconWord Value )
 void WriteGPURegionHotspotY( VirconGPU& GPU, VirconWord Value )
 {
     // out of texture values are valid
+    Clamp( Value.AsInteger, -Constants::GPUTextureSize, (2*Constants::GPUTextureSize)-1 );
     GPU.PointedRegion->HotspotY = Value.AsInteger;
 }

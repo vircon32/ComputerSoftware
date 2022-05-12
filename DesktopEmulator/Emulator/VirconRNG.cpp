@@ -49,6 +49,11 @@ bool VirconRNG::WritePort( int32_t LocalPort, VirconWord Value )
     if( LocalPort != (int32_t)RNG_LocalPorts::CurrentValue )
       return false;
     
+    // value 0 would produce a sequence of zeroes, so
+    // just silently refuse to write that particular value
+    if( Value.AsInteger == 0 )
+      return true;
+    
     // write value, disregarding the sign bit
     // (don't just use abs, since negative range
     // is higher and it can overflow our variable)

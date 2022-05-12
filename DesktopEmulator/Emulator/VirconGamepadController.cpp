@@ -85,6 +85,9 @@ void VirconGamepadController::ChangeFrame()
         {
             if( TimeCount[i] < 0 ) TimeCount[i]--;
             else                   TimeCount[i]++;
+            
+            // keep values within a 1-minute range
+            Clamp( TimeCount[i], -3600, 3600 );
         }
     }
 }
@@ -113,7 +116,7 @@ void VirconGamepadController::ResetGamepad( int GamepadPort )
     
     for( int i = 0; i < 11; i++ )
     {
-        *GamepadPresses = -360;
+        *GamepadPresses = -3600;
         GamepadPresses++;
     }
     
