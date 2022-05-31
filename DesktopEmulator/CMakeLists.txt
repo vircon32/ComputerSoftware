@@ -293,15 +293,16 @@ set(EMULATOR_SRC
     ${EMULATOR_DIR}/VirconSPUThread.cpp
     ${EMULATOR_DIR}/VirconSPUWriters.cpp
     ${EMULATOR_DIR}/VirconTimer.cpp
+    ${INFRASTRUCTURE_DIR}/Colors.cpp
     ${INFRASTRUCTURE_DIR}/Definitions.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
     ${INFRASTRUCTURE_DIR}/LogStream.cpp
-    ${INFRASTRUCTURE_DIR}/OpenGL2D.cpp
+    ${INFRASTRUCTURE_DIR}/Matrix4D.cpp
+    ${INFRASTRUCTURE_DIR}/OpenGL2DContext.cpp
     ${INFRASTRUCTURE_DIR}/StopWatch.cpp
     ${INFRASTRUCTURE_DIR}/StringFunctions.cpp
     ${INFRASTRUCTURE_DIR}/Texture.cpp
     ${INFRASTRUCTURE_DIR}/Vector2D.cpp
-    ${INFRASTRUCTURE_DIR}/Video.cpp
     ${DEFINITIONS_DIR}/VirconDefinitions.cpp
     ${DEFINITIONS_DIR}/VirconEnumerations.cpp
     ${DEFINITIONS_DIR}/VirconROMFormat.cpp)
@@ -313,14 +314,15 @@ set(EDITCONTROLS_SRC
     ${EDITCONTROLS_DIR}/GUI.cpp
     ${EDITCONTROLS_DIR}/Languages.cpp
     ${EDITCONTROLS_DIR}/Main.cpp
+    ${INFRASTRUCTURE_DIR}/Colors.cpp
     ${INFRASTRUCTURE_DIR}/Definitions.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
     ${INFRASTRUCTURE_DIR}/LogStream.cpp
-    ${INFRASTRUCTURE_DIR}/OpenGL2D.cpp
+    ${INFRASTRUCTURE_DIR}/Matrix4D.cpp
+    ${INFRASTRUCTURE_DIR}/OpenGL2DContext.cpp
     ${INFRASTRUCTURE_DIR}/StringFunctions.cpp
     ${INFRASTRUCTURE_DIR}/Texture.cpp
-    ${INFRASTRUCTURE_DIR}/Vector2D.cpp
-    ${INFRASTRUCTURE_DIR}/Video.cpp)
+    ${INFRASTRUCTURE_DIR}/Vector2D.cpp)
 
 # -----------------------------------------------------
 #   EXECUTABLES

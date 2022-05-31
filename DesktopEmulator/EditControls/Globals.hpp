@@ -8,7 +8,7 @@
     
     // include infrastructure headers
     #include "../DesktopInfrastructure/Definitions.hpp"
-    #include "../DesktopInfrastructure/OpenGL2D.hpp"
+    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/Texture.hpp"
     
     // include C/C++ headers

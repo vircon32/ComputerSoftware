@@ -4,6 +4,7 @@
     
     // include project headers
     #include "VirconGPU.hpp"
+    #include "Globals.hpp"
     
     // include C/C++ headers
     #include <cmath>            // [ ANSI C ] Mathematics
@@ -23,19 +24,19 @@ void WriteGPUCommand( VirconGPU& GPU, VirconWord Value )
             return;
             
         case (int32_t)IOPortValues::GPUCommand_DrawRegion:
-            GPU.DrawRegion();
+            GPU.DrawRegion( false, false );
             return;
             
         case (int32_t)IOPortValues::GPUCommand_DrawRegionZoomed:
-            GPU.DrawRegionZoomed();
+            GPU.DrawRegion( true, false );
             return;
             
         case (int32_t)IOPortValues::GPUCommand_DrawRegionRotated:
-            GPU.DrawRegionRotated();
+            GPU.DrawRegion( false, true );
             return;
             
         case (int32_t)IOPortValues::GPUCommand_DrawRegionRotozoomed:
-            GPU.DrawRegionRotozoomed();
+            GPU.DrawRegion( true, true );
             return;
             
         // (unknown command codes are just ignored)
@@ -68,14 +69,8 @@ void WriteGPUMultiplyColor( VirconGPU& GPU, VirconWord Value )
     // first write the value
     GPU.MultiplyColor = Value.AsColor;
     
-    // now update the corresponding value in OpenGL
-    glColor4ub
-    (
-        Value.AsColor.R,
-        Value.AsColor.G,
-        Value.AsColor.B,
-        Value.AsColor.A
-    );
+    // now update the corresponding value for OpenGL shaders
+    OpenGL2D.MultiplyColor = Value.AsColor;
 }
 
 // -----------------------------------------------------------------------------

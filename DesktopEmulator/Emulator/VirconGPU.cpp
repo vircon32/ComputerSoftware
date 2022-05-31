@@ -4,7 +4,7 @@
     #include "../../VirconDefinitions/VirconEnumerations.hpp"
     
     // include infrastructure headers
-    #include "../DesktopInfrastructure/OpenGL2D.hpp"
+    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/LogStream.hpp"
     
     // include project headers
@@ -150,11 +150,11 @@ void VirconGPU::LoadTexture( GPUTexture& TargetTexture, void* Pixels, unsigned W
     (
         GL_TEXTURE_2D,              // texture is a 2D rectangle
         0,                          // level of detail (0 = normal size)
-        GL_RGBA8,                   // color components
+        GL_RGBA,                    // color components in the texture
         Constants::GPUTextureSize,  // texture width in pixels
         Constants::GPUTextureSize,  // texture height in pixels
         0,                          // border width (must be 0 or 1)
-        GL_RGBA,                    // buffer format for color components
+        GL_RGBA,                    // color components in the source
         GL_UNSIGNED_BYTE,           // each color component is a byte
         nullptr                     // buffer storing the texture data
     );
@@ -172,7 +172,7 @@ void VirconGPU::LoadTexture( GPUTexture& TargetTexture, void* Pixels, unsigned W
         0,                   // y offset
         Width,               // image width in pixels
         Height,              // image height in pixels
-        GL_RGBA,             // buffer format for color components
+        GL_RGBA,             // color components in the source
         GL_UNSIGNED_BYTE,    // each color component is a byte
         Pixels               // buffer storing the texture data
     );
@@ -186,8 +186,8 @@ void VirconGPU::LoadTexture( GPUTexture& TargetTexture, void* Pixels, unsigned W
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
     
     // out-of-texture coordinates must clamp, not wrap
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     
     // finally assign the OpenGL ID to target GPU texture
     TargetTexture.TextureID = TextureID;
@@ -315,8 +315,8 @@ void VirconGPU::Reset()
     
     // initial graphic settings
     SetBlendingMode( BlendingMode::Alpha );
-    glClearColor( 0,0,0,1 );
-    glColor4ub( 255,255,255,255 );
+    glClearColor( 0.0, 0.0, 0.0, 1.0 );
+    OpenGL2D.SetMultiplyColor( 255, 255, 255, 255 );
     
     // clear the screen
     OpenGL2D.RenderToFramebuffer();
@@ -331,7 +331,11 @@ void VirconGPU::Reset()
 
 void VirconGPU::ClearScreen()
 {
-    // reject this request if it cannot be finished in this frame
+    // auto-reject the operation if the GPU is already out of capacity
+    if( RemainingPixels < 0 )
+      return;
+    
+    // calculate the needed capacity for this operation
     float CostFactor = 1 + Constants::GPUClearScreenPenalty;
     int32_t NeededPixels = CostFactor * Constants::ScreenPixels;
     
@@ -340,49 +344,32 @@ void VirconGPU::ClearScreen()
     
     if( RemainingPixels < 0 )
     {
-        RemainingPixels = 0;
+        RemainingPixels = -1;
         return;
     }
     
-    // take precautions to ensure a correct clearing
-    glDisable( GL_TEXTURE_2D );
-    
-    glColor4ub
+    // clear the screen
+    glClearColor
     (
-        ClearColor.R,
-        ClearColor.G,
-        ClearColor.B,
-        ClearColor.A
+        ClearColor.R / 255.0,
+        ClearColor.G / 255.0,
+        ClearColor.B / 255.0,
+        ClearColor.A / 255.0
     );
     
-    // perform the screen clear by drawing a full-screen quad
-    glBegin( GL_QUADS );
-    {
-        // set pairs of point position (in render coordinates)
-        // and texture coordinates (relative to texture: [0-1])
-        glVertex2f(                      0,                       0 );
-        glVertex2f( Constants::ScreenWidth,                       0 );
-        glVertex2f( Constants::ScreenWidth, Constants::ScreenHeight );
-        glVertex2f(                      0, Constants::ScreenHeight );
-    }
-    glEnd();    
-    
-    // restore previous state
-    glEnable( GL_TEXTURE_2D );
-    
-    glColor4ub
-    (
-        MultiplyColor.R,
-        MultiplyColor.G,
-        MultiplyColor.B,
-        MultiplyColor.A
-    );
+    glClear( GL_COLOR_BUFFER_BIT );
 }
 
 // -----------------------------------------------------------------------------
 
-void VirconGPU::DrawRegion()
+// this same method will service the 4 variants of the
+// draw region command, by varying the enabled transforms
+void VirconGPU::DrawRegion( bool ScalingEnabled, bool RotationEnabled )
 {
+    // auto-reject the operation if the GPU is already out of capacity
+    if( RemainingPixels < 0 )
+      return;
+    
     // get active region
     GPURegion Region = *PointedRegion;
     
@@ -390,10 +377,24 @@ void VirconGPU::DrawRegion()
     int32_t RegionWidth  = abs(Region.MaxX - Region.MinX) + 1;
     int32_t RegionHeight = abs(Region.MaxY - Region.MinY) + 1;
     
+    // precalculate region render size
+    float RenderWidth  = RegionWidth;
+    float RenderHeight = RegionHeight;
+    
+    if( ScalingEnabled )
+    {
+        RenderWidth  *= abs( DrawingScaleX );
+        RenderHeight *= abs( DrawingScaleY );
+    }
+    
     // calculate the needed capacity for this operation
-    int32_t EffectiveWidth  = min( RegionWidth,  Constants::ScreenWidth  );
-    int32_t EffectiveHeight = min( RegionHeight, Constants::ScreenHeight );
+    int32_t EffectiveWidth  = min( (int)RenderWidth,  Constants::ScreenWidth  );
+    int32_t EffectiveHeight = min( (int)RenderHeight, Constants::ScreenHeight );
+    
     float CostFactor = 1;
+    if( ScalingEnabled  ) CostFactor += Constants::GPUScalingPenalty;
+    if( RotationEnabled ) CostFactor += Constants::GPURotationPenalty;
+    
     int32_t NeededPixels = CostFactor * EffectiveWidth * EffectiveHeight;
     
     // reject this request if it cannot be finished in this frame
@@ -401,72 +402,13 @@ void VirconGPU::DrawRegion()
     
     if( RemainingPixels < 0 )
     {
-        RemainingPixels = 0;
+        RemainingPixels = -1;
         return;
     }
     
     // select this texture
-    glEnable( GL_TEXTURE_2D );
     glBindTexture( GL_TEXTURE_2D, PointedTexture->TextureID );
-    
-    // calculate relative texture coordinates
-    float TextureMinX = (Region.MinX+0.5) / Constants::GPUTextureSize;
-    float TextureMinY = (Region.MinY+0.5) / Constants::GPUTextureSize;
-    float TextureMaxX = (Region.MaxX+0.5) / Constants::GPUTextureSize;
-    float TextureMaxY = (Region.MaxY+0.5) / Constants::GPUTextureSize;
-    
-    // precalculate screen coordinates
-    int RenderMinX = DrawingPointX + (Region.MinX - Region.HotspotX);
-    int RenderMinY = DrawingPointY + (Region.MinY - Region.HotspotY);
-    int RenderMaxX = RenderMinX + RegionWidth;
-    int RenderMaxY = RenderMinY + RegionHeight;
-    
-    // draw a rectangle defined as a quad (4-vertex polygon)
-    glBegin( GL_QUADS );
-    {
-        // set pairs of point position (in render coordinates)
-        // and texture coordinates (relative to texture: [0-1])
-        glTexCoord2f( TextureMinX, TextureMinY );  glVertex2i( RenderMinX, RenderMinY );
-        glTexCoord2f( TextureMaxX, TextureMinY );  glVertex2i( RenderMaxX, RenderMinY );
-        glTexCoord2f( TextureMaxX, TextureMaxY );  glVertex2i( RenderMaxX, RenderMaxY );
-        glTexCoord2f( TextureMinX, TextureMaxY );  glVertex2i( RenderMinX, RenderMaxY );
-    }
-    glEnd();
-}
-
-// -----------------------------------------------------------------------------
-
-void VirconGPU::DrawRegionZoomed()
-{
-    // get active region
-    GPURegion Region = *PointedRegion;
-    
-    // precalculate region size
-    int32_t RegionWidth  = abs(Region.MaxX - Region.MinX) + 1;
-    int32_t RegionHeight = abs(Region.MaxY - Region.MinY) + 1;
-    
-    // precalculate region render size
-    float RenderWidth  = DrawingScaleX * RegionWidth;
-    float RenderHeight = DrawingScaleY * RegionHeight;
-    
-    // calculate the needed capacity for this operation
-    int32_t EffectiveWidth  = min( (int)RenderWidth,  Constants::ScreenWidth  );
-    int32_t EffectiveHeight = min( (int)RenderHeight, Constants::ScreenHeight );
-    float CostFactor = 1 + Constants::GPUScalingPenalty;
-    int32_t NeededPixels = CostFactor * EffectiveWidth * EffectiveHeight;
-    
-    // reject this request if it cannot be finished in this frame
-    RemainingPixels -= NeededPixels;
-    
-    if( RemainingPixels < 0 )
-    {
-        RemainingPixels = 0;
-        return;
-    }
-    
-    // select this texture
     glEnable( GL_TEXTURE_2D );
-    glBindTexture( GL_TEXTURE_2D, PointedTexture->TextureID );
     
     // calculate relative texture coordinates
     float TextureMinX = (Region.MinX+0.5) / Constants::GPUTextureSize;
@@ -482,169 +424,38 @@ void VirconGPU::DrawRegionZoomed()
     int RelativeMaxY = RelativeMinY + RegionHeight;
     
     // for some reason negative scaling displaces images 1 pixel
-    int TranslationX = DrawingPointX + (DrawingScaleX < 0? 1 : 0);
-    int TranslationY = DrawingPointY + (DrawingScaleY < 0? 1 : 0);
+    int TranslationX = DrawingPointX;
+    int TranslationY = DrawingPointY;
     
-    // apply transform for rendering
-    glMatrixMode( GL_MODELVIEW );
-    glPushMatrix();
-    glTranslatef( TranslationX, TranslationY, 0 );
-    glScalef( DrawingScaleX, DrawingScaleY, 0 );
-    
-    // draw a rectangle defined as a quad (4-vertex polygon)
-    glBegin( GL_QUADS );
+    if( ScalingEnabled )
     {
-        // set pairs of point position (in render coordinates)
-        // and texture coordinates (relative to texture: [0-1])
-        glTexCoord2f( TextureMinX, TextureMinY );  glVertex2i( RelativeMinX, RelativeMinY );
-        glTexCoord2f( TextureMaxX, TextureMinY );  glVertex2i( RelativeMaxX, RelativeMinY );
-        glTexCoord2f( TextureMaxX, TextureMaxY );  glVertex2i( RelativeMaxX, RelativeMaxY );
-        glTexCoord2f( TextureMinX, TextureMaxY );  glVertex2i( RelativeMinX, RelativeMaxY );
-    }
-    glEnd();
-    
-    // undo the previous transform
-    glMatrixMode( GL_MODELVIEW );
-    glPopMatrix();
-}
-
-// -----------------------------------------------------------------------------
-
-void VirconGPU::DrawRegionRotated()
-{
-    // get active region
-    GPURegion Region = *PointedRegion;
-    
-    // precalculate region size
-    int32_t RegionWidth  = abs(Region.MaxX - Region.MinX) + 1;
-    int32_t RegionHeight = abs(Region.MaxY - Region.MinY) + 1;
-    
-    // calculate the needed capacity for this operation
-    int32_t EffectiveWidth  = min( (int)RegionWidth,  Constants::ScreenWidth  );
-    int32_t EffectiveHeight = min( (int)RegionHeight, Constants::ScreenHeight );
-    float CostFactor = 1 + Constants::GPURotationPenalty;
-    int32_t NeededPixels = CostFactor * EffectiveWidth * EffectiveHeight;
-    
-    // reject this request if it cannot be finished in this frame
-    RemainingPixels -= NeededPixels;
-    
-    if( RemainingPixels < 0 )
-    {
-        RemainingPixels = 0;
-        return;
+        if( DrawingScaleX < 0 ) TranslationX += 1;
+        if( DrawingScaleY < 0 ) TranslationY += 1;
     }
     
-    // select this texture
-    glEnable( GL_TEXTURE_2D );
-    glBindTexture( GL_TEXTURE_2D, PointedTexture->TextureID );
+    // set vertex positions (in render coordinates)
+    OpenGL2D.SetQuadVertexPosition( 0, RelativeMinX, RelativeMinY );
+    OpenGL2D.SetQuadVertexPosition( 1, RelativeMaxX, RelativeMinY );
+    OpenGL2D.SetQuadVertexPosition( 2, RelativeMinX, RelativeMaxY );
+    OpenGL2D.SetQuadVertexPosition( 3, RelativeMaxX, RelativeMaxY );
     
-    // calculate relative texture coordinates
-    float TextureMinX = (Region.MinX+0.5) / Constants::GPUTextureSize;
-    float TextureMinY = (Region.MinY+0.5) / Constants::GPUTextureSize;
-    float TextureMaxX = (Region.MaxX+0.5) / Constants::GPUTextureSize;
-    float TextureMaxY = (Region.MaxY+0.5) / Constants::GPUTextureSize;
+    // and texture coordinates (relative to texture: [0-1])
+    OpenGL2D.SetQuadVertexTexCoords( 0, TextureMinX, TextureMinY );
+    OpenGL2D.SetQuadVertexTexCoords( 1, TextureMaxX, TextureMinY );
+    OpenGL2D.SetQuadVertexTexCoords( 2, TextureMinX, TextureMaxY );
+    OpenGL2D.SetQuadVertexTexCoords( 3, TextureMaxX, TextureMaxY );
     
-    // calculate screen coordinates relative to the hotspot
-    // (that way we can use OpenGL transforms to rotate)
-    int RelativeMinX = Region.MinX - Region.HotspotX;
-    int RelativeMinY = Region.MinY - Region.HotspotY;
-    int RelativeMaxX = RelativeMinX + RegionWidth;
-    int RelativeMaxY = RelativeMinY + RegionHeight;
+    // prepare the needed 2D spatial transforms
+    OpenGL2D.SetTranslation( TranslationX, TranslationY );
     
-    // apply transform for rendering
-    glMatrixMode( GL_MODELVIEW );
-    glPushMatrix();
-    glTranslatef( DrawingPointX, DrawingPointY, 0 );
-    glRotatef( DrawingAngle * DegreesPerRadian, 0, 0, 1 );
+    if( ScalingEnabled )
+      OpenGL2D.SetScale( DrawingScaleX, DrawingScaleY );
     
-    // draw a rectangle defined as a quad (4-vertex polygon)
-    glBegin( GL_QUADS );
-    {
-        // set pairs of point position (in render coordinates)
-        // and texture coordinates (relative to texture: [0-1])
-        glTexCoord2f( TextureMinX, TextureMinY );  glVertex2i( RelativeMinX, RelativeMinY );
-        glTexCoord2f( TextureMaxX, TextureMinY );  glVertex2i( RelativeMaxX, RelativeMinY );
-        glTexCoord2f( TextureMaxX, TextureMaxY );  glVertex2i( RelativeMaxX, RelativeMaxY );
-        glTexCoord2f( TextureMinX, TextureMaxY );  glVertex2i( RelativeMinX, RelativeMaxY );
-    }
-    glEnd();
+    if( RotationEnabled )
+      OpenGL2D.SetRotation( DrawingAngle );
     
-    // undo the previous transform
-    glMatrixMode( GL_MODELVIEW );
-    glPopMatrix();
-}
-
-// -----------------------------------------------------------------------------
-
-void VirconGPU::DrawRegionRotozoomed()
-{
-    // get active region
-    GPURegion Region = *PointedRegion;
+    OpenGL2D.ComposeTransform( ScalingEnabled, RotationEnabled );
     
-    // precalculate region size
-    int32_t RegionWidth  = abs(Region.MaxX - Region.MinX) + 1;
-    int32_t RegionHeight = abs(Region.MaxY - Region.MinY) + 1;
-    
-    // precalculate region render size
-    float RenderWidth  = DrawingScaleX * RegionWidth;
-    float RenderHeight = DrawingScaleY * RegionHeight;
-    
-    // calculate the needed capacity for this operation
-    int32_t EffectiveWidth  = min( (int)RenderWidth,  Constants::ScreenWidth  );
-    int32_t EffectiveHeight = min( (int)RenderHeight, Constants::ScreenHeight );
-    float CostFactor = 1 + Constants::GPUScalingPenalty + Constants::GPURotationPenalty;
-    int32_t NeededPixels = CostFactor * EffectiveWidth * EffectiveHeight;
-    
-    // reject this request if it cannot be finished in this frame
-    RemainingPixels -= NeededPixels;
-    
-    if( RemainingPixels < 0 )
-    {
-        RemainingPixels = 0;
-        return;
-    }
-    
-    // select this texture
-    glEnable( GL_TEXTURE_2D );
-    glBindTexture( GL_TEXTURE_2D, PointedTexture->TextureID );
-    
-    // calculate relative texture coordinates
-    float TextureMinX = (Region.MinX+0.5) / Constants::GPUTextureSize;
-    float TextureMinY = (Region.MinY+0.5) / Constants::GPUTextureSize;
-    float TextureMaxX = (Region.MaxX+0.5) / Constants::GPUTextureSize;
-    float TextureMaxY = (Region.MaxY+0.5) / Constants::GPUTextureSize;
-    
-    // calculate screen coordinates relative to the hotspot
-    // (that way we can use OpenGL transforms to rotate)
-    int RelativeMinX = Region.MinX - Region.HotspotX;
-    int RelativeMinY = Region.MinY - Region.HotspotY;
-    int RelativeMaxX = RelativeMinX + RegionWidth;
-    int RelativeMaxY = RelativeMinY + RegionHeight;
-    
-    // for some reason negative scaling displaces images 1 pixel
-    int TranslationX = DrawingPointX + (DrawingScaleX < 0? 1 : 0);
-    int TranslationY = DrawingPointY + (DrawingScaleY < 0? 1 : 0);
-    
-    // apply transform for rendering
-    glMatrixMode( GL_MODELVIEW );
-    glPushMatrix();
-    glTranslatef( TranslationX, TranslationY, 0 );
-    glScalef( DrawingScaleX, DrawingScaleY, 0 );
-    glRotatef( DrawingAngle * DegreesPerRadian, 0, 0, 1 );
-    
-    // draw a rectangle defined as a quad (4-vertex polygon)
-    glBegin( GL_QUADS );
-    {
-        // set pairs of point position (in render coordinates)
-        // and texture coordinates (relative to texture: [0-1])
-        glTexCoord2f( TextureMinX, TextureMinY );  glVertex2i( RelativeMinX, RelativeMinY );
-        glTexCoord2f( TextureMaxX, TextureMinY );  glVertex2i( RelativeMaxX, RelativeMinY );
-        glTexCoord2f( TextureMaxX, TextureMaxY );  glVertex2i( RelativeMaxX, RelativeMaxY );
-        glTexCoord2f( TextureMinX, TextureMaxY );  glVertex2i( RelativeMinX, RelativeMaxY );
-    }
-    glEnd();
-    
-    // undo the previous transform
-    glMatrixMode( GL_MODELVIEW );
-    glPopMatrix();
+    // draw rectangle defined as a quad (4-vertex polygon)
+    OpenGL2D.DrawTexturedQuad();
 }

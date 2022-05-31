@@ -1,7 +1,7 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/Video.hpp"
-    #include "../DesktopInfrastructure/OpenGL2D.hpp"
+    #include "../DesktopInfrastructure/Colors.hpp"
+    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/StringFunctions.hpp"
     
     // include project headers
@@ -632,7 +632,7 @@ void RenderScene()
 void RenderGUI()
 {
     // start new frame in imgui
-    ImGui_ImplOpenGL2_NewFrame();
+    ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame( OpenGL2D.Window );
     ImGui::NewFrame();
     
@@ -691,5 +691,5 @@ void RenderGUI()
     
     // render imgui
     ImGui::Render();
-    ImGui_ImplOpenGL2_RenderDrawData( ImGui::GetDrawData() );
+    ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
 }

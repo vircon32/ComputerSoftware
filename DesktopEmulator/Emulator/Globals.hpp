@@ -6,7 +6,7 @@
     // include infrastructure headers
     #include "../DesktopInfrastructure/Definitions.hpp"
     #include "../DesktopInfrastructure/Texture.hpp"
-    #include "../DesktopInfrastructure/OpenGL2D.hpp"
+    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     
     // include C/C++ headers
     #include <map>          // [ C++ STL ] Maps
@@ -39,6 +39,8 @@ extern std::string LastMemoryCardDirectory;
 
 
 extern OpenGL2DContext OpenGL2D;
+extern std::string VertexShader;
+extern std::string FragmentShader;
 
 
 // =============================================================================

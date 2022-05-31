@@ -1,7 +1,6 @@
 // *****************************************************************************
     // include project headers
-    #include "Video.hpp"
-    #include "Definitions.hpp"
+    #include "Colors.hpp"
     
     // include OpenGL headers
     #include <glad/glad.h>      // [ OpenGL ] GLAD Loader (already includes <GL/gl.h>)
@@ -33,13 +32,6 @@ namespace Colors
 
 // -----------------------------------------------------------------------------
 
-void SetColor( const Color& C )
-{
-    glColor4ub( C.R, C.G, C.B, C.A );
-}
-
-// -----------------------------------------------------------------------------
-
 void SetClearColor( const Color& C )
 {
     // alpha cannot be set in this case
@@ -48,7 +40,7 @@ void SetClearColor( const Color& C )
 
 
 // =============================================================================
-//      BLENDING MODES
+//      COLOR BLENDING MODES
 // =============================================================================
 
 
@@ -67,22 +59,3 @@ void SetBlendingMode( BlendingMode Mode )
     // substraction needs an extra tweak
     glBlendEquation( (Mode == BlendingMode::Subtract)? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD );
 }
-
-
-// =============================================================================
-//      DEFINITIONS FOR VERTICES
-// =============================================================================
-
-
-void glVertexV2( const Vector2D& Vertex )
-{
-    glVertex2f( Vertex.x, Vertex.y );
-}
-
-// -----------------------------------------------------------------------------
-
-void glTexCoordV2( const Vector2D& TexturePosition )
-{
-    glTexCoord2f( TexturePosition.x, TexturePosition.y );
-}
-

@@ -4,7 +4,7 @@
     #include "../DesktopInfrastructure/Definitions.hpp"
     #include "../DesktopInfrastructure/StopWatch.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
-    #include "../DesktopInfrastructure/OpenGL2D.hpp"
+    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     
     // include project headers
     #include "VirconEmulator.hpp"
@@ -33,9 +33,6 @@
     
     // declare used namespaces
     using namespace std;
-    
-    // bug fix needed for SDL2 headers
-    #undef main
 // *****************************************************************************
 
 
@@ -199,11 +196,14 @@ int main( int NumberOfArguments, char* Arguments[] )
         ImGui::GetIO().Fonts->AddFontFromFileTTF( FontPath.c_str(), 16, NULL, GlyphRanges.Data );
         ImGui::GetIO().Fonts->Build();
         
-        // Setup Platform/Renderer backends
+        // Setup ImGui Platform/Renderer backends
         ImGui_ImplSDL2_InitForOpenGL( OpenGL2D.Window, OpenGL2D.OpenGLContext );
-        ImGui_ImplOpenGL2_Init();
+        ImGui_ImplOpenGL3_Init();
         
         // =======================
+        
+        // initialize OpenGL shaders and their infrastructure
+        OpenGL2D.InitRendering();
         
         // create a framebuffer object
         OpenGL2D.CreateFramebuffer();
@@ -425,6 +425,10 @@ int main( int NumberOfArguments, char* Arguments[] )
                         if( Key == SDLK_2 )
                           SetWindowZoom( 2 );
                         
+                        // Ctrl+3 = Zoom 3X
+                        if( Key == SDLK_3 )
+                          SetWindowZoom( 3 );
+                        
                         // Ctrl+F = Fullscreen
                         if( Key == SDLK_f )
                           SetFullScreen();
@@ -509,7 +513,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         
         // shut down imgui
         LOG( "Shutting down ImGui" );
-        ImGui_ImplOpenGL2_Shutdown();
+        ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext();
         

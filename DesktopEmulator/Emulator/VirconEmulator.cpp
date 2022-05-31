@@ -6,7 +6,7 @@
     // include infrastructure headers
     #include "../DesktopInfrastructure/FilePaths.hpp"
     #include "../DesktopInfrastructure/LogStream.hpp"
-    #include "../DesktopInfrastructure/OpenGL2D.hpp"
+    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     
     // include project headers
     #include "VirconEmulator.hpp"

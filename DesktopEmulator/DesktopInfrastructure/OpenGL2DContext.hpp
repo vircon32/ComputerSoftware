@@ -1,12 +1,17 @@
 // *****************************************************************************
     // start include guard
-    #ifndef OPENGL2D_HPP
-    #define OPENGL2D_HPP
+    #ifndef OPENGL2DCONTEXT_HPP
+    #define OPENGL2DCONTEXT_HPP
+    
+    // include common Vircon headers
+    #include "../../VirconDefinitions/VirconDataStructures.hpp"
     
     // include project headers
     #include "Definitions.hpp"
+    #include "Matrix4D.hpp"
     
     // include SDL2 headers
+    #define SDL_MAIN_HANDLED
     #include <SDL2/SDL.h>       // [ SDL2 ] Main header
     
     // this is needed by OpenGL headers under Windows
@@ -39,16 +44,40 @@ class OpenGL2DContext
         unsigned WindowedZoomFactor;
         bool FullScreen;
         
-        // framebuffer
+        // video context objects
+        SDL_Window* Window;
+        SDL_GLContext OpenGLContext;
+        
+        // framebuffer object
         GLuint FramebufferID;
         GLuint FBColorTextureID;
         GLuint FBDepthTextureID;
         unsigned FramebufferWidth;
         unsigned FramebufferHeight;
 
-        // video objects
-        SDL_Window* Window;
-        SDL_GLContext OpenGLContext;
+        // additional GL objects
+        GLuint VAO;
+        GLuint VBOPositions;
+        GLuint VBOTexCoords;
+        GLuint ShaderProgramID;
+        
+        // positions of shader parameters
+        GLuint PositionsLocation;
+        GLuint TexCoordsLocation;
+        GLuint TextureUnitLocation;
+        GLuint MultiplyColorLocation;
+        GLuint TransformMatrixLocation;
+        
+        // arrays to hold buffer info
+        GLint QuadPositionCoords[ 8 ];
+        GLfloat QuadTextureCoords[ 8 ];
+        
+        // transformation matrices
+        Matrix4D TranslationMatrix, ScalingMatrix, RotationMatrix;
+        Matrix4D TransformMatrix;
+        
+        // multiply color
+        GPUColor MultiplyColor;
         
     public:
         
@@ -59,20 +88,35 @@ class OpenGL2DContext
         // init functions
         void CreateOpenGLWindow();
         void CreateFramebuffer();
+        bool CompileShaderProgram();
+        void InitRendering();
         
         // release functions
         void Destroy();
         
-        // render functions
+        // view configuration
+        void SetWindowZoom( int ZoomFactor );
+        void SetFullScreen();
+        
+        // framebuffer render functions
         void RenderToScreen();
         void RenderToFramebuffer();
         void DrawFramebufferOnScreen();
         
-        // configuration
-        void SetWindowZoom( int ZoomFactor );
-        void SetFullScreen();
+        // color functions
+        void SetMultiplyColor( uint8_t R, uint8_t G, uint8_t B, uint8_t A );
+        
+        // 2D transform functions
+        void SetTranslation( int TranslationX, int TranslationY );
+        void SetScale( float ScaleX, float ScaleY );
+        void SetRotation( float AngleZ );
+        void ComposeTransform( bool ScalingEnabled, bool RotationEnabled );
+        
+        // base render functions
+        void SetQuadVertexPosition( int Vertex, int x, int y );
+        void SetQuadVertexTexCoords( int Vertex, float u, float v );
+        void DrawTexturedQuad();
 };
-
 
 
 // *****************************************************************************

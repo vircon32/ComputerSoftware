@@ -5,8 +5,8 @@
 
     // include project headers
     #include "Definitions.hpp"
+    #include "OpenGL2DContext.hpp"
     #include "Vector2D.hpp"
-    #include "Video.hpp"
     
     // include OpenGL headers
     #include <glad/glad.h>      // [ OpenGL ] GLAD Loader (already includes <GL/gl.h>)
@@ -21,6 +21,9 @@
 class Texture
 {
     public:
+        
+        // owner GL context (needed to draw)
+        OpenGL2DContext* OpenGL2D;
         
         // OpenGL texture data
         GLuint TextureID;
@@ -47,21 +50,13 @@ class Texture
        ~Texture();
         
         // resource handling
+        void SetOpenGLContext( OpenGL2DContext& OpenGL2D_ );
         void Load( const std::string& FileName );
         void Release();
         
-        // drawing on screen (whole texture)
-        void Draw( const Vector2D& Position ) const;
+        // drawing on screen
+        void Draw( const Vector2D& HotSpotPosition ) const;
         void Draw( float RenderXMin, float RenderYMin, float RenderXMax, float RenderYMax ) const;
-        
-        // drawing on screen (rectangular part)
-        void DrawPart( int XMin, int YMin, int XMax, int YMax, float RenderXMin, float RenderYMin, float RenderXMax, float RenderYMax ) const;
-        void DrawPart( int XMin, int YMin, int XMax, int YMax, const Vector2D& Position, float ZoomX = 1, float ZoomY = 1) const;
-        
-        // we will use this functions just for the
-        // case of wanting to wrap textures
-        void SetTextureWrap( bool WrapInX, bool WrapInY );
-        void DrawWrapped( float RenderXMin, float RenderYMin, float RenderXMax, float RenderYMax, int PixelOffsetX, int PixelOffsetY );
 };
 
 

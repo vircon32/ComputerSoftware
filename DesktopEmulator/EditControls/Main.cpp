@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/OpenGL2D.hpp"
+    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
     #include "../DesktopInfrastructure/LogStream.hpp"
     
@@ -11,6 +11,7 @@
     #include "Languages.hpp"
     
     // include SDL2 headers
+    #define SDL_MAIN_HANDLED
     #include <SDL2/SDL.h>           // [ SDL2 ] Main header
     #include <SDL2/SDL_opengl.h>    // [ SDL2 ] OpenGL interface
     #include <SDL2/SDL_joystick.h>  // [ SDL2 ] Joystick functions
@@ -22,9 +23,6 @@
     #include <stdexcept>    // [ C++ STL ] Exceptions
     #include <list>         // [ C++ STL ] Lists
     #include <map>          // [ C++ STL ] Maps
-    
-    // bug fix needed for SDL2 headers
-    #undef main
     
     // declare used namespaces
     using namespace std;
@@ -308,6 +306,9 @@ int main()
         if( !OpenGL2D.Window )
           THROW( string("Window cannot be created: ") + SDL_GetError() );
         
+        // initialize OpenGL shaders and their infrastructure
+        OpenGL2D.InitRendering();
+        
         // =======================
         
         // Setup Dear ImGui context
@@ -333,9 +334,9 @@ int main()
         ImGui::GetIO().Fonts->AddFontFromFileTTF( FontPath.c_str(), 15, NULL, GlyphRanges.Data );
         ImGui::GetIO().Fonts->Build();
         
-        // Setup Platform/Renderer backends
+        // Setup ImGui Platform/Renderer backends
         ImGui_ImplSDL2_InitForOpenGL( OpenGL2D.Window, OpenGL2D.OpenGLContext );
-        ImGui_ImplOpenGL2_Init();
+        ImGui_ImplOpenGL3_Init();
         
         // initialize languages
         Languages[ "English" ] = LanguageEnglish;
@@ -370,8 +371,6 @@ int main()
                 if( Event.type == SDL_QUIT )
                   if( ShowMessageBoxYesNo( Texts(TextIDs::Dialogs_AreYouSure), Texts(TextIDs::Dialogs_ExitNoSave_Label) ) )
                     GlobalLoopActive = false;
-
-                  ;//GlobalLoopActive = false;
                 
                 // let ImGui process keyboard events
                 ImGui_ImplSDL2_ProcessEvent( &Event );
@@ -421,7 +420,7 @@ int main()
         
         // shut down imgui
         LOG( "Shutting down imgui" );
-        ImGui_ImplOpenGL2_Shutdown();
+        ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext();
         

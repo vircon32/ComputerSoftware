@@ -4,7 +4,7 @@
     #define VIRCONGPU_HPP
     
     // include infrastructure headers
-    #include "../DesktopInfrastructure/Video.hpp"
+    #include "../DesktopInfrastructure/Colors.hpp"
     
     // include project headers
     #include "VirconBuses.hpp"
@@ -59,7 +59,7 @@ typedef struct
 {
     int32_t MinX, MinY;
     int32_t MaxX, MaxY;
-    int32_t HotspotX, HotspotY;  // relative to (MinX, MinY) ??
+    int32_t HotspotX, HotspotY;
 }
 GPURegion;
 
@@ -129,10 +129,7 @@ class VirconGPU: public VirconControlInterface
         
         // execution of GPU commands
         void ClearScreen();
-        void DrawRegion();
-        void DrawRegionZoomed();
-        void DrawRegionRotated();
-        void DrawRegionRotozoomed();
+        void DrawRegion( bool ScalingEnabled, bool RotationEnabled );
 };
 
 

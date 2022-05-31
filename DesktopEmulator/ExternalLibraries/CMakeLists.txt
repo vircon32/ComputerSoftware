@@ -13,6 +13,9 @@ add_library(imgui STATIC
     imgui/imgui_widgets.cpp
     imgui/imgui.cpp)
 
+# select a specific GL loader or it will attempt to use GLEW
+target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
+
 # Source files to compile dialog library osdialog;
 # These are dependent on the backend GUI system
 # that osdialog is targeting (win/mac/gtk2/gtk3/zenity)

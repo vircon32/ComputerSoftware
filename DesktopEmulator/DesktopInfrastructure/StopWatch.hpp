@@ -4,6 +4,7 @@
     #define STOPWATCH_HPP
 
     // include SDL2 headers
+    #define SDL_MAIN_HANDLED
     #include <SDL2/SDL.h>           // [ SDL2 ] Main header
 // *****************************************************************************
 

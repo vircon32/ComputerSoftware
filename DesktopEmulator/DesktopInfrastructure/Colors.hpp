@@ -1,14 +1,10 @@
 // *****************************************************************************
     // start include guard
-    #ifndef VIDEO_HPP
-    #define VIDEO_HPP
+    #ifndef COLORS_HPP
+    #define COLORS_HPP
     
     // include project headers
     #include "Definitions.hpp"
-    #include "Vector2D.hpp"
-    
-    // include C/C++ headers
-    #include <vector>           // [ C++ STL ] Vectors
 // *****************************************************************************
 
 
@@ -25,7 +21,7 @@ class Color
     
     public:
         
-        // default to black
+        // default to opaque black
         Color()
         :  Color( 0, 0, 0, 255 )
         {}
@@ -38,7 +34,7 @@ class Color
         :  Color( Base.R, Base.G, Base.B, A_ )
         {}
         
-        // the only actual constructor
+        // the only constructor that allows us to choose
         Color( uint8_t R_, uint8_t G_, uint8_t B_, uint8_t A_ )
         {
             R = R_;
@@ -72,12 +68,11 @@ namespace Colors
 // -----------------------------------------------------------------------------
 
 // color treatment functions
-void SetColor( const Color& C );
 void SetClearColor( const Color& C );
 
 
 // =============================================================================
-//      BLENDING MODES
+//      COLOR BLENDING MODES
 // =============================================================================
 
 
@@ -94,19 +89,6 @@ enum class BlendingMode
 // -----------------------------------------------------------------------------
 
 void SetBlendingMode( BlendingMode Mode );
-
-
-// =============================================================================
-//      DEFINITIONS FOR VERTICES
-// =============================================================================
-
-
-// point array primitives
-typedef std::vector<Vector2D> V2Array;
-
-// helper functions to define a 2D OpenGL vertex from a vector
-void glVertexV2( const Vector2D& Vertex );
-void glTexCoordV2( const Vector2D& TexturePosition );
 
 
 // *****************************************************************************

@@ -1,7 +1,7 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/Video.hpp"
-    #include "../DesktopInfrastructure/OpenGL2D.hpp"
+    #include "../DesktopInfrastructure/Colors.hpp"
+    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
     
     // include project headers
@@ -822,6 +822,9 @@ void ProcessMenuOptions()
         if( ImGui::MenuItem( "x2  (Ctrl+2)" ) )
           SetWindowZoom( 2 );
         
+        if( ImGui::MenuItem( "x3  (Ctrl+3)" ) )
+          SetWindowZoom( 3 );
+        
         if( ImGui::MenuItem( Texts(TextIDs::Options_FullScreen) ) )
           SetFullScreen();
         
@@ -964,12 +967,16 @@ bool GUIMustBeDrawn()
 // to ensure the framebuffer is rendered correctly
 void ShowEmulatorWindow()
 {
+    glEnable( GL_BLEND );
+    glEnable( GL_TEXTURE_2D );
+    
     // to do the actual drawing on the screen
     // correctly we have to temporarily 
     // override render settings in OpenGL
-    SetColor( Colors::White );
-    glEnable( GL_TEXTURE_2D );
-    glDisable( GL_BLEND );
+    OpenGL2D.SetMultiplyColor( 255, 255, 255, 255 );
+    OpenGL2D.SetTranslation( 0, 0 );
+    OpenGL2D.ComposeTransform( false, false );
+    SetBlendingMode( BlendingMode::Alpha );
     
     // if the emulator is on, draw its display
     // on our window; otherwise just show a "no
@@ -984,34 +991,15 @@ void ShowEmulatorWindow()
     // if GUI is showing, darken the screen
     if( GUIMustBeDrawn() )
     {
-        glColor4ub( 0, 16, 32, 210 );
-        glDisable( GL_TEXTURE_2D );
-        glEnable( GL_BLEND );
-        SetBlendingMode( BlendingMode::Alpha );
-        
-        glBegin( GL_QUADS );
-        glVertex2i( 0, 0 );        
-        glVertex2i( OpenGL2D.WindowWidth, 0 );        
-        glVertex2i( OpenGL2D.WindowWidth, OpenGL2D.WindowHeight );        
-        glVertex2i( 0, OpenGL2D.WindowHeight );        
-        glEnd();
+        glClearColor( 0/255.0, 16/255.0, 32/255.0, 210/255.0 );
+        glClear( GL_COLOR_BUFFER_BIT );
     }
     
     // now restore the Vircon render parameters
-    glEnable( GL_TEXTURE_2D );
-    glEnable( GL_BLEND );
-    
-    glColor4ub
-    (
-        Vircon.GPU.MultiplyColor.R,
-        Vircon.GPU.MultiplyColor.G,
-        Vircon.GPU.MultiplyColor.B,
-        Vircon.GPU.MultiplyColor.A
-    );
-    
     VirconWord BlendValue;
     BlendValue.AsInteger = Vircon.GPU.ActiveBlending;
     Vircon.GPU.WritePort( (int32_t)GPU_LocalPorts::ActiveBlending, BlendValue );
+    OpenGL2D.MultiplyColor = Vircon.GPU.MultiplyColor;
 }
 
 // -----------------------------------------------------------------------------
@@ -1030,7 +1018,7 @@ void RenderGUI()
     SetBlendingMode( BlendingMode::Alpha );
     
     // start new frame in imgui
-    ImGui_ImplOpenGL2_NewFrame();
+    ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame( OpenGL2D.Window );
     ImGui::NewFrame();
     
@@ -1055,7 +1043,7 @@ void RenderGUI()
     if( GUIMustBeDrawn() )
     {
         ImGui::Render();
-        ImGui_ImplOpenGL2_RenderDrawData( ImGui::GetDrawData() );
+        ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
     }
     else ImGui::EndFrame();
     
