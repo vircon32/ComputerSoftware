@@ -22,10 +22,8 @@
     #include <stdexcept>    // [ C++ STL ] Exceptions
     
     // include SDL headers
+    #define SDL_MAIN_HANDLED
     #include <SDL2/SDL.h>
-    
-    // bug fix needed for SDL2 headers
-    #undef main
     
     // declare used namespaces
     using namespace std;
