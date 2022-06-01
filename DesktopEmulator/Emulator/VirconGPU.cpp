@@ -315,12 +315,11 @@ void VirconGPU::Reset()
     
     // initial graphic settings
     SetBlendingMode( BlendingMode::Alpha );
-    glClearColor( 0.0, 0.0, 0.0, 1.0 );
-    OpenGL2D.SetMultiplyColor( 255, 255, 255, 255 );
+    OpenGL2D.SetMultiplyColor( GPUColor{ 255, 255, 255, 255 } );
     
     // clear the screen
     OpenGL2D.RenderToFramebuffer();
-    glClear( GL_COLOR_BUFFER_BIT );
+    OpenGL2D.ClearScreen( GPUColor{ 0, 0, 0, 1 } );
 }
 
 
@@ -349,15 +348,7 @@ void VirconGPU::ClearScreen()
     }
     
     // clear the screen
-    glClearColor
-    (
-        ClearColor.R / 255.0,
-        ClearColor.G / 255.0,
-        ClearColor.B / 255.0,
-        ClearColor.A / 255.0
-    );
-    
-    glClear( GL_COLOR_BUFFER_BIT );
+    OpenGL2D.ClearScreen( ClearColor );
 }
 
 // -----------------------------------------------------------------------------

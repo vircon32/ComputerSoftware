@@ -452,7 +452,44 @@ void OpenGL2DContext::InitRendering()
     
     // initialize our transform parameters to neutral
     TransformMatrix.LoadIdentity();
-    SetMultiplyColor( 255, 255, 255, 255 );
+    SetMultiplyColor( GPUColor{ 255, 255, 255, 255 } );
+    
+    // create a white texture to draw solid color
+    CreateWhiteTexture();
+}
+
+// -----------------------------------------------------------------------------
+
+void OpenGL2DContext::CreateWhiteTexture()
+{
+    // create new texture ID
+    glGenTextures( 1, &WhiteTextureID );
+    glBindTexture( GL_TEXTURE_2D, WhiteTextureID );
+    
+    // create our texture from 1 single white pixel
+    uint8_t WhitePixel[ 4 ] = { 255, 255, 255, 255 };
+    
+    glTexImage2D
+    (
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        1, 1,       // width, height
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        WhitePixel
+    );
+    
+    // check correct conversion
+    if( glGetError() != GL_NO_ERROR )
+      THROW( "Could not create 1x1 white texture to draw solid colors" );
+    
+    // configure the texture
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 }
 
 // -----------------------------------------------------------------------------
@@ -561,12 +598,9 @@ void OpenGL2DContext::DrawFramebufferOnScreen()
 // =============================================================================
 
 
-void OpenGL2DContext::SetMultiplyColor( uint8_t R, uint8_t G, uint8_t B, uint8_t A )
+void OpenGL2DContext::SetMultiplyColor( GPUColor NewMultiplyColor )
 {
-    MultiplyColor.R = R;
-    MultiplyColor.G = G;
-    MultiplyColor.B = B;
-    MultiplyColor.A = A;
+    MultiplyColor = NewMultiplyColor;
 }
 
 
@@ -721,4 +755,38 @@ void OpenGL2DContext::DrawTexturedQuad()
         0,                  // begin from the first index
         4                   // use 4 consecutive indices
     );
+}
+
+// -----------------------------------------------------------------------------
+
+void OpenGL2DContext::ClearScreen( GPUColor ClearColor )
+{
+    // temporarily replace multiply color with clear color
+    GPUColor PreviousMultiplyColor = MultiplyColor;
+    MultiplyColor = ClearColor;
+    
+    // temporarily reset transformation
+    Matrix4D PreviousTransformMatrix;
+    TransformMatrix.LoadIdentity();
+    
+    // bind white texture
+    glBindTexture( GL_TEXTURE_2D, WhiteTextureID );
+    
+    // set a full-screen quad with the same texture pixel
+    SetQuadVertexPosition( 0,                      0,                       0 );
+    SetQuadVertexPosition( 1, Constants::ScreenWidth,                       0 );
+    SetQuadVertexPosition( 2,                      0, Constants::ScreenHeight );
+    SetQuadVertexPosition( 3, Constants::ScreenWidth, Constants::ScreenHeight );
+    
+    SetQuadVertexTexCoords( 0, 0.5, 0.5 );
+    SetQuadVertexTexCoords( 1, 0.5, 0.5 );
+    SetQuadVertexTexCoords( 2, 0.5, 0.5 );
+    SetQuadVertexTexCoords( 3, 0.5, 0.5 );
+    
+    // draw quad as "textured"
+    DrawTexturedQuad();
+    
+    // restore previous render settings
+    MultiplyColor = PreviousMultiplyColor;
+    TransformMatrix = PreviousTransformMatrix;
 }

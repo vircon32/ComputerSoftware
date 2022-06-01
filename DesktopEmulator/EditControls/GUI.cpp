@@ -617,18 +617,6 @@ void ProcessMenuHelp()
 // =============================================================================
 
 
-void RenderScene()
-{
-    // clear the screen
-    glClearColor( 0,0,0,1 );
-    glClear( GL_COLOR_BUFFER_BIT );
-    
-    // draw the gamepad
-    //
-}
-
-// -----------------------------------------------------------------------------
-
 void RenderGUI()
 {
     // start new frame in imgui

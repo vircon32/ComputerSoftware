@@ -241,6 +241,7 @@ int main( int NumberOfArguments, char* Arguments[] )
             
             // load the no signal image
             NoSignalTexture.Load( string(EmulatorFolder) + "Images" + PathSeparator + "NoSignal.png" );
+            NoSignalTexture.SetOpenGLContext( OpenGL2D );
         }
         catch( exception& e )
         {

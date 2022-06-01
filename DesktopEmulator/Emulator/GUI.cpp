@@ -973,7 +973,7 @@ void ShowEmulatorWindow()
     // to do the actual drawing on the screen
     // correctly we have to temporarily 
     // override render settings in OpenGL
-    OpenGL2D.SetMultiplyColor( 255, 255, 255, 255 );
+    OpenGL2D.SetMultiplyColor( GPUColor{ 255, 255, 255, 255 } );
     OpenGL2D.SetTranslation( 0, 0 );
     OpenGL2D.ComposeTransform( false, false );
     SetBlendingMode( BlendingMode::Alpha );
@@ -986,14 +986,11 @@ void ShowEmulatorWindow()
     if( Vircon.PowerIsOn )
       OpenGL2D.DrawFramebufferOnScreen();
     else
-      NoSignalTexture.Draw( 0, 0, OpenGL2D.WindowWidth, OpenGL2D.WindowHeight );
+      NoSignalTexture.Draw( 0, 0, Constants::ScreenWidth, Constants::ScreenHeight );
     
     // if GUI is showing, darken the screen
     if( GUIMustBeDrawn() )
-    {
-        glClearColor( 0/255.0, 16/255.0, 32/255.0, 210/255.0 );
-        glClear( GL_COLOR_BUFFER_BIT );
-    }
+      OpenGL2D.ClearScreen( GPUColor{ 0, 16, 32, 210 } );
     
     // now restore the Vircon render parameters
     VirconWord BlendValue;

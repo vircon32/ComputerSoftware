@@ -79,6 +79,9 @@ class OpenGL2DContext
         // multiply color
         GPUColor MultiplyColor;
         
+        // white texture used to draw solid colors
+        GLuint WhiteTextureID;
+        
     public:
         
         // instance handling
@@ -89,6 +92,7 @@ class OpenGL2DContext
         void CreateOpenGLWindow();
         void CreateFramebuffer();
         bool CompileShaderProgram();
+        void CreateWhiteTexture();
         void InitRendering();
         
         // release functions
@@ -104,7 +108,7 @@ class OpenGL2DContext
         void DrawFramebufferOnScreen();
         
         // color functions
-        void SetMultiplyColor( uint8_t R, uint8_t G, uint8_t B, uint8_t A );
+        void SetMultiplyColor( GPUColor NewMultiplyColor );
         
         // 2D transform functions
         void SetTranslation( int TranslationX, int TranslationY );
@@ -112,10 +116,11 @@ class OpenGL2DContext
         void SetRotation( float AngleZ );
         void ComposeTransform( bool ScalingEnabled, bool RotationEnabled );
         
-        // base render functions
+        // render functions
         void SetQuadVertexPosition( int Vertex, int x, int y );
         void SetQuadVertexTexCoords( int Vertex, float u, float v );
         void DrawTexturedQuad();
+        void ClearScreen( GPUColor ClearColor );
 };
 
 

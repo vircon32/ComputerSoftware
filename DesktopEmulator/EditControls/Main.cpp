@@ -344,6 +344,7 @@ int main()
         
         // load our gamepad texture
         GamepadTexture.Load( ProgramFolder + "Images" + PathSeparator + "GamepadMapping.png" );
+        GamepadTexture.SetOpenGLContext( OpenGL2D );
         
         // load our configuration from XML file
         LoadControls( ProgramFolder + "Config-Controls.xml" );
@@ -397,10 +398,7 @@ int main()
                   ProcessJoystickHatMotion( Event.jhat );
             }
             
-            // Render scene
-            RenderScene();
-            
-            // Render GUI (on full screen)
+            // Render GUI (full screen)
             RenderGUI();
             
             // Show updates on screen
