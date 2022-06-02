@@ -16,6 +16,15 @@
 // =============================================================================
 
 
+void ClearOpenGLErrors()
+{
+    while( true )
+      if( glGetError() == GL_NO_ERROR )
+        return;
+}
+
+// -----------------------------------------------------------------------------
+
 void LogSDLResult( const string& EntryText )
 {
     string Result = SDL_GetError();
@@ -601,6 +610,33 @@ void OpenGL2DContext::DrawFramebufferOnScreen()
 void OpenGL2DContext::SetMultiplyColor( GPUColor NewMultiplyColor )
 {
     MultiplyColor = NewMultiplyColor;
+}
+
+// -----------------------------------------------------------------------------
+
+void OpenGL2DContext::SetBlendingMode( IOPortValues BlendingMode )
+{
+    switch( BlendingMode )
+    {
+        case IOPortValues::GPUBlendingMode_Alpha:
+            glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+            glBlendEquation( GL_FUNC_ADD );
+            break;
+            
+        case IOPortValues::GPUBlendingMode_Add:
+            glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+            glBlendEquation( GL_FUNC_ADD );
+            break;
+            
+        case IOPortValues::GPUBlendingMode_Subtract:
+            glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+            glBlendEquation( GL_FUNC_REVERSE_SUBTRACT );
+            break;
+        
+        default:
+            // ignore invalid values
+            break;
+    }
 }
 
 

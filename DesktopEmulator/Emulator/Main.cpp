@@ -212,7 +212,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         // set alpha blending
         LOG( "Enabling alpha blending" );
         glEnable( GL_BLEND );
-        SetBlendingMode( BlendingMode::Alpha );
+        OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
         
         //initialize audio
         LOG( "Initializing audio" );
@@ -241,7 +241,6 @@ int main( int NumberOfArguments, char* Arguments[] )
             
             // load the no signal image
             NoSignalTexture.Load( string(EmulatorFolder) + "Images" + PathSeparator + "NoSignal.png" );
-            NoSignalTexture.SetOpenGLContext( OpenGL2D );
         }
         catch( exception& e )
         {

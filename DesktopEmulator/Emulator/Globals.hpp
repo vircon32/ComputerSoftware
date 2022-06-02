@@ -10,6 +10,7 @@
     
     // include C/C++ headers
     #include <map>          // [ C++ STL ] Maps
+    #include <list>         // [ C++ STL ] Lists
     
     // forward declarations for all needed classes
     class VirconEmulator;

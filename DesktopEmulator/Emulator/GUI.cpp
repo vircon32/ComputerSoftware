@@ -1,6 +1,5 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/Colors.hpp"
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
     
@@ -976,7 +975,7 @@ void ShowEmulatorWindow()
     OpenGL2D.SetMultiplyColor( GPUColor{ 255, 255, 255, 255 } );
     OpenGL2D.SetTranslation( 0, 0 );
     OpenGL2D.ComposeTransform( false, false );
-    SetBlendingMode( BlendingMode::Alpha );
+    OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
     
     // if the emulator is on, draw its display
     // on our window; otherwise just show a "no
@@ -986,7 +985,7 @@ void ShowEmulatorWindow()
     if( Vircon.PowerIsOn )
       OpenGL2D.DrawFramebufferOnScreen();
     else
-      NoSignalTexture.Draw( 0, 0, Constants::ScreenWidth, Constants::ScreenHeight );
+      NoSignalTexture.Draw( OpenGL2D, 0, 0, Constants::ScreenWidth, Constants::ScreenHeight );
     
     // if GUI is showing, darken the screen
     if( GUIMustBeDrawn() )
@@ -1012,7 +1011,7 @@ void RenderGUI()
     PendingActionPath = "";
     
     // remove any emulator blending modes
-    SetBlendingMode( BlendingMode::Alpha );
+    OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
     
     // start new frame in imgui
     ImGui_ImplOpenGL3_NewFrame();

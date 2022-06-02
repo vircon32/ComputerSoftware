@@ -3,9 +3,6 @@
     #ifndef VIRCONGPU_HPP
     #define VIRCONGPU_HPP
     
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/Colors.hpp"
-    
     // include project headers
     #include "VirconBuses.hpp"
     

@@ -81,21 +81,21 @@ void WriteGPUActiveBlending( VirconGPU& GPU, VirconWord Value )
     {
         case (int32_t)IOPortValues::GPUBlendingMode_Alpha:
         {
-            SetBlendingMode( BlendingMode::Alpha );
+            OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
             GPU.ActiveBlending = Value.AsInteger;
             break;
         }
         
         case (int32_t)IOPortValues::GPUBlendingMode_Add:
         {
-            SetBlendingMode( BlendingMode::Add );
+            OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Add );
             GPU.ActiveBlending = Value.AsInteger;
             break;
         }
         
         case (int32_t)IOPortValues::GPUBlendingMode_Subtract:
         {
-            SetBlendingMode( BlendingMode::Subtract );
+            OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Subtract );
             GPU.ActiveBlending = Value.AsInteger;
             break;
         }

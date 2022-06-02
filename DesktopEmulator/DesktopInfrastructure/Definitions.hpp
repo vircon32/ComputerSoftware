@@ -2,29 +2,7 @@
     // start include guard
     #ifndef DEFINITIONS_HPP
     #define DEFINITIONS_HPP
-    
-    // include C/C++ headers
-    #include <string>           // [ C++ STL ] Strings
-    #include <vector>           // [ C++ STL ] Vectors
-    #include <list>             // [ C++ STL ] Lists
 // *****************************************************************************
-
-
-// =============================================================================
-//      MATH - ANGLE RELATED FUNCTIONS
-// =============================================================================
-
-
-// math constants
-#define PI     3.14159265358979323846
-#define _2_PI  6.28318530717958647692
-#define PI_2   1.57079632679489661923
-
-// result is in degrees
-double CalculateAngle( double DeltaX, double DeltaY );
-
-// radian-degree conversions
-extern const double DegreesPerRadian;
 
 
 // =============================================================================
@@ -66,28 +44,6 @@ float Min( float x, int y );
 float Min( int x, float y );
 float Max( float x, int y );
 float Max( int x, float y );
-
-
-// =============================================================================
-//      MISCELLANEOUS FUNCTIONS
-// =============================================================================
-
-
-// swapping a pair of variables
-template< typename T >
-void Swap( T& Variable1, T& Variable2 )
-{
-    T Aux = Variable1;
-    Variable1 = Variable2;
-    Variable2 = Aux;
-}
-
-bool ListContains( std::list<std::string> Container, std::string Value );
-
-// random number generation
-bool RandomBoolean();
-int RandomIntBetween( int Minimum, int Maximum );
-float RandomFloatBetween( float Minimum, float Maximum, float Increment );
 
 
 // *****************************************************************************

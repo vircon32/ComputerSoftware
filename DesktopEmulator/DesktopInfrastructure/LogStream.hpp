@@ -5,7 +5,6 @@
     
     // include project headers
     #include "Definitions.hpp"
-    #include "Vector2D.hpp"
     
     // include C/C++ headers
     #include <string>		      // [ C++ STL ] Strings
@@ -44,7 +43,7 @@ class LogStream
        ~LogStream();
         
         // file handling methods
-        bool  OpenFile( const std::string& File, const std::string& Title );
+        bool OpenFile( const std::string& File, const std::string& Title );
         void CloseFile();
         
         // auxiliary methods
@@ -159,14 +158,6 @@ void LOG_END();
     
     throw std::runtime_error( Message );
 }
-
-
-// =============================================================================
-//     EXTENSIONS TO LOG COMMON OBJECTS
-// =============================================================================
-
-
-LogStream& operator<<( LogStream& Log, const Vector2D& V2 );
 
 
 // =============================================================================

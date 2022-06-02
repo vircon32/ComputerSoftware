@@ -21,14 +21,11 @@
 
 Texture::Texture()
 // - - - - - - - - - - - -
-:   OpenGL2D (nullptr),
-    TextureID    ( 0 ),
+:   TextureID    ( 0 ),
     TextureWidth ( 0 ),
     TextureHeight( 0 ),
     ImageWidth   ( 0 ),
     ImageHeight  ( 0 ),
-    PixelWidth   ( 1 ),
-    PixelHeight  ( 1 ),
     HotSpotX     ( 0 ),
     HotSpotY     ( 0 )
 // - - - - - - - - - - - -
@@ -49,14 +46,6 @@ Texture::~Texture()
 //      TEXTURE: RESOURCE HANDLING
 // =============================================================================
 
-
-void Texture::SetOpenGLContext( OpenGL2DContext& OpenGL2D_ )
-{
-    // capture the owner OpenGL context
-    OpenGL2D = &OpenGL2D_;
-}
-
-// -----------------------------------------------------------------------------
 
 void Texture::Load( const string& FileName )
 {
@@ -155,6 +144,7 @@ void Texture::Load( const string& FileName )
     HotSpotX = ImageWidth / 2;
     HotSpotY = ImageHeight / 2;
     
+    // save source image path to identify this texture
     LoadedFile = FileName;
 }
 
@@ -168,9 +158,6 @@ void Texture::Release()
     LOG( "Texture -> Release \"" << LoadedFile << "\"" );
     glDeleteTextures( 1, &TextureID );
     TextureID = 0;
-    
-    // remove the OpenGL context
-    OpenGL2D = nullptr;
 }
 
 
@@ -179,36 +166,32 @@ void Texture::Release()
 // =============================================================================
 
 
-void Texture::Draw( const Vector2D& HotSpotPosition ) const
+void Texture::Draw( OpenGL2DContext& OpenGL2D, int HotSpotPositionX, int HotSpotPositionY ) const
 {
-    // check that there is a texture and a context
-    if( !TextureID || !OpenGL2D )
+    // check that there is a texture
+    if( !TextureID )
       return;
     
     // select current texture
     glBindTexture( GL_TEXTURE_2D, TextureID );
     
-    // calculate texture render size
-    float RenderWidth  = PixelWidth  * ImageWidth;
-    float RenderHeight = PixelHeight * ImageHeight;
-    
     // precalculate limit coordinates
-    float RenderXMin = HotSpotPosition.x - HotSpotX;
-    float RenderYMin = HotSpotPosition.y - HotSpotY;
+    float RenderXMin = HotSpotPositionX - HotSpotX;
+    float RenderYMin = HotSpotPositionY - HotSpotY;
     
-    float RenderXMax = RenderXMin + RenderWidth;
-    float RenderYMax = RenderYMin + RenderHeight;    
+    float RenderXMax = RenderXMin + ImageWidth;
+    float RenderYMax = RenderYMin + ImageHeight;    
     
     // call the coordinate-based function
-    Draw( RenderXMin, RenderYMin, RenderXMax, RenderYMax );
+    Draw( OpenGL2D, RenderXMin, RenderYMin, RenderXMax, RenderYMax );
 }
 
 // -----------------------------------------------------------------------------
 
-void Texture::Draw( float RenderXMin, float RenderYMin, float RenderXMax, float RenderYMax ) const
+void Texture::Draw( OpenGL2DContext& OpenGL2D, int RenderXMin, int RenderYMin, int RenderXMax, int RenderYMax ) const
 {
-    // check that there is a texture and a context
-    if( !TextureID || !OpenGL2D )
+    // check that there is a texture
+    if( !TextureID )
       return;
     
     // select current texture
@@ -218,29 +201,23 @@ void Texture::Draw( float RenderXMin, float RenderYMin, float RenderXMax, float 
     float XFactor = (float)ImageWidth/TextureWidth;
     float YFactor = (float)ImageHeight/TextureHeight;
     
-    // to avoid distortion, round screen coordinates to integers
-    int RenderXMinInt = round( RenderXMin );
-    int RenderYMinInt = round( RenderYMin );
-    int RenderXMaxInt = round( RenderXMax );
-    int RenderYMaxInt = round( RenderYMax );
-    
     // set vertex positions (in render coordinates)
-    OpenGL2D->SetQuadVertexPosition( 0, RenderXMinInt, RenderYMinInt );
-    OpenGL2D->SetQuadVertexPosition( 1, RenderXMaxInt, RenderYMinInt );
-    OpenGL2D->SetQuadVertexPosition( 2, RenderXMinInt, RenderYMaxInt );
-    OpenGL2D->SetQuadVertexPosition( 3, RenderXMaxInt, RenderYMaxInt );
+    OpenGL2D.SetQuadVertexPosition( 0, RenderXMin, RenderYMin );
+    OpenGL2D.SetQuadVertexPosition( 1, RenderXMax, RenderYMin );
+    OpenGL2D.SetQuadVertexPosition( 2, RenderXMin, RenderYMax );
+    OpenGL2D.SetQuadVertexPosition( 3, RenderXMax, RenderYMax );
     
     // and texture coordinates (relative to texture: [0-1])
-    OpenGL2D->SetQuadVertexTexCoords( 0,     0.0,     0.0 );
-    OpenGL2D->SetQuadVertexTexCoords( 1, XFactor,     0.0 );
-    OpenGL2D->SetQuadVertexTexCoords( 2,     0.0, YFactor );
-    OpenGL2D->SetQuadVertexTexCoords( 3, XFactor, YFactor );
+    OpenGL2D.SetQuadVertexTexCoords( 0,     0.0,     0.0 );
+    OpenGL2D.SetQuadVertexTexCoords( 1, XFactor,     0.0 );
+    OpenGL2D.SetQuadVertexTexCoords( 2,     0.0, YFactor );
+    OpenGL2D.SetQuadVertexTexCoords( 3, XFactor, YFactor );
     
     // draw rectangle defined as a quad (4-vertex polygon)
     // (disable any transformations)
-    OpenGL2D->SetTranslation( 0, 0 );
-    OpenGL2D->ComposeTransform( false, false );
-    OpenGL2D->DrawTexturedQuad();
+    OpenGL2D.SetTranslation( 0, 0 );
+    OpenGL2D.ComposeTransform( false, false );
+    OpenGL2D.DrawTexturedQuad();
     
     // deselect texture
     glBindTexture( GL_TEXTURE_2D, 0 );

@@ -1,6 +1,5 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/Colors.hpp"
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/StringFunctions.hpp"
     

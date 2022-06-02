@@ -344,7 +344,6 @@ int main()
         
         // load our gamepad texture
         GamepadTexture.Load( ProgramFolder + "Images" + PathSeparator + "GamepadMapping.png" );
-        GamepadTexture.SetOpenGLContext( OpenGL2D );
         
         // load our configuration from XML file
         LoadControls( ProgramFolder + "Config-Controls.xml" );

@@ -314,7 +314,7 @@ void VirconGPU::Reset()
     }
     
     // initial graphic settings
-    SetBlendingMode( BlendingMode::Alpha );
+    OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
     OpenGL2D.SetMultiplyColor( GPUColor{ 255, 255, 255, 255 } );
     
     // clear the screen

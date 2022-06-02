@@ -5,6 +5,7 @@
     
     // include common Vircon headers
     #include "../../VirconDefinitions/VirconDataStructures.hpp"
+    #include "../../VirconDefinitions/VirconEnumerations.hpp"
     
     // include project headers
     #include "Definitions.hpp"
@@ -109,6 +110,7 @@ class OpenGL2DContext
         
         // color functions
         void SetMultiplyColor( GPUColor NewMultiplyColor );
+        void SetBlendingMode( IOPortValues BlendingMode );
         
         // 2D transform functions
         void SetTranslation( int TranslationX, int TranslationY );
