@@ -225,6 +225,7 @@ void OpenGL2DContext::CreateOpenGLWindow()
 void OpenGL2DContext::CreateFramebuffer()
 {
     LOG_SCOPE( "Creating Framebuffer" );
+    ClearOpenGLErrors();
     
     // create our frame buffer and select it
     {   LOG_SCOPE( "Creating Framebuffer object" );
@@ -325,6 +326,8 @@ bool OpenGL2DContext::CompileShaderProgram()
     GLuint FragmentShaderID = 0;
     int Success;
     
+    ClearOpenGLErrors();
+    
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // PART 1: Compile our vertex shader
     VertexShaderID = glCreateShader( GL_VERTEX_SHADER );
@@ -344,7 +347,7 @@ bool OpenGL2DContext::CompileShaderProgram()
         LOG( "ERROR: Vertex shader compilation failed: " << GLInfoLog );
         delete GLInfoLog;
         
-        glDeleteShader(VertexShaderID);
+        glDeleteShader( VertexShaderID );
         VertexShaderID = 0;
         return false;
     }
@@ -419,11 +422,7 @@ bool OpenGL2DContext::CompileShaderProgram()
 void OpenGL2DContext::InitRendering()
 {
     LOG_SCOPE( "Initializing rendering" );
-    
-    // show version info
-    LOG( "OpenGL version: " << (char*)glGetString( GL_VERSION ) );
-    LOG( "OpenGL renderer: " << (char*)glGetString( GL_RENDERER ) );
-    LOG( "GLSL version: " << (char*)glGetString( GL_SHADING_LANGUAGE_VERSION ) );
+    ClearOpenGLErrors();
     
     // compile our shader program
     LOG( "Compiling GLSL shader program" );
@@ -471,6 +470,9 @@ void OpenGL2DContext::InitRendering()
 
 void OpenGL2DContext::CreateWhiteTexture()
 {
+    LOG_SCOPE( "Creating white texture" );
+    ClearOpenGLErrors();
+    
     // create new texture ID
     glGenTextures( 1, &WhiteTextureID );
     glBindTexture( GL_TEXTURE_2D, WhiteTextureID );
