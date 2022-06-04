@@ -239,6 +239,7 @@ int main( int NumberOfArguments, char* Arguments[] )
               string IconPath = string(EmulatorFolder) + "Images" + PathSeparator + "Vircon32Multisize.ico";
               SDL_Surface* WindowIcon = IMG_Load( IconPath.c_str() );
               SDL_SetWindowIcon( OpenGL2D.Window, WindowIcon );
+              LOG( "Loaded program icon" );
             #endif
             
             // load the no signal image

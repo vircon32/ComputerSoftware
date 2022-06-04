@@ -358,9 +358,10 @@ int main()
         #if !defined(__WIN32__) && !defined(_WIN32) && !defined(_WIN64)            
           try
           {
-              string IconPath = string(EmulatorFolder) + "Images" + PathSeparator + "EditControlsMultisize.ico";
+              string IconPath = string(ProgramFolder) + "Images" + PathSeparator + "EditControlsMultisize.ico";
               SDL_Surface* WindowIcon = IMG_Load( IconPath.c_str() );
               SDL_SetWindowIcon( OpenGL2D.Window, WindowIcon );
+              LOG( "Loaded program icon" );
           }
           catch( exception& e )
           {
