@@ -372,14 +372,14 @@ endif()
 if(TARGET_OS STREQUAL "windows")
     # Application properties for the emulator
     add_custom_command(TARGET ${EMULATOR_BINARY_NAME} POST_BUILD
-        COMMAND ${CMAKE_SOURCE_DIR}/${PROGRAMS_DIR}/rcedit.exe $<TARGET_FILE:${EMULATOR_BINARY_NAME}> --set-icon ${CMAKE_SOURCE_DIR}/${EMULATOR_DIR}/Vircon32Multisize.ico
+        COMMAND ${CMAKE_SOURCE_DIR}/${PROGRAMS_DIR}/rcedit.exe $<TARGET_FILE:${EMULATOR_BINARY_NAME}> --set-icon ${CMAKE_SOURCE_DIR}/${DATA_DIR}/Images/Vircon32Multisize.ico
         COMMAND ${CMAKE_SOURCE_DIR}/${PROGRAMS_DIR}/rcedit.exe $<TARGET_FILE:${EMULATOR_BINARY_NAME}> --set-version-string "ProductName" "Vircon32"
         COMMAND ${CMAKE_SOURCE_DIR}/${PROGRAMS_DIR}/rcedit.exe $<TARGET_FILE:${EMULATOR_BINARY_NAME}> --set-version-string "FileDescription" "Vircon32 console emulator"
         COMMAND ${CMAKE_SOURCE_DIR}/${PROGRAMS_DIR}/rcedit.exe $<TARGET_FILE:${EMULATOR_BINARY_NAME}> --set-version-string "CompanyName" "Javier Carracedo")
     
     # Application properties for the EditControls tool
     add_custom_command(TARGET ${EDITCONTROLS_BINARY_NAME} POST_BUILD
-        COMMAND ${CMAKE_SOURCE_DIR}/${PROGRAMS_DIR}/rcedit.exe $<TARGET_FILE:${EDITCONTROLS_BINARY_NAME}> --set-icon ${CMAKE_SOURCE_DIR}/${EDITCONTROLS_DIR}/EditControlsMultisize.ico
+        COMMAND ${CMAKE_SOURCE_DIR}/${PROGRAMS_DIR}/rcedit.exe $<TARGET_FILE:${EDITCONTROLS_BINARY_NAME}> --set-icon ${CMAKE_SOURCE_DIR}/${DATA_DIR}/Images/EditControlsMultisize.ico
         COMMAND ${CMAKE_SOURCE_DIR}/${PROGRAMS_DIR}/rcedit.exe $<TARGET_FILE:${EDITCONTROLS_BINARY_NAME}> --set-version-string "ProductName" "EditControls"
         COMMAND ${CMAKE_SOURCE_DIR}/${PROGRAMS_DIR}/rcedit.exe $<TARGET_FILE:${EDITCONTROLS_BINARY_NAME}> --set-version-string "FileDescription" "Input controls editor for Vircon32 emulator"
         COMMAND ${CMAKE_SOURCE_DIR}/${PROGRAMS_DIR}/rcedit.exe $<TARGET_FILE:${EDITCONTROLS_BINARY_NAME}> --set-version-string "CompanyName" "Javier Carracedo")

@@ -352,6 +352,22 @@ int main()
         SDL_SetWindowTitle( OpenGL2D.Window, "Vircon32: Edit Controls" );
         SDL_SetWindowPosition( OpenGL2D.Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED );
         
+        // on non-windows systems load and set the window icon
+        // (not needed on Windows: already packed in the executable)
+        // but do not crash just because the icon is not found
+        #if !defined(__WIN32__) && !defined(_WIN32) && !defined(_WIN64)            
+          try
+          {
+              string IconPath = string(EmulatorFolder) + "Images" + PathSeparator + "EditControlsMultisize.ico";
+              SDL_Surface* WindowIcon = IMG_Load( IconPath.c_str() );
+              SDL_SetWindowIcon( OpenGL2D.Window, WindowIcon );
+          }
+          catch( exception& e )
+          {
+              LOG( "Cannot set window icon: " << e.what() );
+          }
+        #endif
+        
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // Main loop 
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -17,6 +17,9 @@
     #include <iostream>     // [ C++ STL ] I/O Streams
     #include <cstddef>      // for offsetof
     
+    // include SDL2 headers
+    #include <SDL2/SDL_image.h>   // [ SDL2 ] SDL_Image
+    
     // include OpenAL headers
     #if defined(__APPLE__)
       #include <OpenAL/al.h>      // [ OpenAL ] Main header
@@ -230,14 +233,13 @@ int main( int NumberOfArguments, char* Arguments[] )
         // just because any of them are not found
         try
         {
-            /*  OBSOLETE WITH THE NEW ICON IN THE EXECUTABLE?
-                (MAY STILL BE NEEDED UNDER LINUX OR MAC?)
-            
-                // load and set the window icon
-                string IconPath = string(EmulatorFolder) + "Images" + PathSeparator + "Vircon32Icon.png";
-                SDL_Surface* WindowIcon = IMG_Load( IconPath.c_str() );
-                SDL_SetWindowIcon( Window, WindowIcon );
-            */
+            // on non-windows systems load and set the window icon
+            // (not needed on Windows: already packed in the executable)
+            #if !defined(__WIN32__) && !defined(_WIN32) && !defined(_WIN64)            
+              string IconPath = string(EmulatorFolder) + "Images" + PathSeparator + "Vircon32Multisize.ico";
+              SDL_Surface* WindowIcon = IMG_Load( IconPath.c_str() );
+              SDL_SetWindowIcon( OpenGL2D.Window, WindowIcon );
+            #endif
             
             // load the no signal image
             NoSignalTexture.Load( string(EmulatorFolder) + "Images" + PathSeparator + "NoSignal.png" );
