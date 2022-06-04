@@ -71,9 +71,9 @@ endif()
 project("Vircon32")
 
 # Define version
-set(PROJECT_VERSION_MAJOR 2022)
-set(PROJECT_VERSION_MINOR 04)
-set(PROJECT_VERSION_PATCH 09)
+set(PROJECT_VERSION_MAJOR 22)
+set(PROJECT_VERSION_MINOR 6)
+set(PROJECT_VERSION_PATCH 4)
 
 # Set names for final executables
 set(C_COMPILER_BINARY_NAME "compile")
