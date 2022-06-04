@@ -1,6 +1,6 @@
 ﻿============================================================
         Archivo README para el emulador de Vircon32
-          (versión 2022.02.16) escrito por Carra
+            (versión 22.6.4) escrito por Carra
 ============================================================
 
 ¿Qué es esto?
@@ -15,6 +15,39 @@
     las opciones de configuración previstas se encuentran ya en
     el programa.
 
+------------------------------------------------------------
+
+Instalación 
+
+    Según el sistema operativo que uses el proceso para poder
+    ejecutar el emulador será distinto:
+    
+    Windows:
+    --------
+    Basta con descomprimir el ZIP en cualquier carpeta, ya
+    que incluye todas las librerías DLL necesarias.
+      
+    Linux:
+    --------
+    Instala el paquete DEB o RPM (según tu sistema) usando
+    los comandos que correspondan:
+      DEB: (1) Instalar paquete: sudo dpkg -i <paquete>
+           (2) Instalar dependencias: sudo apt-get install -f
+      RPM: Instalar el paquete junto con sus dependencias:
+           sudo yum localinstall <paquete>
+              
+    MacOS:
+    --------
+    Primero descomprime el ZIP a cualquier carpeta con permisos
+    de escritura. Para instalar las dependencias se usa el
+    gestor de paquetes Homebrew (se puede instalar desde su web).
+    Los comandos para instalarlas son:
+      brew install sdl2
+      brew install sdl2_image
+      brew install openal-soft
+      brew install freealut
+      brew install tinyxml2
+    
 ------------------------------------------------------------
 
 Ventana del programa 
@@ -40,6 +73,7 @@ Cómo cargar juegos
     También puedes abrir un juego simplemente con doble click en
     el archivo ROM *.v32 y, en el diálogo "Abrir con...", elegir
     el emulador de Vircon32 como programa para abrirlo.
+    
 ------------------------------------------------------------
 
 Controles

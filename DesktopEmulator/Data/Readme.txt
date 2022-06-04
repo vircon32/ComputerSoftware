@@ -1,13 +1,114 @@
-=======================================
-  EMULATOR OF VIRCON32 CONSOLE FOR PC
-=======================================
-
+============================================================
+             README file for Vircon32 emulator
+             (version 22.6.4) written by Carra
+============================================================
 
 What is this?
 
     This is an emulator of Vircon32, a 32-bit virtual console,
     for PC. It will allow you to play Vircon32 games on your
     computer.
+
+    The present version is considered finished, save for
+    bugs fixes or possible small improvements. At the moment
+    all console features are already supported, and all
+    planned configuration options are present.
+
+------------------------------------------------------------
+
+Installing 
+    
+    Depending on your operating system, the process to prepare
+    the emulator for use will be different:
+    
+    Windows:
+    --------
+    Just extract the ZIP into any folder. All needed DLL
+    libraries are already included.
+      
+    Linux:
+    --------
+    Install the DEB or RPM package (depending on your system)
+    using the corresponding commands:
+      DEB: (1) Install package: sudo dpkg -i <paquete>
+           (2) Install dependencies: sudo apt-get install -f
+      RPM: Install package along with its dependencies:
+           sudo yum localinstall <paquete>
+              
+    MacOS:
+    --------
+    First extract the ZIP into any folder with write permission.
+    To install dependencies, the Hombrew package manager is used
+    (it can be installed from its website). The commands needed
+    to install the dependencies are:
+      brew install sdl2
+      brew install sdl2_image
+      brew install openal-soft
+      brew install freealut
+      brew install tinyxml2
+    
+------------------------------------------------------------
+
+The program window
+
+    Graphic interface is normally hidden, but it will be shown
+    when mouse is over the emulator window. It can also be made
+    to show manually by pressing the escape key.
+
+    Use the mouse to navigate menus and use their options.
+
+------------------------------------------------------------
+
+How to load games
+
+    Vircon32 is an emulator, so for it to work you will need to
+    insert a virtual cartridge, also called a ROM file, and then
+    power on the console.
+
+    In this console the cartridge slot becomes locked when the
+    console is powered on, so to release a cartridge or replace
+    it with another you will need to power off the console first.
+
+    You can also open a game by just double-clicking a *.v32
+    ROM file and, in the "Open with..." dialog, selecting the
+    Vircon32 emulator as program to open it.
+    
+------------------------------------------------------------
+
+Controls
+
+    By default only gamepad 1 is connected and it is mapped to
+    the keyboard as follows:
+
+      - D-Pad: Direction arrow keys
+      - Buttons L,R: Keys 'Q','W'
+      - Buttons Y,X: Keys 'A','S'
+      - Buttons B,A: Keys 'Z','X'
+      - Button Start: Key 'Return'
+
+    The emulator also supports the use of one or more joysticks
+    (since this console has 4 gamepad ports). Keyboard and
+    joystick controls can be edited using a second program
+    included with this emulator, called EditControls. Read the
+    help in EditControls to learn how to configure your devices.
+
+------------------------------------------------------------
+
+How to use memory cards
+
+    When some Vircon32 cartridge needs to save/load data between
+    sessions, it will need a memory card to preserve any saved
+    information.
+
+    If you don't have a memory card file to insert into the
+    console, first create a new empty card file using the option
+    in the Memory Card menu. Then you can load that file and the
+    console will be able to use the memory card.
+
+    Be careful to use the right memory card for each cartridge!
+    Each game should check that the data in the card does not
+    belong to other cartridges, but there is no guarantee that
+    it actually will.
 
 ------------------------------------------------------------
 
