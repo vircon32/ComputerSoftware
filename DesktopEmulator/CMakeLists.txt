@@ -326,10 +326,9 @@ set(EDITCONTROLS_SRC
 
 # Both emulator and EditControls should be GUI-only applications.
 # This setting will prevent creation of an additional console window
+# (removed for now on Mac, would be MACOSX_BUNDLE)
 if(TARGET_OS STREQUAL "windows")
     set(GUI_TYPE WIN32)
-elseif(TARGET_OS STREQUAL "mac")
-    set(GUI_TYPE MACOSX_BUNDLE)
 else()
     set(GUI_TYPE "")
 endif()
@@ -394,8 +393,7 @@ endif()
 install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
     RUNTIME
     COMPONENT binaries
-    DESTINATION Emulator
-    BUNDLE DESTINATION .)
+    DESTINATION Emulator)
 
 # Copy the needed data files
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
