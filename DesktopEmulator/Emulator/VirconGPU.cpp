@@ -319,7 +319,7 @@ void VirconGPU::Reset()
     
     // clear the screen
     OpenGL2D.RenderToFramebuffer();
-    OpenGL2D.ClearScreen( GPUColor{ 0, 0, 0, 1 } );
+    OpenGL2D.ClearScreen( GPUColor{ 0, 0, 0, 255 } );
 }
 
 
