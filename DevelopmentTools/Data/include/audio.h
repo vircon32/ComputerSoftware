@@ -186,7 +186,7 @@ int get_channel_state( int channel_id )
 // =============================================================================
 
 
-// range is 0 to 1
+// range is 0 to 2
 void set_global_volume( float volume )
 {
     asm
