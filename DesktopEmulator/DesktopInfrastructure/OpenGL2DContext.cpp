@@ -108,7 +108,6 @@ OpenGL2DContext::OpenGL2DContext()
     // framebuffer is not created yet
     FramebufferID = 0;
     FBColorTextureID = 0;
-    FBDepthTextureID = 0;
     FramebufferWidth = 0;
     FramebufferHeight = 0;
     
@@ -273,27 +272,8 @@ void OpenGL2DContext::CreateFramebuffer()
         LogOpenGLResult( "glTexParameteri" );
     }
     
-    // PART 2: DEPTH BUFFER
-    { LOG_SCOPE( "Creating a render buffer" );
-    
-        glGenRenderbuffers( 1, &FBDepthTextureID );
-        LogOpenGLResult( "glGenRenderbuffers" );
-    }
-    
-    { LOG_SCOPE( "Binding the texture to the render buffer" );
-    
-        glBindRenderbuffer( GL_RENDERBUFFER, FBDepthTextureID );
-        LogOpenGLResult( "glBindRenderbuffer" );
-        
-        glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT, FramebufferWidth, FramebufferHeight );
-        LogOpenGLResult( "glRenderbufferStorage" );
-        
-        glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, FBDepthTextureID );
-        LogOpenGLResult( "glFramebufferRenderbuffer" );
-    }
-    
-    // PART 3: FRAME BUFFER
-    // Set "renderedTexture" as our colour attachement #0
+    // PART 2: FRAME BUFFER
+    // Set our color texture as framebuffer's colour attachment #0
     { LOG_SCOPE( "Binding the render buffer to the Framebuffer" );
         
         if( glFramebufferTexture2D == nullptr )

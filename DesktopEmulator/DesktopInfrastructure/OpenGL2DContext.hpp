@@ -52,7 +52,6 @@ class OpenGL2DContext
         // framebuffer object
         GLuint FramebufferID;
         GLuint FBColorTextureID;
-        GLuint FBDepthTextureID;
         unsigned FramebufferWidth;
         unsigned FramebufferHeight;
 
