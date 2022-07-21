@@ -659,8 +659,8 @@ void OpenGL2DContext::SetRotation( float AngleZ )
 void OpenGL2DContext::ComposeTransform( bool ScalingEnabled, bool RotationEnabled )
 {
     TransformMatrix = TranslationMatrix;
-    if( ScalingEnabled  ) TransformMatrix *= ScalingMatrix;
     if( RotationEnabled ) TransformMatrix *= RotationMatrix;
+    if( ScalingEnabled  ) TransformMatrix *= ScalingMatrix;
 }
 
 
