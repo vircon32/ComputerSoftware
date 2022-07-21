@@ -155,8 +155,10 @@ void SaveScreenshot( const string& FilePath )
     uint8_t* Pixels =  new uint8_t[ 4 * Constants::ScreenWidth * Constants::ScreenHeight ];
     uint8_t** RowPointers = new uint8_t*[ Constants::ScreenHeight ];
     
+    // images on framebuffer are rendered inverted in Y, so
+    // we invert the order of rows to reflect it back to normal
     for( int y = 0; y < Constants::ScreenHeight; y++ )
-      RowPointers[ y ] = &Pixels[ 4 * Constants::ScreenWidth * y ];
+      RowPointers[ (Constants::ScreenHeight-1) - y ] = &Pixels[ 4 * Constants::ScreenWidth * y ];
       
     // dump content of framebuffer
     glBindFramebuffer( GL_FRAMEBUFFER, OpenGL2D.FramebufferID );
