@@ -72,20 +72,19 @@ void VirconCEmitter::EmitFunctionCall( FunctionCallNode* FunctionCall, RegisterA
         {
             // emit the evaluation of this parameter
             // (which can now be done independently from this call)
-            // but use for it R0, since calls always use it
-            EmitDependentExpression( Parameter, Registers, 0 );
+            EmitDependentExpression( Parameter, Registers, ParameterRegister );
             
             // perform type promotion where needed
             DataType* NeededType = Argument->DeclaredType;
             DataType* ProducedType = Parameter->ReturnedType;
-            EmitTypeConversion( 0, ProducedType, NeededType );
+            EmitTypeConversion( ParameterRegister, ProducedType, NeededType );
             
             // save this value in the stack of temporaries
             // (careful! stack allocation starts at [BP-1])
             int FirstTemporaryOffset = CallingStackFrame->StackSizeForVariables + 1;
             int TemporaryOffsetFromBP = FirstTemporaryOffset + Registers.TemporariesStackSize;
             string TemporaryAddress = (TemporaryOffsetFromBP == 0? "[BP]" : "[BP-" + to_string(TemporaryOffsetFromBP) + "]");
-            ProgramLines.push_back( "mov " + TemporaryAddress + ", R0" );
+            ProgramLines.push_back( "mov " + TemporaryAddress + ", " + ParameterRegisterName );
             
             // mark the used space for this value in the stack of temporaries
             Registers.TemporariesStackSize += 1;
