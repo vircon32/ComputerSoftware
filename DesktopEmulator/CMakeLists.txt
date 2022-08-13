@@ -389,18 +389,39 @@ endif()
 #   DEFINE THE INSTALL PROCESS
 # -----------------------------------------------------
 
-# Install both binaries
-install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
-    RUNTIME
-    COMPONENT binaries
-    DESTINATION Emulator)
+if(TARGET_OS STREQUAL "linux")
+    # Install both binaries
+    install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
+        RUNTIME
+        COMPONENT binaries
+        DESTINATION /opt/Vircon32)
 
-# Copy the needed data files
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
-    DESTINATION Emulator)
-    
-# On Windows, copy the needed runtime files (DLLs)
-if(TARGET_OS STREQUAL "windows")
+    # Copy the needed data files
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
+        DESTINATION /opt/Vircon32/)
+	
+elseif(TARGET_OS STREQUAL "windows")
+    # Install both binaries
+    install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
+        RUNTIME
+        COMPONENT binaries
+        DESTINATION Emulator)
+
+    # Copy the needed data files
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
+        DESTINATION Emulator)
+	
+    # On Windows, copy the needed runtime files (DLLs)
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${RUNTIME_DIR}/
+        DESTINATION Emulator)
+else()
+    # Install both binaries
+    install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
+        RUNTIME
+        COMPONENT binaries
+        DESTINATION Emulator)
+
+    # Copy the needed data files
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
         DESTINATION Emulator)
 endif()
