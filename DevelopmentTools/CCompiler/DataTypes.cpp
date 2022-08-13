@@ -65,8 +65,10 @@ string PrimitiveType::ToString()
         case PrimitiveTypes::Int:    return "int";
         case PrimitiveTypes::Float:  return "float";
         case PrimitiveTypes::Bool:   return "bool";
-        default: return "???";
     }
+    
+    // unknown
+    throw runtime_error( "primitive data type cannot be converted to a string" );
 }
 
 // -----------------------------------------------------------------------------

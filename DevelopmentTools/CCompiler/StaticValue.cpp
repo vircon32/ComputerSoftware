@@ -2,6 +2,9 @@
     // include project headers
     #include "StaticValue.hpp"
     
+    // include C/C++ headers
+    #include <stdexcept>    // [ C++ STL ] Exceptions
+    
     // declare used namespaces
     using namespace std;
 // *****************************************************************************
@@ -98,6 +101,6 @@ string StaticValue::ToString()
         return to_string( Word.AsInteger );
     }
     
-    // this should never be reached
-    return "???";
+    // not found
+    throw runtime_error( "static value cannot be converted to a string" );
 }

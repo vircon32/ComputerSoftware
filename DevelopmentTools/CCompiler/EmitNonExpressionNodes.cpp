@@ -297,10 +297,11 @@ int VirconCEmitter::EmitSingleInitialization( MemoryPlacement LeftPlacement, Dat
     {
         StaticValue AssignedValue = Value->GetStaticValue();
         
-        // we need to do the check because it could be "ptr = -1",
+        // we need to do the check because it could be "ptr = NULL",
         // or assigning to an enum type variable (no conversion needed)
         if( Value->ReturnedType->Type() == DataTypes::Primitive )
-          AssignedValue.ConvertToType( ((PrimitiveType*)LeftType)->Which );
+          if( LeftType->Type() == DataTypes::Primitive )
+            AssignedValue.ConvertToType( ((PrimitiveType*)LeftType)->Which );
         
         // place result directly into destination
         ProgramLines.push_back( "mov R0, " + AssignedValue.ToString() );

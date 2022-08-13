@@ -5,6 +5,7 @@
     
     // include C/C++ headers
     #include <map>          // [ C++ STL ] Maps
+    #include <stdexcept>    // [ C++ STL ] Exceptions
     
     // declare used namespaces
     using namespace std;
@@ -76,7 +77,8 @@ string UnaryOperatorToString( UnaryOperators Which )
     if( MapPair != UnaryOperatorNames.end() )
       return MapPair->second;
     
-    return "???";
+    // not found
+    throw runtime_error( "unary operator cannot be converted to a string" );
 }
 
 // -----------------------------------------------------------------------------
@@ -88,7 +90,8 @@ string BinaryOperatorToString( BinaryOperators Which )
     if( MapPair != BinaryOperatorNames.end() )
       return MapPair->second;
     
-    return "???";
+    // not found
+    throw runtime_error( "binary operator cannot be converted to a string" );
 }
 
 // -----------------------------------------------------------------------------

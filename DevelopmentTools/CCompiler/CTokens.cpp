@@ -232,7 +232,8 @@ string KeywordToString( KeywordTypes Which )
     if( MapPair != KeywordNames.end() )
       return MapPair->second;
     
-    return "???";
+    // not found
+    throw runtime_error( "keyword cannot be converted to a string" );
 }
 
 // -----------------------------------------------------------------------------
@@ -244,7 +245,8 @@ string OperatorToString( OperatorTypes Which )
     if( MapPair != OperatorNames.end() )
       return MapPair->second;
     
-    return "???";
+    // not found
+    throw runtime_error( "operator cannot be converted to a string" );
 }
 
 // -----------------------------------------------------------------------------
@@ -259,7 +261,8 @@ string DelimiterToString( DelimiterTypes Which )
         return Result;
     }
     
-    return "???";
+    // not found
+    throw runtime_error( "delimiter cannot be converted to a string" );
 }
 
 // -----------------------------------------------------------------------------
@@ -274,7 +277,8 @@ string SpecialSymbolToString( SpecialSymbolTypes Which )
         return Result;
     }
     
-    return "???";
+    // not found
+    throw runtime_error( "special symbol cannot be converted to a string" );
 }
 
 
