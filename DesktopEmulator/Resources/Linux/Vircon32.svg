@@ -4,11 +4,11 @@
 <svg
    version="1.1"
    id="svg55"
-   width="341.33334"
-   height="341.33334"
-   viewBox="0 0 341.33334 341.33334"
-   sodipodi:docname="Vircon32Multisize.png"
-   inkscape:export-filename="Vircon32Multisize.svg"
+   width="340"
+   height="340"
+   viewBox="0 0 340 340"
+   sodipodi:docname="Vircon32.png"
+   inkscape:export-filename="Vircon32.svg"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -34,35 +34,35 @@
     <rect
        style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.02783;stroke-opacity:1"
        id="rect8916"
-       width="356.14972"
-       height="349.54633"
-       x="-5.9606309"
-       y="-3.2299182" />
+       width="34"
+       height="340"
+       x="0"
+       y="0" />
     <path
        style="fill:#65ff00;fill-opacity:1;stroke:#67ff00;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 44.715231,275.17102 6.469841,-24.14578 H 295.1862 l -6.47077,24.14926 z"
+       d="m 45,275 6.5,-24 H 295 l -6.5,24 z"
        id="path4332" />
     <text
        xml:space="preserve"
        style="font-style:oblique;font-variant:normal;font-weight:600;font-stretch:normal;font-size:200px;line-height:1.25;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Semi-Bold Oblique';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#5fd38d;fill-opacity:1;stroke:none"
-       x="24.209789"
-       y="226.40758"
+       x="24"
+       y="226.5"
        id="text4871"><tspan
          sodipodi:role="line"
          id="tspan4869"
-         x="24.209789"
-         y="226.40758"
+         x="24"
+         y="226.5"
          style="font-style:oblique;font-variant:normal;font-weight:600;font-stretch:normal;font-size:200px;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Semi-Bold Oblique';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#5fd38d;fill-opacity:1">V</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:oblique;font-variant:normal;font-weight:600;font-stretch:normal;font-size:133.333px;line-height:1.25;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Semi-Bold Oblique';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#80b2fd;fill-opacity:1;stroke:none"
-       x="139.49384"
-       y="225.86249"
+       x="140"
+       y="226"
        id="text4925"><tspan
          sodipodi:role="line"
          id="tspan4923"
-         x="139.49384"
-         y="225.86249">3<tspan
+         x="140"
+         y="226">3<tspan
    style="font-style:oblique;font-variant:normal;font-weight:600;font-stretch:normal;font-size:133.333px;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Semi-Bold Oblique';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#80b2fd;fill-opacity:1"
    id="tspan6031">2</tspan></tspan></text>
   </g>
