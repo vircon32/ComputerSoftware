@@ -32,7 +32,7 @@ set(PROJECT_VERSION_PATCH 4)
 
 # Set names for final executables
 set(EMULATOR_BINARY_NAME "Vircon32")
-set(EDITCONTROLS_BINARY_NAME "EditControls")
+set(EDITCONTROLS_BINARY_NAME "Vircon32EditControls")
 
 # -----------------------------------------------------
 #   IDENTIFY HOST ENVIRONMENT
