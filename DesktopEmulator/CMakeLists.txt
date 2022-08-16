@@ -398,7 +398,7 @@ if(TARGET_OS STREQUAL "linux")
 
     # Copy the needed data files
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
-        DESTINATION /opt/Vircon32/)
+        DESTINATION /opt/Vircon32)
     # Install desktop entry
     install(FILES Resources/Linux/Vircon32.desktop DESTINATION /usr/share/applications )
 
