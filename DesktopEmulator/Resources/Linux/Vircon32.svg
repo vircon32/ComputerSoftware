@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   version="1.1"
+   id="svg55"
+   width="340"
+   height="340"
+   viewBox="0 0 340 340"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs59" />
+  <g
+     id="g61">
+    <rect
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.02783;stroke-opacity:1"
+       id="rect8916"
+       width="340"
+       height="340"
+       x="0"
+       y="0" />
+    <path
+       style="fill:#65ff00;fill-opacity:1;stroke:#67ff00;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 45,275 6.5,-24 H 295 l -6.5,24 z"
+       id="path4332" />
+    <g
+       aria-label="V"
+       id="text4871"
+       style="font-style:oblique;font-weight:600;font-size:200px;line-height:1.25;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Semi-Bold Oblique';fill:#5fd38d">
+      <path
+         d="M 104,226.5 184.4,80.7 H 154.2 L 99,190.5 90,80.7 H 59.8 l 18.8,145.8 z"
+         id="path214" />
+    </g>
+    <g
+       aria-label="32"
+       id="text4925"
+       style="font-style:oblique;font-weight:600;font-size:133.333px;line-height:1.25;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Semi-Bold Oblique';fill:#80b2fd">
+      <path
+         d="m 196.26652,195.33341 c 0,9.46664 -7.33331,17.46662 -16.26662,17.46662 -7.59998,0 -11.99997,-3.73332 -12.1333,-10.26664 v -4.26665 h -18.13329 c -0.53333,3.06666 -0.8,5.06665 -0.8,7.59998 0,14.66663 9.99997,23.19994 27.33326,23.19994 24.13328,0 39.06657,-16.39996 39.06657,-37.33324 0,-7.19998 -3.06666,-12.39997 -9.59997,-16.39996 10.66663,-6.53331 15.99995,-15.19996 15.99995,-25.73326 0,-12.79997 -9.7333,-20.13329 -26.66659,-20.13329 -20.53328,0 -31.99992,9.99998 -36.13325,31.73326 h 17.19996 c 0.93333,-3.86666 2.66666,-16.79996 15.59996,-16.79996 5.99999,0 10.26664,3.86666 10.26664,9.33331 0,10.5333 -7.86665,17.46662 -19.86661,17.46662 h -1.6 l -2.66666,12.5333 c 12.39997,0 18.39995,1.73333 18.39995,11.59997 z"
+         id="path217" />
+      <path
+         d="m 297.86623,152.40019 c 0,-14.39997 -10.26664,-22.93328 -27.59993,-22.93328 -20.66661,0 -34.26658,12.5333 -37.73324,34.93325 h 17.86662 c 1.73333,-12.9333 7.73332,-19.99995 16.93329,-19.99995 7.19999,0 11.46664,3.99999 11.46664,10.66664 0,6.13332 -2.66666,12.5333 -7.19998,17.06662 C 252.79968,192.13342 227.86641,189.33343 218.1331,226 h 64.2665 l 3.46666,-16.66662 h -39.9999 c 10.13331,-14.9333 51.99987,-24.93327 51.99987,-56.93319 z"
+         id="path219" />
+    </g>
+  </g>
+</svg>
