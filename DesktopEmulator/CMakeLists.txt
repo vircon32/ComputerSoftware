@@ -32,7 +32,7 @@ set(PROJECT_VERSION_PATCH 4)
 
 # Set names for final executables
 set(EMULATOR_BINARY_NAME "Vircon32")
-set(EDITCONTROLS_BINARY_NAME "Vircon32EditControls")
+set(EDITCONTROLS_BINARY_NAME "EditControls")
 
 # -----------------------------------------------------
 #   IDENTIFY HOST ENVIRONMENT
@@ -75,7 +75,7 @@ set(PROGRAMS_DIR "ExternalPrograms/"
     CACHE PATH "The path to the external programs.")
 set(EMULATOR_DIR "Emulator/"
     CACHE PATH "The path to the emulator sources.")
-set(EDITCONTROLS_DIR "EditControls/"
+set(EDITCONTROLS_DIR "ControlsEditor/"
     CACHE PATH "The path to EditControls sources.")
 set(INFRASTRUCTURE_DIR "DesktopInfrastructure/"
     CACHE PATH "The path to desktop infrastructure sources.")
