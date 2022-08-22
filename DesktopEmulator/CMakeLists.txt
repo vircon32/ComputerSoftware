@@ -394,11 +394,11 @@ if(TARGET_OS STREQUAL "linux")
     install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
         RUNTIME
         COMPONENT binaries
-        DESTINATION /opt/Vircon32)
+        DESTINATION /opt/Vircon32/Emulator)
 
     # Copy the needed data files
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
-        DESTINATION /opt/Vircon32)
+        DESTINATION /opt/Vircon32/Emulator)
     # Install desktop entry
     install(FILES Resources/Linux/Vircon32.desktop DESTINATION /usr/share/applications )
 
