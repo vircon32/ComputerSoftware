@@ -403,7 +403,7 @@ if(TARGET_OS STREQUAL "linux")
     install(FILES Resources/Linux/Vircon32.desktop DESTINATION /usr/share/applications )
 
     # Install icon
-    install(FILES Resources/Linux/Vircon32.svg DESTINATION /usr/share/icons/hicolor/scalable/apps)
+    install(FILES Resources/Linux/Vircon32.svg DESTINATION /usr/share/pixmaps )
 	
 elseif(TARGET_OS STREQUAL "windows")
     # Install both binaries
