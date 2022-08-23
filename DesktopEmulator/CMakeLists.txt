@@ -75,7 +75,7 @@ set(PROGRAMS_DIR "ExternalPrograms/"
     CACHE PATH "The path to the external programs.")
 set(EMULATOR_DIR "Emulator/"
     CACHE PATH "The path to the emulator sources.")
-set(EDITCONTROLS_DIR "EditControls/"
+set(EDITCONTROLS_DIR "ControlsEditor/"
     CACHE PATH "The path to EditControls sources.")
 set(INFRASTRUCTURE_DIR "DesktopInfrastructure/"
     CACHE PATH "The path to desktop infrastructure sources.")
@@ -389,18 +389,45 @@ endif()
 #   DEFINE THE INSTALL PROCESS
 # -----------------------------------------------------
 
-# Install both binaries
-install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
-    RUNTIME
-    COMPONENT binaries
-    DESTINATION Emulator)
+if(TARGET_OS STREQUAL "linux")
+    # Install both binaries
+    install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
+        RUNTIME
+        COMPONENT binaries
+        DESTINATION /opt/Vircon32/Emulator)
 
-# Copy the needed data files
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
-    DESTINATION Emulator)
-    
-# On Windows, copy the needed runtime files (DLLs)
-if(TARGET_OS STREQUAL "windows")
+    # Copy the needed data files
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
+        DESTINATION /opt/Vircon32/Emulator)
+    # Install desktop entry
+    install(FILES Resources/Linux/Vircon32.desktop DESTINATION /usr/share/applications )
+
+    # Install icon
+    install(FILES Resources/Linux/Vircon32.svg DESTINATION /usr/share/pixmaps )
+    install(FILES Resources/Linux/Vircon32.svg DESTINATION /usr/share/icons/hicolor/scalable/apps/ )
+	
+elseif(TARGET_OS STREQUAL "windows")
+    # Install both binaries
+    install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
+        RUNTIME
+        COMPONENT binaries
+        DESTINATION Emulator)
+
+    # Copy the needed data files
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
+        DESTINATION Emulator)
+	
+    # On Windows, copy the needed runtime files (DLLs)
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${RUNTIME_DIR}/
+        DESTINATION Emulator)
+else()
+    # Install both binaries
+    install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
+        RUNTIME
+        COMPONENT binaries
+        DESTINATION Emulator)
+
+    # Copy the needed data files
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
         DESTINATION Emulator)
 endif()
