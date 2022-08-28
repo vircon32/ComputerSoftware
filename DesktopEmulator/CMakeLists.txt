@@ -229,7 +229,7 @@ endif()
 # Vircon32.desktop
 if(TARGET_OS STREQUAL "linux")
     get_filename_component(EMULATOR_BINARY_ABSOLUTE_PATH "${EMULATOR_BINARY_NAME}" REALPATH BASE_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_NAME}/Emulator")
-    write_file(gen/${EMULATOR_BINARY_NAME}.desktop "[Desktop Entry]
+    write_file(${CMAKE_BINARY_DIR}/gen/${EMULATOR_BINARY_NAME}.desktop "[Desktop Entry]
 Version=${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
 Name=${EMULATOR_BINARY_NAME}
 Comment=${EMULATOR_BINARY_NAME}, a 32-bit virtual game console

@@ -1,0 +1,79 @@
+{
+  "version": 2,
+  "cmakeMinimumRequired": {
+    "major": 2,
+    "minor": 8,
+    "patch": 12
+  },
+  "configurePresets": [
+    {
+      "name": "linux",
+      "displayName": "Linux",
+      "description": "Vircon32 Emulator Linux Release",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "linux-global",
+      "displayName": "Linux (all users)",
+      "description": "Vircon32 Emulator Linux Release",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "INSTALL_DESKTOP_FILES_GLOBAL": "ON"
+      }
+    },
+    {
+      "name": "linux-dev",
+      "displayName": "Linux (dev mode)",
+      "description": "Vircon32 Emulator Linux Release (dev mode)",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/dist",
+        "INSTALL_DESKTOP_FILES": "OFF"
+      }
+    },
+    {
+      "name": "linux-dev-debug",
+      "displayName": "Linux Debug (dev mode)",
+      "description": "Vircon32 Emulator Linux Debug (dev mode)",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/dist",
+        "INSTALL_DESKTOP_FILES": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "linux",
+      "configurePreset": "linux",
+      "jobs": 4
+    },
+    {
+      "name": "linux-global",
+      "configurePreset": "linux-global",
+      "jobs": 4
+    },
+    {
+      "name": "linux-dev",
+      "configurePreset": "linux-dev",
+      "verbose": true,
+      "jobs": 4
+    },
+    {
+      "name": "linux-dev-debug",
+      "configurePreset": "linux-dev-debug",
+      "verbose": true,
+      "jobs": 4
+    }
+  ]
+}

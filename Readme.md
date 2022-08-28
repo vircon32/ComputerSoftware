@@ -37,14 +37,14 @@ All C++ projects in this repository are prepared to compile using CMake. The CMa
 
 ##### LINUX (DesktopEmulator)
 
-1. `mkdir build` to create a folder for your build
+1. `cd DesktopEmulator` to enter the project folder
+1. `cmake --preset=linux-dev` to create a folder for your build with all necessary files
+1. `cmake --build --preset=linux-dev` to execute build process
 2. `cd build` to enter the build folder
-3. `cmake -DCMAKE_INSTALL_PREFIX:PATH=./dist -DINSTALL_DESKTOP_FILES:BOOL=OFF ../DesktopEmulator` to have CMake configure the project for MinGW 
-4. `make` to build the project
 5. `make install` to install the built software
 
-Note that you can avoid set `CMAKE_INSTALL_PREFIX` and `INSTALL_DESKTOP_FILES` to make a local installation (~/.local). You
-can install globally setting `INSTALL_DESKTOP_FILES_GLOBAL` to `ON` (you will need execute installation with sudo).
+Note that you can see all available presets with `cmake --list-presets`. For example, to make a clean installation under local
+folder you will use `cmake --preset=linux`.
 
 At that point, if no errors happened, your programs should be installed and able to run correctly. Install folder will be named "Vircon32" and placed in your system's default program path. You can then delete the temporary 'build' directory: it is no longer needed.
 
