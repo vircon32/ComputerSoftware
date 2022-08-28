@@ -1,0 +1,50 @@
+name: Build Dekstop Emulator
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  compile:
+    name: ${{ matrix.os }} - ${{ matrix.software }} - ${{ github.workflow }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        software: [DesktopEmulator]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      # Install dependencies
+      - name: "Install dependencies"
+        run: |
+          sudo apt install pkg-config cmake g++ -y
+          sudo apt install zlib1g-dev libpng-dev -y
+          sudo apt install mesa-utils libglu1-mesa-dev freeglut3-dev mesa-common-dev -y
+          sudo apt install libopenal0a libopenal-dev -y
+          sudo apt install libalut0 libalut-dev -y
+          sudo apt install libglew-dev libglfw3-dev libglm-dev -y
+          sudo apt install libao-dev libmpg123-dev -y
+          sudo apt install libtinyxml2-dev -y
+          sudo apt install libsdl2-dev libsdl2-2.0-0 -y
+          sudo apt install libjpeg-dev libwebp-dev libtiff5-dev libsdl2-image-dev libsdl2-image-2.0-0 -y
+          sudo apt install libmikmod-dev libfishsound1-dev libsmpeg-dev liboggz2-dev libflac-dev libfluidsynth-dev libsdl2-mixer-dev libsdl2-mixer-2.0-0 -y
+          sudo apt install libfreetype6-dev libsdl2-ttf-dev libsdl2-ttf-2.0-0 -y
+        shell: bash
+
+      - name: "Go to ${{ matrix.software }}"
+        run: cd ${{ matrix.software }}
+        shell: bash
+
+      # Run CMake to generate GNU Makefiles project files.
+      - name: ${{ matrix.software }} - Generate build files
+        run: cmake --preset=linux
+      # Build
+      - name: ${{ matrix.software }} - Generate final binaries
+        run: cmake --build --preset=linux
