@@ -58,6 +58,9 @@ endif()
 #   BASIC PROJECT CONFIGURATION
 # -----------------------------------------------------
 
+# Flag to know if need install desktop files
+set(INSTALL_DESKTOP_FILES ON CACHE BOOL "install desktop files?")
+
 # Library osdialog can target differeng GUI systems (win/mac/gtk2/gtk3/zenity)
 if(TARGET_OS STREQUAL "windows")
     set(OSDIALOG_TARGET win CACHE STRING "osdialog target env")
@@ -205,6 +208,27 @@ show_dependency_status("TINYXML2" TINYXML2)
 
 if(TARGET_OS STREQUAL "linux")
     show_dependency_status("GTK2" GTK2)
+endif()
+
+# -----------------------------------------------------
+#   GENERATE DYNAMIC FILES
+# -----------------------------------------------------
+
+# Vircon32.desktop
+if(TARGET_OS STREQUAL "linux")
+    get_filename_component(EMULATOR_BINARY_ABSOLUTE_PATH "${EMULATOR_BINARY_NAME}" REALPATH BASE_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_NAME}/Emulator")
+    write_file(gen/${EMULATOR_BINARY_NAME}.desktop "[Desktop Entry]
+Version=${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
+Name=${EMULATOR_BINARY_NAME}
+Comment=${EMULATOR_BINARY_NAME}, a 32-bit virtual game console
+TryExec=${EMULATOR_BINARY_ABSOLUTE_PATH}
+Exec=${EMULATOR_BINARY_ABSOLUTE_PATH}
+Icon=Vircon32
+Terminal=false
+Type=Application
+Categories=games
+Keywords=games;emulation
+")
 endif()
 
 # -----------------------------------------------------
@@ -394,17 +418,19 @@ if(TARGET_OS STREQUAL "linux")
     install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
         RUNTIME
         COMPONENT binaries
-        DESTINATION Vircon32/Emulator)
+        DESTINATION ${CMAKE_PROJECT_NAME}/Emulator)
 
-    # Copy the needed data files
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
-        DESTINATION Vircon32/Emulator)
-    # Install desktop entry
-    install(FILES Resources/Linux/Vircon32.desktop DESTINATION /usr/share/applications )
+    if(INSTALL_DESKTOP_FILES)
+        # Copy the needed data files
+        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
+            DESTINATION ${CMAKE_PROJECT_NAME}/Emulator)
+        # Install desktop entry
+        install(FILES Resources/Linux/${EMULATOR_BINARY_NAME}.desktop DESTINATION /usr/share/applications )
 
-    # Install icon
-    install(FILES Resources/Linux/Vircon32.svg DESTINATION /usr/share/pixmaps )
-    install(FILES Resources/Linux/Vircon32.svg DESTINATION /usr/share/icons/hicolor/scalable/apps/ )
+        # Install icon
+        install(FILES Resources/Linux/Vircon32.svg DESTINATION /usr/share/pixmaps )
+        install(FILES Resources/Linux/Vircon32.svg DESTINATION /usr/share/icons/hicolor/scalable/apps/ )
+    endif()
 	
 elseif(TARGET_OS STREQUAL "windows")
     # Install both binaries
