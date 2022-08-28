@@ -61,6 +61,9 @@ endif()
 # Flag to know if need install desktop files
 set(INSTALL_DESKTOP_FILES ON CACHE BOOL "install desktop files?")
 
+# Flag to know if need install desktop files on global mode
+set(INSTALL_DESKTOP_FILES_GLOBAL OFF CACHE BOOL "install desktop files globally?")
+
 # Library osdialog can target differeng GUI systems (win/mac/gtk2/gtk3/zenity)
 if(TARGET_OS STREQUAL "windows")
     set(OSDIALOG_TARGET win CACHE STRING "osdialog target env")
@@ -107,6 +110,15 @@ if(POLICY CMP0072)
 endif()
 if(POLICY CMP0074)
     cmake_policy(SET CMP0074 NEW) # Root Variables
+endif()
+
+# -----------------------------------------------------
+#   SPECIFIC OS CONFIGURATION
+# -----------------------------------------------------
+
+if(TARGET_OS STREQUAL "linux")
+    # Default installation folder
+    set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local/bin" CACHE STRING "Installation directory")
 endif()
 
 # -----------------------------------------------------
@@ -420,16 +432,27 @@ if(TARGET_OS STREQUAL "linux")
         COMPONENT binaries
         DESTINATION ${CMAKE_PROJECT_NAME}/Emulator)
 
-    if(INSTALL_DESKTOP_FILES)
-        # Copy the needed data files
-        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
-            DESTINATION ${CMAKE_PROJECT_NAME}/Emulator)
-        # Install desktop entry
-        install(FILES Resources/Linux/${EMULATOR_BINARY_NAME}.desktop DESTINATION /usr/share/applications )
+    # Copy the needed data files
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
+        DESTINATION ${CMAKE_PROJECT_NAME}/Emulator)
 
-        # Install icon
-        install(FILES Resources/Linux/Vircon32.svg DESTINATION /usr/share/pixmaps )
-        install(FILES Resources/Linux/Vircon32.svg DESTINATION /usr/share/icons/hicolor/scalable/apps/ )
+    # Copy desktop files    
+    if(INSTALL_DESKTOP_FILES)
+        if(INSTALL_DESKTOP_FILES_GLOBAL)
+            # Install desktop entry
+            install(FILES ${CMAKE_BINARY_DIR}/gen/${EMULATOR_BINARY_NAME}.desktop DESTINATION /usr/share/applications )
+
+            # Install icon
+            install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/Resources/Linux/Vircon32.svg DESTINATION /usr/share/pixmaps )
+            install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/Resources/Linux/Vircon32.svg DESTINATION /usr/share/icons/hicolor/scalable/apps/ )
+        else()
+            # Install desktop entry
+            install(FILES ${CMAKE_BINARY_DIR}/gen/${EMULATOR_BINARY_NAME}.desktop DESTINATION $ENV{HOME}/.local/share/applications )
+
+            # Install icon
+            install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/Resources/Linux/Vircon32.svg DESTINATION $ENV{HOME}/.local/share/pixmaps )
+            install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/Resources/Linux/Vircon32.svg DESTINATION $ENV{HOME}/.local/share/icons/hicolor/scalable/apps/ )
+        endif()
     endif()
 	
 elseif(TARGET_OS STREQUAL "windows")
