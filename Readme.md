@@ -27,11 +27,24 @@ If you are not familiar with Vircon32, a 32-bit virtual game console, you can vi
 
 All C++ projects in this repository are prepared to compile using CMake. The CMake scripts do try to support (at least) building under Windows, Linux and Mac. Note that, under Windows, CMake defaults to building with Visual C++, but this is currently untested. To instruct CMake to build with MSYS2+MinGW, open a MinGW32 console and go to your desired build directory. Then use the command: `cmake -G 'MSYS Makefiles' <project's root CMake folder>`. For example, if you are at the project's root folder (i.e. the folder with the main CMakeLists.txt file) you could write these commands to make the build in a temporary folder and then install the software:
 
+##### WINDOWS
+
 1. `mkdir build` to create a folder for your build
 2. `cd build` to enter the build folder
 3. `cmake -G 'MSYS Makefiles' ..` to have CMake configure the project for MinGW 
 4. `make` to build the project
 5. `cmake --install .` to install the built software
+
+##### LINUX (DesktopEmulator)
+
+1. `mkdir build` to create a folder for your build
+2. `cd build` to enter the build folder
+3. `cmake -DCMAKE_INSTALL_PREFIX:PATH=./dist -DINSTALL_DESKTOP_FILES:BOOL=OFF ../DesktopEmulator` to have CMake configure the project for MinGW 
+4. `make` to build the project
+5. `make install` to install the built software
+
+Note that you can avoid set `CMAKE_INSTALL_PREFIX` and `INSTALL_DESKTOP_FILES` to make a local installation (~/.local). You
+can install globally setting `INSTALL_DESKTOP_FILES_GLOBAL` to `ON` (you will need execute installation with sudo).
 
 At that point, if no errors happened, your programs should be installed and able to run correctly. Install folder will be named "Vircon32" and placed in your system's default program path. You can then delete the temporary 'build' directory: it is no longer needed.
 
@@ -53,5 +66,9 @@ To correctly build the software in this repository you will need to have at leas
 ##### Audio libraries:
 * OpenAL
 * ALUT / FreeALUT
+
+##### Build system
+* cmake
+* pkg-config
 
 These programs also use 3 other libraries that are already included in the sources as external libraries: osdialog, imgui and glad.
