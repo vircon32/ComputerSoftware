@@ -128,12 +128,13 @@ class CNode
         
         // node classification
         virtual CNodeTypes Type() = 0;
-        virtual bool IsExpression()  { return false; };
-        virtual bool IsLoop()        { return false; };
-        virtual bool IsType()        { return false; };
-        virtual bool IsGroup()       { return false; };
-        virtual bool IsScope()       { return false; };
-        virtual bool HasStackFrame() { return false; };
+        virtual bool IsExpression()         { return false; };
+        virtual bool IsLoop()               { return false; };
+        virtual bool IsType()               { return false; };
+        virtual bool IsGroup()              { return false; };
+        virtual bool IsScope()              { return false; };
+        virtual bool HasStackFrame()        { return false; };
+        virtual bool IsPartialDefinition()  { return false; };
         
         // log & debug
         virtual std::string ToXML() = 0;
@@ -433,6 +434,7 @@ class FunctionNode: public StackFrameNode
         std::map< std::string, LabelNode* > DeclaredLabels;
         
         // function body
+        bool HasBody;
         std::list< CNode* > Statements;
         
         // allocation of function stack frame
@@ -446,6 +448,7 @@ class FunctionNode: public StackFrameNode
         
         // node classification
         virtual CNodeTypes Type() { return CNodeTypes::Function; };
+        virtual bool IsPartialDefinition() { return !HasBody; };
         
         // log & debug
         virtual std::string ToXML();
@@ -456,6 +459,7 @@ class FunctionNode: public StackFrameNode
         
         // allocation in named definitions
         void AllocateName();
+        bool PrototypeMatchesWith( FunctionNode* F2 );
 };
 
 // -----------------------------------------------------------------------------
@@ -529,6 +533,7 @@ class StructureNode: public GroupNode
         // node components
         std::list< MemberListNode* > Declarations;
         std::list< MemberNode* > MembersInOrder;
+        bool HasBody;
         
         // local allocation
         int SizeOfMembers;
@@ -541,6 +546,7 @@ class StructureNode: public GroupNode
         
         // node classification
         virtual CNodeTypes Type() { return CNodeTypes::Structure; };
+        virtual bool IsPartialDefinition() { return !HasBody; };
         
         // log & debug
         virtual std::string ToXML();
@@ -556,6 +562,7 @@ class UnionNode: public GroupNode
         
         // node components
         std::list< MemberNode* > Declarations;
+        bool HasBody;
         
         // local allocation
         int MaximumMemberSize;
@@ -568,6 +575,7 @@ class UnionNode: public GroupNode
         
         // node classification
         virtual CNodeTypes Type() { return CNodeTypes::Union; };
+        virtual bool IsPartialDefinition() { return !HasBody; };
         
         // log & debug
         virtual std::string ToXML();
@@ -613,6 +621,7 @@ class EnumerationNode: public TypeNode
         
         // node components
         std::list< EnumValueNode* > Values;
+        bool HasBody;
         
     public:
         
@@ -622,6 +631,7 @@ class EnumerationNode: public TypeNode
         
         // node classification
         virtual CNodeTypes Type() { return CNodeTypes::Enumeration; };
+        virtual bool IsPartialDefinition() { return !HasBody; };
         
         // log & debug
         virtual std::string ToXML();

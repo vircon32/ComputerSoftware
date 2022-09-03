@@ -937,8 +937,20 @@ FunctionNode* VirconCParser::ParseFunction( DataType* ReturnType, const string& 
     // (if we do it later, recursion will not be possible)
     NewFunction->AllocateName();
     
+    // allow for partial definitions
+    if( TokenIsThisSymbol( NextToken, SpecialSymbolTypes::Semicolon ) )
+    {
+        // consume semicolon and return partial function
+        TokenPosition++;
+        return NewFunction;
+    }
+    
     // now parse function body as a special block
     ParseFunctionBody( NewFunction, TokenPosition );
+    
+    // allocate function name again, now as a full definition
+    NewFunction->HasBody = true;
+    NewFunction->AllocateName();
     
     // update locals allocation
     if( NewFunction->StackSizeForVariables < NewFunction->LocalVariablesSize )
@@ -1165,6 +1177,14 @@ StructureNode* VirconCParser::ParseStructure( CNode* Parent, CTokenIterator& Tok
     NewStructure->DeclaredType = new StructureType( NewStructure );
     NewStructure->AllocateName();
     
+    // allow for partial definitions
+    if( TokenIsThisSymbol( *TokenPosition, SpecialSymbolTypes::Semicolon ) )
+    {
+        // consume semicolon and return partial structure
+        TokenPosition++;
+        return NewStructure;
+    }
+    
     // expect an open brace
     ExpectDelimiter( TokenPosition, DelimiterTypes::OpenBrace );
     
@@ -1197,6 +1217,10 @@ StructureNode* VirconCParser::ParseStructure( CNode* Parent, CTokenIterator& Tok
     if( NewStructure->Declarations.empty() )
       RaiseError( NewStructure->Location, "structures must have at least 1 member" );
     
+    // allocate structure name again, now as a full definition
+    NewStructure->HasBody = true;
+    NewStructure->AllocateName();
+    
     return NewStructure;
 }
 
@@ -1216,6 +1240,14 @@ UnionNode* VirconCParser::ParseUnion( CNode* Parent, CTokenIterator& TokenPositi
     // it can self-reference itself through pointers
     NewUnion->DeclaredType = new UnionType( NewUnion );
     NewUnion->AllocateName();
+    
+    // allow for partial definitions
+    if( TokenIsThisSymbol( *TokenPosition, SpecialSymbolTypes::Semicolon ) )
+    {
+        // consume semicolon and return partial union
+        TokenPosition++;
+        return NewUnion;
+    }
     
     // expect an open brace
     ExpectDelimiter( TokenPosition, DelimiterTypes::OpenBrace );
@@ -1248,6 +1280,10 @@ UnionNode* VirconCParser::ParseUnion( CNode* Parent, CTokenIterator& TokenPositi
     // ensure that the union has at least 1 member
     if( NewUnion->Declarations.empty() )
       RaiseError( NewUnion->Location, "unions must have at least 1 member" );
+    
+    // allocate union name again, now as a full definition
+    NewUnion->HasBody = true;
+    NewUnion->AllocateName();
     
     return NewUnion;
 }
@@ -1288,6 +1324,18 @@ EnumerationNode* VirconCParser::ParseEnumeration( CNode* Parent, CTokenIterator&
     // read enumeration name
     NewEnumeration->Name = ExpectIdentifier( TokenPosition );
     
+    // define this enumeration in the scope early
+    // to allow for a partial declaration
+    NewEnumeration->AllocateName();
+    
+    // allow for partial definitions
+    if( TokenIsThisSymbol( *TokenPosition, SpecialSymbolTypes::Semicolon ) )
+    {
+        // consume semicolon and return partial enumeration
+        TokenPosition++;
+        return NewEnumeration;
+    }
+    
     // expect an open brace
     ExpectDelimiter( TokenPosition, DelimiterTypes::OpenBrace );
     
@@ -1322,11 +1370,13 @@ EnumerationNode* VirconCParser::ParseEnumeration( CNode* Parent, CTokenIterator&
     
     // (enumerations may actually be empty, so don't check that)
     
-    // create the structure type
+    // create the enumeration type
     NewEnumeration->DeclaredType = new EnumerationType( NewEnumeration );
     
-    // define this enumeration in the scope
+    // allocate enumeration name again, now as a full definition
+    NewEnumeration->HasBody = true;
     NewEnumeration->AllocateName();
+    
     return NewEnumeration;
 }
 

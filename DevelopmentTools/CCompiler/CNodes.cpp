@@ -218,16 +218,57 @@ CNode* ScopeNode::ResolveIdentifier( std::string Name )
 
 void ScopeNode::DeclareNewIdentifier( string Name, CNode* NewDeclaration )
 {
-    // check that the name is not already used
+    // when the name was not in use, simply add it
     auto Pair = DeclaredIdentifiers.find( Name );
     
-    if( Pair != DeclaredIdentifiers.end() )
+    if( Pair == DeclaredIdentifiers.end() )
+    {
+        DeclaredIdentifiers[ Name ] = NewDeclaration;
+        return;
+    }
+    
+    // it is ok to declare the same node multiple times
+    CNode* OldDeclaration = Pair->second;
+    
+    if( OldDeclaration == NewDeclaration )
+      return;
+    
+    // redeclarations need to be the same type
+    if( NewDeclaration->Type() != OldDeclaration->Type() )
+    {
+        RaiseError( NewDeclaration->Location, "identifier \"" + Name + "\" was already used for a different declaration" );
+        RaiseFatalError( Pair->second->Location, "previously declared here" );
+    }
+    
+    // in the case of functions we require all
+    // redeclarations to have the same prototype
+    if( NewDeclaration->Type() == CNodeTypes::Function )
+    {
+        FunctionNode* OldFunction = (FunctionNode*)OldDeclaration;
+        FunctionNode* NewFunction = (FunctionNode*)NewDeclaration;
+        
+        if( !NewFunction->PrototypeMatchesWith( OldFunction ) )
+        {
+            RaiseError( NewDeclaration->Location, "identifier \"" + Name + "\" was already declared" );
+            RaiseFatalError( Pair->second->Location, "previously declared here, with a different prototype" );
+        }
+    }
+    
+    // we may repeat a partial definition multiple times
+    // even after a full definition was already declared
+    if( NewDeclaration->IsPartialDefinition() )
+      return;
+    
+    // full definitions cannot be repeated, even if they match
+    if( !OldDeclaration->IsPartialDefinition() )
     {
         RaiseError( NewDeclaration->Location, "identifier \"" + Name + "\" was already declared" );
         RaiseFatalError( Pair->second->Location, "previously declared here" );
     }
     
-    // we can now add this variable to the scope
+    // if we reach here it is a full declaration
+    // that has to replace a previous partial one
+    // in order to fully define the construct
     DeclaredIdentifiers[ Name ] = NewDeclaration;
 }
 
@@ -631,6 +672,7 @@ FunctionNode::FunctionNode( CNode* Parent_ )
 {
     ReturnType = nullptr;
     SizeOfArguments = 0;
+    HasBody = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -710,6 +752,34 @@ void FunctionNode::AllocateName()
     // always its immediate parent
     TopLevelNode* TopLevel = (TopLevelNode*)Parent;
     TopLevel->DeclareNewIdentifier( Name, this );
+}
+
+// -----------------------------------------------------------------------------
+
+bool FunctionNode::PrototypeMatchesWith( FunctionNode* F2 )
+{
+    // decide trivial cases
+    if( !F2 ) return false;
+    if( F2 == this ) return false;
+    
+    // check basic compatibility
+    if( !AreEqual( ReturnType, F2->ReturnType ) ) return false;
+    if( Arguments.size() != F2->Arguments.size() ) return false;
+    
+    // check every argument type
+    auto it1 = Arguments.begin();
+    auto it2 = F2->Arguments.begin();
+    
+    while( it1 != Arguments.end() )
+    {
+        if( !AreEqual( (*it1)->DeclaredType, (*it2)->DeclaredType ) )
+          return false;
+        
+        // iterate
+        it1++; it2++;
+    }
+    
+    return true;
 }
 
 
@@ -835,6 +905,7 @@ StructureNode::StructureNode( CNode* Parent_ )
 // - - - - - - - - - - - - - - - - - -
 {
     SizeOfMembers = 0;
+    HasBody = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -872,6 +943,7 @@ UnionNode::UnionNode( CNode* Parent_ )
 // - - - - - - - - - - - - - - - - - -
 {
     MaximumMemberSize = 0;
+    HasBody = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -988,7 +1060,7 @@ EnumerationNode::EnumerationNode( CNode* Parent_ )
 :   TypeNode( Parent_ )
 // - - - - - - - - - - - - - - - - - -
 {
-    // (do nothing)
+    HasBody = false;
 }
 
 // -----------------------------------------------------------------------------
