@@ -86,6 +86,10 @@ int VirconCEmitter::EmitVariable( VariableNode* Variable )
 
 int VirconCEmitter::EmitFunction( FunctionNode* Function )
 {
+    // emit only if it is a full definition
+    if( !Function->HasBody )
+      return 0;
+    
     // build labels
     string FunctionLabel = "__function_" + Function->Name;
     string ReturnLabel = "__function_" + Function->Name + "_return";
@@ -269,7 +273,7 @@ int VirconCEmitter::EmitInitialization( MemoryPlacement LeftPlacement, DataType*
         
         // CASE 3B: Multiple values assigned to structure fields
         if( LeftType->Type() == DataTypes::Structure )
-          return EmitStructureInitialization( LeftPlacement, ((StructureType*)LeftType)->Declaration, AssignedList );
+          return EmitStructureInitialization( LeftPlacement, ((StructureType*)LeftType)->GetDeclaration( true ), AssignedList );
         
         // CASE 3C: Single-value list
         if( AssignedList->AssignedValues.size() == 1 && FirstValue->IsExpression() )

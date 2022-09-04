@@ -140,7 +140,7 @@ class CNode
         virtual std::string ToXML() = 0;
         
         // help for node references
-        ScopeNode* FindClosestScope( CNode* FirstCandidate );
+        ScopeNode* FindClosestScope( bool IncludeItself );
         
         // node identification in labels
         std::string NodeLabel();

@@ -277,7 +277,7 @@ void VirconCAnalyzer::AnalyzeInitialization( SourceLocation Location, DataType* 
         
         // case 2: assign multiple values to structure members
         else if( VariableType->Type() == DataTypes::Structure )
-          AnalyzeStructureInitialization( Location, ((StructureType*)VariableType)->Declaration, ValueList );
+          AnalyzeStructureInitialization( Location, ((StructureType*)VariableType)->GetDeclaration( true ), ValueList );
         
         // case 3: a 1-value list and 1-element variable are actually a single assignment
         else if( ValueList->AssignedValues.size() == 1 && FirstValue->IsExpression() )
@@ -596,6 +596,29 @@ void VirconCAnalyzer::AnalyzeAssemblyBlock( AssemblyBlockNode* AssemblyBlock )
 // =============================================================================
 
 
+void VirconCAnalyzer::AnalyzeFunctions()
+{
+    // all functions must be defined at top level scope
+    for( auto Pair: ProgramAST->DeclaredIdentifiers )
+    {
+        CNode* TopLevelDefinition = Pair.second;
+        
+        // discard non-function definitions
+        if( TopLevelDefinition->Type() != CNodeTypes::Function )
+          continue;
+        
+        FunctionNode* Function = (FunctionNode*)TopLevelDefinition;
+        
+        // if a full definition was declared at some point,
+        // it will be the one that remains in the scope
+        // (previous partial ones will be replaced)
+        if( !Function->HasBody )
+          RaiseError( Function->Location, string("function '") + Function->Name + "' has been declared but not fully defined" );
+    }
+}
+
+// -----------------------------------------------------------------------------
+
 void VirconCAnalyzer::AnalyzeMainFunction()
 {
     // check that there is a main function
@@ -656,7 +679,10 @@ void VirconCAnalyzer::Analyze( TopLevelNode& ProgramAST_, bool IsBios )
     for( CNode* Statement: ProgramAST->Statements )
       AnalyzeCNode( Statement );
     
-    // al program level, analyze the main function
+    // check that all functions have been fully defined
+    AnalyzeFunctions();
+    
+    // at program level, analyze the main function
     AnalyzeMainFunction();
     
     // if this is a BIOS program, we need to have a

@@ -2,6 +2,7 @@
     // include project headers
     #include "DataTypes.hpp"
     #include "CNodes.hpp"
+    #include "CompilerInfrastructure.hpp"
     
     // include C/C++ headers
     #include <iostream>     // [ C++ STL ] I/O Streams
@@ -195,9 +196,10 @@ DataType* ArrayType::Clone()
 // =============================================================================
 
 
-StructureType::StructureType( StructureNode* Declaration_ )
+StructureType::StructureType( ScopeNode* DeclarationScope_, std::string StructureName_ )
 {
-    Declaration = Declaration_;
+    DeclarationScope = DeclarationScope_;
+    StructureName = StructureName_;
 }
 
 // -----------------------------------------------------------------------------
@@ -211,6 +213,7 @@ StructureType::~StructureType()
 
 unsigned StructureType::SizeInWords()
 {
+    StructureNode* Declaration = GetDeclaration( true );
     return Declaration->SizeOfMembers;
 }
 
@@ -218,14 +221,26 @@ unsigned StructureType::SizeInWords()
 
 string StructureType::ToString()
 {
-    return "struct " + Declaration->Name;
+    return "struct " + StructureName;
 }
 
 // -----------------------------------------------------------------------------
 
 DataType* StructureType::Clone()
 {
-    return new StructureType( Declaration );
+    return new StructureType( DeclarationScope, StructureName );
+}
+
+// -----------------------------------------------------------------------------
+
+StructureNode* StructureType::GetDeclaration( bool MustHaveBody )
+{
+    StructureNode* Declaration = (StructureNode*)DeclarationScope->DeclaredIdentifiers[ StructureName ];
+    
+    if( MustHaveBody && !Declaration->HasBody )
+      RaiseFatalError( Declaration->Location, string("structure '") + StructureName + "' is instanced without being fully defined" );
+    
+    return Declaration;
 }
 
 
@@ -234,9 +249,10 @@ DataType* StructureType::Clone()
 // =============================================================================
 
 
-UnionType::UnionType( UnionNode* Declaration_ )
+UnionType::UnionType( ScopeNode* DeclarationScope_, std::string UnionName_ )
 {
-    Declaration = Declaration_;
+    DeclarationScope = DeclarationScope_;
+    UnionName = UnionName_;
 }
 
 // -----------------------------------------------------------------------------
@@ -250,6 +266,7 @@ UnionType::~UnionType()
 
 unsigned UnionType::SizeInWords()
 {
+    UnionNode* Declaration = GetDeclaration( true );
     return Declaration->MaximumMemberSize;
 }
 
@@ -257,14 +274,26 @@ unsigned UnionType::SizeInWords()
 
 string UnionType::ToString()
 {
-    return "union " + Declaration->Name;
+    return "union " + UnionName;
 }
 
 // -----------------------------------------------------------------------------
 
 DataType* UnionType::Clone()
 {
-    return new UnionType( Declaration );
+    return new UnionType( DeclarationScope, UnionName );
+}
+
+// -----------------------------------------------------------------------------
+
+UnionNode* UnionType::GetDeclaration( bool MustHaveBody )
+{
+    UnionNode* Declaration = (UnionNode*)DeclarationScope->DeclaredIdentifiers[ UnionName ];
+    
+    if( MustHaveBody && !Declaration->HasBody )
+      RaiseFatalError( Declaration->Location, string("union '") + UnionName + "' is instanced without being fully defined" );
+    
+    return Declaration;
 }
 
 
@@ -273,9 +302,10 @@ DataType* UnionType::Clone()
 // =============================================================================
 
 
-EnumerationType::EnumerationType( EnumerationNode* Declaration_ )
+EnumerationType::EnumerationType( ScopeNode* DeclarationScope_, std::string EnumerationName_ )
 {
-    Declaration = Declaration_;
+    DeclarationScope = DeclarationScope_;
+    EnumerationName = EnumerationName_;
 }
 
 // -----------------------------------------------------------------------------
@@ -289,6 +319,10 @@ EnumerationType::~EnumerationType()
 
 unsigned EnumerationType::SizeInWords()
 {
+    // we don't need the declaration, but request it to
+    // ensure a full definition exists when instancing
+    GetDeclaration( true );
+    
     // internally it is just treated as an integer
     return 1;
 }
@@ -297,14 +331,26 @@ unsigned EnumerationType::SizeInWords()
 
 string EnumerationType::ToString()
 {
-    return "enumeration " + Declaration->Name;
+    return "enumeration " + EnumerationName;
 }
 
 // -----------------------------------------------------------------------------
 
 DataType* EnumerationType::Clone()
 {
-    return new EnumerationType( Declaration );
+    return new EnumerationType( DeclarationScope, EnumerationName );
+}
+
+// -----------------------------------------------------------------------------
+
+EnumerationNode* EnumerationType::GetDeclaration( bool MustHaveBody )
+{
+    EnumerationNode* Declaration = (EnumerationNode*)DeclarationScope->DeclaredIdentifiers[ EnumerationName ];
+    
+    if( MustHaveBody && !Declaration->HasBody )
+      RaiseFatalError( Declaration->Location, string("enumeration '") + EnumerationName + "' is instanced without being fully defined" );
+    
+    return Declaration;
 }
 
 
@@ -337,13 +383,13 @@ bool AreEqual( DataType* T1, DataType* T2 )
         }
         
         case DataTypes::Structure:
-            return ((StructureType*)T1)->Declaration == ((StructureType*)T2)->Declaration;
+            return ((StructureType*)T1)->GetDeclaration( false ) == ((StructureType*)T2)->GetDeclaration( false );
         
         case DataTypes::Union:
-            return ((UnionType*)T1)->Declaration == ((UnionType*)T2)->Declaration;
+            return ((UnionType*)T1)->GetDeclaration( false ) == ((UnionType*)T2)->GetDeclaration( false );
         
         case DataTypes::Enumeration:
-            return ((EnumerationType*)T1)->Declaration == ((EnumerationType*)T2)->Declaration;
+            return ((EnumerationType*)T1)->GetDeclaration( false ) == ((EnumerationType*)T2)->GetDeclaration( false );
         
         default:
             throw runtime_error( "invalid data type" );

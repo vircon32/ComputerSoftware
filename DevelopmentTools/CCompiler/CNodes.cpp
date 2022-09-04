@@ -28,10 +28,11 @@ CNode::CNode( CNode* Parent_ )
 
 // -----------------------------------------------------------------------------
 
-ScopeNode* CNode::FindClosestScope( CNode* FirstCandidate )
+ScopeNode* CNode::FindClosestScope( bool IncludeItself )
 {
-    // find its closest scope
-    CNode* CurrentNode = FirstCandidate;
+    // find its closest containing scope
+    // (i.e. discard itself it it is a scope)
+    CNode* CurrentNode = (IncludeItself? this : Parent);
     
     while( CurrentNode && !CurrentNode->IsScope() )
       CurrentNode = CurrentNode->Parent;
@@ -324,7 +325,7 @@ void ScopeNode::AllocateVariablesInStack()
 void ScopeNode::CalculateLocalVariablesOffset()
 {
     // first, determine the closest parent scope
-    ScopeNode* ParentScope = FindClosestScope( Parent );
+    ScopeNode* ParentScope = FindClosestScope( false );
     
     // now use parent scope to determine offsets
     if( ParentScope->Type() == CNodeTypes::Function )
@@ -398,7 +399,7 @@ TypeNode::~TypeNode()
 void TypeNode::AllocateName()
 {
     // find its closest scope
-    OwnerScope = FindClosestScope( Parent );
+    OwnerScope = FindClosestScope( false );
     
     // now attempt declaration of new type
     OwnerScope->DeclareNewIdentifier( Name, this );
@@ -520,7 +521,7 @@ void VariableNode::AllocateAsArgument()
 void VariableNode::AllocateAsVariable()
 {
     // find its closest scope
-    OwnerScope = FindClosestScope( Parent );
+    OwnerScope = FindClosestScope( false );
     
     // now attempt declaration of new variable
     OwnerScope->DeclareNewIdentifier( Name, this );
@@ -1045,7 +1046,7 @@ void EnumValueNode::AllocateInEnum()
     EnumerationContext->Values.push_back( this );
     
     // finally allocate name in enumeration's owner scope
-    ScopeNode* OwnerScope = FindClosestScope( Parent );
+    ScopeNode* OwnerScope = FindClosestScope( false );
     OwnerScope->DeclareNewIdentifier( Name, this );
 }
 
@@ -1768,7 +1769,7 @@ string ExpressionAtomNode::ToXML()
 void ExpressionAtomNode::ResolveIdentifier()
 {
     // identify an owner scope
-    ScopeNode* OwnerScope = FindClosestScope( Parent );
+    ScopeNode* OwnerScope = FindClosestScope( false );
     CNode* Declaration = OwnerScope->ResolveIdentifier( IdentifierName );
     
     // check if it was found
@@ -1967,7 +1968,7 @@ string FunctionCallNode::ToXML()
 
 void FunctionCallNode::ResolveFunction()
 {
-    ScopeNode* OwnerScope = FindClosestScope( Parent );
+    ScopeNode* OwnerScope = FindClosestScope( false );
     CNode* Declaration = OwnerScope->ResolveIdentifier( FunctionName );
     
     // check if it was found
@@ -3224,10 +3225,10 @@ void MemberAccessNode::ResolveMember()
     GroupNode* GroupDeclarationNode = nullptr;
     
     if( GroupType->Type() == DataTypes::Structure )
-      GroupDeclarationNode = ((StructureType*)GroupType)->Declaration;
+      GroupDeclarationNode = ((StructureType*)GroupType)->GetDeclaration( true );
     
     else if( GroupType->Type() == DataTypes::Union )
-      GroupDeclarationNode = ((UnionType*)GroupType)->Declaration;
+      GroupDeclarationNode = ((UnionType*)GroupType)->GetDeclaration( true );
     
     else
       RaiseFatalError( Location, "Left operand for '.' needs to be a group type" );
@@ -3373,10 +3374,10 @@ void PointedMemberAccessNode::ResolveMember()
     GroupNode* GroupDeclarationNode = nullptr;
     
     if( GroupType->Type() == DataTypes::Structure )
-      GroupDeclarationNode = ((StructureType*)GroupType)->Declaration;
+      GroupDeclarationNode = ((StructureType*)GroupType)->GetDeclaration( true );
     
     else if( GroupType->Type() == DataTypes::Union )
-      GroupDeclarationNode = ((UnionType*)GroupType)->Declaration;
+      GroupDeclarationNode = ((UnionType*)GroupType)->GetDeclaration( true );
     
     else
       RaiseFatalError( Location, "Left operand for '->' needs to point to a group type" );

@@ -82,7 +82,7 @@ bool IsValidStartOfType( CToken* T, CNode* Parent )
     string SymbolName = ((IdentifierToken*)T)->Name;
     
     // find the applicable scope
-    ScopeNode* OwnerScope = Parent->FindClosestScope( Parent );
+    ScopeNode* OwnerScope = Parent->FindClosestScope( true );
     
     // with that scope, attempt to resolve it as a type
     CNode* Declaration = OwnerScope->ResolveIdentifier( SymbolName );
@@ -710,7 +710,7 @@ DataType* VirconCParser::ParseType( CNode* Parent, CTokenIterator& TokenPosition
         string SymbolName = ExpectIdentifier( TokenPosition );
         
         // find the applicable scope
-        ScopeNode* OwnerScope = Parent->FindClosestScope( Parent );
+        ScopeNode* OwnerScope = Parent->FindClosestScope( true );
         
         // use the scope to resolve it as a type
         CNode* Declaration = OwnerScope->ResolveIdentifier( SymbolName );
@@ -938,7 +938,7 @@ FunctionNode* VirconCParser::ParseFunction( DataType* ReturnType, const string& 
     NewFunction->AllocateName();
     
     // allow for partial definitions
-    if( TokenIsThisSymbol( NextToken, SpecialSymbolTypes::Semicolon ) )
+    if( TokenIsThisSymbol( *TokenPosition, SpecialSymbolTypes::Semicolon ) )
     {
         // consume semicolon and return partial function
         TokenPosition++;
@@ -1174,7 +1174,7 @@ StructureNode* VirconCParser::ParseStructure( CNode* Parent, CTokenIterator& Tok
     
     // define this structure in the scope early, so that
     // it can self-reference itself through pointers
-    NewStructure->DeclaredType = new StructureType( NewStructure );
+    NewStructure->DeclaredType = new StructureType( NewStructure->FindClosestScope( false ), NewStructure->Name );
     NewStructure->AllocateName();
     
     // allow for partial definitions
@@ -1238,7 +1238,7 @@ UnionNode* VirconCParser::ParseUnion( CNode* Parent, CTokenIterator& TokenPositi
     
     // define this union in the scope early, so that
     // it can self-reference itself through pointers
-    NewUnion->DeclaredType = new UnionType( NewUnion );
+    NewUnion->DeclaredType = new UnionType( NewUnion->FindClosestScope( false ), NewUnion->Name );
     NewUnion->AllocateName();
     
     // allow for partial definitions
@@ -1371,7 +1371,7 @@ EnumerationNode* VirconCParser::ParseEnumeration( CNode* Parent, CTokenIterator&
     // (enumerations may actually be empty, so don't check that)
     
     // create the enumeration type
-    NewEnumeration->DeclaredType = new EnumerationType( NewEnumeration );
+    NewEnumeration->DeclaredType = new EnumerationType( NewEnumeration->FindClosestScope( false ), NewEnumeration->Name );
     
     // allocate enumeration name again, now as a full definition
     NewEnumeration->HasBody = true;

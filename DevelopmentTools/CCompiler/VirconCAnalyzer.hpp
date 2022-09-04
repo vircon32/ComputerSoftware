@@ -65,6 +65,7 @@ class VirconCAnalyzer
         void AnalyzeAssemblyBlock( AssemblyBlockNode* AssemblyBlock );
         
         // non-node analysis functions
+        void AnalyzeFunctions();
         void AnalyzeMainFunction();
         void AnalyzeErrorHandlerFunction();
         

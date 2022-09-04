@@ -148,6 +148,7 @@ class ArrayType: public DataType
 
 // -----------------------------------------------------------------------------
 
+class ScopeNode;
 class StructureNode;
 
 // all related information is accessed by accessing
@@ -158,12 +159,13 @@ class StructureType: public DataType
 {
     public:
         
-        StructureNode* Declaration;
+        ScopeNode* DeclarationScope;
+        std::string StructureName;
         
     public:
         
         // instance handling
-        StructureType( StructureNode* Declaration_ );
+        StructureType( ScopeNode* DeclarationScope_, std::string StructureName_ );
         virtual ~StructureType();
         
         // basic properties
@@ -173,6 +175,9 @@ class StructureType: public DataType
         
         // basic manipulation
         virtual DataType* Clone();
+        
+        // specifics for structures
+        StructureNode* GetDeclaration( bool MustHaveBody );
 };
 
 // -----------------------------------------------------------------------------
@@ -187,12 +192,13 @@ class UnionType: public DataType
 {
     public:
         
-        UnionNode* Declaration;
+        ScopeNode* DeclarationScope;
+        std::string UnionName;
         
     public:
         
         // instance handling
-        UnionType( UnionNode* Declaration_ );
+        UnionType( ScopeNode* DeclarationScope_, std::string UnionName_ );
         virtual ~UnionType();
         
         // basic properties
@@ -202,6 +208,9 @@ class UnionType: public DataType
         
         // basic manipulation
         virtual DataType* Clone();
+        
+        // specifics for unions
+        UnionNode* GetDeclaration( bool MustHaveBody );
 };
 
 // -----------------------------------------------------------------------------
@@ -216,12 +225,13 @@ class EnumerationType: public DataType
 {
     public:
         
-        EnumerationNode* Declaration;
+        ScopeNode* DeclarationScope;
+        std::string EnumerationName;
         
     public:
         
         // instance handling
-        EnumerationType( EnumerationNode* Declaration_ );
+        EnumerationType( ScopeNode* DeclarationScope_, std::string EnumerationName_ );
         virtual ~EnumerationType();
         
         // basic properties
@@ -231,6 +241,9 @@ class EnumerationType: public DataType
         
         // basic manipulation
         virtual DataType* Clone();
+        
+        // specifics for enumerations
+        EnumerationNode* GetDeclaration( bool MustHaveBody );
 };
 
 
