@@ -365,6 +365,12 @@ void VirconCPreprocessor::ProcessInclude()
     
     CToken* FilePathToken = *TokenPosition;
     
+    // give a special error message for includes that use
+    // brackets (not supported in this compiler)
+    if( TokenIsThisOperator( FilePathToken, OperatorTypes::Less ) )
+      RaiseFatalError( FilePathToken->Location, "this compiler only supports #include \"path\", not #include <path>" ); 
+    
+    // otherwise expect a path string
     if( FilePathToken->Type() != CTokenTypes::LiteralString )
       RaiseFatalError( FilePathToken->Location, "expected file path string" );
     
@@ -393,13 +399,6 @@ void VirconCPreprocessor::ProcessDefine()
       RaiseFatalError( (*DirectiveLine.begin())->Location, "definition name is missing" );
     
     string DefinitionName = ExpectIdentifier( TokenPosition );
-    
-    // some definitions are illegal and will be ignored
-    // (but raise a warning to report it)
-    // define
-    // include
-    // __LINE__
-    // ...
     
     // create a new definition
     CTokenList EmptyList;
