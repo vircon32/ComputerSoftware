@@ -60,14 +60,18 @@ void VirconCAnalyzer::AnalyzeCNode( CNode* Node )
         case CNodeTypes::Function:
             AnalyzeFunction( (FunctionNode*)Node );
             return;
+        case CNodeTypes::Structure:
+            AnalyzeStructure( (StructureNode*)Node );
+            return;
+        case CNodeTypes::Union:
+            AnalyzeUnion( (UnionNode*)Node );
+            return;
         case CNodeTypes::EmbeddedFile:
             AnalyzeEmbeddedFile( (EmbeddedFileNode*)Node );
             return;
         
-        // for type declarations, no analysis is
-        // needed (they only need to be parsed)
-        case CNodeTypes::Structure:
-        case CNodeTypes::Union:
+        // for these type declarations, no analysis
+        // is needed (they only need to be parsed)
         case CNodeTypes::Enumeration:
         case CNodeTypes::Typedef:
             return;
@@ -162,6 +166,16 @@ void VirconCAnalyzer::AnalyzeVariableList( VariableListNode* VariableList )
 
 void VirconCAnalyzer::AnalyzeVariable( VariableNode* Variable )
 {
+    // watch for non-instantiable types
+    if( Variable->DeclaredType->SizeInWords() == 0 )
+    {
+        RaiseError( Variable->Location, "variables of type \"" + Variable->DeclaredType->ToString() + "\" cannot be instanced" );
+        
+        // do not try to analyze anything else
+        // since it may cause unforeseen situations
+        return;
+    }
+    
     // analyze variable initialization, if any
     if( Variable->InitialValue )
     {
@@ -185,14 +199,53 @@ void VirconCAnalyzer::AnalyzeVariable( VariableNode* Variable )
 
 void VirconCAnalyzer::AnalyzeFunction( FunctionNode* Function )
 {
+    // analyze return
+    if( Function->ReturnType->Type() != DataTypes::Void )
+      if( Function->ReturnType->SizeInWords() == 0 )
+        RaiseError( Function->Location, "functions cannot return values of type \"" + Function->ReturnType->ToString() + "\"" );
+    
+    // analyze arguments
+    for( auto Argument: Function->Arguments )
+    {
+        // watch for non-instantiable types
+        if( Argument->DeclaredType->SizeInWords() == 0 )
+          RaiseError( Argument->Location, "functions cannot receive arguments of type \"" + Argument->DeclaredType->ToString() + "\"" );
+        
+        // watch for unused arguments
+        else if( !Argument->IsReferenced )
+          RaiseWarning( Argument->Location, "argument \"" + Argument->Name + "\" is not used" );
+    }
+    
     // analyze body contents
-    for( auto S: Function->Statements )
-      AnalyzeCNode( S );
-      
-    // watch for unused arguments
-    for( auto A: Function->Arguments )
-      if( !A->IsReferenced )
-        RaiseWarning( A->Location, "argument \"" + A->Name + "\" is not used" );
+    if( Function->HasBody )
+      for( auto S: Function->Statements )
+        AnalyzeCNode( S );
+}
+
+// -----------------------------------------------------------------------------
+
+void VirconCAnalyzer::AnalyzeStructure( StructureNode* Structure )
+{
+    // partial definitions have nothing to analyze
+    if( !Structure->HasBody ) return;
+    
+    // all members must have instantiable types
+    for( MemberNode* Member: Structure->MembersInOrder )
+      if( Member->DeclaredType->SizeInWords() == 0 )
+        RaiseError( Member->Location, "structures cannot have members of type \"" + Member->DeclaredType->ToString() + "\"" );
+}
+
+// -----------------------------------------------------------------------------
+
+void VirconCAnalyzer::AnalyzeUnion( UnionNode* Union )
+{
+    // partial definitions have nothing to analyze
+    if( !Union->HasBody ) return;
+    
+    // all members must have instantiable types
+    for( MemberNode* Member: Union->Declarations )
+      if( Member->DeclaredType->SizeInWords() == 0 )
+        RaiseError( Member->Location, "unions cannot have members of type \"" + Member->DeclaredType->ToString() + "\"" );
 }
 
 // -----------------------------------------------------------------------------

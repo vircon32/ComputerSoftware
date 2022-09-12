@@ -38,6 +38,8 @@ class VirconCAnalyzer
         void AnalyzeVariableList( VariableListNode* VariableList );
         void AnalyzeVariable( VariableNode* Variable );
         void AnalyzeFunction( FunctionNode* Function );
+        void AnalyzeStructure( StructureNode* Structure );
+        void AnalyzeUnion( UnionNode* Union );
         void AnalyzeEmbeddedFile( EmbeddedFileNode* EmbeddedFile );
         void AnalyzeInitializationList( InitializationListNode* InitializationList );
         
