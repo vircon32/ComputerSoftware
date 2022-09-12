@@ -355,12 +355,86 @@ EnumerationNode* EnumerationType::GetDeclaration( bool MustHaveBody )
 
 
 // =============================================================================
+//      FUNCTION TYPE
+// =============================================================================
+
+
+FunctionType::FunctionType( DataType* ReturnType_ )
+{
+    ReturnType = ReturnType_->Clone();
+}
+
+// -----------------------------------------------------------------------------
+
+FunctionType::~FunctionType()
+{
+    delete ReturnType;
+    
+    for( auto ArgumentType: ArgumentTypes )
+      delete ArgumentType;
+}
+
+// -----------------------------------------------------------------------------
+
+unsigned FunctionType::SizeInWords()
+{
+    // there is no actual "size" of a function type,
+    // since it cannot be instanced as a variable
+    return 0;
+}
+
+// -----------------------------------------------------------------------------
+
+string FunctionType::ToString()
+{
+    string Result = ReturnType->ToString() + "(";
+    bool IsFirstArgument = true;
+    
+    for( auto ArgumentType: ArgumentTypes )
+    {
+        if( !IsFirstArgument )
+          Result += ",";
+        
+        Result += ArgumentType->ToString();
+        IsFirstArgument = false;
+    }
+    
+    Result += ")";
+    return Result;
+}
+
+// -----------------------------------------------------------------------------
+
+DataType* FunctionType::Clone()
+{
+    FunctionType* Cloned = new FunctionType( ReturnType );
+    
+    for( auto ArgumentType: ArgumentTypes )
+      Cloned->AddArgumentType( ArgumentType );
+    
+    return Cloned;
+}
+
+// -----------------------------------------------------------------------------
+
+void FunctionType::AddArgumentType( DataType* NewArgumentType )
+{
+    ArgumentTypes.push_back( NewArgumentType->Clone() );
+}
+
+
+// =============================================================================
 //      DATA TYPE OPERATION
 // =============================================================================
 
 
 bool AreEqual( DataType* T1, DataType* T2 )
 {
+    // decide trivial cases
+    if( !T1 || !T2 ) return false;
+    if( T1 == T2 ) return true;
+    
+    // now decide for each type
     if( T1->Type() != T2->Type() )
       return false;
     
@@ -390,6 +464,30 @@ bool AreEqual( DataType* T1, DataType* T2 )
         
         case DataTypes::Enumeration:
             return ((EnumerationType*)T1)->GetDeclaration( false ) == ((EnumerationType*)T2)->GetDeclaration( false );
+        
+        case DataTypes::Function:
+        {
+            FunctionType* F1 = (FunctionType*)T1;
+            FunctionType* F2 = (FunctionType*)T2;
+            
+            // check basic compatibility
+            if( !AreEqual( F1->ReturnType, F2->ReturnType ) ) return false;
+            if( F1->ArgumentTypes.size() != F2->ArgumentTypes.size() ) return false;
+            
+            // check every argument type
+            auto it1 = F1->ArgumentTypes.begin();
+            auto it2 = F2->ArgumentTypes.begin();
+            
+            while( it1 != F1->ArgumentTypes.end() )
+            {
+                if( !AreEqual( *it1, *it2 ) )
+                  return false;
+                
+                it1++; it2++;
+            }
+            
+            return true;
+        }
         
         default:
             throw runtime_error( "invalid data type" );

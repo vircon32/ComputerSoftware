@@ -727,14 +727,14 @@ DataType* VirconCParser::ParseType( CNode* Parent, CTokenIterator& TokenPosition
     // keep reading pointer and array modifiers
     while( (*TokenPosition)->Type() != CTokenTypes::EndOfFile )
     {
-        // read a pointer modifier
+        // case 1: read a pointer modifier
         if( TokenIsThisOperator( *TokenPosition, OperatorTypes::Asterisk ) )
         {
             TokenPosition++;
             ParsedType = new PointerType( ParsedType );
         }
         
-        // read an array modifier
+        // case 2: read an array modifier
         else if( TokenIsThisDelimiter( *TokenPosition, DelimiterTypes::OpenBracket ) )
         {
             // array indices are read from left to right, not the
@@ -774,6 +774,53 @@ DataType* VirconCParser::ParseType( CNode* Parent, CTokenIterator& TokenPosition
             // (as if they had been found right to left)
             for( int Dimension: Dimensions )
               ParsedType = new ArrayType( ParsedType, Dimension );
+        }
+        
+        // case 3: read a list of argument types
+        else if( TokenIsThisDelimiter( *TokenPosition, DelimiterTypes::OpenParenthesis ) )
+        {
+            // consume open parenthesis and take base type
+            // as the return type of a new function type
+            TokenPosition++;
+            ParsedType = new FunctionType( ParsedType );
+            list< DataType* >* ParsedArgumentTypes = &((FunctionType*)ParsedType)->ArgumentTypes;
+            
+            // careful! "No parameters" can be stated by either
+            // (), or ( void ). This is a special case
+            CToken* NextToken = *TokenPosition;
+            CTokenIterator NextPosition = Next( TokenPosition );
+            
+            if( TokenIsThisKeyword( NextToken, KeywordTypes::Void )
+            &&  TokenIsThisDelimiter( *NextPosition, DelimiterTypes::CloseParenthesis ) )
+            {
+                // consume "void" and ")"
+                TokenPosition++;
+                TokenPosition++;
+                
+                // do NOT parse argument types
+                // (leave the list empty)
+            }
+            
+            else while( !IsLastToken( *TokenPosition ) )
+            {
+                NextToken = *TokenPosition;
+                
+                // keep adding argument types until
+                // we find a closing parenthesis
+                if( TokenIsThisDelimiter( NextToken, DelimiterTypes::CloseParenthesis ) )
+                {
+                    TokenPosition++;
+                    break;
+                }
+                
+                // if this is not the first argument type,
+                // expect a comma as separation
+                if( !ParsedArgumentTypes->empty() )
+                  ExpectSpecialSymbol( TokenPosition, SpecialSymbolTypes::Comma );
+                
+                // expect a declaration as next argument
+                ParsedArgumentTypes->push_back( ParseType( Parent, TokenPosition ) );
+            }
         }
         
         else break;
@@ -917,12 +964,11 @@ FunctionNode* VirconCParser::ParseFunction( DataType* ReturnType, const string& 
         
         // keep adding arguments until
         // we find a closing parenthesis
-        if( NextToken->Type() == CTokenTypes::Delimiter )
-          if( ((DelimiterToken*)NextToken)->Which == DelimiterTypes::CloseParenthesis )
-          {
-              TokenPosition++;
-              break;
-          }
+        if( TokenIsThisDelimiter( NextToken, DelimiterTypes::CloseParenthesis ) )
+        {
+            TokenPosition++;
+            break;
+        }
         
         // if this is not the first argument,
         // expect a comma as separation

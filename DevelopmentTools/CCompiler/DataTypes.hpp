@@ -22,7 +22,8 @@ enum class DataTypes
     Array,
     Structure,
     Union,
-    Enumeration
+    Enumeration,
+    Function
 };
 
 // -----------------------------------------------------------------------------
@@ -244,6 +245,33 @@ class EnumerationType: public DataType
         
         // specifics for enumerations
         EnumerationNode* GetDeclaration( bool MustHaveBody );
+};
+
+// -----------------------------------------------------------------------------
+
+class FunctionType: public DataType
+{
+    public:
+        
+        DataType* ReturnType;
+        std::list< DataType* > ArgumentTypes;
+        
+    public:
+        
+        // instance handling
+        FunctionType( DataType* ReturnType_ );
+        virtual ~FunctionType();
+        
+        // basic properties
+        virtual DataTypes Type() { return DataTypes::Function; };
+        virtual unsigned SizeInWords();
+        virtual std::string ToString();
+        
+        // basic manipulation
+        virtual DataType* Clone();
+        
+        // specifics for functions
+        void AddArgumentType( DataType* NewArgumentType );
 };
 
 
