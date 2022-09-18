@@ -400,7 +400,16 @@ void ftoa( float value, int* result_text )
     // otherwise write decimal separator
     strcat( result_text, "." );
     
-    // format to the right number of decimals
+    // add leftmost decimal zeroes when needed
+    int decimal_aux = decimal_part;
+    
+    while( decimal_aux < 10000 )
+    {
+        strcat( result_text, "0" );
+        decimal_aux *= 10;
+    }
+    
+    // remove righmost decmal zeroes when needed
     while( !(decimal_part % 10) )
       decimal_part /= 10;
     
