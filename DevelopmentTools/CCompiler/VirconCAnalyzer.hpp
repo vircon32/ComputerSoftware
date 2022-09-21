@@ -32,7 +32,7 @@ class VirconCAnalyzer
         
         // analysis functions for abstract node types
         void AnalyzeCNode( CNode* Node );
-        void AnalyzeExpression( ExpressionNode* Expression );
+        void AnalyzeExpression( ExpressionNode* Expression, bool MustReturnValue );
         
         // analysis functions for specific nodes (declarations)
         void AnalyzeVariableList( VariableListNode* VariableList );

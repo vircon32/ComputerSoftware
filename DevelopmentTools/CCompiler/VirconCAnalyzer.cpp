@@ -46,7 +46,7 @@ void VirconCAnalyzer::AnalyzeCNode( CNode* Node )
     // (they have their own general analyzer)
     if( Node->IsExpression() )
     {
-        AnalyzeExpression( (ExpressionNode*)Node );
+        AnalyzeExpression( (ExpressionNode*)Node, false );
         return;
     }
     
@@ -126,7 +126,7 @@ void VirconCAnalyzer::AnalyzeCNode( CNode* Node )
 
 // -----------------------------------------------------------------------------
 
-void VirconCAnalyzer::AnalyzeExpression( ExpressionNode* Expression )
+void VirconCAnalyzer::AnalyzeExpression( ExpressionNode* Expression, bool MustReturnValue )
 {
     // some contructs have optional parts!
     // nothing to do if they are not used
@@ -138,6 +138,11 @@ void VirconCAnalyzer::AnalyzeExpression( ExpressionNode* Expression )
     
     // before any emission, all expressions must be checked
     CheckExpression( Expression );
+    
+    // when requested, ensure the expression returns a value
+    if( MustReturnValue )
+      if( Expression->ReturnedType->Type() == DataTypes::Void )
+        RaiseError( Expression->Location, "This expression does not return a value to be used" );
 }
 
 
@@ -162,7 +167,7 @@ void VirconCAnalyzer::AnalyzeVariable( VariableNode* Variable )
     {
         // expressions themselves need to be analyzed too
         if( Variable->InitialValue->IsExpression() )
-          AnalyzeExpression( (ExpressionNode*)Variable->InitialValue );
+          AnalyzeExpression( (ExpressionNode*)Variable->InitialValue, true );
           
         if( Variable->InitialValue->Type() == CNodeTypes::InitializationList )
           AnalyzeInitializationList( (InitializationListNode*)Variable->InitialValue );
@@ -228,7 +233,7 @@ void VirconCAnalyzer::AnalyzeInitializationList( InitializationListNode* Initial
     for( CNode* Value: InitializationList->AssignedValues )
     {
         if( Value->IsExpression() )
-          AnalyzeExpression( (ExpressionNode*)Value );
+          AnalyzeExpression( (ExpressionNode*)Value, true );
           
         // for nested lists we need recursion
         if( Value->Type() == CNodeTypes::InitializationList )
@@ -422,7 +427,7 @@ void VirconCAnalyzer::AnalyzeBlock( BlockNode* Block )
 void VirconCAnalyzer::AnalyzeIf( IfNode* If )
 {
     // analyze the condition
-    AnalyzeExpression( If->Condition );
+    AnalyzeExpression( If->Condition, true );
     
     // analyze both parts
     AnalyzeCNode( If->TrueStatement );
@@ -434,7 +439,7 @@ void VirconCAnalyzer::AnalyzeIf( IfNode* If )
 void VirconCAnalyzer::AnalyzeWhile( WhileNode* While )
 {
     // analyze the condition
-    AnalyzeExpression( While->Condition );
+    AnalyzeExpression( While->Condition, true );
     
     // analyze loop body
     AnalyzeCNode( While->LoopStatement );
@@ -445,7 +450,7 @@ void VirconCAnalyzer::AnalyzeWhile( WhileNode* While )
 void VirconCAnalyzer::AnalyzeDo( DoNode* Do )
 {
     // analyze the condition
-    AnalyzeExpression( Do->Condition );
+    AnalyzeExpression( Do->Condition, true );
     
     // analyze loop body
     AnalyzeCNode( Do->LoopStatement );
@@ -456,7 +461,7 @@ void VirconCAnalyzer::AnalyzeDo( DoNode* Do )
 void VirconCAnalyzer::AnalyzeFor( ForNode* For )
 {
     // analyze the condition
-    AnalyzeExpression( For->Condition );
+    AnalyzeExpression( For->Condition, true );
     
     // analyze loop actions
     AnalyzeCNode( For->InitialAction );
@@ -496,7 +501,7 @@ void VirconCAnalyzer::AnalyzeReturn( ReturnNode* Return )
           RaiseError( Return->Location, "this function must return a value" );
         
         // analyze the returned expression
-        AnalyzeExpression( Return->ReturnedExpression );
+        AnalyzeExpression( Return->ReturnedExpression, true );
         
         // check compatibility of the returned type
         CheckTypeConversion( Return->Location, Return->ReturnedExpression, Function->ReturnType );
@@ -535,7 +540,7 @@ void VirconCAnalyzer::AnalyzeSwitch( SwitchNode* Switch )
     AnalyzeBlock( Switch );
     
     // analyze the condition expression
-    AnalyzeExpression( Switch->Condition );
+    AnalyzeExpression( Switch->Condition, true );
     
     // check compatibility of the condition type
     PrimitiveType IntegerType( PrimitiveTypes::Int );
@@ -547,7 +552,7 @@ void VirconCAnalyzer::AnalyzeSwitch( SwitchNode* Switch )
 void VirconCAnalyzer::AnalyzeCase( CaseNode* Case )
 {
     // analyze the condition expression
-    AnalyzeExpression( Case->ValueExpression );
+    AnalyzeExpression( Case->ValueExpression, true );
     
     // (compatibility of type was already analyzed by the parser)
 }
