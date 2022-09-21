@@ -106,4 +106,14 @@ void CheckDereference( UnaryOperationNode* Operation )
     
     if( OperandType->Type() != DataTypes::Pointer )
       RaiseError( Operation->Location, "dereference can only be applied to a pointer" );
+      
+    // void* pointers cannot be dereferenced
+    // (since that would produce a void value)
+    else
+    {
+        PointerType* OperandPointerType = (PointerType*)OperandType;
+        
+        if( OperandPointerType->BaseType->Type() == DataTypes::Void )
+          RaiseError( Operation->Location, "pointers to void cannot be dereferenced" );
+    }        
 }
