@@ -545,7 +545,7 @@ bool VirconSPU::FillSoundBuffer( ALuint BufferID )
               {
                   int32_t LoopStart = ThisChannel->CurrentSound->LoopStart;
                   int32_t LoopEnd   = ThisChannel->CurrentSound->LoopEnd;
-                  double PartialAdvance = fmod( ThisChannel->Position - LoopStart, LoopStart - LoopEnd );
+                  double PartialAdvance = fmod( ThisChannel->Position - LoopStart, LoopEnd - LoopStart );
                 
                   ThisChannel->Position = LoopStart + PartialAdvance;
               }

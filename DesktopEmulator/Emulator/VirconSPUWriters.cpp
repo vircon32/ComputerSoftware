@@ -132,7 +132,7 @@ void WriteSPUSoundLoopEnd( VirconSPU& SPU, VirconWord Value )
     Clamp( Value.AsInteger, 0, SPU.PointedSound->Length - 1 );
     
     // enforce that LoopEnd >= LoopStart
-    SPU.PointedSound->LoopStart = max( Value.AsInteger, SPU.PointedSound->LoopStart );
+    SPU.PointedSound->LoopEnd = max( Value.AsInteger, SPU.PointedSound->LoopStart );
 }
 
 // -----------------------------------------------------------------------------
