@@ -440,17 +440,21 @@ void VirconSPU::PlayChannel( SPUChannel& TargetChannel )
 {
     // case 1: for a stopped channel, set the initial play
     if( TargetChannel.State == IOPortValues::SPUChannelState_Stopped )
-      TargetChannel.Position = 0;
+    {
+        TargetChannel.Position = 0;
+        TargetChannel.LoopEnabled = TargetChannel.CurrentSound->PlayWithLoop;
+    }
     
     // case 2: if channel was already playing, make it retrigger
+    // (same actions as case 1, but keep it separate)
     else if( TargetChannel.State == IOPortValues::SPUChannelState_Playing )
-      TargetChannel.Position = 0;
+    {
+        TargetChannel.Position = 0;
+        TargetChannel.LoopEnabled = TargetChannel.CurrentSound->PlayWithLoop;
+    }
     
     // case 3: if channel was paused, just make it resume
     // (nothing else to do)
-    
-    // set channel loop enable to that of the sound
-    TargetChannel.LoopEnabled = TargetChannel.CurrentSound->PlayWithLoop;
     
     // finally, update channel state
     TargetChannel.State = IOPortValues::SPUChannelState_Playing;
