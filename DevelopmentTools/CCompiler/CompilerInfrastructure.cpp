@@ -124,7 +124,7 @@ void RaiseError( SourceLocation Location, const std::string& Description )
     CompilationErrors++;
     
     // stop compilation after maximum errors
-    if( CompilationWarnings >= MAXIMUM_ERRORS )
+    if( CompilationErrors >= MAXIMUM_ERRORS )
       throw runtime_error( "error: maximum errors have been reached" );
     
     // otherwise report the error normally
