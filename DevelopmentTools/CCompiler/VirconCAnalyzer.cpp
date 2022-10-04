@@ -213,7 +213,12 @@ void VirconCAnalyzer::AnalyzeFunction( FunctionNode* Function )
         
         // watch for unused arguments
         else if( !Argument->IsReferenced )
-          RaiseWarning( Argument->Location, "argument \"" + Argument->Name + "\" is not used" );
+        {
+            // makes no sense in partial definitions
+            // (use flags are only set in the full definition)
+            if( Function->HasBody )
+              RaiseWarning( Argument->Location, "argument \"" + Argument->Name + "\" is not used" );
+        }
     }
     
     // analyze body contents
