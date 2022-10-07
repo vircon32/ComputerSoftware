@@ -45,7 +45,9 @@ inline void Pop( VirconCPU& CPU, VirconWord& Register )
 {
     // first read the value
     int32_t* SP = &CPU.StackPointer.AsInteger;
-    CPU.MemoryBus->ReadAddress( *SP, Register );
+    
+    if( !CPU.MemoryBus->ReadAddress( *SP, Register ) )
+      return;
     
     // and then increment
     (*SP)++;
@@ -418,8 +420,12 @@ void ProcessMOVS( VirconCPU& CPU, CPUInstruction Instruction )
 {
     // move 1 word as in a supposed MOV [DR], [SR]
     VirconWord Value;
-    CPU.MemoryBus->ReadAddress( CPU.SourceRegister.AsInteger, Value );
-    CPU.MemoryBus->WriteAddress( CPU.DestinationRegister.AsInteger, Value );
+    
+    if( !CPU.MemoryBus->ReadAddress( CPU.SourceRegister.AsInteger, Value ) )
+      return;
+    
+    if( !CPU.MemoryBus->WriteAddress( CPU.DestinationRegister.AsInteger, Value ) )
+      return;
     
     // increase DR and SR by 1
     CPU.SourceRegister.AsInteger++;
@@ -441,7 +447,8 @@ void ProcessMOVS( VirconCPU& CPU, CPUInstruction Instruction )
 void ProcessSETS( VirconCPU& CPU, CPUInstruction Instruction )
 {
     // set 1 word as in a MOV [DR], SR
-    CPU.MemoryBus->WriteAddress( CPU.DestinationRegister.AsInteger, CPU.SourceRegister );
+    if( !CPU.MemoryBus->WriteAddress( CPU.DestinationRegister.AsInteger, CPU.SourceRegister ) )
+      return;
     
     // increase DR by 1
     CPU.DestinationRegister.AsInteger++;
@@ -469,8 +476,13 @@ void ProcessCMPS( VirconCPU& CPU, CPUInstruction Instruction )
     
     // subtract 1 word as in a supposed ResultRegister = [DR] - [SR]
     VirconWord SRValue;
-    CPU.MemoryBus->ReadAddress( CPU.DestinationRegister.AsInteger, *ResultRegister );
-    CPU.MemoryBus->ReadAddress( CPU.SourceRegister.AsInteger, SRValue );
+    
+    if( !CPU.MemoryBus->ReadAddress( CPU.DestinationRegister.AsInteger, *ResultRegister ) )
+      return;
+    
+    if( !CPU.MemoryBus->ReadAddress( CPU.SourceRegister.AsInteger, SRValue ) )
+      return;
+    
     ResultRegister->AsInteger -= SRValue.AsInteger;
     
     // if non-zero, comparison has ended
