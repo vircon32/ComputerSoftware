@@ -580,8 +580,8 @@ void LoadSettings( const string& FilePath )
         // check document version number
         int Version = GetRequiredIntegerAttribute( SettingsRoot, "version" );
         
-        if( Version < 1 || Version > 2 )
-          THROW( "Document version number is" + to_string( Version ) + ", only versions 1 and 2 are supported" );
+        if( Version < 1 || Version > 3 )
+          THROW( "Document version number is" + to_string( Version ) + ", only versions 1 through 3 are supported" );
         
         // load language settings (optional)
         XMLElement* LanguageElement = SettingsRoot->FirstChildElement( "language" );
@@ -606,6 +606,12 @@ void LoadSettings( const string& FilePath )
                 SetLanguage( "English" );
             }
         }
+        
+        // load BIOS location (optional)
+        XMLElement* BiosElement = SettingsRoot->FirstChildElement( "bios" );
+        
+        if( BiosElement )
+          BiosFileName = GetRequiredStringAttribute( BiosElement, "file" );
         
         // load video settings
         XMLElement* VideoElement = GetRequiredElement( SettingsRoot, "video" );
@@ -773,7 +779,7 @@ void SaveSettings( const string& FilePath )
         // create a document and its root element
         XMLDocument CreatedDoc;
         XMLElement* SettingsRoot = CreatedDoc.NewElement( "settings" );
-        SettingsRoot->SetAttribute( "version", 2 );
+        SettingsRoot->SetAttribute( "version", 3 );
         CreatedDoc.LinkEndChild( SettingsRoot );
         
         // save language
@@ -781,6 +787,11 @@ void SaveSettings( const string& FilePath )
         XMLElement* LanguageElement = CreatedDoc.NewElement( "language" );
         LanguageElement->SetText( LanguageName.c_str() );
         SettingsRoot->LinkEndChild( LanguageElement );
+        
+        // save bios file
+        XMLElement* BiosElement = CreatedDoc.NewElement( "bios" );
+        BiosElement->SetAttribute( "file", BiosFileName.c_str() );
+        SettingsRoot->LinkEndChild( BiosElement );
         
         // save video settings
         XMLElement* VideoElement = CreatedDoc.NewElement( "video" );

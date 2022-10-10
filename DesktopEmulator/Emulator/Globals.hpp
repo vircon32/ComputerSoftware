@@ -26,6 +26,7 @@
 extern bool GlobalLoopActive;
 extern bool MouseIsOnWindow;
 extern std::string EmulatorFolder;
+extern std::string BiosFileName;
 
 // GUI settings
 extern std::list< std::string > RecentCartridgePaths;

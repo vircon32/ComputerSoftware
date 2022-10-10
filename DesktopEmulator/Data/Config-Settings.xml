@@ -1,5 +1,6 @@
-<settings version="1">
+<settings version="3">
     <language>english</language>
+    <bios file="StandardBios.v32"/>
     <video size="1" fullscreen="no" />
     <audio mute="no" volume="100" />
     <audio-buffers number="4" samples="512" />

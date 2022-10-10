@@ -24,6 +24,7 @@
 bool GlobalLoopActive;
 bool MouseIsOnWindow;
 string EmulatorFolder;
+string BiosFileName;
 
 // GUI settings
 list< string > RecentCartridgePaths;
@@ -87,6 +88,9 @@ VirconEmulator Vircon;
 void InitializeGlobalVariables()
 {
     LOG( "Initializing global variables" );
+    
+    // default bios is standard bios
+    BiosFileName = "StandardBios.v32";
     
     // we can safely use EmulatorFolder, it will
     // be filled even before this function is

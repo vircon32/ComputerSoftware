@@ -268,7 +268,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         // -----------------------------------------------------------------------------
         
         // load the standard bios from the emulator's local bios folder
-        Vircon.LoadBios( EmulatorFolder + "Bios" + PathSeparator + "StandardBios.v32" );
+        Vircon.LoadBios( EmulatorFolder+ "Bios" + PathSeparator + BiosFileName );
         
         // turn on Vircon VM
         Vircon.Initialize();
