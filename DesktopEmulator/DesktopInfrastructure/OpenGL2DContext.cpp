@@ -444,6 +444,54 @@ void OpenGL2DContext::InitRendering()
     
     // create a white texture to draw solid color
     CreateWhiteTexture();
+    
+    // allocate memory for vertex positions in the GPU
+    glBindBuffer( GL_ARRAY_BUFFER, VBOPositions );
+    
+    glBufferData
+    (
+        GL_ARRAY_BUFFER,
+        8 * sizeof( GLint ),
+        QuadPositionCoords,
+        GL_DYNAMIC_DRAW
+    );
+    
+    // define format for vertex positions
+    glVertexAttribPointer
+    (
+        PositionsLocation,  // location (0-based index) within the shader program
+        2,                  // 2 components per vertex (x,y)
+        GL_INT,             // each component is of type GLint
+        GL_FALSE,           // do not normalize values (convert directly to fixed-point)
+        0,                  // no gap between values (adjacent in memory)
+        nullptr             // pointer to the array
+    );
+    
+    glEnableVertexAttribArray( PositionsLocation );
+    
+    // allocate memory for texture coordinates in the GPU
+    glBindBuffer( GL_ARRAY_BUFFER, VBOTexCoords );
+    
+    glBufferData
+    (
+        GL_ARRAY_BUFFER,
+        8 * sizeof( GLfloat ),
+        QuadTextureCoords,
+        GL_DYNAMIC_DRAW
+    );
+    
+    // define format for texture coordinates
+    glVertexAttribPointer
+    (
+        TexCoordsLocation,  // location (0-based index) within the shader program
+        2,                  // 2 components per vertex (u,v)
+        GL_FLOAT,           // each component is of type GLFloat
+        GL_FALSE,           // do not normalize values (convert directly to fixed-point)
+        0,                  // no gap between values (adjacent in memory)
+        nullptr             // pointer to the array
+    );
+    
+    glEnableVertexAttribArray( TexCoordsLocation );
 }
 
 // -----------------------------------------------------------------------------
@@ -715,18 +763,18 @@ void OpenGL2DContext::DrawTexturedQuad()
     // PART 2: Send attributes (i.e. shader input variables)
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
-    // define storage and format for vertex positions
     glBindBuffer( GL_ARRAY_BUFFER, VBOPositions );
 
-    glBufferData
+    // send updated vertex positions to the GPU
+    glBufferSubData
     (
         GL_ARRAY_BUFFER,
+        0,
         8 * sizeof( GLint ),
-        QuadPositionCoords,
-        GL_DYNAMIC_DRAW
+        QuadPositionCoords
     );
     
-    // send vertex positions to the GPU
+    // define storage and format for vertex positions
     glVertexAttribPointer
     (
         PositionsLocation,  // location (0-based index) within the shader program
@@ -739,18 +787,18 @@ void OpenGL2DContext::DrawTexturedQuad()
     
     glEnableVertexAttribArray( PositionsLocation );
     
-    // define storage and format for texture coordinates
+    // send updated vertex texture coordinates to the GPU
     glBindBuffer( GL_ARRAY_BUFFER, VBOTexCoords );
     
-    glBufferData
+    glBufferSubData
     (
         GL_ARRAY_BUFFER,
+        0,
         8 * sizeof( GLfloat ),
-        QuadTextureCoords,
-        GL_DYNAMIC_DRAW
+        QuadTextureCoords
     );
     
-    // send vertex texture coordinates to the GPU
+    // define storage and format for texture coordinates
     glVertexAttribPointer
     (
         TexCoordsLocation,  // location (0-based index) within the shader program
