@@ -206,3 +206,16 @@ void WriteSPUChannelLoopEnabled( VirconSPU& SPU, VirconWord Value )
     // write the value as a boolean
     SPU.PointedChannel->LoopEnabled = (Value.AsBinary != 0? 1 : 0);
 }
+
+// -----------------------------------------------------------------------------
+
+void WriteSPUChannelPosition( VirconSPU& SPU, VirconWord Value )
+{
+    // out of range values are accepted, but they are clamped
+    int32_t SoundLength = SPU.PointedChannel->CurrentSound->Length;
+    Clamp( Value.AsInteger, 0, SoundLength - 1 );
+    
+    // write the value as an integer
+    // (decimal part will be reset to zero)
+    SPU.PointedChannel->Position = Value.AsInteger;
+}

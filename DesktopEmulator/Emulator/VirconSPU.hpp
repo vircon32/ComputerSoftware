@@ -79,11 +79,12 @@ enum class SPU_LocalPorts: int32_t
     ChannelAssignedSound,
     ChannelVolume,
     ChannelSpeed,
-    ChannelLoopEnabled
+    ChannelLoopEnabled,
+    ChannelPosition
 };
 
 // used as limit of local port numbers
-const int32_t SPU_LastPort = (int32_t)SPU_LocalPorts::ChannelLoopEnabled;
+const int32_t SPU_LastPort = (int32_t)SPU_LocalPorts::ChannelPosition;
 
 
 // =============================================================================
@@ -260,6 +261,7 @@ void WriteSPUChannelAssignedSound ( VirconSPU& SPU, VirconWord Value );
 void WriteSPUChannelVolume        ( VirconSPU& SPU, VirconWord Value );
 void WriteSPUChannelSpeed         ( VirconSPU& SPU, VirconWord Value );
 void WriteSPUChannelLoopEnabled   ( VirconSPU& SPU, VirconWord Value );
+void WriteSPUChannelPosition      ( VirconSPU& SPU, VirconWord Value );
 
 
 // *****************************************************************************

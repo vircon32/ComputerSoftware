@@ -83,7 +83,9 @@ const SPUPortWriter SPUPortWriterTable[] =
     WriteSPUChannelAssignedSound,
     WriteSPUChannelVolume,
     WriteSPUChannelSpeed,
-    WriteSPUChannelLoopEnabled
+    WriteSPUChannelLoopEnabled,
+    WriteSPUChannelSpeed,
+    WriteSPUChannelPosition
 };
 
 
@@ -94,7 +96,7 @@ const SPUPortWriter SPUPortWriterTable[] =
 
 VirconSPU::VirconSPU()
 {
-    PointedChannel = nullptr;;
+    PointedChannel = nullptr;
     PointedSound = nullptr;
     
     // set null IDs for OpenAL objects
@@ -335,9 +337,17 @@ bool VirconSPU::ReadPort( int32_t LocalPort, VirconWord& Result )
     // CASE 3: Read from channel-level parameters
     else
     {
-        VirconWord* ChannelRegisters = (VirconWord*)PointedChannel;
-        int32_t ChannelPort = LocalPort - (int32_t)SPU_LocalPorts::ChannelState;
-        Result = ChannelRegisters[ ChannelPort ];
+        // position is a double, so we need to truncate it to its integer part
+        if( LocalPort == (int32_t)SPU_LocalPorts::ChannelPosition )
+          Result.AsInteger = (int32_t)PointedChannel->Position;
+        
+        // other channel ports can just be read as a word
+        else
+        {
+            VirconWord* ChannelRegisters = (VirconWord*)PointedChannel;
+            int32_t ChannelPort = LocalPort - (int32_t)SPU_LocalPorts::ChannelState;
+            Result = ChannelRegisters[ ChannelPort ];
+        }
     }
     
     return true;
