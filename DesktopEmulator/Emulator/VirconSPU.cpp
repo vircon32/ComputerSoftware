@@ -542,7 +542,7 @@ bool VirconSPU::FillSoundBuffer( ALuint BufferID )
             if( ThisChannel->State != IOPortValues::SPUChannelState_Playing )
               continue;
             
-            // pick sample at this position and advance
+            // pick sample at this position
             SPUSample PickedSample = ThisChannel->CurrentSound->Samples[ (int)ThisChannel->Position ];
             
             // mix the sample
@@ -551,18 +551,26 @@ bool VirconSPU::FillSoundBuffer( ALuint BufferID )
             ThisSample.RightSample += TotalVolume * PickedSample.RightSample;
             
             // advance at current speed
+            double PreviousPosition = ThisChannel->Position;
             ThisChannel->Position += ThisChannel->Speed;
             
             // if loop is enabled, check for loop boundary
             if( ThisChannel->LoopEnabled )
-              if( ThisChannel->Position >= (ThisChannel->CurrentSound->LoopEnd) )
-              {
-                  int32_t LoopStart = ThisChannel->CurrentSound->LoopStart;
-                  int32_t LoopEnd   = ThisChannel->CurrentSound->LoopEnd;
-                  double PartialAdvance = fmod( ThisChannel->Position - LoopStart, LoopEnd - LoopStart );
+            {
+                int32_t LoopStart = ThisChannel->CurrentSound->LoopStart;
+                int32_t LoopEnd   = ThisChannel->CurrentSound->LoopEnd;
                 
-                  ThisChannel->Position = LoopStart + PartialAdvance;
-              }
+                // cannot perform loop with a bad loop configuration!
+                // (otherwise, fmod may throw an exception)
+                if( LoopEnd > LoopStart )
+                  if( PreviousPosition <= LoopEnd && ThisChannel->Position > LoopEnd )
+                  {
+                      // don't just go back to start: for high playback speeds we
+                      // may have overshot the end position, so compensate the excess
+                      double PartialAdvance = fmod( ThisChannel->Position - LoopStart, LoopEnd - LoopStart );
+                      ThisChannel->Position = LoopStart + PartialAdvance;
+                  }
+            }
             
             // if the sound ends, stop the channel
             if( ThisChannel->Position >= (ThisChannel->CurrentSound->Length - 1) )
