@@ -106,8 +106,7 @@ VirconSPU::VirconSPU()
       SoundBufferIDs[ 0 ] = 0;
     
     // set default configuration for sound buffers
-    SamplesPerBuffer = 512;   // 512 samples at 44100Hz = 11.6 ms
-    NumberOfBuffers = 4;      // 4 x 11.6 ms = 46.4 ms audio latency (< 3 frames at 60 fps)
+    NumberOfBuffers = 4;      // latency would be (4 - 1) * (1/60 s) = 50 ms audio latency
     
     // initial state for playback variables
     PlaybackThread = nullptr;
@@ -516,10 +515,10 @@ void VirconSPU::StopAllChannels()
 bool VirconSPU::FillSoundBuffer( ALuint BufferID )
 {
     // local buffer data we will work with
-    static SPUSample NewSamples[ MAX_BUFFER_SAMPLES ];
+    static SPUSample NewSamples[ BUFFER_SAMPLES ];
     
     // determine the value for each sample in the buffer
-    for( int s = 0; s < SamplesPerBuffer; s++ )
+    for( int s = 0; s < BUFFER_SAMPLES; s++ )
     {
         // use a local variable for speed
         SPUSample ThisSample = {0,0};
@@ -575,8 +574,7 @@ bool VirconSPU::FillSoundBuffer( ALuint BufferID )
     alGetError();
     
     // copy our local buffer to internal OpenAL one
-    ALsizei BufferBytes = SamplesPerBuffer * BYTES_PER_SAMPLE;
-    alBufferData( BufferID, AL_FORMAT_STEREO16, NewSamples, BufferBytes, Constants::SPUSamplingRate );
+    alBufferData( BufferID, AL_FORMAT_STEREO16, NewSamples, BYTES_PER_BUFFER, Constants::SPUSamplingRate );
     
     return (alGetError() == AL_NO_ERROR);
 }

@@ -38,9 +38,9 @@
 // time to update audio and therefore prevent sound problems
 #define MIN_BUFFERS            2
 #define MAX_BUFFERS           16
-#define MIN_BUFFER_SAMPLES   256
-#define MAX_BUFFER_SAMPLES  4096
+#define BUFFER_SAMPLES       735   // buffers contain 1 frame of audio = 44100 / 60 samples
 #define BYTES_PER_SAMPLE       4   // 1 sample = 2 channels with a 16-bit value each
+#define BYTES_PER_BUFFER    2940   // 735 samples * 4 bytes/sample
 
 
 // =============================================================================
@@ -163,7 +163,6 @@ class VirconSPU: public VirconControlInterface
         
         // sound buffer configuration
         int NumberOfBuffers;
-        int SamplesPerBuffer;
         
         // Variables for playback thread
         friend int SPUPlaybackThread( void* );
