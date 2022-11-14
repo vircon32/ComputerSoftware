@@ -72,6 +72,7 @@ enum class IOPorts: const int
     SPU_ChannelVolume,
     SPU_ChannelSpeed,
     SPU_ChannelLoopEnabled,
+    SPU_ChannelPosition,
     
     // input controller
     INP_SelectedGamepad = Constants::INP_FirstPort,
