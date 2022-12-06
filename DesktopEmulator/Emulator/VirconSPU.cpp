@@ -573,7 +573,7 @@ bool VirconSPU::FillSoundBuffer( ALuint BufferID )
             }
             
             // if the sound ends, stop the channel
-            if( ThisChannel->Position >= (ThisChannel->CurrentSound->Length - 1) )
+            if( ThisChannel->Position > (ThisChannel->CurrentSound->Length - 1) )
               StopChannel( *ThisChannel );
         }
         
