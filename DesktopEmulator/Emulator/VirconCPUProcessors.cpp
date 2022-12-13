@@ -325,45 +325,8 @@ void ProcessFLE( VirconCPU& CPU, CPUInstruction Instruction )
 
 void ProcessMOV( VirconCPU& CPU, CPUInstruction Instruction )
 {
-    // decode the instruction
-    AddressingModes Mode = (AddressingModes)Instruction.AddressingMode;
-    VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-    VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
-    
-    switch( Mode )
-    {
-        case AddressingModes::RegisterFromImmediate:         // MOV R1, 0xFF
-            *Register1 = CPU.ImmediateValue;
-            return;
-            
-        case AddressingModes::RegisterFromRegister:          // MOV R1, R2
-            *Register1 = *Register2;
-            return;
-            
-        case AddressingModes::RegisterFromImmediateAddress:  // MOV R1, [0xFF]
-            CPU.MemoryBus->ReadAddress( CPU.ImmediateValue.AsInteger, *Register1 );
-            return;
-            
-        case AddressingModes::ImmediateAddressFromRegister:  // MOV [0xFF], R2
-            CPU.MemoryBus->WriteAddress( CPU.ImmediateValue.AsInteger, *Register2 );
-            return;
-            
-        case AddressingModes::RegisterFromRegisterAddress:   // MOV R1, [R2]
-            CPU.MemoryBus->ReadAddress( Register2->AsInteger, *Register1 );
-            return;
-            
-        case AddressingModes::RegisterAddressFromRegister:   // MOV [R1], R2
-            CPU.MemoryBus->WriteAddress( Register1->AsInteger, *Register2 );
-            return;
-            
-        case AddressingModes::RegisterFromAddressOffset:     // MOV R1, [R2+0xFF]
-            CPU.MemoryBus->ReadAddress( Register2->AsInteger + CPU.ImmediateValue.AsInteger, *Register1 );
-            return;
-            
-        default: // AddressOffsetFromRegister:               // MOV [R1+0xFF], R2
-            CPU.MemoryBus->WriteAddress( Register1->AsInteger + CPU.ImmediateValue.AsInteger, *Register2 );
-            return;
-    }
+    // this is just a dummy function: MOV is not processed here;
+    // however, removing it might hinder optimization for for the instruction switch
 }
 
 // -----------------------------------------------------------------------------

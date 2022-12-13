@@ -171,7 +171,6 @@ void VirconCPU::RunNextCycle()
     // run the instruction
     // (redirect to the needed specific processor)
     int32_t OpCode = Instruction.OpCode;
-    //cout << Hex(InstructionAddress,8) << ", CPU Instruction: " << OpCodeToString( (InstructionOpCodes)OpCode ) << endl;
     
     if( OpCode == (int32_t)InstructionOpCodes::MOV )
       MOVProcessorTable[ Instruction.AddressingMode ]( *this, Instruction );
