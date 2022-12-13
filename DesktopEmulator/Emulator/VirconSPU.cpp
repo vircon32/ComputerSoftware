@@ -220,7 +220,7 @@ void VirconSPU::LaunchPlaybackThread()
         (
             SPUPlaybackThread,   // function to use as thread entry point
             "Playback",          // thread name
-            this                 // function parameters (= the owner OggPlayer instance)
+            this                 // function parameters (= the owner SPU instance)
         );
     }
     
@@ -270,15 +270,6 @@ bool VirconSPU::WaitForBufferAccess( unsigned long Milliseconds )
 //      VIRCON SPU: AUDIO RESOURCES HANDLING
 // =============================================================================
 
-
-void VirconSPU::LoadSound( SPUSound& TargetSound, const string& FilePath )
-{
-    // use OpenAL loader
-    // convert buffer to Vircon format
-    // now call the other version of this function
-}
-
-// -----------------------------------------------------------------------------
 
 void VirconSPU::LoadSound( SPUSound& TargetSound, SPUSample* Samples, unsigned NumberOfSamples )
 {

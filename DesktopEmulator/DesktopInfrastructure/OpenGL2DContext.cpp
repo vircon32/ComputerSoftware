@@ -25,17 +25,6 @@ void ClearOpenGLErrors()
 
 // -----------------------------------------------------------------------------
 
-void LogSDLResult( const string& EntryText )
-{
-    string Result = SDL_GetError();
-    LOG( EntryText + ": " + Result );
-    
-    if( Result[0] )
-      THROW( "An SDL error happened" );
-}
-
-// -----------------------------------------------------------------------------
-
 void LogOpenGLResult( const string& EntryText )
 {
     GLenum Result = glGetError();

@@ -82,47 +82,6 @@ VirconGPU::~VirconGPU()
 // =============================================================================
 
 
-void VirconGPU::LoadTexture( GPUTexture& TargetTexture, const string& FilePath )
-{
-    // open the file
-    LOG( "Loading GPU texture from RGBA file \"" << FilePath << "\"" );
-    
-    ifstream InputFile;
-    InputFile.open( FilePath, ios::binary | ios::ate );
-    
-    if( InputFile.fail() )
-      THROW( "Cannot open RGBA file" );
-    
-    // obtain file size
-    unsigned NumberOfBytes = InputFile.tellg();
-    
-    // obtain image dimensions
-    uint32_t Width, Height;
-    InputFile.seekg( 0, ios::beg );
-    InputFile.read( (char*)(&Width ), 4 );
-    InputFile.read( (char*)(&Height), 4 );
-
-    // check size coherency
-    if( NumberOfBytes != (Width*Height*4 + 8) )
-    {
-        InputFile.close();
-        THROW( "Size of RGBA file does not match the specified dimensions of " + to_string(Width) + " x " + to_string(Height) + " pixels" );
-    }
-    
-    // load the whole RGBA data to a buffer
-    vector< uint8_t > TextureBytes;
-    TextureBytes.resize( NumberOfBytes );
-    InputFile.read( (char*)(&TextureBytes[0]), NumberOfBytes - 8 );
-    
-    // we can now close the input file
-    InputFile.close();
-    
-    // now, just call the other loader function with this buffer
-    LoadTexture( TargetTexture, &TextureBytes[ 0 ], Width, Height );
-}
-
-// -----------------------------------------------------------------------------
-
 void VirconGPU::LoadTexture( GPUTexture& TargetTexture, void* Pixels, unsigned Width, unsigned Height )
 {
     // check for page number limit

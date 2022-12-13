@@ -112,8 +112,7 @@ class VirconGPU: public VirconControlInterface
        ~VirconGPU();
         
         // handling video resources
-        void LoadTexture( GPUTexture& TargetTexture, const std::string& FilePath );                     // from RAW RGBA file
-        void LoadTexture( GPUTexture& TargetTexture, void* Pixels, unsigned Width, unsigned Height );   // from RGBA in memory
+        void LoadTexture( GPUTexture& TargetTexture, void* Pixels, unsigned Width, unsigned Height );
         void UnloadTexture( GPUTexture& TargetTexture );
         
         // connection to control bus

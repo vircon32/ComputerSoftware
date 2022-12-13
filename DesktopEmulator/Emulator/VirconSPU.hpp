@@ -130,9 +130,6 @@ SPUChannel;
 // thread function for background continuous play
 int SPUPlaybackThread( void* Parameters );
 
-// translation of Ogg Vorbis error codes to text
-std::string TranslateOggError( int ErrorCode );
-
 
 // =============================================================================
 //      VIRCON SPU CLASS
@@ -217,8 +214,7 @@ class VirconSPU: public VirconControlInterface
         void TerminateAudio();
         
         // handling of audio resources
-        void LoadSound( SPUSound& TargetSound, const std::string& FilePath );                   // from WAV file
-        void LoadSound( SPUSound& TargetSound, SPUSample* Samples, unsigned NumberOfSamples );  // from samples in memory
+        void LoadSound( SPUSound& TargetSound, SPUSample* Samples, unsigned NumberOfSamples );
         void UnloadSound( SPUSound& TargetSound );
         
         // I/O bus connection
