@@ -156,9 +156,6 @@ struct time_info
 
 // converts a Vircon time value to the usual human
 // readable format separating hours, minutes and seconds
-//  - hours: in range 0 to 23
-//  - minutes: in range 0 to 59
-//  - seconds: in range 0 to 59
 void translate_time( int time, time_info* translated )
 {
     translated->hours = time / 3600;
