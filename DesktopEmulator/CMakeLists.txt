@@ -137,7 +137,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeMod
 
 # For these depencencies, find everything they need too
 find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(OpenAL REQUIRED)
@@ -184,7 +183,6 @@ endfunction()
 # Now use the function to show status of all dependencies
 message(STATUS "System Dependencies:")
 show_dependency_status("OPENGL" OPENGL)
-show_dependency_status("GLUT" GLUT)
 show_dependency_status("SDL2" SDL2)
 show_dependency_status("SDL2_image" SDL2_image)
 show_dependency_status("OPENAL" OPENAL)
@@ -203,7 +201,6 @@ endif()
 # Define folders where compiler should look for includes
 set(ALL_INCLUDE_DIRS
     ${OPENGL_INCLUDE_DIR}
-    ${GLUT_INCLUDE_DIR}
     ${SDL2_INCLUDE_DIR}
     ${OPENAL_INCLUDE_DIR}
     ${LIBRARIES_DIR}
@@ -233,7 +230,6 @@ set(EMULATOR_LIBS
     ${TINYXML2_LIBRARY}
     ${PNG_LIBRARY}
     ${OPENGL_LIBRARIES}
-    ${GLUT_LIBRARY}
     ${SDL2_LIBRARY}
     ${SDL2_IMAGE_LIBRARY}
     ${PNG_LIBRARY}
@@ -248,7 +244,6 @@ set(EDITCONTROLS_LIBS
     imgui
     ${TINYXML2_LIBRARY}
     ${OPENGL_LIBRARIES}
-    ${GLUT_LIBRARY}
     ${SDL2_LIBRARY}
     ${SDL2_IMAGE_LIBRARY}
     ${PNG_LIBRARY}
