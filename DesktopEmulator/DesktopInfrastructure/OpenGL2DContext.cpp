@@ -25,6 +25,11 @@ void ClearOpenGLErrors()
 
 // -----------------------------------------------------------------------------
 
+// these are not defined in GLAD v1
+#define GL_STACK_OVERFLOW  0x0503
+#define GL_STACK_UNDERFLOW 0x0504
+#define GL_TABLE_TOO_LARGE 0x8031
+
 string GLErrorString( GLenum ErrorCode )
 {
     switch( ErrorCode )
