@@ -25,7 +25,7 @@ namespace Constants
     
     // timing
     const int FramesPerSecond = 60;
-    const int CyclesPerSecond = 9000000;
+    const int CyclesPerSecond = 15000000;
     const int CyclesPerFrame  = CyclesPerSecond / FramesPerSecond;
     
     // display
