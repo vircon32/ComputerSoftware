@@ -47,7 +47,7 @@ To correctly build the software in this repository you will need to have at leas
 ##### Video libraries:
 * SDL2_image
 * OpenGL
-* GLUT
+* GLUT (only for older versions)
 * LibPNG
 
 ##### Audio libraries:

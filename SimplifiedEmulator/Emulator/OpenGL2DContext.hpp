@@ -18,11 +18,6 @@
     
     // include OpenGL headers
     #include <glad/glad.h>      // [ OpenGL ] GLAD Loader (already includes <GL/gl.h>)
-    #if defined(__APPLE__)
-      #include <OpenGL/glu.h>   // [ OpenGL ] Utility library
-    #else
-      #include <GL/glu.h>       // [ OpenGL ] Utility library
-    #endif
 // *****************************************************************************
 
 
