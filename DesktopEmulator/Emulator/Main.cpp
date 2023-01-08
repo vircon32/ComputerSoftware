@@ -199,9 +199,20 @@ int main( int NumberOfArguments, char* Arguments[] )
         ImGui::GetIO().Fonts->AddFontFromFileTTF( FontPath.c_str(), 16, NULL, GlyphRanges.Data );
         ImGui::GetIO().Fonts->Build();
         
+        // ImGui needs to use different shader versions
+        // depending on the platform and OpenGL context
+        #if defined( __arm__ ) 
+          #define IMGUI_IMPL_OPENGL_ES2
+          const char* glsl_version = "#version 100";
+        #elif defined( __APPLE__ )
+          const char* glsl_version = "#version 150";
+        #else
+          const char* glsl_version = "#version 130";
+        #endif
+        
         // Setup ImGui Platform/Renderer backends
         ImGui_ImplSDL2_InitForOpenGL( OpenGL2D.Window, OpenGL2D.OpenGLContext );
-        ImGui_ImplOpenGL3_Init();
+        ImGui_ImplOpenGL3_Init( glsl_version );
         
         // =======================
         

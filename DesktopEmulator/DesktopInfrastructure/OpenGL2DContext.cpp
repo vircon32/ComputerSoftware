@@ -157,12 +157,19 @@ void OpenGL2DContext::CreateOpenGLWindow()
     // load default dynamic OpenGL libraries
     SDL_GL_LoadLibrary( nullptr );
     
-    // request OpenGL 3.0 for FBO support
-    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
-    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 0 );
+    // choose what OpenGL version to request (system dependent)
+    #ifdef __arm__
+      // on Raspberry/ARM systems request OpenGL ES 2.0 for FBO support
+      SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES );
+      SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
+      SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 0 );
+    #else
+      // for other systems use the regular OpenGL Core 3.0
+      SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
+      SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
+      SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 0 );
+    #endif
     
-    // request a core profile only, to enable Mac support
-    SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
     
     // request double buffering
     SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
@@ -208,16 +215,23 @@ void OpenGL2DContext::CreateOpenGLWindow()
     if( !gladLoadGLLoader( (GLADloadproc)SDL_GL_GetProcAddress ) )
       THROW( "There was an error initializing GLAD" );
     
-    // before continuing, check that we got
-    // the required OpenGL version or higher
-    string OpenGLVersion = (const char *)glGetString(GL_VERSION);
-    LOG( "Started OpenGL version " + OpenGLVersion );
+    // log the version name for the received OpenGL context
+    string OpenGLVersionName = (const char *)glGetString(GL_VERSION);
+    LOG( "Started OpenGL version " + OpenGLVersionName );
     
-    // returned OpenGL version has format "X.X.X etc"
-    int MajorVersion = OpenGLVersion[0] - '0';
+    // check that we were not given a GL version lower than required
+    int MajorVersion = 1, MinorVersion = 0;
+    SDL_GL_GetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, &MajorVersion );
+    SDL_GL_GetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, &MinorVersion );
+    string ReceivedVersion = to_string( MajorVersion ) + "." + to_string( MinorVersion );
     
+    #ifdef __arm__
+    if( MajorVersion < 2 )
+      THROW( string("OpenGL ES version 2.0 is not supported. Current version is ") + ReceivedVersion );
+    #else
     if( MajorVersion < 3 )
-      THROW( string("OpenGL version 3.0 is not supported. Current version is ") + OpenGLVersion );
+      THROW( string("OpenGL version 3.0 is not supported. Current version is ") + ReceivedVersion );
+    #endif
     
     // show basic OpenGL information
     LOG( "OpenGL renderer: " << (char*)glGetString( GL_RENDERER ) );

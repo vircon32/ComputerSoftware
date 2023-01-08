@@ -96,17 +96,17 @@ void OpenGL2DContext::CreateOpenGLWindow()
     if( !gladLoadGLLoader( (GLADloadproc)SDL_GL_GetProcAddress ) )
       throw runtime_error( "There was an error initializing GLAD" );
     
-    // before continuing, check that we got
-    // the required OpenGL version or higher
-    string OpenGLVersion = (const char *)glGetString(GL_VERSION);
-    cout << "Started OpenGL version " + OpenGLVersion << endl;
+    // log the version name for the received OpenGL context
+    string OpenGLVersionName = (const char *)glGetString(GL_VERSION);
+    cout << "Started OpenGL version " << OpenGLVersionName << endl;
     
-    // returned OpenGL version has format "X.X.X etc"
-    int MajorVersion = OpenGLVersion[0] - '0';
-    int MinorVersion = OpenGLVersion[1] - '0';
+    // check that we were not given a GL version lower than required
+    int MajorVersion = 1, MinorVersion = 0;
+    SDL_GL_GetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, &MajorVersion );
+    SDL_GL_GetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, &MinorVersion );
     
     if( MajorVersion < 2 || (MajorVersion == 2 && MinorVersion < 1) )
-      throw runtime_error( string("OpenGL version 2.1 is not supported. Current version is ") + OpenGLVersion );
+      throw runtime_error( string("OpenGL version 2.1 is not supported. Current version is ") + OpenGLVersionName );
     
     // use vsync
     SDL_GL_SetSwapInterval( 1 );
