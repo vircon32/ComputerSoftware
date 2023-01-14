@@ -17,8 +17,6 @@
     (1) Thread needs synchronization to access VirconSPU instance variables
     (2) Any exceptions thrown need to be caught, since they cannot trespass
         the boundary to the main thread
-    (3) Because of (2), and to enable log continuity, separate log files will
-        be done for each thread (therefore redefining log macros)
 // -------------------------------------------------------------------------- */
 
 
@@ -29,6 +27,7 @@
 
 int SPUPlaybackThread( void* Parameters )
 {
+    // thread exit code defaults to success
     int ExitCode = 0;
     
     // (1) obtain class instance from parameters
