@@ -61,7 +61,7 @@ enum class SoundBufferStates
 typedef struct
 {
     ALuint BufferID;
-    int32_t FrameNumber;
+    int32_t SequenceNumber;
     SoundBufferStates State;
     SPUSample Samples[ BUFFER_SAMPLES ];
 }
@@ -188,7 +188,7 @@ class VirconSPU: public VirconControlInterface
         // sound buffer configuration
         int NumberOfBuffers;
         SoundBuffer OutputBuffers[ MAX_BUFFERS ];
-        SoundBuffer SilenceBuffer;
+        int NextBufferSequenceNumber;
         
         // Variables for playback thread
         friend int SPUPlaybackThread( void* );
@@ -211,15 +211,20 @@ class VirconSPU: public VirconControlInterface
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
         // generate sound to play
-        bool FillSoundBuffer( ALuint BufferID );
+        bool FillNextSoundBuffer();
+        
+        // searching for sound buffers
+        SoundBuffer& FindBufferFromID( ALuint TargetID );
+        SoundBuffer* FindNextBufferToPlay();
+        SoundBuffer* FindNextBufferToFill();
         
         // handling playback buffer queue
-        SoundBuffer& FindBufferFromID( ALuint TargetID );
         int GetQueuedBuffers();
         int GetProcessedBuffers();
-        bool UpdateBufferQueue();
+        void UnqueuePlayedBuffers();
+        void QueueFilledBuffers();
         void ClearBufferQueue();
-        void FillBufferQueue();
+        void InitializeBufferQueue();
         
         // operating the playback thread
         void LaunchPlaybackThread();

@@ -50,10 +50,8 @@ int SPUPlaybackThread( void* Parameters )
             // (2.1) if not paused, update sound buffers
             if( !SPUInstance->ThreadPauseFlag )
             {
-                // when UpdateBufferQueue returned true, the audio
-                // buffers were correctly updated; do a single retry if not
-                if( !SPUInstance->UpdateBufferQueue() )
-                  SPUInstance->UpdateBufferQueue();
+                SPUInstance->QueueFilledBuffers();
+                SPUInstance->UnqueuePlayedBuffers();
             }
             
             // (2.2) when idle, sleep and re-check playback state periodically
