@@ -17,8 +17,6 @@
     (1) Thread needs synchronization to access VirconSPU instance variables
     (2) Any exceptions thrown need to be caught, since they cannot trespass
         the boundary to the main thread
-    (3) Because of (2), and to enable log continuity, separate log files will
-        be done for each thread (therefore redefining log macros)
 // -------------------------------------------------------------------------- */
 
 
@@ -29,6 +27,7 @@
 
 int SPUPlaybackThread( void* Parameters )
 {
+    // thread exit code defaults to success
     int ExitCode = 0;
     
     // (1) obtain class instance from parameters
@@ -50,18 +49,11 @@ int SPUPlaybackThread( void* Parameters )
             // (2.1) if not paused, update sound buffers
             if( !SPUInstance->ThreadPauseFlag )
             {
-                // signal start of playing actions to the main thread
-                // (to avoid buffer corruption)
-                SPUInstance->ThreadUsingBuffers = true;
-                
-                // when UpdateBufferQueue returned true, the audio
-                // buffers were correctly updated; do a single retry if not
-                if( !SPUInstance->UpdateBufferQueue() )
-                  SPUInstance->UpdateBufferQueue();
+                SPUInstance->QueueFilledBuffers();
+                SPUInstance->UnqueuePlayedBuffers();
             }
             
             // (2.2) when idle, sleep and re-check playback state periodically
-            SPUInstance->ThreadUsingBuffers = false;
             SDL_Delay( 5 );
         }
     }

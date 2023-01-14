@@ -12,7 +12,6 @@
     // include C/C++ headers
     #include <string>             // [ C++ STL ] Strings
     
-    
     // include OpenAL headers
     #if defined(__APPLE__)
       #include <OpenAL/al.h>      // [ OpenAL ] Main header
@@ -43,17 +42,39 @@
 #define BYTES_PER_SAMPLE       4   // 1 sample = 2 channels with a 16-bit value each
 #define BYTES_PER_BUFFER    2940   // 735 samples * 4 bytes/sample
 
+// -----------------------------------------------------------------------------
+
+// We will use these 3 states to handle audio buffers.
+// Thread safety is achieved by making each thread act
+// only over different sets of buffer states, so they
+// can never be operating over the same buffer at once.
+enum class SoundBufferStates
+{
+    ToBeFilled,     // only handled by the main thread
+    Filled,         // only handled by the playback thread
+    QueuedToPlay    // only handled by the playback thread
+};
+
+// -----------------------------------------------------------------------------
+
+// define the sound buffers used for SPU audio output
+typedef struct
+{
+    ALuint BufferID;
+    int32_t SequenceNumber;
+    SoundBufferStates State;
+    SPUSample Samples[ BUFFER_SAMPLES ];
+}
+SoundBuffer;
+
 
 // =============================================================================
 //      AUXILIARY AUDIO FUNCTIONS
 // =============================================================================
 
+
 // checking that OpenAL is active
 bool IsOpenALActive();
-
-// source properties
-ALenum GetSourceState( ALuint SourceID );
-bool IsSourcePlaying ( ALuint SourceID );
 
 
 // =============================================================================
@@ -160,7 +181,11 @@ class VirconSPU: public VirconControlInterface
         
         // OpenAL mixer objects
         ALuint SoundSourceID;
-        ALuint SoundBufferIDs[ NUMBER_OF_BUFFERS ];
+        
+        // sound buffer configuration
+        int NumberOfBuffers;
+        SoundBuffer OutputBuffers[ NUMBER_OF_BUFFERS ];
+        int NextBufferSequenceNumber;
         
         // Variables for playback thread
         friend int SPUPlaybackThread( void* );
@@ -170,7 +195,6 @@ class VirconSPU: public VirconControlInterface
         std::string  ThreadErrorMessage;    // used by the playback thread to report errors on exceptions
         bool ThreadExitFlag;                // used by the main thread to stop the playing thread
         bool ThreadPauseFlag;               // used by the main thread to hold the playing thread on pause
-        bool ThreadUsingBuffers;            // set/unset by the playback thread to signal its buffer use sections
         
         // external volume control
         // (used not by Vircon but by the GUI)
@@ -184,21 +208,24 @@ class VirconSPU: public VirconControlInterface
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
         // generate sound to play
-        bool FillSoundBuffer( ALuint BufferID );
+        bool FillNextSoundBuffer();
+        
+        // searching for sound buffers
+        SoundBuffer& FindBufferFromID( ALuint TargetID );
+        SoundBuffer* FindNextBufferToPlay();
+        SoundBuffer* FindNextBufferToFill();
         
         // handling playback buffer queue
         int GetQueuedBuffers();
         int GetProcessedBuffers();
-        bool UpdateBufferQueue();
+        void UnqueuePlayedBuffers();
+        void QueueFilledBuffers();
         void ClearBufferQueue();
-        void FillBufferQueue();
+        void InitializeBufferQueue();
         
         // operating the playback thread
         void LaunchPlaybackThread();
         void StopPlaybackThread();
-        
-        // inter-thread synchronization
-        bool WaitForBufferAccess( unsigned long Milliseconds );
         
     public:
         

@@ -37,23 +37,6 @@ bool IsOpenALActive()
     return true;
 }
 
-// -----------------------------------------------------------------------------
-
-ALenum GetSourceState( ALuint SourceID )
-{
-    ALenum State;
-    alGetSourcei( SourceID, AL_SOURCE_STATE, &State );
-    
-    return State;
-}
-
-// -----------------------------------------------------------------------------
-
-bool IsSourcePlaying( ALuint SourceID )
-{
-    return (GetSourceState( SourceID ) == AL_PLAYING);
-}
-
 
 // =============================================================================
 //      SPU PORT WRITERS TABLE
@@ -99,13 +82,12 @@ VirconSPU::VirconSPU()
     SoundSourceID = 0;
     
     for( int i = 0; i < NUMBER_OF_BUFFERS; i++ )
-      SoundBufferIDs[ 0 ] = 0;
+      OutputBuffers[ i ].BufferID = 0;
     
     // initial state for playback variables
     PlaybackThread = nullptr;
     ThreadExitFlag = false;
     ThreadPauseFlag = false;
-    ThreadUsingBuffers = false;
     
     // initial state for output volume control
     OutputVolume = 1.0;
@@ -142,7 +124,8 @@ void VirconSPU::InitializeAudio()
       throw runtime_error( "OpenAL is not active" );
     
     // create sound buffers to alternate streaming
-    alGenBuffers( NUMBER_OF_BUFFERS, SoundBufferIDs );
+    for( int i = 0; i < NUMBER_OF_BUFFERS; i++ )
+      alGenBuffers( 1, &OutputBuffers[ i ].BufferID );
     
     // create a sound SourceID to play the buffers
     alGenSources( 1, &SoundSourceID );
@@ -153,10 +136,6 @@ void VirconSPU::InitializeAudio()
     
     // start the playback thread
     LaunchPlaybackThread();
-    
-    // now, actually start playing
-    FillBufferQueue();
-    alSourcePlay( SoundSourceID );
 }
 
 // -----------------------------------------------------------------------------
@@ -185,7 +164,8 @@ void VirconSPU::TerminateAudio()
     StopPlaybackThread();
     
     // delete sound buffers
-    alDeleteBuffers( NUMBER_OF_BUFFERS, SoundBufferIDs );
+    for( int i = 0; i < NUMBER_OF_BUFFERS; i++ )
+      alDeleteBuffers( 1, &OutputBuffers[ i ].BufferID );
     
     // delete sound source
     alDeleteSources( 1, &SoundSourceID );
@@ -201,9 +181,9 @@ void VirconSPU::LaunchPlaybackThread()
 {
     cout << "Creating SPU playback thread" << endl;
     
-    // ensure thread continuity
-    ThreadExitFlag     = false;
-    ThreadUsingBuffers = true;
+    // ensure thread continuity, but don't play yet
+    ThreadExitFlag = false;
+    ThreadPauseFlag = true;
     
     // create thread, if needed
     if( !PlaybackThread )
@@ -236,25 +216,6 @@ void VirconSPU::StopPlaybackThread()
     }
     
     PlaybackThread = nullptr;
-}
-
-// -----------------------------------------------------------------------------
-
-bool VirconSPU::WaitForBufferAccess( unsigned long Milliseconds )
-{
-    // get initial tick count
-    unsigned long InitialTime = SDL_GetTicks();
-    
-    // wait until time expires...
-    do
-    {
-        // ...while checking buffer availability
-        if( !ThreadUsingBuffers )
-        return true;
-    }
-    while( (SDL_GetTicks() + InitialTime) != Milliseconds );    // we do not use < to avoid errors on tick count wrapping
-    
-    return false;
 }
 
 
@@ -360,13 +321,22 @@ bool VirconSPU::WritePort( int32_t LocalPort, VirconWord Value )
 
 void VirconSPU::ChangeFrame()
 {
-    // (nothing for now)
+    // generate sound for next frame
+    FillNextSoundBuffer();
 }
 
 // -----------------------------------------------------------------------------
 
 void VirconSPU::Reset()
 {
+    // reset playback variables
+    ThreadExitFlag = false;
+    ThreadPauseFlag = true;
+    
+    // stop any currently playing sounds
+    alSourceStop( SoundSourceID );
+    ClearBufferQueue();
+    
     // reset registers
     GlobalVolume = 1.0;
     SelectedSound = -1;
@@ -375,10 +345,6 @@ void VirconSPU::Reset()
     // reset pointed entities
     PointedSound = &BiosSound;
     PointedChannel = &Channels[ 0 ];
-    
-    // reset playback variables
-    ThreadExitFlag = false;
-    ThreadPauseFlag = false;
     
     // reset state of all channels
     for( SPUChannel& C: Channels )
@@ -393,16 +359,16 @@ void VirconSPU::Reset()
         C.CurrentSound = &BiosSound;
     }
     
-    // stop any currently playing sounds
-    ThreadPauseFlag = true;
-    WaitForBufferAccess( 10 );
-    alSourceStop( SoundSourceID );
-    ClearBufferQueue();
+    // reset all output buffers
+    for( int i = 0; i < NUMBER_OF_BUFFERS; i++ )
+    {
+        memset( OutputBuffers[i].Samples, 0, BYTES_PER_BUFFER );
+        OutputBuffers[i].State = SoundBufferStates::ToBeFilled;
+        OutputBuffers[i].SequenceNumber = 0;
+    }
     
-    // and reset playback
-    FillBufferQueue();
-    alSourcePlay( SoundSourceID );
-    ThreadPauseFlag = false;
+    // begin a new buffer sequence count
+    NextBufferSequenceNumber = 0;
     
     // reset state of the BIOS sound
     BiosSound.PlayWithLoop = false;
@@ -416,6 +382,11 @@ void VirconSPU::Reset()
         S.LoopStart = 0;
         S.LoopEnd = S.Length - 1;
     }
+    
+    // reinitialize audio playback
+    InitializeBufferQueue();
+    ThreadPauseFlag = false;
+    alSourcePlay( SoundSourceID );
     
     // reset sound volume
     alSourcef( SoundSourceID, AL_GAIN, (Mute? 0 : OutputVolume) );
@@ -504,11 +475,16 @@ void VirconSPU::StopAllChannels()
 // =============================================================================
 
 
+// this function is only called from the main thread;
 // returns true if successful
-bool VirconSPU::FillSoundBuffer( ALuint BufferID )
+bool VirconSPU::FillNextSoundBuffer()
 {
-    // local buffer data we will work with
-    static SPUSample NewSamples[ BUFFER_SAMPLES ];
+    SoundBuffer* Buffer = FindNextBufferToFill();
+    if( !Buffer ) return false;
+    
+    // assign the next sequence number to this buffer
+    Buffer->SequenceNumber = NextBufferSequenceNumber;
+    NextBufferSequenceNumber++;
     
     // determine the value for each sample in the buffer
     for( int s = 0; s < BUFFER_SAMPLES; s++ )
@@ -556,19 +532,68 @@ bool VirconSPU::FillSoundBuffer( ALuint BufferID )
             }
             
             // if the sound ends, stop the channel
-            if( ThisChannel->Position >= (ThisChannel->CurrentSound->Length - 1) )
+            if( ThisChannel->Position > (ThisChannel->CurrentSound->Length - 1) )
               StopChannel( *ThisChannel );
         }
         
-        NewSamples[ s ] = ThisSample;
+        Buffer->Samples[ s ] = ThisSample;
     }
     
     // ignore OpenAL errors so far
     alGetError();
     
     // copy our local buffer to internal OpenAL one
-    alBufferData( BufferID, AL_FORMAT_STEREO16, NewSamples, BYTES_PER_BUFFER, Constants::SPUSamplingRate );
+    alBufferData( Buffer->BufferID, AL_FORMAT_STEREO16, Buffer->Samples, BYTES_PER_BUFFER, Constants::SPUSamplingRate );
+    
+    // finally, change buffer state
+    Buffer->State = SoundBufferStates::Filled;
     return (alGetError() == AL_NO_ERROR);
+}
+
+
+// =============================================================================
+//      VIRCON SPU: SEARCHING FOR SOUND BUFFERS
+// =============================================================================
+
+
+SoundBuffer& VirconSPU::FindBufferFromID( ALuint TargetID )
+{
+    for( int i = 0; i < NUMBER_OF_BUFFERS; i++ )
+      if( OutputBuffers[ i ].BufferID == TargetID )
+        return OutputBuffers[ i ];
+    
+    throw runtime_error( "Cannot find OpenAL buffer ID in SPU output buffers" );
+}
+
+// -----------------------------------------------------------------------------
+
+SoundBuffer* VirconSPU::FindNextBufferToPlay()
+{
+    int MinimumSequenceNumber = INT_MAX;
+    SoundBuffer* NextBufferToPlay = nullptr;
+    
+    for( int i = 0; i < NUMBER_OF_BUFFERS; i++ )
+      if( OutputBuffers[ i ].State == SoundBufferStates::Filled )
+        if( OutputBuffers[ i ].SequenceNumber <= MinimumSequenceNumber )
+        {
+            MinimumSequenceNumber = OutputBuffers[ i ].SequenceNumber;
+            NextBufferToPlay = &OutputBuffers[ i ];
+        }
+    
+    return NextBufferToPlay;
+}
+
+// -----------------------------------------------------------------------------
+
+SoundBuffer* VirconSPU::FindNextBufferToFill()
+{
+    // we can refill buffers in any order, so we don't
+    // need to look for the lowest sequence number here
+    for( int i = 0; i < NUMBER_OF_BUFFERS; i++ )
+      if( OutputBuffers[ i ].State == SoundBufferStates::ToBeFilled )
+        return &OutputBuffers[ i ];
+    
+    return nullptr;
 }
 
 
@@ -607,38 +632,6 @@ int VirconSPU::GetProcessedBuffers()
 
 // -----------------------------------------------------------------------------
 
-// this function is only called from the playback thread
-// returns true if queue was updated successfully
-bool VirconSPU::UpdateBufferQueue()
-{
-    // state validations
-    if( !GetQueuedBuffers() )
-      return false;
-    
-    // query number of queued buffers already processed
-    int ProcessedBuffers = GetProcessedBuffers();
-    
-    // for each processed buffer: unqueue->refresh->requeue
-    while( ProcessedBuffers-- )
-    {
-        // (1) remove the oldest processed buffer from the queue
-        // NOTE: will cause errors when used in non processed buffer
-        ALuint ProcessedBufferID = 0;
-        alSourceUnqueueBuffers( SoundSourceID, 1, &ProcessedBufferID );
-        
-        // (2) fill it again with new data from the file
-        if( !FillSoundBuffer( ProcessedBufferID ) )
-          return false;
-        
-        // (3) reinsert in queue as pending
-        alSourceQueueBuffers( SoundSourceID, 1, &ProcessedBufferID );
-    }
-    
-    return true;
-}
-
-// -----------------------------------------------------------------------------
-
 // NOTE: read the documentation for alSourceUnqueueBuffers
 // (will only work right with source state AL_STOPPED)
 void VirconSPU::ClearBufferQueue()
@@ -661,6 +654,10 @@ void VirconSPU::ClearBufferQueue()
             ALuint QueuedBufferID = 0;
             alSourceUnqueueBuffers( SoundSourceID, 1, &QueuedBufferID );
         }
+        
+        // update state for all buffers
+        for( int i = 0; i < NUMBER_OF_BUFFERS; i++ )
+          OutputBuffers[ i ].State = SoundBufferStates::ToBeFilled;
     }
     
     catch( const exception& e )
@@ -672,20 +669,60 @@ void VirconSPU::ClearBufferQueue()
 
 // -----------------------------------------------------------------------------
 
-void VirconSPU::FillBufferQueue()
+void VirconSPU::InitializeBufferQueue()
 {
-    // do nothing to do if a queue already exists
-    if( GetQueuedBuffers() )
+    // we will only fill half of the buffers
+    // (the rest are left free for later use)
+    for( int i = 0; i < NUMBER_OF_BUFFERS / 2 ; i++ )
+      FillNextSoundBuffer();
+    
+    // as an exception, this one time we will
+    // need to call this from the main thread;
+    // but it is still safe: at this point the
+    // playback thread is paused and the sound
+    // source is stopped 
+    QueueFilledBuffers();
+}
+
+// -----------------------------------------------------------------------------
+
+// this function is only called from the playback thread,
+// with only one exception for initial queuing on reset
+void VirconSPU::QueueFilledBuffers()
+{
+    while( true )
+    {
+        SoundBuffer* BufferToPlay = FindNextBufferToPlay();
+        if( !BufferToPlay ) return;
+        
+        // put them in the source play queue 
+        alSourceQueueBuffers( SoundSourceID, 1, &BufferToPlay->BufferID );
+        BufferToPlay->State = SoundBufferStates::QueuedToPlay;
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+// this function is only called from the playback thread
+void VirconSPU::UnqueuePlayedBuffers()
+{
+    // state validations
+    if( !GetQueuedBuffers() )
       return;
     
-    // fill all the buffers with audio to play
-    // (throw when buffers could not be filled)
-    for( int i = 0; i < NUMBER_OF_BUFFERS; i++ )
-      if( !FillSoundBuffer( SoundBufferIDs[ i ] ) )
-        throw runtime_error( "Cannot fill sound buffers" );
+    // query number of queued buffers already processed
+    int ProcessedBuffers = GetProcessedBuffers();
     
-    // put them in the source play queue 
-    alSourceQueueBuffers( SoundSourceID, NUMBER_OF_BUFFERS, SoundBufferIDs );
+    // unqueue every processed buffer
+    while( ProcessedBuffers-- )
+    {
+        ALuint ProcessedBufferID = 0;
+        alSourceUnqueueBuffers( SoundSourceID, 1, &ProcessedBufferID );
+        
+        // buffer is ready to be refilled
+        SoundBuffer& UnqueuedBuffer = FindBufferFromID( ProcessedBufferID );
+        UnqueuedBuffer.State = SoundBufferStates::ToBeFilled;
+    }
 }
 
 
