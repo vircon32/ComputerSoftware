@@ -580,8 +580,8 @@ void LoadSettings( const string& FilePath )
         // check document version number
         int Version = GetRequiredIntegerAttribute( SettingsRoot, "version" );
         
-        if( Version < 1 || Version > 3 )
-          THROW( "Document version number is" + to_string( Version ) + ", only versions 1 through 3 are supported" );
+        if( Version < 1 || Version > 4 )
+          THROW( "Document version number is" + to_string( Version ) + ", only versions 1 through 4 are supported" );
         
         // load language settings (optional)
         XMLElement* LanguageElement = SettingsRoot->FirstChildElement( "language" );
@@ -635,13 +635,10 @@ void LoadSettings( const string& FilePath )
         // load audio buffers settings
         XMLElement* AudioBuffersElement = GetRequiredElement( SettingsRoot, "audio-buffers" );
         int NumberOfBuffers = GetRequiredIntegerAttribute( AudioBuffersElement, "number" );
-        int SamplesPerBuffer = GetRequiredIntegerAttribute( AudioBuffersElement, "samples" );
         Clamp( NumberOfBuffers, MIN_BUFFERS, MAX_BUFFERS );
-        Clamp( SamplesPerBuffer, MIN_BUFFER_SAMPLES, MAX_BUFFER_SAMPLES );
         
         // apply audio buffers settings
         Vircon.SPU.NumberOfBuffers = NumberOfBuffers;
-        Vircon.SPU.SamplesPerBuffer = SamplesPerBuffer;      
         
         // configure gamepads
         for( int Gamepad = 0; Gamepad < Constants::MaximumGamepads; Gamepad++ )
@@ -779,7 +776,7 @@ void SaveSettings( const string& FilePath )
         // create a document and its root element
         XMLDocument CreatedDoc;
         XMLElement* SettingsRoot = CreatedDoc.NewElement( "settings" );
-        SettingsRoot->SetAttribute( "version", 3 );
+        SettingsRoot->SetAttribute( "version", 4 );
         CreatedDoc.LinkEndChild( SettingsRoot );
         
         // save language
@@ -808,7 +805,6 @@ void SaveSettings( const string& FilePath )
         // save audio buffers settings
         XMLElement* AudioBuffersElement = CreatedDoc.NewElement( "audio-buffers" );
         AudioBuffersElement->SetAttribute( "number", Vircon.SPU.NumberOfBuffers );
-        AudioBuffersElement->SetAttribute( "samples", Vircon.SPU.SamplesPerBuffer );
         SettingsRoot->LinkEndChild( AudioBuffersElement );
         
         // save gamepad profiles

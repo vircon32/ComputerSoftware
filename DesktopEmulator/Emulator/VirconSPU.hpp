@@ -27,6 +27,11 @@
 // *****************************************************************************
 
 
+// =============================================================================
+//      DEFINITIONS FOR SOUND BUFFERS
+// =============================================================================
+
+
 // Our sound system uses a set of sound buffers that are
 // continuously re-filled and re-queued to prevent audio
 // output from ever running out of sound samples (which
@@ -38,9 +43,29 @@
 // time to update audio and therefore prevent sound problems
 #define MIN_BUFFERS            2
 #define MAX_BUFFERS           16
-#define MIN_BUFFER_SAMPLES   256
-#define MAX_BUFFER_SAMPLES  4096
+#define BUFFER_SAMPLES       735   // buffers contain 1 frame of audio = 44100 / 60 samples
 #define BYTES_PER_SAMPLE       4   // 1 sample = 2 channels with a 16-bit value each
+#define BYTES_PER_BUFFER    2940   // 735 samples * 4 bytes/sample
+
+// -----------------------------------------------------------------------------
+
+enum class SoundBufferStates
+{
+    ToBeFilled,
+    Filled,
+    QueuedToPlay
+};
+
+// -----------------------------------------------------------------------------
+
+typedef struct
+{
+    ALuint BufferID;
+    int32_t SequenceNumber;
+    SoundBufferStates State;
+    SPUSample Samples[ BUFFER_SAMPLES ];
+}
+SoundBuffer;
 
 
 // =============================================================================
@@ -159,21 +184,20 @@ class VirconSPU: public VirconControlInterface
         
         // OpenAL mixer objects
         ALuint SoundSourceID;
-        ALuint SoundBufferIDs[ MAX_BUFFERS ];
         
         // sound buffer configuration
         int NumberOfBuffers;
-        int SamplesPerBuffer;
+        SoundBuffer OutputBuffers[ MAX_BUFFERS ];
+        int NextBufferSequenceNumber;
         
         // Variables for playback thread
         friend int SPUPlaybackThread( void* );
         SDL_Thread*  PlaybackThread;
         
         // variables accessed by the thread for playback control
-        std::string  ThreadErrorMessage;
-        bool ThreadExitFlag;           // used by the main thread to stop the playing thread
-        bool ThreadPauseFlag;          // used by the main thread to hold the playing thread on pause
-        bool ThreadUsingBuffers;       // set/unset by the thread to signal its buffer use sections
+        std::string  ThreadErrorMessage;    // used by the playback thread to report errors on exceptions
+        bool ThreadExitFlag;                // used by the main thread to stop the playing thread
+        bool ThreadPauseFlag;               // used by the main thread to hold the playing thread on pause
         
         // external volume control
         // (used not by Vircon but by the GUI)
@@ -187,21 +211,24 @@ class VirconSPU: public VirconControlInterface
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
         // generate sound to play
-        bool FillSoundBuffer( ALuint BufferID );
+        bool FillNextSoundBuffer();
+        
+        // searching for sound buffers
+        SoundBuffer& FindBufferFromID( ALuint TargetID );
+        SoundBuffer* FindNextBufferToPlay();
+        SoundBuffer* FindNextBufferToFill();
         
         // handling playback buffer queue
-        int  GetQueuedBuffers();
-        int  GetProcessedBuffers();
-        bool UpdateBufferQueue();
+        int GetQueuedBuffers();
+        int GetProcessedBuffers();
+        void UnqueuePlayedBuffers();
+        void QueueFilledBuffers();
         void ClearBufferQueue();
-        void FillBufferQueue();
+        void InitializeBufferQueue();
         
         // operating the playback thread
         void LaunchPlaybackThread();
         void StopPlaybackThread();
-        
-        // inter-thread synchronization
-        bool WaitForBufferAccess( unsigned long Milliseconds );
         
     public:
         
