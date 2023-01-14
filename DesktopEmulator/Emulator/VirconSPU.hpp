@@ -36,12 +36,13 @@
 // continuously re-filled and re-queued to prevent audio
 // output from ever running out of sound samples (which
 // would produce clicks, silences, or terminate audio).
-// Buffers can be configured in number and size within
-// these limits to adapt audio timing to each system.
-// Increasing the total samples will increase audio latency
-// but will ensure that less capable systems have enough
-// time to update audio and therefore prevent sound problems
-#define MIN_BUFFERS            2
+// Buffers can be configured in number within these limits
+// to adapt audio timing to each system. Adding buffers
+// will increase audio latency but will ensure that less
+// capable systems have enough time to update audio and
+// therefore prevent sound problems.
+
+#define MIN_BUFFERS            4
 #define MAX_BUFFERS           16
 #define BUFFER_SAMPLES       735   // buffers contain 1 frame of audio = 44100 / 60 samples
 #define BYTES_PER_SAMPLE       4   // 1 sample = 2 channels with a 16-bit value each
@@ -49,15 +50,20 @@
 
 // -----------------------------------------------------------------------------
 
+// We will use these 3 states to handle audio buffers.
+// Thread safety is achieved by making each thread act
+// only over different sets of buffer states, so they
+// can never be operating over the same buffer at once.
 enum class SoundBufferStates
 {
-    ToBeFilled,
-    Filled,
-    QueuedToPlay
+    ToBeFilled,     // only handled by the main thread
+    Filled,         // only handled by the playback thread
+    QueuedToPlay    // only handled by the playback thread
 };
 
 // -----------------------------------------------------------------------------
 
+// define the sound buffers used for SPU audio output
 typedef struct
 {
     ALuint BufferID;
