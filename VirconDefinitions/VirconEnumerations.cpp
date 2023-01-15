@@ -164,6 +164,7 @@ const map< IOPorts, string > PortNames =
     { IOPorts::SPU_ChannelVolume,        "SPU_ChannelVolume"        },
     { IOPorts::SPU_ChannelSpeed,         "SPU_ChannelSpeed"         },
     { IOPorts::SPU_ChannelLoopEnabled,   "SPU_ChannelLoopEnabled"   },
+    { IOPorts::SPU_ChannelPosition,      "SPU_ChannelPosition"      },
     
     { IOPorts::INP_SelectedGamepad,      "INP_SelectedGamepad"      },
     { IOPorts::INP_GamepadConnected,     "INP_GamepadConnected"     },

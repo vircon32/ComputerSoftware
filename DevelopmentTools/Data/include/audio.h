@@ -146,6 +146,18 @@ void set_channel_speed( float speed )
 // -----------------------------------------------------------------------------
 
 // applies to the currently selected channel
+void set_channel_position( int position )
+{
+    asm
+    {
+        "mov R0, {position}"
+        "out SPU_ChannelPosition, R0"
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+// applies to the currently selected channel
 void set_channel_loop( bool enabled )
 {
     asm
@@ -165,6 +177,34 @@ void assign_channel_sound( int channel_id, int sound_id )
         "out SPU_SelectedChannel, R0"
         "mov R0, {sound_id}"
         "out SPU_ChannelAssignedSound, R0"
+    }
+}
+
+
+// =============================================================================
+//   QUERYING STATE OF SPU CHANNELS
+// =============================================================================
+
+
+float get_channel_speed( int channel_id )
+{
+    asm
+    {
+        "mov R0, {channel_id}"
+        "out SPU_SelectedChannel, R0"
+        "in R0, SPU_ChannelSpeed"
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+int get_channel_position( int channel_id )
+{
+    asm
+    {
+        "mov R0, {channel_id}"
+        "out SPU_SelectedChannel, R0"
+        "in R0, SPU_ChannelPosition"
     }
 }
 
