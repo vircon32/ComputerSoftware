@@ -26,6 +26,32 @@ Installing
     
 ------------------------------------------------------------
 
+Included programs 
+  
+  - "compile": a C compiler that allows you to compile your
+    C programs for Vircon32 into assembly. It also includes
+    the headers for its standard library.
+    
+  - "assemble": an assembler that allows you to convert your
+    assembly programs for Vircon32 into machine code.
+  
+  - "png2vircon": a program that allows you to convert PNG
+    images into the native textures used by Vircon32.
+  
+  - "wav2vircon": a program that allows you to convert WAV
+    sounds into the native sounds used by Vircon32
+  
+  - "tiled2vircon": a program that allows you to convert
+    tilemaps made in the Tiled editor into 2D arrays that
+    can be used natively as part of Vircon32 programs.
+  
+  - "packrom": this program that allows you to pack the
+    binaries, images and sound of a same Vircon32 program
+    into a single file, that will be executable from any
+    Vircon32 emulator or implementation.
+    
+------------------------------------------------------------
+
 What's new in version 23.1.16?
   
   - Added support for partial declarations in structures,
