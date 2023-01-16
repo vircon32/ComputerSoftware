@@ -1,12 +1,47 @@
-=============================================
-  PC DEVELOPMENT TOOLS FOR VIRCON32 CONSOLE
-=============================================
+================================================
+   PC development tools for Vircon32 console
+   (version 23.1.16). README written by Carra
+================================================
 
 
 What is this?
 
     This is a set of tools that allow you to create Vircon32
     programs from your PC, by writing C or assembly programs.
+    All the programs included here are command-line tools.
+    
+------------------------------------------------------------
+
+Installing 
+    
+    These tools are installed following a process similar to
+    the one used for installing the emulator (which you will
+    probably need as well). The exact steps will depend on
+    your operating system.
+    
+    There is, however, one additional step needed after
+    installing: you will need to ensure that the installed
+    programs are accessible to the environment by adding the
+    installation folder to the corresponding system paths.
+    
+------------------------------------------------------------
+
+What's new in version 23.1.16?
+  
+  - Added support for partial declarations in structures,
+    unions and function prototypes.
+  - Added support for SPU channel position port.
+  - Added specific error messages in some non-supported C
+    features to be more helpful.
+  - Corrected wrong compilation error when maximum warnings
+    were reached.
+  - Add checks to prevent use of void values, and avoid
+    dereferencing void pointers.
+  - Fixed bad use of R0 in some expressions with nested
+    function calls.
+  - Fixed bug when initializing pointers to NULL.
+  - Corrected error in ftoa implementation, that provided
+    wrong results on decimal parts with initial zeroes.
 
 ------------------------------------------------------------
 
@@ -16,7 +51,7 @@ License
     under the 3-Clause BSD License, which full text is the
     following:
     
-    Copyright 2021 Carra.
+    Copyright 2021-2023 Carra.
     All rights reserved.
     
     Redistribution and use in source and binary forms, with or

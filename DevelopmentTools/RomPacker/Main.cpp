@@ -51,7 +51,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "packrom v22.6.4" << endl;
+    cout << "packrom v23.1.16" << endl;
     cout << "Vircon32 ROM packer by Javier Carracedo" << endl;
 }
 

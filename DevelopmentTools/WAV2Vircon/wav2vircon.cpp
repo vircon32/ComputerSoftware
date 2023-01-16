@@ -139,7 +139,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "wav2vircon v22.6.4" << endl;
+    cout << "wav2vircon v23.1.16" << endl;
     cout << "Vircon32 WAV file importer by Javier Carracedo" << endl;
 }
 
