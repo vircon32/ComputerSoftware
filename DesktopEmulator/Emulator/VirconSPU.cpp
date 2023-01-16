@@ -9,6 +9,7 @@
     // include C/C++ headers
     #include <stdexcept>        // [ C++ STL ] Exceptions
     #include <iostream>         // [ C++ STL ] I/O Streams
+    #include <climits>          // [ ANSI C ] Numeric limits
     
     // declare used namespaces
     using namespace std;
