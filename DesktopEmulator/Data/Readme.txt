@@ -1,6 +1,6 @@
 ============================================================
              README file for Vircon32 emulator
-             (version 22.6.4) written by Carra
+            (version 23.1.16) written by Carra
 ============================================================
 
 What is this?
@@ -9,10 +9,10 @@ What is this?
     for PC. It will allow you to play Vircon32 games on your
     computer.
 
-    The present version is considered finished, save for
-    bugs fixes or possible small improvements. At the moment
-    all console features are already supported, and all
-    planned configuration options are present.
+    The present version is considered finished, save for any
+    bugs fixes that may be needed in the future. All console
+    features are already supported, and all planned extra
+    functions for the emulator (settings, GUI, etc) are done.
 
 ------------------------------------------------------------
 
@@ -112,12 +112,31 @@ How to use memory cards
 
 ------------------------------------------------------------
 
+What's new in version 23.1.16?
+    
+  - CPU speed increased from 9 MHz to its final speed of 15 MHz.
+  - Added support for Raspberry Pi 4.
+  - Implemented new audio system to generate sound only between
+    frames, to make it consistent with the SPU specification.
+  - Sound channels now support reading and changing their
+    playback position, allowing for jumps.
+  - Fixed wrong rendering of rotated regions when scaling
+    factors are different in X and Y.
+  - Some other very small bug fixes (see commits for detail).
+  - Updated standard BIOS from version 1.0 to 1.1.
+  - Allow settings XML to determine which BIOS file to load.
+  - Slight increase in OpenGL performance when drawing graphics
+    using many small regions.
+  - Removed dependency on GLUT library.
+
+------------------------------------------------------------
+
 License
 
     This program is free and open source. It is offered under
     the 3-Clause BSD License, which full text is the following:
     
-    Copyright 2021 Carra.
+    Copyright 2021-2023 Carra.
     All rights reserved.
     
     Redistribution and use in source and binary forms, with or

@@ -1,6 +1,6 @@
 ﻿============================================================
         Archivo README para el emulador de Vircon32
-            (versión 22.6.4) escrito por Carra
+            (versión 23.1.16) escrito por Carra
 ============================================================
 
 ¿Qué es esto?
@@ -9,11 +9,11 @@
     bits, para PC. Te permite jugar a juegos de Vircon32 en tu
     ordenador.
 
-    La versión actual se considera terminada, salvo corrección
-    de errores o posibles pequeñas mejoras. Actualmente ya
-    están soportadas todas las funciones de la consola, y todas
-    las opciones de configuración previstas se encuentran ya en
-    el programa.
+    La versión actual se considera terminada, salvo cualquier
+    corrección de errores que se pueda necesitar en el futuro. 
+    Ya soporta todas las características de la consola, y el
+    emulador ya tiene todas las funciones extra que estaban
+    previstas (configuraciones, interfaz gráfica, etc).
 
 ------------------------------------------------------------
 
@@ -114,13 +114,33 @@ Cómo usar tarjetas de memoria
 
 ------------------------------------------------------------
 
+Novedades en la versión 23.1.16
+    
+  - La velocidad de la CPU se aumenta de 9 MHz a su velocidad
+    final de 15 MHz.
+  - Añadido soporte para Raspberry Pi 4.
+  - Implementado nuevo sistema de audio que sólo genera sonido
+    entre frames, consistente con la especificación de la SPU.
+  - Los canales de sonido ahora permiten leer y cambiar su
+    posición de reproducción, lo que permite saltos.
+  - Arreglado el render incorrecto de regiones rotadas cuando
+    se usan factores de escala diferentes en X e Y.
+  - Otros arreglos para pequeños bugs (ver detalle en commits).
+  - BIOS estándar actualizada de la versión 1.0 a la 1.1.
+  - El XML de configuración permite elegir qué BIOS cargar.
+  - Ligera mejora de rendimiento en OpenGL cuando se dibujan
+    gráficos usando muchas regiones pequeñas.
+  - Eliminada la dependencia de la librería GLUT.
+
+------------------------------------------------------------
+
 Licencia
     
     Este programa es gratuito y de código abierto. Se ofrece bajo
     la licencia BSD de 3 cláusulas, cuyo texto completo es el
     siguiente:
     
-    Copyright 2021 Carra.
+    Copyright 2021-2023 Carra.
     Todos los derechos reservados.
     
     La redistribución y el uso en las formas de código fuente y
