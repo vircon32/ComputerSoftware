@@ -1,6 +1,6 @@
 ============================================================
              README file for Vircon32 emulator
-            (version 23.1.16) written by Carra
+            (version 23.3.19) written by Carra
 ============================================================
 
 What is this?
@@ -112,22 +112,10 @@ How to use memory cards
 
 ------------------------------------------------------------
 
-What's new in version 23.1.16?
+What's new in version 23.3.19?
     
-  - CPU speed increased from 9 MHz to its final speed of 15 MHz.
-  - Added support for Raspberry Pi 4.
-  - Implemented new audio system to generate sound only between
-    frames, to make it consistent with the SPU specification.
-  - Sound channels now support reading and changing their
-    playback position, allowing for jumps.
-  - Fixed wrong rendering of rotated regions when scaling
-    factors are different in X and Y.
-  - Some other very small bug fixes (see commits for detail).
-  - Updated standard BIOS from version 1.0 to 1.1.
-  - Allow settings XML to determine which BIOS file to load.
-  - Slight increase in OpenGL performance when drawing graphics
-    using many small regions.
-  - Removed dependency on GLUT library.
+  - Improved audio handling to prevent losing audio in some
+    situations, like window events or file dialogs.
 
 ------------------------------------------------------------
 
