@@ -38,6 +38,15 @@ bool IsOpenALActive()
     return true;
 }
 
+// -----------------------------------------------------------------------------
+
+bool IsSourcePlaying( ALuint SourceID )
+{
+    ALenum State;
+    alGetSourcei( SourceID, AL_SOURCE_STATE, &State );
+    return (State == AL_PLAYING);
+}
+
 
 // =============================================================================
 //      SPU PORT WRITERS TABLE
@@ -322,6 +331,16 @@ bool VirconSPU::WritePort( int32_t LocalPort, VirconWord Value )
 
 void VirconSPU::ChangeFrame()
 {
+    // ensure sound is never paused while the SPU is
+    // actually running (this is a fail-safe mechanism
+    // to prevent the emulator from losing audio in
+    // some specific window, input or file events)
+    if( !IsSourcePlaying( SoundSourceID ) )
+      alSourcePlay( SoundSourceID );
+    
+    if( ThreadPauseFlag )
+      ThreadPauseFlag = false;
+    
     // generate sound for next frame
     FillNextSoundBuffer();
 }
