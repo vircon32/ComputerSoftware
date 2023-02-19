@@ -152,6 +152,9 @@ void OpenGL2DContext::SetFullScreen()
     
     // update our window size variables to desktop size
     SDL_GetWindowSize( Window, (int*)(&WindowWidth), (int*)(&WindowHeight) );
+    
+    // make vieport cover the whole screen
+    glViewport( 0, 0, WindowWidth, WindowHeight );
 }
 
 // -----------------------------------------------------------------------------
@@ -165,6 +168,9 @@ void OpenGL2DContext::ExitFullScreen()
     // determine window size
     WindowWidth  = Constants::ScreenWidth;
     WindowHeight = Constants::ScreenHeight;
+    
+    // make vieport cover the window
+    glViewport( 0, 0, WindowWidth, WindowHeight );
     
     // resize and center SDL window
     SDL_SetWindowSize( Window, WindowWidth, WindowHeight );
