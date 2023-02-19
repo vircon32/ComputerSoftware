@@ -34,10 +34,21 @@
 
 string GetLoadFilePath( const char* Filters, const std::string& Directory = EmulatorFolder )
 {
+    // pause emulation at window events to
+    // ensure sound is restored after them
+    bool WasRunning = Vircon.PowerIsOn && !Vircon.Paused;
+    
+    if( WasRunning )
+      Vircon.Pause();
+    
     // show the dialog with the requested filter
     osdialog_filters* ParsedFilters = osdialog_filters_parse( Filters );
     char* FilePath = osdialog_file( OSDIALOG_OPEN, Directory.c_str(), "", ParsedFilters );
     osdialog_filters_free( ParsedFilters );
+    
+    // resume emulation if needed
+    if( WasRunning )
+      Vircon.Resume();
     
     // when cancelled, return empty string
     if( !FilePath )
@@ -53,10 +64,21 @@ string GetLoadFilePath( const char* Filters, const std::string& Directory = Emul
 
 string GetSaveFilePath( const char* Filters, const std::string& Directory = EmulatorFolder )
 {
+    // pause emulation at window events to
+    // ensure sound is restored after them
+    bool WasRunning = Vircon.PowerIsOn && !Vircon.Paused;
+    
+    if( WasRunning )
+      Vircon.Pause();
+    
     // show the dialog with the requested filter
     osdialog_filters* ParsedFilters = osdialog_filters_parse( Filters );
     char* FilePath = osdialog_file( OSDIALOG_SAVE, Directory.c_str(), "", ParsedFilters );
     osdialog_filters_free( ParsedFilters );
+    
+    // resume emulation if needed
+    if( WasRunning )
+      Vircon.Resume();
     
     // when cancelled, return empty string
     if( !FilePath )
@@ -97,7 +119,12 @@ void ShowDelayedMessageBox()
     if( !MessageBoxPending )
       return;
     
+    // check current state to restore later
     bool WasFullScreen = OpenGL2D.FullScreen;
+    bool WasRunning = Vircon.PowerIsOn && !Vircon.Paused;
+    
+    if( WasRunning )
+      Vircon.Pause();
     
     if( WasFullScreen )
     {
@@ -108,11 +135,15 @@ void ShowDelayedMessageBox()
     SDL_ShowSimpleMessageBox( MessageBoxFlags, MessageBoxTitle, MessageBoxMessage, nullptr );
     MessageBoxPending = false;
     
+    // restore previous state if needed
     if( WasFullScreen )
     {
         SetFullScreen();
         SDL_GL_SwapWindow( OpenGL2D.Window );
     }
+    
+    if( WasRunning )
+      Vircon.Resume();
 }
 
 
@@ -125,22 +156,44 @@ void ShowDelayedMessageBox()
 
 void SetWindowZoom( int ZoomFactor )
 {
+    // pause emulation at window events to
+    // ensure sound is restored after them
+    bool WasRunning = Vircon.PowerIsOn && !Vircon.Paused;
+    
+    if( WasRunning )
+      Vircon.Pause();
+    
     // set the zoom
     OpenGL2D.SetWindowZoom( ZoomFactor );
     
     // scale ImGui
     ImGui::GetIO().FontGlobalScale = OpenGL2D.WindowedZoomFactor;
+    
+    // resume emulation if needed
+    if( WasRunning )
+      Vircon.Resume();
 }
 
 // -----------------------------------------------------------------------------
 
 void SetFullScreen()
 {
+    // pause emulation at window events to
+    // ensure sound is restored after them
+    bool WasRunning = Vircon.PowerIsOn && !Vircon.Paused;
+    
+    if( WasRunning )
+      Vircon.Pause();
+    
     // set full screen
     OpenGL2D.SetFullScreen();
     
     // scale ImGui
     ImGui::GetIO().FontGlobalScale = (float)OpenGL2D.WindowWidth / Constants::ScreenWidth;
+    
+    // resume emulation if needed
+    if( WasRunning )
+      Vircon.Resume();
 }
 
 // -----------------------------------------------------------------------------
