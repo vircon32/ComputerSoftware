@@ -307,6 +307,14 @@ void CheckAdditionAssignment( BinaryOperationNode* Operation )
         return;
     }
     
+    // there is asymmetry! we can do pointer += integer,
+    // but not integer += pointer
+    if( Operation->RightOperand->ReturnedType->Type() == DataTypes::Pointer )
+    {
+        RaiseError( Operation->Location, "incompatible types for operator +=" );
+        return;
+    }
+    
     // now just check the non-assignment version
     CheckAddition( Operation );
 }
@@ -319,6 +327,14 @@ void CheckSubtractionAssignment( BinaryOperationNode* Operation )
     if( !Operation->LeftOperand->HasMemoryPlacement() )
     {
         RaiseError( Operation->Location, "assignment destination must be have a memory address" );
+        return;
+    }
+    
+    // there is asymmetry! we can do pointer -= integer,
+    // but not integer -= pointer
+    if( Operation->RightOperand->ReturnedType->Type() == DataTypes::Pointer )
+    {
+        RaiseError( Operation->Location, "incompatible types for operator -=" );
         return;
     }
     
