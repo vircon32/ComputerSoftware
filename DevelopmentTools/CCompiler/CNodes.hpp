@@ -71,7 +71,8 @@ enum class CNodeTypes
     MemberAccess,
     PointedMemberAccess,
     SizeOf,
-    LiteralString
+    LiteralString,
+    TypeConversion
 };
 
 // -----------------------------------------------------------------------------
@@ -1463,6 +1464,44 @@ class LiteralStringNode: public ExpressionNode
         
         // node classification
         virtual CNodeTypes Type() { return CNodeTypes::LiteralString; };
+        
+        // log & debug
+        virtual std::string ToXML();
+        
+        // resulting value
+        virtual bool IsStatic();
+        virtual StaticValue GetStaticValue();
+        virtual void DetermineReturnedType();
+        virtual bool HasSideEffects();
+        
+        // resulting memory address
+        virtual bool HasMemoryPlacement();
+        virtual bool HasStaticPlacement();
+        virtual MemoryPlacement GetStaticPlacement();
+        
+        // resource allocation
+        virtual bool UsesFunctionCalls();
+        virtual int SizeOfNeededTemporaries();
+};
+
+// -----------------------------------------------------------------------------
+
+class TypeConversionNode: public ExpressionNode
+{
+    public:
+        
+        // node components
+        ExpressionNode* ConvertedExpression;
+        DataType* RequestedType;
+        
+    public:
+        
+        // instance handling
+        TypeConversionNode( CNode* Parent_ );
+        virtual ~TypeConversionNode();
+        
+        // node classification
+        virtual CNodeTypes Type() { return CNodeTypes::TypeConversion; };
         
         // log & debug
         virtual std::string ToXML();

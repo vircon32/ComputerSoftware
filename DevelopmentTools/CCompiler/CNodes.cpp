@@ -3678,6 +3678,126 @@ int LiteralStringNode::SizeOfNeededTemporaries()
 
 
 // =============================================================================
+//      TYPE CONVERSION NODE
+// =============================================================================
+
+
+TypeConversionNode::TypeConversionNode( CNode* Parent_ )
+// - - - - - - - - - - - - - - - - - -
+:   ExpressionNode( Parent_ )
+// - - - - - - - - - - - - - - - - - -
+{
+    ConvertedExpression = nullptr;
+    RequestedType = nullptr;
+}
+
+// -----------------------------------------------------------------------------
+
+TypeConversionNode::~TypeConversionNode()
+{
+    delete ConvertedExpression;
+    delete RequestedType;
+}
+
+// -----------------------------------------------------------------------------
+
+string TypeConversionNode::ToXML()
+{
+    string Contents = XMLBlock( "expression", ConvertedExpression->ToXML() );
+    Contents += XMLBlock( "type", RequestedType );
+    return XMLBlock( "type-conversion", Contents );
+}
+
+// -----------------------------------------------------------------------------
+
+bool TypeConversionNode::IsStatic()
+{
+    if( !ConvertedExpression->IsStatic() )
+      return false;
+    
+    // only considered static for conversions to
+    // primitives or reinterpretations as pointers 
+    if( RequestedType->Type() != DataTypes::Primitive
+    &&  RequestedType->Type() != DataTypes::Pointer )
+      return false;
+}
+
+// -----------------------------------------------------------------------------
+
+StaticValue TypeConversionNode::GetStaticValue()
+{
+    if( !IsStatic() )
+      RaiseFatalError( Location, "cannot get the static value of a non-static expression" );
+    
+    // get value of the expression
+    StaticValue ExpressionValue = ConvertedExpression->GetStaticValue();
+    
+    // convert type from the expression's static value
+    if( RequestedType->Type() == DataTypes::Primitive )
+      return ExpressionValue.ConvertToType( ((PrimitiveType*)RequestedType)->Which );
+    
+    // for other cases (like reinterpreting as a pointer)
+    // just do nothing and assume that the value is unaffected
+    return ExpressionValue;
+}
+
+// -----------------------------------------------------------------------------
+
+void TypeConversionNode::DetermineReturnedType()
+{
+    // don't create types twice
+    if( ReturnedType ) return;
+    
+    ReturnedType = RequestedType->Clone();
+}
+
+// -----------------------------------------------------------------------------
+
+bool TypeConversionNode::HasSideEffects()
+{
+    return ConvertedExpression->HasSideEffects();
+}
+
+// -----------------------------------------------------------------------------
+
+bool TypeConversionNode::HasMemoryPlacement()
+{
+    // type conversions never have memory placement:
+    // even converting a variable is interpreted as
+    // an evaluation and then a conversion
+    return false;
+}
+
+// -----------------------------------------------------------------------------
+
+bool TypeConversionNode::HasStaticPlacement()
+{
+    return false;
+}
+
+// -----------------------------------------------------------------------------
+
+MemoryPlacement TypeConversionNode::GetStaticPlacement()
+{
+    RaiseFatalError( Location, "type conversion expression has no static memory placement" );
+}
+
+// -----------------------------------------------------------------------------
+
+bool TypeConversionNode::UsesFunctionCalls()
+{
+    return ConvertedExpression->UsesFunctionCalls();
+}
+
+// -----------------------------------------------------------------------------
+
+int TypeConversionNode::SizeOfNeededTemporaries()
+{
+    return ConvertedExpression->SizeOfNeededTemporaries();
+}
+
+
+// =============================================================================
 //      TOP-LEVEL NODE
 // =============================================================================
 
