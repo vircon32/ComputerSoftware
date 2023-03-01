@@ -28,6 +28,12 @@ void CheckAddition( BinaryOperationNode* Operation )
     
     if( !Case1Met && !Case2AMet && !Case2BMet )
       RaiseError( Operation->Location, "invalid operands for addition" );
+    
+    // pointer arithmetic is only allowed when the
+    // pointed elements have well defined size
+    if( (Case2AMet && ((PointerType*)LeftType )->BaseType->SizeInWords() == 0)
+    ||  (Case2BMet && ((PointerType*)RightType)->BaseType->SizeInWords() == 0) )
+      RaiseError( Operation->Location, "pointer type is invalid for addition" );
 }
 
 // -----------------------------------------------------------------------------
@@ -51,6 +57,12 @@ void CheckSubtraction( BinaryOperationNode* Operation )
     
     if( !Case1Met && !Case2Met && !Case3Met )
       RaiseError( Operation->Location, "invalid operands for subtraction" );
+    
+    // pointer arithmetic is only allowed when the
+    // pointed elements have well defined size
+    if( LeftType->Type() == DataTypes::Pointer )
+      if( ((PointerType*)LeftType)->BaseType->SizeInWords() == 0 )
+        RaiseError( Operation->Location, "pointer type is invalid for substraction" );
 }
 
 // -----------------------------------------------------------------------------
