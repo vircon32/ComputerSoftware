@@ -2,6 +2,7 @@
     // include project files
     #include "CheckBinaryOperations.hpp"
     #include "CompilerInfrastructure.hpp"
+    #include "CheckNodes.hpp"
 // *****************************************************************************
 
 
@@ -270,42 +271,8 @@ void CheckAssignment( BinaryOperationNode* Operation )
         return;
     }
     
-    // types of both sides must be compatible:
-    DataType* LeftType = Operation->LeftOperand->ReturnedType;
-    DataType* RightType = Operation->RightOperand->ReturnedType;
-    
-    if( LeftType->Type() == DataTypes::Array )
-    {
-        RaiseError( Operation->Location, "assignment cannot operate on arrays" );
-        return;
-    }
-    
-    // case 1: they are the same type
-    bool Case1Met = AreEqual( LeftType, RightType );
-    
-    // case 2: all primitives can be converted to one another
-    bool Case2Met = (LeftType->Type() == DataTypes::Primitive)
-                 && (RightType->Type() == DataTypes::Primitive);
-    
-    // case 3: enumerations can be assigned to all primitives
-    // (but not the other way around: enums are more restrictive)
-    bool Case3Met = (LeftType->Type() == DataTypes::Primitive)
-                 && (RightType->Type() == DataTypes::Enumeration);
-    
-    // case 4: all pointers can be assigned NULL i.e. integer -1
-    bool Case4Met = (LeftType->Type() == DataTypes::Pointer)
-                 &&  TypeIsThisPrimitive( RightType, PrimitiveTypes::Int )
-                 &&  Operation->RightOperand->IsStatic()
-                 &&  (Operation->RightOperand->GetStaticValue().Word.AsInteger == -1);
-    
-    // case 5: arrays can be assigned to pointers to the same
-    // base type (valid because of array decay into a pointer)
-    bool Case5Met = (LeftType->Type() == DataTypes::Pointer)
-                 && (RightType->Type() == DataTypes::Array)
-                 &&  AreEqual( ((PointerType*)LeftType)->BaseType, ((ArrayType*)RightType)->BaseType );
-    
-    if( !Case1Met && !Case2Met && !Case3Met && !Case4Met && !Case5Met )
-      RaiseError( Operation->Location, "types are not compatible: cannot assign " + RightType->ToString() + " to " + LeftType->ToString() );
+    // types of both sides must be compatible
+    CheckAssignmentTypes( Operation->Location, Operation->LeftOperand->ReturnedType, Operation->RightOperand );
 }
 
 // -----------------------------------------------------------------------------

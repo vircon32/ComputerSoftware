@@ -62,71 +62,61 @@ void CheckExpression( ExpressionNode* Expression )
 
 // -----------------------------------------------------------------------------
 
-void CheckTypeConversion( SourceLocation Location, ExpressionNode* ProducedValue, DataType* NeededType )
+void CheckAssignmentTypes( SourceLocation Location, DataType* LeftType, ExpressionNode* RightValue )
 {
-    DataType* ProducedType = ProducedValue->ReturnedType;
-    
     // no void types are allowed
-    if( ProducedType->Type() == DataTypes::Void )
+    DataType* RightType = RightValue->ReturnedType;
+    
+    if( RightType->Type() == DataTypes::Void )
     {
         RaiseError( Location, "cannot assign an expression returning no value" );
         return;
     }
     
-    // no conversion needed if types are equal
-    if( AreEqual( ProducedType, NeededType ) )
-      return;
-    
-    // arrays can be converted into pointers (i.e. array
-    // decay) to either the same base type or to void
-    if( ProducedType->Type() == DataTypes::Array )
-      if( NeededType->Type() == DataTypes::Pointer )
-      {
-          DataType* PointerBaseType = ((PointerType*)NeededType)->BaseType;
-          DataType* ArrayBaseType = ((ArrayType*)ProducedType)->BaseType;
-          
-          if( AreEqual( PointerBaseType, ArrayBaseType ) )
-            return;
-          
-          if( PointerBaseType->Type() == DataTypes::Void )
-            return;
-      }
-    
-    // enumerations can be converted into all primitive types
-    // (but not the other way around)
-    if( ProducedType->Type() == DataTypes::Enumeration )
-      if( NeededType->Type() == DataTypes::Primitive )
-        return;
-    
-    // NULL, or its value -1, can be converted to any pointer
-    if( NeededType->Type() == DataTypes::Pointer )
-      if( TypeIsThisPrimitive( ProducedType, PrimitiveTypes::Int ) )
-        if( ProducedValue->IsStatic() )
-          if( ProducedValue->GetStaticValue().Word.AsInteger == -1 )
-            return;
-    
-    // in other cases, different classes of types can never be converted
-    if( ProducedType->Type() != NeededType->Type() )
+    // arrays cannot be assigned a value (only their elements can)
+    if( LeftType->Type() == DataTypes::Array )
     {
-        RaiseError( Location, "cannot convert " + ProducedType->ToString() + " to " + NeededType->ToString() );
+        RaiseError( Location, "cannot assign a value to an array" );
         return;
     }
     
-    // primitives can always be converted
-    if( ProducedType->Type() == DataTypes::Primitive )
-      return;
+    // case 1: they are the same type
+    bool Case1Met = AreEqual( LeftType, RightType );
     
-    // allow conversion of any pointer to void pointer
-    if( ProducedType->Type() == DataTypes::Pointer )
-    {
-        DataType* NeededBase = ((PointerType*)NeededType)->BaseType;
-        
-        if( NeededBase->Type() == DataTypes::Void )
-          return;
-    }
+    // case 2: all primitives can be converted to one another
+    bool Case2Met = (LeftType->Type() == DataTypes::Primitive)
+                 && (RightType->Type() == DataTypes::Primitive);
     
-    // forbid conversion in any other case
-    RaiseError( Location, "cannot convert " + ProducedType->ToString() + " to " + NeededType->ToString() );
+    // case 3: enumerations can be assigned to all primitives
+    // (but not the other way around: enums are more restrictive)
+    bool Case3Met = (LeftType->Type() == DataTypes::Primitive)
+                 && (RightType->Type() == DataTypes::Enumeration);
+    
+    // case 4: all pointers can be assigned NULL i.e. integer -1
+    bool Case4Met = (LeftType->Type() == DataTypes::Pointer)
+                 &&  TypeIsThisPrimitive( RightType, PrimitiveTypes::Int )
+                 &&  RightValue->IsStatic()
+                 && (RightValue->GetStaticValue().Word.AsInteger == -1);
+    
+    // case 5: all pointers can be assigned to void pointer
+    bool Case5Met = (LeftType->Type() == DataTypes::Pointer)
+                 && (RightType->Type() == DataTypes::Pointer)
+                 && (((PointerType*)LeftType)->BaseType->Type() == DataTypes::Void);
+    
+    // case 6: arrays can be assigned to pointers to the same
+    // base type (valid because of array decay into a pointer)
+    bool Case6Met = (LeftType->Type() == DataTypes::Pointer)
+                 && (RightType->Type() == DataTypes::Array)
+                 &&  AreEqual( ((PointerType*)LeftType)->BaseType, ((ArrayType*)RightType)->BaseType );
+    
+    // case 6: arrays can be assigned to pointers to void
+    // (valid because of array decay into a pointer)
+    bool Case7Met = (LeftType->Type() == DataTypes::Pointer)
+                 && (RightType->Type() == DataTypes::Array)
+                 && (((PointerType*)LeftType)->BaseType->Type() == DataTypes::Void);
+    
+    if( !Case1Met && !Case2Met && !Case3Met && !Case4Met && !Case5Met && !Case6Met && !Case7Met )
+      RaiseError( Location, "types are not compatible: cannot assign " + RightType->ToString() + " to " + LeftType->ToString() );
 }
 
 
@@ -184,7 +174,7 @@ void CheckFunctionCall( FunctionCallNode* FunctionCall )
     
     while( ParameterIterator != FunctionCall->Parameters.end() )
     {
-        CheckTypeConversion( (*ParameterIterator)->Location, (*ParameterIterator), (*ArgumentIterator)->DeclaredType );
+        CheckAssignmentTypes( (*ParameterIterator)->Location, (*ArgumentIterator)->DeclaredType, *ParameterIterator );
         
         ParameterIterator++;
         ArgumentIterator++;

@@ -324,7 +324,7 @@ void VirconCAnalyzer::AnalyzeInitialization( SourceLocation Location, DataType* 
         }
         
         // otherwise it is just a regular single assignment
-        else AnalyzeSingleInitialization( Location, VariableType, (ExpressionNode*)InitialValue );
+        else CheckAssignmentTypes( Location, VariableType, (ExpressionNode*)InitialValue );
     }
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -344,7 +344,7 @@ void VirconCAnalyzer::AnalyzeInitialization( SourceLocation Location, DataType* 
         
         // case 3: a 1-value list and 1-element variable are actually a single assignment
         else if( ValueList->AssignedValues.size() == 1 && FirstValue->IsExpression() )
-          AnalyzeSingleInitialization( Location, VariableType, (ExpressionNode*)FirstValue );
+          CheckAssignmentTypes( Location, VariableType, (ExpressionNode*)FirstValue );
         
         // other cases are not allowed and we signal an error
         else
@@ -354,50 +354,6 @@ void VirconCAnalyzer::AnalyzeInitialization( SourceLocation Location, DataType* 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Any other nodes cannot be initial values
     else RaiseFatalError( InitialValue->Location, "incorrect initial value" );
-}
-
-// -----------------------------------------------------------------------------
-
-// single value initializations
-void VirconCAnalyzer::AnalyzeSingleInitialization( SourceLocation Location, DataType* VariableType, ExpressionNode* Value )
-{
-    // we can analyze it as a regular non-initial assignment
-    // (i.e. types of both sides must be compatible)
-    DataType* LeftType = VariableType;
-    DataType* RightType = Value->ReturnedType;
-    
-    if( LeftType->Type() == DataTypes::Array )
-    {
-        RaiseError( Value->Location, "single-value initialization cannot operate on arrays" );
-        return;
-    }
-    
-    // case 1: they are the same type
-    bool Case1Met = AreEqual( LeftType, RightType );
-    
-    // case 2: all primitives can be converted to one another
-    bool Case2Met = (LeftType->Type() == DataTypes::Primitive)
-                 && (RightType->Type() == DataTypes::Primitive);
-    
-    // case 3: enumerations can be assigned to all primitives
-    // (but not the other way around: enums are more restrictive)
-    bool Case3Met = (LeftType->Type() == DataTypes::Primitive)
-                 && (RightType->Type() == DataTypes::Enumeration);
-    
-    // case 4: all pointers can be assigned NULL i.e. integer -1
-    bool Case4Met = (LeftType->Type() == DataTypes::Pointer)
-                 &&  TypeIsThisPrimitive( RightType, PrimitiveTypes::Int )
-                 &&  Value->IsStatic()
-                 && (Value->GetStaticValue().Word.AsInteger == -1);
-    
-    // case 5: arrays can be assigned to pointers to the same
-    // base type (valid because of array decay into a pointer)
-    bool Case5Met = (LeftType->Type() == DataTypes::Pointer)
-                 && (RightType->Type() == DataTypes::Array)
-                 &&  AreEqual( ((PointerType*)LeftType)->BaseType, ((ArrayType*)RightType)->BaseType );
-    
-    if( !Case1Met && !Case2Met && !Case3Met && !Case4Met && !Case5Met )
-      RaiseError( Location, "types are not compatible: cannot assign " + RightType->ToString() + " to " + LeftType->ToString() );
 }
 
 // -----------------------------------------------------------------------------
@@ -562,7 +518,7 @@ void VirconCAnalyzer::AnalyzeReturn( ReturnNode* Return )
         AnalyzeExpression( Return->ReturnedExpression, true );
         
         // check compatibility of the returned type
-        CheckTypeConversion( Return->Location, Return->ReturnedExpression, Function->ReturnType );
+        CheckAssignmentTypes( Return->Location, Function->ReturnType, Return->ReturnedExpression );
     }
 }
 
@@ -602,7 +558,7 @@ void VirconCAnalyzer::AnalyzeSwitch( SwitchNode* Switch )
     
     // check compatibility of the condition type
     PrimitiveType IntegerType( PrimitiveTypes::Int );
-    CheckTypeConversion( Switch->Location, Switch->Condition, &IntegerType );
+    CheckAssignmentTypes( Switch->Location, &IntegerType, Switch->Condition );
 }
 
 // -----------------------------------------------------------------------------

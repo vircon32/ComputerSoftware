@@ -45,7 +45,6 @@ class VirconCAnalyzer
         
         // specific analyzers for variable initializations
         void AnalyzeInitialization( SourceLocation Location, DataType* VariableType, CNode* InitialValue );
-        void AnalyzeSingleInitialization( SourceLocation Location, DataType* VariableType, ExpressionNode* Value );
         void AnalyzeStringInitialization( SourceLocation Location, int NumberOfElements, std::string Characters );
         void AnalyzeArrayInitialization( SourceLocation Location, ArrayType* LeftType, InitializationListNode* ValueList );
         void AnalyzeStructureInitialization( SourceLocation Location, StructureNode* StructureDefinition, InitializationListNode* ValueList );

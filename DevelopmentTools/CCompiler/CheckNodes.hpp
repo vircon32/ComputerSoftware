@@ -14,7 +14,7 @@
 
 
 void CheckExpression( ExpressionNode* Expression );
-void CheckTypeConversion( SourceLocation Location, ExpressionNode* ProducedValue, DataType* NeededType );
+void CheckAssignmentTypes( SourceLocation Location, DataType* LeftType, ExpressionNode* RightValue );
 
 
 // =============================================================================
