@@ -1487,10 +1487,20 @@ ExpressionNode* VirconCParser::ParseExpression( CNode* Parent, CTokenIterator& T
     // CASE 1: SizeOf expressions
     if( TokenIsThisKeyword( NextToken, KeywordTypes::SizeOf ) )
       PrimaryExpression = ParseSizeOf( Parent, TokenPosition );
-      
-    // CASE 2: Enclosed expressions
+    
+    // an open parenthesis can mean 2 things
     if( TokenIsThisDelimiter( NextToken, DelimiterTypes::OpenParenthesis ) )
-      PrimaryExpression = ParseEnclosedExpression( Parent, TokenPosition );
+    {
+        CToken* FollowingToken = *Next( TokenPosition );
+        
+        // CASE 2: Explicit type conversions
+        if( IsValidStartOfType( FollowingToken, Parent ) )
+          PrimaryExpression = ParseTypeConversion( Parent, TokenPosition );
+        
+        // CASE 3: Enclosed expressions
+        else
+          PrimaryExpression = ParseEnclosedExpression( Parent, TokenPosition );
+    }
     
     // CASE 3: String literals
     if( NextToken->Type() == CTokenTypes::LiteralString )
@@ -1891,6 +1901,31 @@ LiteralStringNode* VirconCParser::ParseLiteralString( CNode* Parent, CTokenItera
     }
     
     return String;
+}
+
+// -----------------------------------------------------------------------------
+
+TypeConversionNode* VirconCParser::ParseTypeConversion( CNode* Parent, CTokenIterator& TokenPosition )
+{
+    // consume opening parenthesis
+    TokenPosition++;
+    
+    // create new node
+    TypeConversionNode* Conversion = new TypeConversionNode( Parent );
+    Conversion->Location = (*TokenPosition)->Location;
+    
+    // parse a type
+    Conversion->RequestedType = ParseType( Conversion, TokenPosition );
+    
+    // expect a closing parenthesis
+    ExpectDelimiter( TokenPosition, DelimiterTypes::CloseParenthesis );
+    
+    // parse an expression after the parenthesis
+    if( !IsValidStartOfExpression( *TokenPosition ) )
+      RaiseFatalError( (*TokenPosition)->Location, "invalid start of expression" );
+    
+    Conversion->ConvertedExpression = ParseExpression( Conversion, TokenPosition, false );
+    return Conversion;
 }
 
 

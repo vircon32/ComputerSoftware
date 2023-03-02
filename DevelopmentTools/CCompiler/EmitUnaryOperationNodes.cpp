@@ -319,7 +319,7 @@ void VirconCEmitter::EmitLogicalNot( UnaryOperationNode* UnaryOperation, Registe
     if( OperandType->Type() == DataTypes::Pointer )
     {
         PrimitiveType Boolean( PrimitiveTypes::Bool );
-        EmitTypeConversion( ResultRegister, OperandType, &Boolean );
+        EmitRegisterTypeConversion( ResultRegister, OperandType, &Boolean );
     }
     
     // apply operation

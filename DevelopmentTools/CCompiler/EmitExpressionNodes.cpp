@@ -77,7 +77,7 @@ void VirconCEmitter::EmitFunctionCall( FunctionCallNode* FunctionCall, RegisterA
             // perform type promotion where needed
             DataType* NeededType = Argument->DeclaredType;
             DataType* ProducedType = Parameter->ReturnedType;
-            EmitTypeConversion( ParameterRegister, ProducedType, NeededType );
+            EmitRegisterTypeConversion( ParameterRegister, ProducedType, NeededType );
             
             // save this value in the stack of temporaries
             // (careful! stack allocation starts at [BP-1])
@@ -125,7 +125,7 @@ void VirconCEmitter::EmitFunctionCall( FunctionCallNode* FunctionCall, RegisterA
             // perform type promotion where needed
             DataType* NeededType = Argument->DeclaredType;
             DataType* ProducedType = Parameter->ReturnedType;
-            EmitTypeConversion( ParameterRegister, ProducedType, NeededType );
+            EmitRegisterTypeConversion( ParameterRegister, ProducedType, NeededType );
         }
         
         // place the result as a passed parameter (end of the stack frame)
@@ -468,4 +468,23 @@ void VirconCEmitter::EmitLiteralString( LiteralStringNode* LiteralString, Regist
     // program section: write string placement to the register
     string ResultRegisterName = "R" + to_string(ResultRegister);
     ProgramLines.push_back( "mov " + ResultRegisterName + ", " + LiteralString->NodeLabel() );
+}
+
+// -----------------------------------------------------------------------------
+#include <iostream>
+void VirconCEmitter::EmitTypeConversion( TypeConversionNode* TypeConversion, RegisterAllocation& Registers, int ResultRegister )
+{
+    // first emit the converted expression
+    EmitDependentExpression( TypeConversion->ConvertedExpression, Registers, ResultRegister );
+    
+    // obtain both types
+    DataType* OriginalType = TypeConversion->ConvertedExpression->ReturnedType;
+    DataType* RequestedType = TypeConversion->RequestedType;
+    
+    // only for conversions between primitives, emit the
+    // needed conversion instruction (other conversions are
+    // just the same value reinterpretated as another type)
+    if( OriginalType->Type() == DataTypes::Primitive )
+      if( RequestedType->Type() == DataTypes::Primitive )
+        EmitRegisterTypeConversion( ResultRegister, ((PrimitiveType*)OriginalType)->Which, ((PrimitiveType*)RequestedType)->Which );
 }

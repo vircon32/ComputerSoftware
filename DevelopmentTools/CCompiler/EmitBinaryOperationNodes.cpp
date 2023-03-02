@@ -105,7 +105,7 @@ void VirconCEmitter::EmitAddition( BinaryOperationNode* BinaryOperation, Registe
         
         // emit type conversion for dynamic value
         if( ResultIsFloat && !DynamicIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // obtain the static value
         StaticValue Value = StaticOperand->GetStaticValue();
@@ -128,7 +128,7 @@ void VirconCEmitter::EmitAddition( BinaryOperationNode* BinaryOperation, Registe
         
         // emit type conversion for left value
         if( ResultIsFloat && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -139,7 +139,7 @@ void VirconCEmitter::EmitAddition( BinaryOperationNode* BinaryOperation, Registe
         
         // emit type conversion for right value
         if( ResultIsFloat && !RightIsFloat )
-          EmitTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // emit the addition
         string Instruction = (ResultIsFloat? "fadd" : "iadd");
@@ -266,7 +266,7 @@ void VirconCEmitter::EmitSubtraction( BinaryOperationNode* BinaryOperation, Regi
         
         // emit type conversion for dynamic value
         if( ResultIsFloat && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // obtain the static value
         StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
@@ -297,7 +297,7 @@ void VirconCEmitter::EmitSubtraction( BinaryOperationNode* BinaryOperation, Regi
         
         // emit type conversion for dynamic value
         if( ResultIsFloat && !RightIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // change sign of dynamic value
         string SignInstruction = (ResultIsFloat? "fsgn" : "isgn");
@@ -319,7 +319,7 @@ void VirconCEmitter::EmitSubtraction( BinaryOperationNode* BinaryOperation, Regi
         
         // emit type conversion for left value
         if( ResultIsFloat && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -330,7 +330,7 @@ void VirconCEmitter::EmitSubtraction( BinaryOperationNode* BinaryOperation, Regi
         
         // emit type conversion for right value
         if( ResultIsFloat && !RightIsFloat )
-          EmitTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // emit the subtraction
         string Instruction = (ResultIsFloat? "fsub" : "isub");
@@ -375,7 +375,7 @@ void VirconCEmitter::EmitProduct( BinaryOperationNode* BinaryOperation, Register
         
         // emit type conversion for dynamic value
         if( ResultIsFloat && !DynamicIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // obtain the static value
         StaticValue Value = StaticOperand->GetStaticValue();
@@ -398,7 +398,7 @@ void VirconCEmitter::EmitProduct( BinaryOperationNode* BinaryOperation, Register
         
         // emit type conversion for left value
         if( ResultIsFloat && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -409,7 +409,7 @@ void VirconCEmitter::EmitProduct( BinaryOperationNode* BinaryOperation, Register
         
         // emit type conversion for right value
         if( ResultIsFloat && !RightIsFloat )
-          EmitTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // emit the product
         string Instruction = (ResultIsFloat? "fmul" : "imul");
@@ -448,7 +448,7 @@ void VirconCEmitter::EmitDivision( BinaryOperationNode* BinaryOperation, Registe
         
         // emit type conversion for dynamic value
         if( ResultIsFloat && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // obtain the static value
         StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
@@ -485,7 +485,7 @@ void VirconCEmitter::EmitDivision( BinaryOperationNode* BinaryOperation, Registe
         
         // emit type conversion for left value
         if( ResultIsFloat && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -496,7 +496,7 @@ void VirconCEmitter::EmitDivision( BinaryOperationNode* BinaryOperation, Registe
         
         // emit type conversion for right value
         if( ResultIsFloat && !RightIsFloat )
-          EmitTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // emit the division
         string Instruction = (ResultIsFloat? "fdiv" : "idiv");
@@ -608,7 +608,7 @@ void VirconCEmitter::EmitEqual( BinaryOperationNode* BinaryOperation, RegisterAl
         
         // emit type conversion for dynamic value
         if( ResultIsFloat && !DynamicIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // obtain the static value
         StaticValue Value = StaticOperand->GetStaticValue();
@@ -631,7 +631,7 @@ void VirconCEmitter::EmitEqual( BinaryOperationNode* BinaryOperation, RegisterAl
         
         // emit type conversion for left value
         if( ResultIsFloat && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -642,7 +642,7 @@ void VirconCEmitter::EmitEqual( BinaryOperationNode* BinaryOperation, RegisterAl
         
         // emit type conversion for right value
         if( ResultIsFloat && !RightIsFloat )
-          EmitTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // emit the comparison
         string Instruction = (ResultIsFloat? "feq" : "ieq");
@@ -700,7 +700,7 @@ void VirconCEmitter::EmitNotEqual( BinaryOperationNode* BinaryOperation, Registe
         
         // emit type conversion for dynamic value
         if( ThereAreFloats && !DynamicIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // obtain the static value
         StaticValue Value = StaticOperand->GetStaticValue();
@@ -723,7 +723,7 @@ void VirconCEmitter::EmitNotEqual( BinaryOperationNode* BinaryOperation, Registe
         
         // emit type conversion for left value
         if( ThereAreFloats && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -734,7 +734,7 @@ void VirconCEmitter::EmitNotEqual( BinaryOperationNode* BinaryOperation, Registe
         
         // emit type conversion for right value
         if( ThereAreFloats && !RightIsFloat )
-          EmitTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // emit the comparison
         string Instruction = (ThereAreFloats? "fne" : "ine");
@@ -773,7 +773,7 @@ void VirconCEmitter::EmitLessThan( BinaryOperationNode* BinaryOperation, Registe
         
         // emit type conversion for dynamic value
         if( ThereAreFloats && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // obtain the static value
         StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
@@ -804,7 +804,7 @@ void VirconCEmitter::EmitLessThan( BinaryOperationNode* BinaryOperation, Registe
         
         // emit type conversion for dynamic value
         if( ThereAreFloats && !RightIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // now emit the opposite comparison
         // (since we have already reorganized the operation)
@@ -821,7 +821,7 @@ void VirconCEmitter::EmitLessThan( BinaryOperationNode* BinaryOperation, Registe
         
         // emit type conversion for left value
         if( ThereAreFloats && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -832,7 +832,7 @@ void VirconCEmitter::EmitLessThan( BinaryOperationNode* BinaryOperation, Registe
         
         // emit type conversion for right value
         if( ThereAreFloats && !RightIsFloat )
-          EmitTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // emit the comparison
         string Instruction = (ThereAreFloats? "flt" : "ilt");
@@ -869,7 +869,7 @@ void VirconCEmitter::EmitLessOrEqual( BinaryOperationNode* BinaryOperation, Regi
         
         // emit type conversion for dynamic value
         if( ThereAreFloats && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // obtain the static value
         StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
@@ -900,7 +900,7 @@ void VirconCEmitter::EmitLessOrEqual( BinaryOperationNode* BinaryOperation, Regi
         
         // emit type conversion for dynamic value
         if( ThereAreFloats && !RightIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // now emit the opposite comparison
         // (since we have already reorganized the operation)
@@ -917,7 +917,7 @@ void VirconCEmitter::EmitLessOrEqual( BinaryOperationNode* BinaryOperation, Regi
         
         // emit type conversion for left value
         if( ThereAreFloats && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -928,7 +928,7 @@ void VirconCEmitter::EmitLessOrEqual( BinaryOperationNode* BinaryOperation, Regi
         
         // emit type conversion for right value
         if( ThereAreFloats && !RightIsFloat )
-          EmitTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // emit the comparison
         string Instruction = (ThereAreFloats? "fle" : "ile");
@@ -965,7 +965,7 @@ void VirconCEmitter::EmitGreaterThan( BinaryOperationNode* BinaryOperation, Regi
         
         // emit type conversion for dynamic value
         if( ThereAreFloats && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // obtain the static value
         StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
@@ -996,7 +996,7 @@ void VirconCEmitter::EmitGreaterThan( BinaryOperationNode* BinaryOperation, Regi
         
         // emit type conversion for dynamic value
         if( ThereAreFloats && !RightIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // now emit the opposite comparison
         // (since we have already reorganized the operation)
@@ -1013,7 +1013,7 @@ void VirconCEmitter::EmitGreaterThan( BinaryOperationNode* BinaryOperation, Regi
         
         // emit type conversion for left value
         if( ThereAreFloats && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -1024,7 +1024,7 @@ void VirconCEmitter::EmitGreaterThan( BinaryOperationNode* BinaryOperation, Regi
         
         // emit type conversion for right value
         if( ThereAreFloats && !RightIsFloat )
-          EmitTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // emit the comparison
         string Instruction = (ThereAreFloats? "fgt" : "igt");
@@ -1061,7 +1061,7 @@ void VirconCEmitter::EmitGreaterOrEqual( BinaryOperationNode* BinaryOperation, R
         
         // emit type conversion for dynamic value
         if( ThereAreFloats && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // obtain the static value
         StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
@@ -1092,7 +1092,7 @@ void VirconCEmitter::EmitGreaterOrEqual( BinaryOperationNode* BinaryOperation, R
         
         // emit type conversion for dynamic value
         if( ThereAreFloats && !RightIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // now emit the opposite comparison
         // (since we have already reorganized the operation)
@@ -1109,7 +1109,7 @@ void VirconCEmitter::EmitGreaterOrEqual( BinaryOperationNode* BinaryOperation, R
         
         // emit type conversion for left value
         if( ThereAreFloats && !LeftIsFloat )
-          EmitTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -1120,7 +1120,7 @@ void VirconCEmitter::EmitGreaterOrEqual( BinaryOperationNode* BinaryOperation, R
         
         // emit type conversion for right value
         if( ThereAreFloats && !RightIsFloat )
-          EmitTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
         
         // emit the comparison
         string Instruction = (ThereAreFloats? "fge" : "ige");
@@ -1148,7 +1148,7 @@ void VirconCEmitter::EmitLogicalOr( BinaryOperationNode* BinaryOperation, Regist
     EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
     
     // emit type conversion for left value
-    EmitTypeConversion( ResultRegister, BinaryOperation->LeftOperand->ReturnedType, BinaryOperation->ReturnedType );
+    EmitRegisterTypeConversion( ResultRegister, BinaryOperation->LeftOperand->ReturnedType, BinaryOperation->ReturnedType );
     
     // this operation must short-circuit!
     // if true, return that as the result
@@ -1178,7 +1178,7 @@ void VirconCEmitter::EmitLogicalOr( BinaryOperationNode* BinaryOperation, Regist
         EmitDependentExpression( BinaryOperation->RightOperand, Registers, RightRegister );
         
         // emit type conversion for right value
-        EmitTypeConversion( RightRegister, BinaryOperation->RightOperand->ReturnedType, BinaryOperation->ReturnedType );
+        EmitRegisterTypeConversion( RightRegister, BinaryOperation->RightOperand->ReturnedType, BinaryOperation->ReturnedType );
         
         // emit the boolean operation
         ProgramLines.push_back( "or " + ResultRegisterName + ", " + RightRegisterName );
@@ -1204,7 +1204,7 @@ void VirconCEmitter::EmitLogicalAnd( BinaryOperationNode* BinaryOperation, Regis
     EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
     
     // emit type conversion for left value
-    EmitTypeConversion( ResultRegister, BinaryOperation->LeftOperand->ReturnedType, BinaryOperation->ReturnedType );
+    EmitRegisterTypeConversion( ResultRegister, BinaryOperation->LeftOperand->ReturnedType, BinaryOperation->ReturnedType );
     
     // this operation must short-circuit!
     // if false, return that as the result
@@ -1234,7 +1234,7 @@ void VirconCEmitter::EmitLogicalAnd( BinaryOperationNode* BinaryOperation, Regis
         EmitDependentExpression( BinaryOperation->RightOperand, Registers, RightRegister );
         
         // emit type conversion for right value
-        EmitTypeConversion( RightRegister, BinaryOperation->RightOperand->ReturnedType, BinaryOperation->ReturnedType );
+        EmitRegisterTypeConversion( RightRegister, BinaryOperation->RightOperand->ReturnedType, BinaryOperation->ReturnedType );
         
         // emit the boolean operation
         ProgramLines.push_back( "and " + ResultRegisterName + ", " + RightRegisterName );
@@ -1558,7 +1558,7 @@ void VirconCEmitter::EmitAssignment( BinaryOperationNode* BinaryOperation, Regis
         
         // when needed, perform type conversion
         // (no check: the non-static case cannot be "ptr = -1")
-        EmitTypeConversion( ResultRegister, RightType, LeftType );
+        EmitRegisterTypeConversion( ResultRegister, RightType, LeftType );
     }
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1665,7 +1665,7 @@ void VirconCEmitter::EmitAdditionAssignment( BinaryOperationNode* BinaryOperatio
     DataType* RightType = BinaryOperation->RightOperand->ReturnedType;
     
     if( !TypeIsFloat( LeftType ) && TypeIsFloat( RightType ) )
-      EmitTypeConversion( ResultRegister, RightType, LeftType );
+      EmitRegisterTypeConversion( ResultRegister, RightType, LeftType );
     
     // now we can safely assign
     EmitComplementaryAssignment( BinaryOperation, Registers, ResultRegister );
@@ -1686,7 +1686,7 @@ void VirconCEmitter::EmitSubtractionAssignment( BinaryOperationNode* BinaryOpera
     DataType* RightType = BinaryOperation->RightOperand->ReturnedType;
     
     if( !TypeIsFloat( LeftType ) && TypeIsFloat( RightType ) )
-      EmitTypeConversion( ResultRegister, RightType, LeftType );
+      EmitRegisterTypeConversion( ResultRegister, RightType, LeftType );
     
     // now we can safely assign
     EmitComplementaryAssignment( BinaryOperation, Registers, ResultRegister );
@@ -1707,7 +1707,7 @@ void VirconCEmitter::EmitProductAssignment( BinaryOperationNode* BinaryOperation
     DataType* RightType = BinaryOperation->RightOperand->ReturnedType;
     
     if( !TypeIsFloat( LeftType ) && TypeIsFloat( RightType ) )
-      EmitTypeConversion( ResultRegister, RightType, LeftType );
+      EmitRegisterTypeConversion( ResultRegister, RightType, LeftType );
     
     // now we can safely assign
     EmitComplementaryAssignment( BinaryOperation, Registers, ResultRegister );
@@ -1728,7 +1728,7 @@ void VirconCEmitter::EmitDivisionAssignment( BinaryOperationNode* BinaryOperatio
     DataType* RightType = BinaryOperation->RightOperand->ReturnedType;
     
     if( !TypeIsFloat( LeftType ) && TypeIsFloat( RightType ) )
-      EmitTypeConversion( ResultRegister, RightType, LeftType );
+      EmitRegisterTypeConversion( ResultRegister, RightType, LeftType );
     
     // now we can safely assign
     EmitComplementaryAssignment( BinaryOperation, Registers, ResultRegister );

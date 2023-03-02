@@ -205,6 +205,10 @@ void VirconCEmitter::EmitDependentExpression( ExpressionNode* Expression, Regist
             EmitLiteralString( (LiteralStringNode*)Expression, Registers, ResultRegister );
             break;
             
+        case CNodeTypes::TypeConversion:
+            EmitTypeConversion( (TypeConversionNode*)Expression, Registers, ResultRegister );
+            break;
+            
         default:
             RaiseFatalError( Expression->Location, "invalid expression type" );
     }
@@ -230,7 +234,7 @@ void VirconCEmitter::EmitLabel( const string& LabelName )
 
 // -----------------------------------------------------------------------------
 
-void VirconCEmitter::EmitTypeConversion( int RegisterNumber, PrimitiveTypes ProducedType, PrimitiveTypes NeededType )
+void VirconCEmitter::EmitRegisterTypeConversion( int RegisterNumber, PrimitiveTypes ProducedType, PrimitiveTypes NeededType )
 {
     string RegisterName = "R" + to_string( RegisterNumber );
     
@@ -261,7 +265,7 @@ void VirconCEmitter::EmitTypeConversion( int RegisterNumber, PrimitiveTypes Prod
 
 // -----------------------------------------------------------------------------
 
-void VirconCEmitter::EmitTypeConversion( int RegisterNumber, DataType* ProducedType, DataType* NeededType )
+void VirconCEmitter::EmitRegisterTypeConversion( int RegisterNumber, DataType* ProducedType, DataType* NeededType )
 {
     // any invalid cases should not appear here
     // (CheckTypeconversion should have discarded them)
@@ -281,13 +285,13 @@ void VirconCEmitter::EmitTypeConversion( int RegisterNumber, DataType* ProducedT
     // is the same as with a produced integer
     if( ProducedType->Type() == DataTypes::Enumeration )
       if( NeededType->Type() == DataTypes::Primitive )
-        EmitTypeConversion( RegisterNumber, PrimitiveTypes::Int, ((PrimitiveType*)NeededType)->Which );
+        EmitRegisterTypeConversion( RegisterNumber, PrimitiveTypes::Int, ((PrimitiveType*)NeededType)->Which );
     
     // CASE 3: Conversion between primitives
     // only applies if both are primitives
     if( ProducedType->Type() == DataTypes::Primitive )
       if( NeededType->Type() == DataTypes::Primitive )
-        EmitTypeConversion( RegisterNumber, ((PrimitiveType*)ProducedType)->Which, ((PrimitiveType*)NeededType)->Which );
+        EmitRegisterTypeConversion( RegisterNumber, ((PrimitiveType*)ProducedType)->Which, ((PrimitiveType*)NeededType)->Which );
     
     // CASE 4: Conversion of pointers to void*
     // (just a reinterpretation: no actual conversion needed)

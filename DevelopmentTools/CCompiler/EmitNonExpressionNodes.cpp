@@ -316,7 +316,7 @@ int VirconCEmitter::EmitSingleInitialization( MemoryPlacement LeftPlacement, Dat
     else
     {
         HighestRegister = EmitRootExpression( Value );
-        EmitTypeConversion( 0, Value->ReturnedType, LeftType );
+        EmitRegisterTypeConversion( 0, Value->ReturnedType, LeftType );
         ProgramLines.push_back( "mov [" + LeftAddress + "], R0" );
     }
     
@@ -422,7 +422,7 @@ int VirconCEmitter::EmitIf( IfNode* If )
     
     // if condition is not a boolean, it needs to be converted
     PrimitiveType BooleanType( PrimitiveTypes::Bool );
-    EmitTypeConversion( 0, If->Condition->ReturnedType, &BooleanType );
+    EmitRegisterTypeConversion( 0, If->Condition->ReturnedType, &BooleanType );
     
     // if it is not met, skip the true section
     if( HasFalseStatement )
@@ -474,7 +474,7 @@ int VirconCEmitter::EmitWhile( WhileNode* While )
     
     // if condition is not a boolean, it needs to be converted
     PrimitiveType BooleanType( PrimitiveTypes::Bool );
-    EmitTypeConversion( 0, While->Condition->ReturnedType, &BooleanType );
+    EmitRegisterTypeConversion( 0, While->Condition->ReturnedType, &BooleanType );
     
     // stop loop if condition is not met
     ProgramLines.push_back( "jf R0, " + EndLabel );
@@ -517,7 +517,7 @@ int VirconCEmitter::EmitDo( DoNode* Do )
     
     // if condition is not a boolean, it needs to be converted
     PrimitiveType BooleanType( PrimitiveTypes::Bool );
-    EmitTypeConversion( 0, Do->Condition->ReturnedType, &BooleanType );
+    EmitRegisterTypeConversion( 0, Do->Condition->ReturnedType, &BooleanType );
     
     // restart loop if condition is met
     ProgramLines.push_back( "jt R0, " + StartLabel );
@@ -559,7 +559,7 @@ int VirconCEmitter::EmitFor( ForNode* For )
         
         // if condition is not a boolean, it needs to be converted
         PrimitiveType BooleanType( PrimitiveTypes::Bool );
-        EmitTypeConversion( 0, For->Condition->ReturnedType, &BooleanType );
+        EmitRegisterTypeConversion( 0, For->Condition->ReturnedType, &BooleanType );
         
         // check for condition result
         ProgramLines.push_back( "jf R0, " + EndLabel );
@@ -613,7 +613,7 @@ int VirconCEmitter::EmitReturn( ReturnNode* Return )
             HighestRegister = EmitCNode( Return->ReturnedExpression );
             
             // when needed, do type promotion
-            EmitTypeConversion( 0, Return->ReturnedExpression->ReturnedType, Return->FunctionContext->ReturnType );
+            EmitRegisterTypeConversion( 0, Return->ReturnedExpression->ReturnedType, Return->FunctionContext->ReturnType );
         }
     }
     
@@ -672,7 +672,7 @@ int VirconCEmitter::EmitSwitch( SwitchNode* Switch )
     
     // if condition is not an integer, it needs to be converted
     PrimitiveType IntegerType( PrimitiveTypes::Int );
-    EmitTypeConversion( 0, Switch->Condition->ReturnedType, &IntegerType );
+    EmitRegisterTypeConversion( 0, Switch->Condition->ReturnedType, &IntegerType );
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // emit all handled cases

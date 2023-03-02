@@ -74,6 +74,7 @@ class VirconCEmitter
         void EmitMemberAccess       ( MemberAccessNode* MemberAccess              , RegisterAllocation& Registers, int ResultRegister );
         void EmitPointedMemberAccess( PointedMemberAccessNode* PointedMemberAccess, RegisterAllocation& Registers, int ResultRegister );
         void EmitLiteralString      ( LiteralStringNode* LiteralString            , RegisterAllocation& Registers, int ResultRegister );
+        void EmitTypeConversion     ( TypeConversionNode* TypeConversion          , RegisterAllocation& Registers, int ResultRegister );
         
         // emit functions for individual unary operations
         void EmitPlusSign     ( UnaryOperationNode* UnaryOperation, RegisterAllocation& Registers, int ResultRegister );
@@ -123,8 +124,8 @@ class VirconCEmitter
         
         // non-node emission functions
         void EmitLabel( const std::string& LabelName );
-        void EmitTypeConversion( int RegisterNumber, PrimitiveTypes ProducedType, PrimitiveTypes NeededType );
-        void EmitTypeConversion( int RegisterNumber, DataType* ProducedType, DataType* NeededType );
+        void EmitRegisterTypeConversion( int RegisterNumber, PrimitiveTypes ProducedType, PrimitiveTypes NeededType );
+        void EmitRegisterTypeConversion( int RegisterNumber, DataType* ProducedType, DataType* NeededType );
         void EmitGlobalScopeFunction();
         void EmitProgramStartSection();
         void EmitHardwareErrorVector();

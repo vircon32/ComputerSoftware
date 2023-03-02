@@ -86,6 +86,7 @@ class VirconCParser
         PointedMemberAccessNode* ParsePointedMemberAccess( CNode* Parent, ExpressionNode* LeftOperand, CTokenIterator& TokenPosition );
         SizeOfNode* ParseSizeOf( CNode* Parent, CTokenIterator& TokenPosition );
         LiteralStringNode* ParseLiteralString( CNode* Parent, CTokenIterator& TokenPosition );
+        TypeConversionNode* ParseTypeConversion( CNode* Parent, CTokenIterator& TokenPosition );
         
         // specifics for binary operations
         // (implementing operator precedence and associativity)

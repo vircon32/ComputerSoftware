@@ -52,6 +52,9 @@ void CheckExpression( ExpressionNode* Expression )
         case CNodeTypes::LiteralString:
             // (there is nothing to check here)
             return;
+        case CNodeTypes::TypeConversion:
+            CheckTypeConversion( (TypeConversionNode*)Expression );
+            return;
         default:
             RaiseFatalError( Expression->Location, "invalid expression type" );
     }
@@ -409,5 +412,60 @@ void CheckSizeOf( SizeOfNode* SizeOf )
     // it is invalid to query for size void
     if( SizeOf->QueriedType )
       if( SizeOf->QueriedType->Type() == DataTypes::Void )
-        RaiseError( SizeOf->Location, "the size of a void type is undefined"  );
+        RaiseError( SizeOf->Location, "the size of a void type is undefined" );
+}
+
+// -----------------------------------------------------------------------------
+
+void CheckTypeConversion( TypeConversionNode* TypeConversion )
+{
+    // first, recursively check the operands
+    CheckExpression( TypeConversion->ConvertedExpression );
+    
+    // obtain both types
+    DataType* OriginalType = TypeConversion->ConvertedExpression->ReturnedType;
+    DataType* RequestedType = TypeConversion->RequestedType;
+    
+    // original type must be valid
+    if( OriginalType->SizeInWords() == 0 )
+      RaiseError( TypeConversion->Location, "cannot convert an expression that returns type " + OriginalType->ToString() );
+    
+    // requested type must be valid
+    if( RequestedType->SizeInWords() == 0 )
+      RaiseError( TypeConversion->Location, "cannot convert expression to type " + RequestedType->ToString() );
+    
+    // we will allow any kind of conversions between:
+    // primitives types, pointers and enumerations
+    bool OriginalTypeAllowed =
+    (
+        OriginalType->Type() == DataTypes::Enumeration ||
+        OriginalType->Type() == DataTypes::Primitive ||
+        OriginalType->Type() == DataTypes::Pointer
+    );
+    
+    bool RequestedTypeAllowed =
+    (
+        RequestedType->Type() == DataTypes::Enumeration ||
+        RequestedType->Type() == DataTypes::Primitive ||
+        RequestedType->Type() == DataTypes::Pointer
+    );
+    
+    if( !OriginalTypeAllowed || !RequestedTypeAllowed )
+      RaiseError( TypeConversion->Location, "cannot convert expression type from " + OriginalType->ToString() + " to " + RequestedType->ToString() );
+    
+    // for enums, we only allow conversions from
+    // integral types (int, bool or other enum)
+    else if( RequestedType->Type() == DataTypes::Enumeration )
+    {
+        if( !TypeIsIntegral( OriginalType ) )
+          RaiseError( TypeConversion->Location, "can only convert to enumerations from integral types" );
+    }
+    
+    // do not allow float <-> pointers conversions
+    else
+    {
+        if( (TypeIsFloat( OriginalType ) && RequestedType->Type() == DataTypes::Pointer)
+        ||  (TypeIsFloat( RequestedType ) && OriginalType->Type() == DataTypes::Pointer) )
+          RaiseError( TypeConversion->Location, "cannot convert between float and pointer types" );
+    }
 }

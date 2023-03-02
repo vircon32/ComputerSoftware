@@ -30,6 +30,7 @@ void CheckBinaryOperation( BinaryOperationNode* Operation );
 void CheckMemberAccess( MemberAccessNode* MemberAccess );
 void CheckPointedMemberAccess( PointedMemberAccessNode* PointedMemberAccess );
 void CheckSizeOf( SizeOfNode* SizeOf );
+void CheckTypeConversion( TypeConversionNode* TypeConversion );
 
 
 // *****************************************************************************

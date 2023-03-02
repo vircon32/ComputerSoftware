@@ -95,6 +95,7 @@ string NodeTypeToLabel( CNodeTypes Type )
         case CNodeTypes::PointedMemberAccess:   return "pointed_member_access";
         case CNodeTypes::SizeOf:                return "sizeof";
         case CNodeTypes::LiteralString:         return "literal_string";
+        case CNodeTypes::TypeConversion:        return "type_conversion";
         
         default: return "unknown";
     }
@@ -3704,7 +3705,7 @@ TypeConversionNode::~TypeConversionNode()
 string TypeConversionNode::ToXML()
 {
     string Contents = XMLBlock( "expression", ConvertedExpression->ToXML() );
-    Contents += XMLBlock( "type", RequestedType );
+    Contents += XMLBlock( "type", RequestedType->ToString() );
     return XMLBlock( "type-conversion", Contents );
 }
 
@@ -3717,9 +3718,8 @@ bool TypeConversionNode::IsStatic()
     
     // only considered static for conversions to
     // primitives or reinterpretations as pointers 
-    if( RequestedType->Type() != DataTypes::Primitive
-    &&  RequestedType->Type() != DataTypes::Pointer )
-      return false;
+    return RequestedType->Type() == DataTypes::Primitive
+        || RequestedType->Type() == DataTypes::Pointer;
 }
 
 // -----------------------------------------------------------------------------
@@ -3734,7 +3734,7 @@ StaticValue TypeConversionNode::GetStaticValue()
     
     // convert type from the expression's static value
     if( RequestedType->Type() == DataTypes::Primitive )
-      return ExpressionValue.ConvertToType( ((PrimitiveType*)RequestedType)->Which );
+      ExpressionValue.ConvertToType( ((PrimitiveType*)RequestedType)->Which );
     
     // for other cases (like reinterpreting as a pointer)
     // just do nothing and assume that the value is unaffected
@@ -3748,6 +3748,10 @@ void TypeConversionNode::DetermineReturnedType()
     // don't create types twice
     if( ReturnedType ) return;
     
+    // first, recursively determine all children
+    ConvertedExpression->DetermineReturnedType();
+    
+    // type is just the requested conversion
     ReturnedType = RequestedType->Clone();
 }
 
