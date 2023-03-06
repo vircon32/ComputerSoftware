@@ -81,42 +81,54 @@ void CheckAssignmentTypes( SourceLocation Location, DataType* LeftType, Expressi
     }
     
     // case 1: they are the same type
-    bool Case1Met = AreEqual( LeftType, RightType );
+    if( AreEqual( LeftType, RightType ) )
+      return;
     
     // case 2: all primitives can be converted to one another
-    bool Case2Met = (LeftType->Type() == DataTypes::Primitive)
-                 && (RightType->Type() == DataTypes::Primitive);
+    if( ( LeftType->Type() == DataTypes::Primitive)
+    &&  (RightType->Type() == DataTypes::Primitive) )
+      return;
     
     // case 3: enumerations can be assigned to all primitives
     // (but not the other way around: enums are more restrictive)
-    bool Case3Met = (LeftType->Type() == DataTypes::Primitive)
-                 && (RightType->Type() == DataTypes::Enumeration);
+    if( (LeftType->Type() == DataTypes::Primitive)
+    && (RightType->Type() == DataTypes::Enumeration) )
+      return;
     
     // case 4: all pointers can be assigned NULL i.e. integer -1
-    bool Case4Met = (LeftType->Type() == DataTypes::Pointer)
-                 &&  TypeIsThisPrimitive( RightType, PrimitiveTypes::Int )
-                 &&  RightValue->IsStatic()
-                 && (RightValue->GetStaticValue().Word.AsInteger == -1);
+    if( (LeftType->Type() == DataTypes::Pointer)
+    &&  TypeIsThisPrimitive( RightType, PrimitiveTypes::Int )
+    &&  RightValue->IsStatic()
+    && (RightValue->GetStaticValue().Word.AsInteger == -1) )
+      return;
     
-    // case 5: all pointers can be assigned to void pointer
-    bool Case5Met = (LeftType->Type() == DataTypes::Pointer)
-                 && (RightType->Type() == DataTypes::Pointer)
-                 && (((PointerType*)LeftType)->BaseType->Type() == DataTypes::Void);
+    // case 5: void pointer can be assigned to and from all pointers
+    if( (LeftType->Type() == DataTypes::Pointer)
+    && (RightType->Type() == DataTypes::Pointer) )
+    {
+        if( ((PointerType*)LeftType)->BaseType->Type() == DataTypes::Void )
+          return;
+        
+        if( ((PointerType*)RightType)->BaseType->Type() == DataTypes::Void )
+          return;
+    }
     
     // case 6: arrays can be assigned to pointers to the same
     // base type (valid because of array decay into a pointer)
-    bool Case6Met = (LeftType->Type() == DataTypes::Pointer)
-                 && (RightType->Type() == DataTypes::Array)
-                 &&  AreEqual( ((PointerType*)LeftType)->BaseType, ((ArrayType*)RightType)->BaseType );
+    if( (LeftType->Type() == DataTypes::Pointer)
+    && (RightType->Type() == DataTypes::Array)
+    &&  AreEqual( ((PointerType*)LeftType)->BaseType, ((ArrayType*)RightType)->BaseType ) )
+      return;
     
-    // case 6: arrays can be assigned to pointers to void
+    // case 7: arrays can be assigned to pointers to void
     // (valid because of array decay into a pointer)
-    bool Case7Met = (LeftType->Type() == DataTypes::Pointer)
-                 && (RightType->Type() == DataTypes::Array)
-                 && (((PointerType*)LeftType)->BaseType->Type() == DataTypes::Void);
+    if( (LeftType->Type() == DataTypes::Pointer)
+    && (RightType->Type() == DataTypes::Array)
+    && (((PointerType*)LeftType)->BaseType->Type() == DataTypes::Void) )
+      return;
     
-    if( !Case1Met && !Case2Met && !Case3Met && !Case4Met && !Case5Met && !Case6Met && !Case7Met )
-      RaiseError( Location, "types are not compatible: cannot assign " + RightType->ToString() + " to " + LeftType->ToString() );
+    // if we arrive here, no valid case was met
+    RaiseError( Location, "types are not compatible: cannot assign " + RightType->ToString() + " to " + LeftType->ToString() );
 }
 
 
