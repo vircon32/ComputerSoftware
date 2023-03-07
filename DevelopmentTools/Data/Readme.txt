@@ -1,6 +1,6 @@
 ================================================
    PC development tools for Vircon32 console
-   (version 23.1.16). README written by Carra
+   (version 23.3.7). README written by Carra
 ================================================
 
 
@@ -52,22 +52,12 @@ Included programs
     
 ------------------------------------------------------------
 
-What's new in version 23.1.16?
+What's new in version 23.3.7?
   
-  - Added support for partial declarations in structures,
-    unions and function prototypes.
-  - Added support for SPU channel position port.
-  - Added specific error messages in some non-supported C
-    features to be more helpful.
-  - Corrected wrong compilation error when maximum warnings
-    were reached.
-  - Add checks to prevent use of void values, and avoid
-    dereferencing void pointers.
-  - Fixed bad use of R0 in some expressions with nested
-    function calls.
-  - Fixed bug when initializing pointers to NULL.
-  - Corrected error in ftoa implementation, that provided
-    wrong results on decimal parts with initial zeroes.
+  - Added support for explicit type conversions.
+  - Added dynamic memory functions (malloc, calloc, realloc
+    and free) to misc.h.
+  - Minor fixes for type system and type checks.
 
 ------------------------------------------------------------
 
