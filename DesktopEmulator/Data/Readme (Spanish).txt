@@ -1,6 +1,6 @@
 ﻿============================================================
         Archivo README para el emulador de Vircon32
-            (versión 23.3.19) escrito por Carra
+            (versión 23.6.4) escrito por Carra
 ============================================================
 
 ¿Qué es esto?
@@ -114,10 +114,12 @@ Cómo usar tarjetas de memoria
 
 ------------------------------------------------------------
 
-Novedades en la versión 23.3.19
+Novedades en la versión 23.6.4
     
-  - Mejorada la gestión del audio para evitar perder el sonido
-    al manejar la ventana o en diálogos de archivo.
+  - Corregido el dibujado de regiones de textura cuando se
+    aplican factores de escalado grandes. Ahora los pixels son
+    del tamaño correcto y la región se coloca bien cuando se
+    aplica efecto espejo en X y/o en Y.
 
 ------------------------------------------------------------
 

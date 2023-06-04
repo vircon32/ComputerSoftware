@@ -1,6 +1,6 @@
 ============================================================
              README file for Vircon32 emulator
-            (version 23.3.19) written by Carra
+            (version 23.6.4) written by Carra
 ============================================================
 
 What is this?
@@ -112,10 +112,11 @@ How to use memory cards
 
 ------------------------------------------------------------
 
-What's new in version 23.3.19?
+What's new in version 23.6.4?
     
-  - Improved audio handling to prevent losing audio in some
-    situations, like window events or file dialogs.
+  - Corrected bad display of texture regions with large scaling
+    factors. Pixels now have the correct size and the region is
+    placed correctly when mirror on X and/or Y is applied.
 
 ------------------------------------------------------------
 
