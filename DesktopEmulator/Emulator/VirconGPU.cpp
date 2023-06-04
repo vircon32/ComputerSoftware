@@ -360,11 +360,62 @@ void VirconGPU::DrawRegion( bool ScalingEnabled, bool RotationEnabled )
     glBindTexture( GL_TEXTURE_2D, PointedTexture->TextureID );
     glEnable( GL_TEXTURE_2D );
     
-    // calculate relative texture coordinates
-    float TextureMinX = (Region.MinX+0.5) / Constants::GPUTextureSize;
-    float TextureMinY = (Region.MinY+0.5) / Constants::GPUTextureSize;
-    float TextureMaxX = (Region.MaxX+0.5) / Constants::GPUTextureSize;
-    float TextureMaxY = (Region.MaxY+0.5) / Constants::GPUTextureSize;
+    // calculate absolute texture coordinates
+    // (initially, they are pixel-centered and uncorrected)
+    float TextureMinX = Region.MinX + 0.5;
+    float TextureMaxX = Region.MaxX + 0.5;
+    float TextureMinY = Region.MinY + 0.5;
+    float TextureMaxY = Region.MaxY + 0.5;
+    
+    // for large scalings, adjust intra-pixel coordinates
+    // to get a more precise sampling when zooming; otherwise
+    // the size of pixels will be incorrect at boundaries
+    if( ScalingEnabled )
+    {
+        // check the need of resampling along X and Y
+        if( abs( DrawingScaleX ) > 1.0 )
+        {
+            float PixelCorrectionX = 0.5 - 1.0 / (2.0 * fabs( DrawingScaleX ));
+            
+            // we allow RegionMinX > RegionMaxX (mirror effect on X)
+            // but in that case we need to mirror our sampling correction
+            if( TextureMinX < TextureMaxX )
+            {
+                TextureMinX -= PixelCorrectionX;
+                TextureMaxX += PixelCorrectionX;
+            }
+            else
+            {
+                TextureMaxX -= PixelCorrectionX;
+                TextureMinX += PixelCorrectionX;
+            }
+        }
+        
+        // check the need of resampling along X and Y
+        if( abs( DrawingScaleY ) > 1.0 )
+        {
+            float PixelCorrectionY = 0.5 - 1.0 / (2.0 * fabs( DrawingScaleY ));
+            
+            // we allow RegionMinY > RegionMaxY (mirror effect on Y)
+            // but in that case we need to mirror our sampling correction
+            if( TextureMinY < TextureMaxY )
+            {
+                TextureMinY -= PixelCorrectionY;
+                TextureMaxY += PixelCorrectionY;
+            }
+            else
+            {
+                TextureMaxY -= PixelCorrectionY;
+                TextureMinY += PixelCorrectionY;
+            }
+        }
+    }
+    
+    // make texture coordinates relative
+    TextureMinX /= Constants::GPUTextureSize;
+    TextureMaxX /= Constants::GPUTextureSize;
+    TextureMinY /= Constants::GPUTextureSize;
+    TextureMaxY /= Constants::GPUTextureSize;
     
     // calculate screen coordinates relative to the hotspot
     // (that way we can use OpenGL transforms to rotate)
