@@ -238,7 +238,7 @@ void VirconGPU::Reset()
     DrawingAngle  = 0.0f; 
     
     // registers: global graphic parameters
-    ClearColor     = {   0,   0,   0,   0 };
+    ClearColor     = {   0,   0,   0, 255 };
     MultiplyColor  = { 255, 255, 255, 255 };
     ActiveBlending = (int32_t)IOPortValues::GPUBlendingMode_Alpha;
     SelectedTexture = -1;
@@ -274,11 +274,11 @@ void VirconGPU::Reset()
     
     // initial graphic settings
     OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
-    OpenGL2D.SetMultiplyColor( GPUColor{ 255, 255, 255, 255 } );
+    OpenGL2D.SetMultiplyColor( MultiplyColor );
     
     // clear the screen
     OpenGL2D.RenderToFramebuffer();
-    OpenGL2D.ClearScreen( GPUColor{ 0, 0, 0, 255 } );
+    OpenGL2D.ClearScreen( ClearColor );
 }
 
 
