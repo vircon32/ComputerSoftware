@@ -1,11 +1,11 @@
 // *****************************************************************************
     // start include guard
-    #ifndef VIRCONCARTRIDGECONTROLLER_HPP
-    #define VIRCONCARTRIDGECONTROLLER_HPP
+    #ifndef V32MEMORYCARDCONTROLLER_HPP
+    #define V32MEMORYCARDCONTROLLER_HPP
     
     // include project headers
-    #include "VirconBuses.hpp"
-    #include "VirconMemory.hpp"
+    #include "V32Buses.hpp"
+    #include "V32Memory.hpp"
     
     // include C/C++ headers
     #include <string>           // [ C++ STL ] Strings
@@ -13,51 +13,56 @@
 
 
 // =============================================================================
-//      CARTRIDGE CONTROLLER DEFINITIONS
+//      STORAGE CONTROLLER DEFINITIONS
 // =============================================================================
 
 
 // LOCAL port numbers!
 // (to be added the initial address)
-enum class CAR_LocalPorts: int32_t
+enum class MEM_LocalPorts: int32_t
 {
-    Connected = 0,
-    ProgramROMSize,
-    NumberOfTextures,
-    NumberOfSounds
+    Connected = 0
 };
 
 // used as limit of local port numbers
-const int32_t CAR_LastPort = (int32_t)CAR_LocalPorts::NumberOfSounds;
+const int32_t MEM_LastPort = (int32_t)MEM_LocalPorts::Connected;
 
 
 // =============================================================================
-//      CARTRIDGE CONTROLLER CLASS
+//      MEMORY CARD CONTROLLER CLASS
 // =============================================================================
 
 
-class VirconCartridgeController: public VirconControlInterface, public VirconROM
+class V32MemoryCardController: public VirconControlInterface, public V32RAM
 {
     public:
         
-        // state of ports
-        int32_t NumberOfTextures;
-        int32_t NumberOfSounds;
-        
-        // additional data about the connected cartridge
-        std::string CartridgeFileName;
-        std::string CartridgeTitle;
-        uint32_t CartridgeVersion;
-        uint32_t CartridgeRevision;
+        // file save control
+        std::string CardFileName;
+        std::string CardSavePath;
+        bool PendingSave;
         
     public:
         
         // instance handling
-        VirconCartridgeController();
+        V32MemoryCardController();
         
         // connection to control bus
         virtual bool ReadPort( int32_t LocalPort, VirconWord& Result );
         virtual bool WritePort( int32_t LocalPort, VirconWord Value );
+        
+        // connection to memory bus (overriden)
+        virtual bool WriteAddress( int32_t LocalAddress, VirconWord Value );
+        
+        // memory contents (overriden)
+        virtual void LoadContents( const std::string& FilePath );
+        virtual void SaveContents( const std::string& FilePath );
+        
+        // additional method for creating a new file
+        void CreateNewFile( const std::string& FilePath );
+        
+        // general operation
+        void ChangeFrame();
 };
 
 

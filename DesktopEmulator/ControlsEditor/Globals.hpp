@@ -7,7 +7,6 @@
     #include "../../VirconDefinitions/VirconDefinitions.hpp"
     
     // include infrastructure headers
-    #include "../DesktopInfrastructure/Definitions.hpp"
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/Texture.hpp"
     

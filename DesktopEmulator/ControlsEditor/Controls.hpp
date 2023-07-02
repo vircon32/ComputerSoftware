@@ -3,9 +3,6 @@
     #ifndef SETTINGS_HPP
     #define SETTINGS_HPP
     
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/Definitions.hpp"
-    
     // include C/C++ headers
     #include <string>           // [ C++ STL ] Strings
     #include <map>              // [ C++ STL ] Maps

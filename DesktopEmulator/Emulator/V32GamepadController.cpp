@@ -1,9 +1,10 @@
 // *****************************************************************************
     // include infrastructure headers
     #include "../DesktopInfrastructure/LogStream.hpp"
+    #include "../DesktopInfrastructure/NumericFunctions.hpp"
     
     // include project headers
-    #include "VirconGamepadController.hpp"
+    #include "V32GamepadController.hpp"
     
     // include C/C++ headers
     #include <string.h>         // [ ANSI C ] Strings
@@ -14,11 +15,11 @@
 
 
 // =============================================================================
-//      CLASS: VIRCON GAMEPAD CONTROLLER
+//      CLASS: V32 GAMEPAD CONTROLLER
 // =============================================================================
 
 
-VirconGamepadController::VirconGamepadController()
+V32GamepadController::V32GamepadController()
 {
     // for all gamepad ports
     for( int Gamepad = 0; Gamepad < Constants::MaximumGamepads; Gamepad++ )
@@ -36,7 +37,7 @@ VirconGamepadController::VirconGamepadController()
 
 // -----------------------------------------------------------------------------
 
-bool VirconGamepadController::ReadPort( int32_t LocalPort, VirconWord& Result )
+bool V32GamepadController::ReadPort( int32_t LocalPort, VirconWord& Result )
 {
     // check range
     if( LocalPort > INP_LastPort )
@@ -54,7 +55,7 @@ bool VirconGamepadController::ReadPort( int32_t LocalPort, VirconWord& Result )
 
 // -----------------------------------------------------------------------------
 
-bool VirconGamepadController::WritePort( int32_t LocalPort, VirconWord Value )
+bool V32GamepadController::WritePort( int32_t LocalPort, VirconWord Value )
 {
     // only the active gamepad register can be written to
     if( LocalPort != (int32_t)INP_LocalPorts::SelectedGamepad )
@@ -69,7 +70,7 @@ bool VirconGamepadController::WritePort( int32_t LocalPort, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void VirconGamepadController::ChangeFrame()
+void V32GamepadController::ChangeFrame()
 {
     // first provide current states
     for( int i = 0; i < Constants::MaximumGamepads; i++ )
@@ -94,7 +95,7 @@ void VirconGamepadController::ChangeFrame()
 
 // -----------------------------------------------------------------------------
 
-void VirconGamepadController::Reset()
+void V32GamepadController::Reset()
 {
     // set the first gamepad as selected
     SelectedGamepad = 0;
@@ -105,7 +106,7 @@ void VirconGamepadController::Reset()
 
 // -----------------------------------------------------------------------------
 
-void VirconGamepadController::ResetGamepad( int GamepadPort )
+void V32GamepadController::ResetGamepad( int GamepadPort )
 {
     // reject invalid requests
     if( GamepadPort >= Constants::MaximumGamepads )
@@ -126,7 +127,7 @@ void VirconGamepadController::ResetGamepad( int GamepadPort )
 
 // -----------------------------------------------------------------------------
 
-void VirconGamepadController::ProcessConnectionChange( int GamepadPort, bool Connected )
+void V32GamepadController::ProcessConnectionChange( int GamepadPort, bool Connected )
 {
     // reject invalid events
     if( GamepadPort >= Constants::MaximumGamepads )
@@ -142,7 +143,7 @@ void VirconGamepadController::ProcessConnectionChange( int GamepadPort, bool Con
 
 // -----------------------------------------------------------------------------
 
-void VirconGamepadController::ProcessButtonChange( int GamepadPort, GamepadButtons Button, bool Pressed )
+void V32GamepadController::ProcessButtonChange( int GamepadPort, GamepadButtons Button, bool Pressed )
 {
     // reject invalid events
     if( GamepadPort >= Constants::MaximumGamepads )
@@ -166,7 +167,7 @@ void VirconGamepadController::ProcessButtonChange( int GamepadPort, GamepadButto
 
 // -----------------------------------------------------------------------------
 
-void VirconGamepadController::ProcessDirectionChange( int GamepadPort, GamepadDirections Direction, bool Pressed )
+void V32GamepadController::ProcessDirectionChange( int GamepadPort, GamepadDirections Direction, bool Pressed )
 {
     // reject invalid events
     if( GamepadPort >= Constants::MaximumGamepads )
@@ -216,7 +217,7 @@ void VirconGamepadController::ProcessDirectionChange( int GamepadPort, GamepadDi
 
 // -----------------------------------------------------------------------------
 
-bool VirconGamepadController::IsGamepadConnected( int GamepadPort )
+bool V32GamepadController::IsGamepadConnected( int GamepadPort )
 {
     if( GamepadPort < 0 || GamepadPort >= Constants::MaximumGamepads )
       return false;

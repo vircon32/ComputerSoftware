@@ -4,7 +4,7 @@
     #define SETTINGS_HPP
     
     // include project headers
-    #include "VirconGamepadController.hpp"
+    #include "V32GamepadController.hpp"
     
     // include C/C++ headers
     #include <string>               // [ C++ STL ] Strings

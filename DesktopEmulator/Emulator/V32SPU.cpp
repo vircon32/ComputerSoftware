@@ -1,10 +1,9 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/Definitions.hpp"
     #include "../DesktopInfrastructure/LogStream.hpp"
     
     // include project headers
-    #include "VirconSPU.hpp"
+    #include "V32SPU.hpp"
     
     // include C/C++ headers
     #include <stdexcept>        // [ C++ STL ] Exceptions
@@ -65,7 +64,7 @@ bool IsSourcePlaying( ALuint SourceID )
 // =============================================================================
 
 
-typedef void (*SPUPortWriter)( VirconSPU&, VirconWord );
+typedef void (*SPUPortWriter)( V32SPU&, VirconWord );
 
 // -----------------------------------------------------------------------------
 
@@ -91,11 +90,11 @@ const SPUPortWriter SPUPortWriterTable[] =
 
 
 // =============================================================================
-//      VIRCON SPU: INSTANCE HANDLING
+//      V32 SPU: INSTANCE HANDLING
 // =============================================================================
 
 
-VirconSPU::VirconSPU()
+V32SPU::V32SPU()
 {
     PointedChannel = nullptr;
     PointedSound = nullptr;
@@ -122,7 +121,7 @@ VirconSPU::VirconSPU()
 
 // -----------------------------------------------------------------------------
 
-VirconSPU::~VirconSPU()
+V32SPU::~V32SPU()
 {
     // release all cartridge sounds
     for( SPUSound& S: CartridgeSounds )
@@ -139,11 +138,11 @@ VirconSPU::~VirconSPU()
 
 
 // =============================================================================
-//      VIRCON SPU: AUDIO OBJECTS HANDLING
+//      V32 SPU: AUDIO OBJECTS HANDLING
 // =============================================================================
 
 
-void VirconSPU::InitializeAudio()
+void V32SPU::InitializeAudio()
 {
     // don't try next operations without OpenAL active
     if( !IsOpenALActive() )
@@ -166,7 +165,7 @@ void VirconSPU::InitializeAudio()
 
 // -----------------------------------------------------------------------------
 
-void VirconSPU::TerminateAudio()
+void V32SPU::TerminateAudio()
 {
     // do nothing if audio was not initialized
     if( !SoundSourceID )
@@ -199,11 +198,11 @@ void VirconSPU::TerminateAudio()
 
 
 // =============================================================================
-//      VIRCON SPU: HANDLING PLAYBACK THREAD
+//      V32 SPU: HANDLING PLAYBACK THREAD
 // =============================================================================
 
 
-void VirconSPU::LaunchPlaybackThread()
+void V32SPU::LaunchPlaybackThread()
 {
     LOG( "Creating SPU playback thread" );
     
@@ -228,7 +227,7 @@ void VirconSPU::LaunchPlaybackThread()
 
 // -----------------------------------------------------------------------------
 
-void VirconSPU::StopPlaybackThread()
+void V32SPU::StopPlaybackThread()
 {
     LOG( "Stopping SPU playback thread" );
     
@@ -246,11 +245,11 @@ void VirconSPU::StopPlaybackThread()
 
 
 // =============================================================================
-//      VIRCON SPU: AUDIO RESOURCES HANDLING
+//      V32 SPU: AUDIO RESOURCES HANDLING
 // =============================================================================
 
 
-void VirconSPU::LoadSound( SPUSound& TargetSound, SPUSample* Samples, unsigned NumberOfSamples )
+void V32SPU::LoadSound( SPUSound& TargetSound, SPUSample* Samples, unsigned NumberOfSamples )
 {
     // copy the buffer to target sound
     TargetSound.Samples.resize( NumberOfSamples );
@@ -267,7 +266,7 @@ void VirconSPU::LoadSound( SPUSound& TargetSound, SPUSample* Samples, unsigned N
 
 // -----------------------------------------------------------------------------
 
-void VirconSPU::UnloadSound( SPUSound& TargetSound )
+void V32SPU::UnloadSound( SPUSound& TargetSound )
 {
     TargetSound.Samples.clear();
     TargetSound.Length = 0;
@@ -275,11 +274,11 @@ void VirconSPU::UnloadSound( SPUSound& TargetSound )
 
 
 // =============================================================================
-//      VIRCON SPU: I/O BUS CONNECTION
+//      V32 SPU: I/O BUS CONNECTION
 // =============================================================================
 
 
-bool VirconSPU::ReadPort( int32_t LocalPort, VirconWord& Result )
+bool V32SPU::ReadPort( int32_t LocalPort, VirconWord& Result )
 {
     // check range
     if( LocalPort > SPU_LastPort )
@@ -325,7 +324,7 @@ bool VirconSPU::ReadPort( int32_t LocalPort, VirconWord& Result )
 
 // -----------------------------------------------------------------------------
 
-bool VirconSPU::WritePort( int32_t LocalPort, VirconWord Value )
+bool V32SPU::WritePort( int32_t LocalPort, VirconWord Value )
 {
     // check range
     if( LocalPort > SPU_LastPort )
@@ -341,11 +340,11 @@ bool VirconSPU::WritePort( int32_t LocalPort, VirconWord Value )
 
 
 // =============================================================================
-//      VIRCON SPU: GENERAL OPERATION
+//      V32 SPU: GENERAL OPERATION
 // =============================================================================
 
 
-void VirconSPU::ChangeFrame()
+void V32SPU::ChangeFrame()
 {
     // ensure sound is never paused while the SPU is
     // actually running (this is a fail-safe mechanism
@@ -363,7 +362,7 @@ void VirconSPU::ChangeFrame()
 
 // -----------------------------------------------------------------------------
 
-void VirconSPU::Reset()
+void V32SPU::Reset()
 {
     // reset playback variables
     ThreadExitFlag = false;
@@ -432,11 +431,11 @@ void VirconSPU::Reset()
 
 
 // =============================================================================
-//      VIRCON SPU: EXECUTION OF SPU COMMANDS
+//      V32 SPU: EXECUTION OF SPU COMMANDS
 // =============================================================================
 
 
-void VirconSPU::PlayChannel( SPUChannel& TargetChannel )
+void V32SPU::PlayChannel( SPUChannel& TargetChannel )
 {
     // case 1: for a stopped channel, set the initial play
     if( TargetChannel.State == IOPortValues::SPUChannelState_Stopped )
@@ -462,14 +461,14 @@ void VirconSPU::PlayChannel( SPUChannel& TargetChannel )
 
 // -----------------------------------------------------------------------------
 
-void VirconSPU::PauseChannel( SPUChannel& TargetChannel )
+void V32SPU::PauseChannel( SPUChannel& TargetChannel )
 {
     TargetChannel.State = IOPortValues::SPUChannelState_Paused;
 }
 
 // -----------------------------------------------------------------------------
 
-void VirconSPU::StopChannel( SPUChannel& TargetChannel )
+void V32SPU::StopChannel( SPUChannel& TargetChannel )
 {
     TargetChannel.State = IOPortValues::SPUChannelState_Stopped;
     
@@ -480,7 +479,7 @@ void VirconSPU::StopChannel( SPUChannel& TargetChannel )
 
 // -----------------------------------------------------------------------------
 
-void VirconSPU::PauseAllChannels()
+void V32SPU::PauseAllChannels()
 {
     for( int i = 0; i < Constants::SPUSoundChannels; i++ )
       if( Channels[ i ].State == IOPortValues::SPUChannelState_Playing )
@@ -489,7 +488,7 @@ void VirconSPU::PauseAllChannels()
 
 // -----------------------------------------------------------------------------
 
-void VirconSPU::ResumeAllChannels()
+void V32SPU::ResumeAllChannels()
 {
     for( int i = 0; i < Constants::SPUSoundChannels; i++ )
       if( Channels[ i ].State == IOPortValues::SPUChannelState_Paused )
@@ -498,7 +497,7 @@ void VirconSPU::ResumeAllChannels()
 
 // -----------------------------------------------------------------------------
 
-void VirconSPU::StopAllChannels()
+void V32SPU::StopAllChannels()
 {
     for( int i = 0; i < Constants::SPUSoundChannels; i++ )
       if( Channels[ i ].State != IOPortValues::SPUChannelState_Stopped )
@@ -507,13 +506,13 @@ void VirconSPU::StopAllChannels()
 
 
 // =============================================================================
-//      VIRCON SPU: GENERATING SOUND
+//      V32 SPU: GENERATING SOUND
 // =============================================================================
 
 
 // this function is only called from the main thread;
 // returns true if successful
-bool VirconSPU::FillNextSoundBuffer()
+bool V32SPU::FillNextSoundBuffer()
 {
     SoundBuffer* Buffer = FindNextBufferToFill();
     if( !Buffer ) return false;
@@ -588,11 +587,11 @@ bool VirconSPU::FillNextSoundBuffer()
 
 
 // =============================================================================
-//      VIRCON SPU: SEARCHING FOR SOUND BUFFERS
+//      V32 SPU: SEARCHING FOR SOUND BUFFERS
 // =============================================================================
 
 
-SoundBuffer& VirconSPU::FindBufferFromID( ALuint TargetID )
+SoundBuffer& V32SPU::FindBufferFromID( ALuint TargetID )
 {
     for( int i = 0; i < NumberOfBuffers; i++ )
       if( OutputBuffers[ i ].BufferID == TargetID )
@@ -603,7 +602,7 @@ SoundBuffer& VirconSPU::FindBufferFromID( ALuint TargetID )
 
 // -----------------------------------------------------------------------------
 
-SoundBuffer* VirconSPU::FindNextBufferToPlay()
+SoundBuffer* V32SPU::FindNextBufferToPlay()
 {
     int MinimumSequenceNumber = INT_MAX;
     SoundBuffer* NextBufferToPlay = nullptr;
@@ -621,7 +620,7 @@ SoundBuffer* VirconSPU::FindNextBufferToPlay()
 
 // -----------------------------------------------------------------------------
 
-SoundBuffer* VirconSPU::FindNextBufferToFill()
+SoundBuffer* V32SPU::FindNextBufferToFill()
 {
     // we can refill buffers in any order, so we don't
     // need to look for the lowest sequence number here
@@ -634,11 +633,11 @@ SoundBuffer* VirconSPU::FindNextBufferToFill()
 
 
 // =============================================================================
-//      VIRCON SPU: HANDLING PLAYBACK BUFFER QUEUE
+//      V32 SPU: HANDLING PLAYBACK BUFFER QUEUE
 // =============================================================================
 
 
-int VirconSPU::GetQueuedBuffers()
+int V32SPU::GetQueuedBuffers()
 {
     int QueuedBuffers = 0;
     alGetSourcei( SoundSourceID, AL_BUFFERS_QUEUED, &QueuedBuffers );
@@ -650,7 +649,7 @@ int VirconSPU::GetQueuedBuffers()
 
 // NOTE: read the documentation for all cases regarding AL_BUFFERS_PROCESSED
 // (will only work right with source state AL_PLAYING)
-int VirconSPU::GetProcessedBuffers()
+int V32SPU::GetProcessedBuffers()
 {
     // without this check, the playback thread produces "invalid operation" error on exit
     int SourceState;
@@ -670,7 +669,7 @@ int VirconSPU::GetProcessedBuffers()
 
 // NOTE: read the documentation for alSourceUnqueueBuffers
 // (will only work right with source state AL_STOPPED)
-void VirconSPU::ClearBufferQueue()
+void V32SPU::ClearBufferQueue()
 {
     int SourceState;
     alGetSourcei( SoundSourceID, AL_SOURCE_STATE, &SourceState );
@@ -705,7 +704,7 @@ void VirconSPU::ClearBufferQueue()
 
 // -----------------------------------------------------------------------------
 
-void VirconSPU::InitializeBufferQueue()
+void V32SPU::InitializeBufferQueue()
 {
     // we will only fill half of the buffers
     // (the rest are left free for later use)
@@ -724,7 +723,7 @@ void VirconSPU::InitializeBufferQueue()
 
 // this function is only called from the playback thread,
 // with only one exception for initial queuing on reset
-void VirconSPU::QueueFilledBuffers()
+void V32SPU::QueueFilledBuffers()
 {
     while( true )
     {
@@ -740,7 +739,7 @@ void VirconSPU::QueueFilledBuffers()
 // -----------------------------------------------------------------------------
 
 // this function is only called from the playback thread
-void VirconSPU::UnqueuePlayedBuffers()
+void V32SPU::UnqueuePlayedBuffers()
 {
     // state validations
     if( !GetQueuedBuffers() )
@@ -763,11 +762,11 @@ void VirconSPU::UnqueuePlayedBuffers()
 
 
 // =============================================================================
-//      VIRCON SPU: OUTPUT VOLUME CONFIGURATION
+//      V32 SPU: OUTPUT VOLUME CONFIGURATION
 // =============================================================================
 
 
-void VirconSPU::SetOutputVolume( float NewVolume )
+void V32SPU::SetOutputVolume( float NewVolume )
 {
     OutputVolume = NewVolume;
     alSourcef( SoundSourceID, AL_GAIN, (Mute? 0 : OutputVolume) );
@@ -775,7 +774,7 @@ void VirconSPU::SetOutputVolume( float NewVolume )
 
 // -----------------------------------------------------------------------------
 
-void VirconSPU::SetMute( bool NewMute )
+void V32SPU::SetMute( bool NewMute )
 {
     Mute = NewMute;
     alSourcef( SoundSourceID, AL_GAIN, (Mute? 0 : OutputVolume) );

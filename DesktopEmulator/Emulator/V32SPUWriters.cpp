@@ -1,13 +1,21 @@
 // *****************************************************************************
+    // include infrastructure headers
+    #include "../DesktopInfrastructure/NumericFunctions.hpp"
+    
     // include project headers
-    #include "VirconSPU.hpp"
+    #include "V32SPU.hpp"
     
     // declare used namespaces
     using namespace std;
 // *****************************************************************************
 
 
-void WriteSPUCommand( VirconSPU& SPU, VirconWord Value )
+// =============================================================================
+//      PORT WRITE FUNCTIONS FOR V32 SPU
+// =============================================================================
+
+
+void WriteSPUCommand( V32SPU& SPU, VirconWord Value )
 {
     // now execute the command, if valid
     switch( Value.AsInteger )
@@ -46,7 +54,7 @@ void WriteSPUCommand( VirconSPU& SPU, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void WriteSPUGlobalVolume( VirconSPU& SPU, VirconWord Value )
+void WriteSPUGlobalVolume( V32SPU& SPU, VirconWord Value )
 {
     // Float parameters are only written if they are valid
     // numeric values (otherwise the request is ignored).
@@ -60,7 +68,7 @@ void WriteSPUGlobalVolume( VirconSPU& SPU, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void WriteSPUSelectedSound( VirconSPU& SPU, VirconWord Value )
+void WriteSPUSelectedSound( V32SPU& SPU, VirconWord Value )
 {
     // prevent setting a non-existent sound
     if( Value.AsInteger < -1 || Value.AsInteger >= (int32_t)SPU.CartridgeSounds.size() )
@@ -84,7 +92,7 @@ void WriteSPUSelectedSound( VirconSPU& SPU, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void WriteSPUSelectedChannel( VirconSPU& SPU, VirconWord Value )
+void WriteSPUSelectedChannel( V32SPU& SPU, VirconWord Value )
 {
     // prevent setting a non-existent channel
     if( Value.AsInteger < 0 || Value.AsInteger >= (int32_t)Constants::SPUSoundChannels )
@@ -99,7 +107,7 @@ void WriteSPUSelectedChannel( VirconSPU& SPU, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void WriteSPUSoundLength( VirconSPU& SPU, VirconWord Value )
+void WriteSPUSoundLength( V32SPU& SPU, VirconWord Value )
 {
     // ignore the request: this port is read-only
     return;
@@ -107,7 +115,7 @@ void WriteSPUSoundLength( VirconSPU& SPU, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void WriteSPUSoundPlayWithLoop( VirconSPU& SPU, VirconWord Value )
+void WriteSPUSoundPlayWithLoop( V32SPU& SPU, VirconWord Value )
 {
     // write the value as a boolean
     SPU.PointedSound->PlayWithLoop = (Value.AsBinary != 0? 1 : 0);
@@ -115,7 +123,7 @@ void WriteSPUSoundPlayWithLoop( VirconSPU& SPU, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void WriteSPUSoundLoopStart( VirconSPU& SPU, VirconWord Value )
+void WriteSPUSoundLoopStart( V32SPU& SPU, VirconWord Value )
 {
     // out of range values are accepted, but clamped
     Clamp( Value.AsInteger, 0, SPU.PointedSound->Length - 1 );
@@ -126,7 +134,7 @@ void WriteSPUSoundLoopStart( VirconSPU& SPU, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void WriteSPUSoundLoopEnd( VirconSPU& SPU, VirconWord Value )
+void WriteSPUSoundLoopEnd( V32SPU& SPU, VirconWord Value )
 {
     // out of range values are accepted, but clamped
     Clamp( Value.AsInteger, 0, SPU.PointedSound->Length - 1 );
@@ -137,7 +145,7 @@ void WriteSPUSoundLoopEnd( VirconSPU& SPU, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void WriteSPUChannelState( VirconSPU& SPU, VirconWord Value )
+void WriteSPUChannelState( V32SPU& SPU, VirconWord Value )
 {
     // ignore the request: this port is read-only
     return;
@@ -145,7 +153,7 @@ void WriteSPUChannelState( VirconSPU& SPU, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void WriteSPUChannelAssignedSound( VirconSPU& SPU, VirconWord Value )
+void WriteSPUChannelAssignedSound( V32SPU& SPU, VirconWord Value )
 {
     // prevent setting a non-existent sound
     if( Value.AsInteger < -1 || Value.AsInteger >= (int32_t)SPU.CartridgeSounds.size() )
@@ -173,7 +181,7 @@ void WriteSPUChannelAssignedSound( VirconSPU& SPU, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void WriteSPUChannelVolume( VirconSPU& SPU, VirconWord Value )
+void WriteSPUChannelVolume( V32SPU& SPU, VirconWord Value )
 {
     // Float parameters are only written if they are valid
     // numeric values (otherwise the request is ignored).
@@ -187,7 +195,7 @@ void WriteSPUChannelVolume( VirconSPU& SPU, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void WriteSPUChannelSpeed( VirconSPU& SPU, VirconWord Value )
+void WriteSPUChannelSpeed( V32SPU& SPU, VirconWord Value )
 {
     // Float parameters are only written if they are valid
     // numeric values (otherwise the request is ignored).
@@ -201,7 +209,7 @@ void WriteSPUChannelSpeed( VirconSPU& SPU, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void WriteSPUChannelLoopEnabled( VirconSPU& SPU, VirconWord Value )
+void WriteSPUChannelLoopEnabled( V32SPU& SPU, VirconWord Value )
 {
     // write the value as a boolean
     SPU.PointedChannel->LoopEnabled = (Value.AsBinary != 0? 1 : 0);
@@ -209,7 +217,7 @@ void WriteSPUChannelLoopEnabled( VirconSPU& SPU, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void WriteSPUChannelPosition( VirconSPU& SPU, VirconWord Value )
+void WriteSPUChannelPosition( V32SPU& SPU, VirconWord Value )
 {
     // out of range values are accepted, but they are clamped
     int32_t SoundLength = SPU.PointedChannel->CurrentSound->Length;

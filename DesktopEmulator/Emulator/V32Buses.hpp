@@ -1,7 +1,7 @@
 // *****************************************************************************
     // start include guard
-    #ifndef VIRCONBUSES_HPP
-    #define VIRCONBUSES_HPP
+    #ifndef V32BUSES_HPP
+    #define V32BUSES_HPP
     
     // include common Vircon headers
     #include "../../VirconDefinitions/VirconDefinitions.hpp"
@@ -14,7 +14,7 @@
 
 // forward declaration, since both types of buses
 // will use pointers to CPU as their master device
-class VirconCPU;
+class V32CPU;
 
 
 // =============================================================================
@@ -33,12 +33,12 @@ class VirconMemoryInterface
 
 // -----------------------------------------------------------------------------
 
-class VirconMemoryBus
+class V32MemoryBus
 {
     public:
         
         // connected master
-        VirconCPU* Master;
+        V32CPU* Master;
         
         // connected slaves
         VirconMemoryInterface* Slaves[ Constants::MemoryBusSlaves ];
@@ -46,7 +46,7 @@ class VirconMemoryBus
     public:
         
         // instance handling
-        VirconMemoryBus();
+        V32MemoryBus();
         
         // R/W methods
         bool ReadAddress( int32_t GlobalAddress, VirconWord& Result );
@@ -70,12 +70,12 @@ class VirconControlInterface
 
 // -----------------------------------------------------------------------------
 
-class VirconControlBus
+class V32ControlBus
 {
     public:
         
         // connected master
-        VirconCPU* Master;
+        V32CPU* Master;
         
         // connected slaves
         VirconControlInterface* Slaves[ Constants::ControlBusSlaves ];
@@ -83,7 +83,7 @@ class VirconControlBus
     public:
         
         // instance handling
-        VirconControlBus();
+        V32ControlBus();
         
         // I/O port access
         void ReadPort( int32_t GlobalPort, VirconWord& Result );

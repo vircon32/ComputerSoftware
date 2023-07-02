@@ -1,11 +1,12 @@
 // *****************************************************************************
     // include infrastructure headers
     #include "../DesktopInfrastructure/LogStream.hpp"
+    #include "../DesktopInfrastructure/NumericFunctions.hpp"
     #include "../DesktopInfrastructure/StringFunctions.hpp"
     
     // include project headers
     #include "Settings.hpp"
-    #include "VirconEmulator.hpp"
+    #include "V32Emulator.hpp"
     #include "GUI.hpp"
     #include "Languages.hpp"
     #include "Globals.hpp"

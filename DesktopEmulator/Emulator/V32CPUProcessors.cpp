@@ -2,11 +2,8 @@
     // include common Vircon headers
     #include "../../VirconDefinitions/VirconEnumerations.hpp"
     
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/Definitions.hpp"
-    
     // include project headers
-    #include "VirconCPU.hpp"
+    #include "V32CPU.hpp"
     
     // include C/C++ headers
     #include <cmath>            // [ ANSI C ] Mathematics
@@ -22,7 +19,7 @@
 // =============================================================================
 
 
-inline void Push( VirconCPU& CPU, VirconWord Value )
+inline void Push( V32CPU& CPU, VirconWord Value )
 {
     // first decrement
     int32_t* SP = &CPU.StackPointer.AsInteger;
@@ -41,7 +38,7 @@ inline void Push( VirconCPU& CPU, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-inline void Pop( VirconCPU& CPU, VirconWord& Register )
+inline void Pop( V32CPU& CPU, VirconWord& Register )
 {
     // first read the value
     int32_t* SP = &CPU.StackPointer.AsInteger;
@@ -62,11 +59,11 @@ inline void Pop( VirconCPU& CPU, VirconWord& Register )
 
 
 // =============================================================================
-//      INSTRUCTION PROCESSORS
+//      INSTRUCTION PROCESS FUNCTIONS FOR V32 CPU
 // =============================================================================
 
 
-void ProcessHLT( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessHLT( V32CPU& CPU, CPUInstruction Instruction )
 {
     CPU.Halted = true;
     cout << "CPU halted" << endl;
@@ -74,14 +71,14 @@ void ProcessHLT( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessWAIT( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessWAIT( V32CPU& CPU, CPUInstruction Instruction )
 {
     CPU.Waiting = true;
 }
 
 // -----------------------------------------------------------------------------
 
-void ProcessJMP( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessJMP( V32CPU& CPU, CPUInstruction Instruction )
 {
     if( Instruction.UsesImmediate )
       CPU.InstructionPointer = CPU.ImmediateValue;
@@ -91,7 +88,7 @@ void ProcessJMP( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessCALL( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessCALL( V32CPU& CPU, CPUInstruction Instruction )
 {
     // first push the program counter
     Push( CPU, CPU.InstructionPointer );
@@ -105,7 +102,7 @@ void ProcessCALL( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessRET( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessRET( V32CPU& CPU, CPUInstruction Instruction )
 {
     // pop the program counter
     Pop( CPU, CPU.InstructionPointer );
@@ -113,7 +110,7 @@ void ProcessRET( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessJT( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessJT( V32CPU& CPU, CPUInstruction Instruction )
 {
     // check condition
     uint32_t ConditionValue = CPU.Registers[ Instruction.Register1 ].AsBinary;
@@ -128,7 +125,7 @@ void ProcessJT( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessJF( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessJF( V32CPU& CPU, CPUInstruction Instruction )
 {
     // check condition
     uint32_t ConditionValue = CPU.Registers[ Instruction.Register1 ].AsBinary;
@@ -143,7 +140,7 @@ void ProcessJF( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessIEQ( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessIEQ( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord Value;
@@ -158,7 +155,7 @@ void ProcessIEQ( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessINE( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessINE( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord Value;
@@ -173,7 +170,7 @@ void ProcessINE( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessIGT( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessIGT( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord Value;
@@ -188,7 +185,7 @@ void ProcessIGT( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessIGE( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessIGE( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord Value;
@@ -203,7 +200,7 @@ void ProcessIGE( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessILT( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessILT( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord Value;
@@ -218,7 +215,7 @@ void ProcessILT( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessILE( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessILE( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord Value;
@@ -233,7 +230,7 @@ void ProcessILE( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFEQ( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFEQ( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord Value;
@@ -248,7 +245,7 @@ void ProcessFEQ( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFNE( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFNE( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord Value;
@@ -263,7 +260,7 @@ void ProcessFNE( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFGT( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFGT( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord Value;
@@ -278,7 +275,7 @@ void ProcessFGT( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFGE( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFGE( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord Value;
@@ -293,7 +290,7 @@ void ProcessFGE( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFLT( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFLT( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord Value;
@@ -308,7 +305,7 @@ void ProcessFLT( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFLE( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFLE( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord Value;
@@ -323,7 +320,7 @@ void ProcessFLE( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessMOV( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessMOV( V32CPU& CPU, CPUInstruction Instruction )
 {
     // this is just a dummy function: MOV is not processed here;
     // however, removing it might hinder optimization for for the instruction switch
@@ -331,7 +328,7 @@ void ProcessMOV( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessLEA( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessLEA( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
@@ -345,21 +342,21 @@ void ProcessLEA( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessPUSH( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessPUSH( V32CPU& CPU, CPUInstruction Instruction )
 {
     Push( CPU, CPU.Registers[ Instruction.Register1 ] );
 }
 
 // -----------------------------------------------------------------------------
 
-void ProcessPOP( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessPOP( V32CPU& CPU, CPUInstruction Instruction )
 {
     Pop( CPU, CPU.Registers[ Instruction.Register1 ] );
 }
 
 // -----------------------------------------------------------------------------
 
-void ProcessIN( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessIN( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
     CPU.ControlBus->ReadPort( Instruction.PortNumber, *DestinationRegister );
@@ -367,7 +364,7 @@ void ProcessIN( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessOUT( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessOUT( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
     
@@ -379,7 +376,7 @@ void ProcessOUT( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessMOVS( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessMOVS( V32CPU& CPU, CPUInstruction Instruction )
 {
     // move 1 word as in a supposed MOV [DR], [SR]
     VirconWord Value;
@@ -407,7 +404,7 @@ void ProcessMOVS( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessSETS( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessSETS( V32CPU& CPU, CPUInstruction Instruction )
 {
     // set 1 word as in a MOV [DR], SR
     if( !CPU.MemoryBus->WriteAddress( CPU.DestinationRegister.AsInteger, CPU.SourceRegister ) )
@@ -433,7 +430,7 @@ void ProcessSETS( VirconCPU& CPU, CPUInstruction Instruction )
 // - positive if string at [DR] comes after string at [SR]
 // - negative if string at [DR] comes before string at [SR]
 // - zero if both strings are equal
-void ProcessCMPS( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessCMPS( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* ResultRegister = &CPU.Registers[ Instruction.Register1 ];
     
@@ -469,7 +466,7 @@ void ProcessCMPS( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessCIF( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessCIF( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register = &CPU.Registers[ Instruction.Register1 ];
     Register->AsFloat = (float)Register->AsInteger;
@@ -477,7 +474,7 @@ void ProcessCIF( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessCFI( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessCFI( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register = &CPU.Registers[ Instruction.Register1 ];
     Register->AsInteger = (int32_t)Register->AsFloat;
@@ -485,7 +482,7 @@ void ProcessCFI( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessCIB( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessCIB( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register = &CPU.Registers[ Instruction.Register1 ];
     Register->AsInteger = (bool)Register->AsInteger;
@@ -493,7 +490,7 @@ void ProcessCIB( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessCFB( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessCFB( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register = &CPU.Registers[ Instruction.Register1 ];
     Register->AsInteger = (bool)Register->AsFloat;
@@ -501,7 +498,7 @@ void ProcessCFB( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessNOT( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessNOT( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register = &CPU.Registers[ Instruction.Register1 ];
     Register->AsBinary = ~Register->AsBinary;
@@ -509,7 +506,7 @@ void ProcessNOT( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessAND( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessAND( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     
@@ -521,7 +518,7 @@ void ProcessAND( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessOR( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessOR( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     
@@ -533,7 +530,7 @@ void ProcessOR( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessXOR( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessXOR( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     
@@ -545,7 +542,7 @@ void ProcessXOR( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessBNOT( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessBNOT( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register = &CPU.Registers[ Instruction.Register1 ];
     Register->AsBinary = (Register->AsBinary? 0 : 1);
@@ -553,7 +550,7 @@ void ProcessBNOT( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessSHL( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessSHL( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     int32_t ShiftAmount;
@@ -572,7 +569,7 @@ void ProcessSHL( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessIADD( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessIADD( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
     
@@ -588,7 +585,7 @@ void ProcessIADD( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessISUB( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessISUB( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
     
@@ -604,7 +601,7 @@ void ProcessISUB( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessIMUL( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessIMUL( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
     
@@ -620,7 +617,7 @@ void ProcessIMUL( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessIDIV( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessIDIV( V32CPU& CPU, CPUInstruction Instruction )
 {
     // choose the requested divisor
     int32_t Divisor = 1;
@@ -644,7 +641,7 @@ void ProcessIDIV( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessIMOD( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessIMOD( V32CPU& CPU, CPUInstruction Instruction )
 {
     // determine the operands
     VirconWord* DividendRegister = &CPU.Registers[ Instruction.Register1 ];
@@ -668,7 +665,7 @@ void ProcessIMOD( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessISGN( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessISGN( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     Register1->AsInteger = -Register1->AsInteger;
@@ -676,7 +673,7 @@ void ProcessISGN( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessIABS( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessIABS( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     Register1->AsInteger = abs( Register1->AsInteger );
@@ -684,7 +681,7 @@ void ProcessIABS( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessIMIN( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessIMIN( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     
@@ -700,7 +697,7 @@ void ProcessIMIN( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessIMAX( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessIMAX( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     
@@ -716,7 +713,7 @@ void ProcessIMAX( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFADD( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFADD( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
     
@@ -732,7 +729,7 @@ void ProcessFADD( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFSUB( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFSUB( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
     
@@ -748,7 +745,7 @@ void ProcessFSUB( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFMUL( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFMUL( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
     
@@ -764,7 +761,7 @@ void ProcessFMUL( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFDIV( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFDIV( V32CPU& CPU, CPUInstruction Instruction )
 {
     // choose the requested divisor
     float Divisor = 1.0f;
@@ -788,7 +785,7 @@ void ProcessFDIV( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFMOD( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFMOD( V32CPU& CPU, CPUInstruction Instruction )
 {
     // choose the requested divisor
     float Divisor = 1.0f;
@@ -812,7 +809,7 @@ void ProcessFMOD( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFSGN( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFSGN( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     Register1->AsFloat = -Register1->AsFloat;
@@ -820,7 +817,7 @@ void ProcessFSGN( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFABS( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFABS( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     Register1->AsFloat = abs( Register1->AsFloat );
@@ -828,7 +825,7 @@ void ProcessFABS( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFMIN( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFMIN( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     
@@ -844,7 +841,7 @@ void ProcessFMIN( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFMAX( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFMAX( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     
@@ -860,7 +857,7 @@ void ProcessFMAX( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessFLR( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessFLR( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     Register1->AsFloat = floor( Register1->AsFloat );
@@ -868,7 +865,7 @@ void ProcessFLR( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessCEIL( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessCEIL( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     Register1->AsFloat = ceil( Register1->AsFloat );
@@ -876,7 +873,7 @@ void ProcessCEIL( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessROUND( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessROUND( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     Register1->AsFloat = round( Register1->AsFloat );
@@ -884,7 +881,7 @@ void ProcessROUND( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessSIN( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessSIN( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     Register1->AsFloat = sin( Register1->AsFloat );
@@ -892,7 +889,7 @@ void ProcessSIN( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessACOS( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessACOS( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     float Operand = Register1->AsFloat;
@@ -909,7 +906,7 @@ void ProcessACOS( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessATAN2( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessATAN2( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
@@ -926,7 +923,7 @@ void ProcessATAN2( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessLOG( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessLOG( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     
@@ -942,7 +939,7 @@ void ProcessLOG( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessPOW( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessPOW( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
@@ -963,7 +960,7 @@ void ProcessPOW( VirconCPU& CPU, CPUInstruction Instruction )
 // =============================================================================
 
 
-void ProcessMOVRegFromImm( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessMOVRegFromImm( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     *Register1 = CPU.ImmediateValue;
@@ -971,7 +968,7 @@ void ProcessMOVRegFromImm( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessMOVRegFromReg( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessMOVRegFromReg( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
@@ -980,7 +977,7 @@ void ProcessMOVRegFromReg( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessMOVRegFromImmAdd( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessMOVRegFromImmAdd( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     CPU.MemoryBus->ReadAddress( CPU.ImmediateValue.AsInteger, *Register1 );
@@ -988,7 +985,7 @@ void ProcessMOVRegFromImmAdd( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessMOVRegFromRegAdd( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessMOVRegFromRegAdd( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
@@ -997,7 +994,7 @@ void ProcessMOVRegFromRegAdd( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessMOVRegFromAddOff( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessMOVRegFromAddOff( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
@@ -1006,7 +1003,7 @@ void ProcessMOVRegFromAddOff( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessMOVImmAddFromReg( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessMOVImmAddFromReg( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
     CPU.MemoryBus->WriteAddress( CPU.ImmediateValue.AsInteger, *Register2 );
@@ -1014,7 +1011,7 @@ void ProcessMOVImmAddFromReg( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessMOVRegAddFromReg( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessMOVRegAddFromReg( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
@@ -1023,7 +1020,7 @@ void ProcessMOVRegAddFromReg( VirconCPU& CPU, CPUInstruction Instruction )
 
 // -----------------------------------------------------------------------------
 
-void ProcessMOVAddOffFromReg( VirconCPU& CPU, CPUInstruction Instruction )
+void ProcessMOVAddOffFromReg( V32CPU& CPU, CPUInstruction Instruction )
 {
     VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
     VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];

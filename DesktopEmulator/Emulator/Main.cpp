@@ -1,13 +1,12 @@
 // *****************************************************************************
     // include infrastructure headers
     #include "../DesktopInfrastructure/LogStream.hpp"
-    #include "../DesktopInfrastructure/Definitions.hpp"
     #include "../DesktopInfrastructure/StopWatch.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     
     // include project headers
-    #include "VirconEmulator.hpp"
+    #include "V32Emulator.hpp"
     #include "GUI.hpp"
     #include "Settings.hpp"
     #include "Globals.hpp"
@@ -74,7 +73,7 @@ void PerformABIAssertions()
 void PerformPortAssertions()
 {
     LOG( "Performing I/O port assertions" );
-    VirconGPU TestGPU;
+    V32GPU TestGPU;
     
     // determine the correct location of ports
     int DetectedGPUPortDistance = (int)((VirconWord*)(&TestGPU.DrawingAngle) - (VirconWord*)(&TestGPU.Command));

@@ -8,7 +8,7 @@
     #include "../DesktopInfrastructure/LogStream.hpp"
     
     // include project headers
-    #include "VirconMemoryCardController.hpp"
+    #include "V32MemoryCardController.hpp"
     
     // include C/C++ headers
     #include <iostream>     // [ C++ STL ] I/O Streams
@@ -20,18 +20,18 @@
 
 
 // =============================================================================
-//      VIRCON MEMORY CARD CONTROLLER: OWN METHODS
+//      V32 MEMORY CARD CONTROLLER: OWN METHODS
 // =============================================================================
 
 
-VirconMemoryCardController::VirconMemoryCardController()
+V32MemoryCardController::V32MemoryCardController()
 {
     PendingSave = false;
 }
 
 // -----------------------------------------------------------------------------
 
-bool VirconMemoryCardController::ReadPort( int32_t LocalPort, VirconWord& Result )
+bool V32MemoryCardController::ReadPort( int32_t LocalPort, VirconWord& Result )
 {
     // check range
     if( LocalPort > MEM_LastPort )
@@ -46,7 +46,7 @@ bool VirconMemoryCardController::ReadPort( int32_t LocalPort, VirconWord& Result
 
 // -----------------------------------------------------------------------------
 
-bool VirconMemoryCardController::WritePort( int32_t LocalPort, VirconWord Value )
+bool V32MemoryCardController::WritePort( int32_t LocalPort, VirconWord Value )
 {
     // all memory card ports are read-only!
     return false;
@@ -54,7 +54,7 @@ bool VirconMemoryCardController::WritePort( int32_t LocalPort, VirconWord Value 
 
 // -----------------------------------------------------------------------------
 
-void VirconMemoryCardController::ChangeFrame()
+void V32MemoryCardController::ChangeFrame()
 {
     // save to file when needed
     if( !PendingSave ) return;
@@ -65,14 +65,14 @@ void VirconMemoryCardController::ChangeFrame()
 
 
 // =============================================================================
-//      VIRCON MEMORY CARD CONTROLLER: METHODS OVERRIDEN FROM RAM
+//      V32 MEMORY CARD CONTROLLER: METHODS OVERRIDEN FROM RAM
 // =============================================================================
 
 
-bool VirconMemoryCardController::WriteAddress( int32_t LocalAddress, VirconWord Value )
+bool V32MemoryCardController::WriteAddress( int32_t LocalAddress, VirconWord Value )
 {
     // check that the normal RAM write is successful
-    if( !VirconRAM::WriteAddress( LocalAddress, Value ) )
+    if( !V32RAM::WriteAddress( LocalAddress, Value ) )
       return false;
     
     // data is now pending to save
@@ -83,7 +83,7 @@ bool VirconMemoryCardController::WriteAddress( int32_t LocalAddress, VirconWord 
 
 // -----------------------------------------------------------------------------
 
-void VirconMemoryCardController::LoadContents( const std::string& FilePath )
+void V32MemoryCardController::LoadContents( const std::string& FilePath )
 {
     // open the file
     LOG( "Loading memory card file \"" << FilePath << "\"" );
@@ -128,7 +128,7 @@ void VirconMemoryCardController::LoadContents( const std::string& FilePath )
 
 // -----------------------------------------------------------------------------
 
-void VirconMemoryCardController::SaveContents( const std::string& FilePath )
+void V32MemoryCardController::SaveContents( const std::string& FilePath )
 {
     // open the file
     LOG( "Saving memory card file \"" << FilePath << "\"" );
@@ -151,7 +151,7 @@ void VirconMemoryCardController::SaveContents( const std::string& FilePath )
 
 // -----------------------------------------------------------------------------
 
-void VirconMemoryCardController::CreateNewFile( const std::string& FilePath )
+void V32MemoryCardController::CreateNewFile( const std::string& FilePath )
 {
     LOG( "Creating memory card file \"" << FilePath << "\"" );
     

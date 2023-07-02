@@ -4,7 +4,6 @@
     #define TEXTURE_HPP
 
     // include project headers
-    #include "Definitions.hpp"
     #include "OpenGL2DContext.hpp"
     
     // include OpenGL headers

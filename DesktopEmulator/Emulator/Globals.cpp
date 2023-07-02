@@ -8,7 +8,7 @@
     
     // include project headers
     #include "Globals.hpp"
-    #include "VirconEmulator.hpp"
+    #include "V32Emulator.hpp"
     
     // declare used namespaces
     using namespace std;
@@ -77,7 +77,7 @@ string FragmentShader =
 Texture NoSignalTexture;
 
 // instance of the Vircon virtual machine
-VirconEmulator Vircon;
+V32Emulator Vircon;
 
 
 // =============================================================================

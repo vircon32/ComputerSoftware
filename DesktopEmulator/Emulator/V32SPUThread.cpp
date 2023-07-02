@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include project headers
-    #include "VirconSPU.hpp"
+    #include "V32SPU.hpp"
     
     // include C/C++ headers
     #include <stdexcept>        // [ C++ STL ] Exceptions
@@ -14,7 +14,7 @@
 /* -------------------------------------------------------------------------- //
     THREAD SAFETY CONSIDERATIONS:
     -------------------------------
-    (1) Thread needs synchronization to access VirconSPU instance variables
+    (1) Thread needs synchronization to access V32SPU instance variables
     (2) Any exceptions thrown need to be caught, since they cannot trespass
         the boundary to the main thread
 // -------------------------------------------------------------------------- */
@@ -37,7 +37,7 @@ int SPUPlaybackThread( void* Parameters )
         return 1;
     }
     
-    VirconSPU* SPUInstance = (VirconSPU*)Parameters;
+    V32SPU* SPUInstance = (V32SPU*)Parameters;
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     

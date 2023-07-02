@@ -1,10 +1,10 @@
 // *****************************************************************************
     // start include guard
-    #ifndef VIRCONNULLCONTROLLER_HPP
-    #define VIRCONNULLCONTROLLER_HPP
+    #ifndef V32NULLCONTROLLER_HPP
+    #define V32NULLCONTROLLER_HPP
     
     // include project headers
-    #include "VirconBuses.hpp"
+    #include "V32Buses.hpp"
 // *****************************************************************************
 
 
@@ -13,7 +13,7 @@
 // =============================================================================
 
 
-class VirconNullController: public VirconControlInterface
+class V32NullController: public VirconControlInterface
 {
     public:
         

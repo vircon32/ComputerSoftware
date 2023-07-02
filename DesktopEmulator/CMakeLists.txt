@@ -261,22 +261,22 @@ set(EMULATOR_SRC
     ${EMULATOR_DIR}/Languages.cpp
     ${EMULATOR_DIR}/Main.cpp
     ${EMULATOR_DIR}/Settings.cpp
-    ${EMULATOR_DIR}/VirconBuses.cpp
-    ${EMULATOR_DIR}/VirconCartridgeController.cpp
-    ${EMULATOR_DIR}/VirconCPU.cpp
-    ${EMULATOR_DIR}/VirconCPUProcessors.cpp
-    ${EMULATOR_DIR}/VirconEmulator.cpp
-    ${EMULATOR_DIR}/VirconGamepadController.cpp
-    ${EMULATOR_DIR}/VirconGPU.cpp
-    ${EMULATOR_DIR}/VirconGPUWriters.cpp
-    ${EMULATOR_DIR}/VirconMemory.cpp
-    ${EMULATOR_DIR}/VirconMemoryCardController.cpp
-    ${EMULATOR_DIR}/VirconNullController.cpp
-    ${EMULATOR_DIR}/VirconRNG.cpp
-    ${EMULATOR_DIR}/VirconSPU.cpp
-    ${EMULATOR_DIR}/VirconSPUThread.cpp
-    ${EMULATOR_DIR}/VirconSPUWriters.cpp
-    ${EMULATOR_DIR}/VirconTimer.cpp
+    ${EMULATOR_DIR}/V32Buses.cpp
+    ${EMULATOR_DIR}/V32CartridgeController.cpp
+    ${EMULATOR_DIR}/V32CPU.cpp
+    ${EMULATOR_DIR}/V32CPUProcessors.cpp
+    ${EMULATOR_DIR}/V32Emulator.cpp
+    ${EMULATOR_DIR}/V32GamepadController.cpp
+    ${EMULATOR_DIR}/V32GPU.cpp
+    ${EMULATOR_DIR}/V32GPUWriters.cpp
+    ${EMULATOR_DIR}/V32Memory.cpp
+    ${EMULATOR_DIR}/V32MemoryCardController.cpp
+    ${EMULATOR_DIR}/V32NullController.cpp
+    ${EMULATOR_DIR}/V32RNG.cpp
+    ${EMULATOR_DIR}/V32SPU.cpp
+    ${EMULATOR_DIR}/V32SPUThread.cpp
+    ${EMULATOR_DIR}/V32SPUWriters.cpp
+    ${EMULATOR_DIR}/V32Timer.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
     ${INFRASTRUCTURE_DIR}/LogStream.cpp
     ${INFRASTRUCTURE_DIR}/Matrix4D.cpp

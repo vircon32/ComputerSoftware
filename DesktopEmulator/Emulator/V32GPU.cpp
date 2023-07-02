@@ -8,7 +8,7 @@
     #include "../DesktopInfrastructure/LogStream.hpp"
     
     // include project headers
-    #include "VirconGPU.hpp"
+    #include "V32GPU.hpp"
     #include "Globals.hpp"
     
     // declare used namespaces
@@ -21,7 +21,7 @@
 // =============================================================================
 
 
-typedef void (*GPUPortWriter)( VirconGPU&, VirconWord );
+typedef void (*GPUPortWriter)( V32GPU&, VirconWord );
 
 // -----------------------------------------------------------------------------
 
@@ -50,11 +50,11 @@ const GPUPortWriter GPUPortWriterTable[] =
 
 
 // =============================================================================
-//      VIRCON GPU: INSTANCE HANDLING
+//      V32 GPU: INSTANCE HANDLING
 // =============================================================================
 
 
-VirconGPU::VirconGPU()
+V32GPU::V32GPU()
 {
     PointedTexture = nullptr;
     PointedRegion = nullptr;
@@ -64,7 +64,7 @@ VirconGPU::VirconGPU()
 
 // -----------------------------------------------------------------------------
 
-VirconGPU::~VirconGPU()
+V32GPU::~V32GPU()
 {
     // release BIOS texture
     UnloadTexture( BiosTexture );
@@ -78,11 +78,11 @@ VirconGPU::~VirconGPU()
 
 
 // =============================================================================
-//      VIRCON GPU: HANDLING VIDEO RESOURCES
+//      V32 GPU: HANDLING VIDEO RESOURCES
 // =============================================================================
 
 
-void VirconGPU::LoadTexture( GPUTexture& TargetTexture, void* Pixels, unsigned Width, unsigned Height )
+void V32GPU::LoadTexture( GPUTexture& TargetTexture, void* Pixels, unsigned Width, unsigned Height )
 {
     // check for page number limit
     if( (int)CartridgeTextures.size() >= Constants::GPUMaximumCartridgeTextures )
@@ -154,7 +154,7 @@ void VirconGPU::LoadTexture( GPUTexture& TargetTexture, void* Pixels, unsigned W
 
 // -----------------------------------------------------------------------------
 
-void VirconGPU::UnloadTexture( GPUTexture& TargetTexture )
+void V32GPU::UnloadTexture( GPUTexture& TargetTexture )
 {
     if( TargetTexture.TextureID == 0 )
       return;
@@ -165,11 +165,11 @@ void VirconGPU::UnloadTexture( GPUTexture& TargetTexture )
 
 
 // =============================================================================
-//      VIRCON GPU: I/O BUS CONNECTION
+//      V32 GPU: I/O BUS CONNECTION
 // =============================================================================
 
 
-bool VirconGPU::ReadPort( int32_t LocalPort, VirconWord& Result )
+bool V32GPU::ReadPort( int32_t LocalPort, VirconWord& Result )
 {
     // check range
     if( LocalPort > GPU_LastPort )
@@ -199,7 +199,7 @@ bool VirconGPU::ReadPort( int32_t LocalPort, VirconWord& Result )
 
 // -----------------------------------------------------------------------------
 
-bool VirconGPU::WritePort( int32_t LocalPort, VirconWord Value )
+bool V32GPU::WritePort( int32_t LocalPort, VirconWord Value )
 {
     // check range
     if( LocalPort > GPU_LastPort )
@@ -212,11 +212,11 @@ bool VirconGPU::WritePort( int32_t LocalPort, VirconWord Value )
 
 
 // =============================================================================
-//      VIRCON GPU: GENERAL OPERATION
+//      V32 GPU: GENERAL OPERATION
 // =============================================================================
 
 
-void VirconGPU::ChangeFrame()
+void V32GPU::ChangeFrame()
 {
     // restore the drawing capacity for next frame
     RemainingPixels = Constants::GPUPixelCapacityPerFrame;
@@ -224,7 +224,7 @@ void VirconGPU::ChangeFrame()
 
 // -----------------------------------------------------------------------------
 
-void VirconGPU::Reset()
+void V32GPU::Reset()
 {
     // reset all global ports to default values
     Command = 0;
@@ -283,11 +283,11 @@ void VirconGPU::Reset()
 
 
 // =============================================================================
-//      VIRCON GPU: EXECUTION OF GPU COMMANDS
+//      V32 GPU: EXECUTION OF GPU COMMANDS
 // =============================================================================
 
 
-void VirconGPU::ClearScreen()
+void V32GPU::ClearScreen()
 {
     // auto-reject the operation if the GPU is already out of capacity
     if( RemainingPixels < 0 )
@@ -314,7 +314,7 @@ void VirconGPU::ClearScreen()
 
 // this same method will service the 4 variants of the
 // draw region command, by varying the enabled transforms
-void VirconGPU::DrawRegion( bool ScalingEnabled, bool RotationEnabled )
+void V32GPU::DrawRegion( bool ScalingEnabled, bool RotationEnabled )
 {
     // auto-reject the operation if the GPU is already out of capacity
     if( RemainingPixels < 0 )

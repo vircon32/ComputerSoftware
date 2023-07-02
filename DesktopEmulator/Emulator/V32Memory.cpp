@@ -3,7 +3,7 @@
     #include "../DesktopInfrastructure/LogStream.hpp"
     
     // include project headers
-    #include "VirconMemory.hpp"
+    #include "V32Memory.hpp"
     
     // include C/C++ headers
     #include <cstring>          // [ ANSI C ] Strings
@@ -14,18 +14,18 @@
 
 
 // =============================================================================
-//      CLASS: VIRCON RAM
+//      CLASS: V32 RAM
 // =============================================================================
 
 
-VirconRAM::VirconRAM()
+V32RAM::V32RAM()
 {
     MemorySize = 0;
 }
 
 // -----------------------------------------------------------------------------
 
-void VirconRAM::Connect( uint32_t NumberOfWords )
+void V32RAM::Connect( uint32_t NumberOfWords )
 {
     // disconnect previous memory
     Disconnect();
@@ -40,7 +40,7 @@ void VirconRAM::Connect( uint32_t NumberOfWords )
 
 // -----------------------------------------------------------------------------
 
-void VirconRAM::Disconnect()
+void V32RAM::Disconnect()
 {
     Memory.clear();
     MemorySize = 0;
@@ -48,7 +48,7 @@ void VirconRAM::Disconnect()
 
 // -----------------------------------------------------------------------------
 
-void VirconRAM::SaveContents( const string& FilePath )
+void V32RAM::SaveContents( const string& FilePath )
 {
     // open the file
     LOG( "Saving RAM file \"" << FilePath << "\"" );
@@ -68,7 +68,7 @@ void VirconRAM::SaveContents( const string& FilePath )
 
 // -----------------------------------------------------------------------------
 
-void VirconRAM::LoadContents( const string& FilePath )
+void V32RAM::LoadContents( const string& FilePath )
 {
     // open the file
     LOG( "Loading RAM file \"" << FilePath << "\"" );
@@ -101,14 +101,14 @@ void VirconRAM::LoadContents( const string& FilePath )
 
 // -----------------------------------------------------------------------------
 
-void VirconRAM::ClearContents()
+void V32RAM::ClearContents()
 {
     memset( &Memory[ 0 ], 0, Memory.size() * 4 );
 }
 
 // -----------------------------------------------------------------------------
 
-bool VirconRAM::ReadAddress( int32_t LocalAddress, VirconWord& Result )
+bool V32RAM::ReadAddress( int32_t LocalAddress, VirconWord& Result )
 {
     // check range
     if( LocalAddress >= MemorySize )
@@ -121,7 +121,7 @@ bool VirconRAM::ReadAddress( int32_t LocalAddress, VirconWord& Result )
 
 // -----------------------------------------------------------------------------
 
-bool VirconRAM::WriteAddress( int32_t LocalAddress, VirconWord Value )
+bool V32RAM::WriteAddress( int32_t LocalAddress, VirconWord Value )
 {
     // check range
     if( LocalAddress >= MemorySize )
@@ -134,18 +134,18 @@ bool VirconRAM::WriteAddress( int32_t LocalAddress, VirconWord Value )
 
 
 // =============================================================================
-//      CLASS: VIRCON ROM
+//      CLASS: V32 ROM
 // =============================================================================
 
 
-VirconROM::VirconROM()
+V32ROM::V32ROM()
 {
     MemorySize = 0;
 }
 
 // -----------------------------------------------------------------------------
 
-void VirconROM::Connect( void* Source, uint32_t NumberOfWords )
+void V32ROM::Connect( void* Source, uint32_t NumberOfWords )
 {
     // first, remove any previous memory
     Disconnect();
@@ -160,7 +160,7 @@ void VirconROM::Connect( void* Source, uint32_t NumberOfWords )
 
 // -----------------------------------------------------------------------------
 
-void VirconROM::Disconnect()
+void V32ROM::Disconnect()
 {
     Memory.clear();
     MemorySize = 0;
@@ -168,7 +168,7 @@ void VirconROM::Disconnect()
 
 // -----------------------------------------------------------------------------
 
-bool VirconROM::ReadAddress( int32_t LocalAddress, VirconWord& Result )
+bool V32ROM::ReadAddress( int32_t LocalAddress, VirconWord& Result )
 {
     // check range
     if( LocalAddress >= MemorySize )
@@ -181,7 +181,7 @@ bool VirconROM::ReadAddress( int32_t LocalAddress, VirconWord& Result )
 
 // -----------------------------------------------------------------------------
 
-bool VirconROM::WriteAddress( int32_t LocalAddress, VirconWord Value )
+bool V32ROM::WriteAddress( int32_t LocalAddress, VirconWord Value )
 {
     // ROM cannot be written to
     return false;

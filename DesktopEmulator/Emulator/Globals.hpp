@@ -4,7 +4,6 @@
     #define GLOBALS_HPP
     
     // include infrastructure headers
-    #include "../DesktopInfrastructure/Definitions.hpp"
     #include "../DesktopInfrastructure/Texture.hpp"
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     
@@ -13,7 +12,7 @@
     #include <list>         // [ C++ STL ] Lists
     
     // forward declarations for all needed classes
-    class VirconEmulator;
+    class V32Emulator;
 // *****************************************************************************
 
 
@@ -54,7 +53,7 @@ extern std::string FragmentShader;
 extern Texture NoSignalTexture;
 
 // instance of the Vircon virtual machine
-extern VirconEmulator Vircon;
+extern V32Emulator Vircon;
 
 
 // =============================================================================

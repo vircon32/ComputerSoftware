@@ -1,10 +1,10 @@
 // *****************************************************************************
     // start include guard
-    #ifndef VIRCONMEMORY_HPP
-    #define VIRCONMEMORY_HPP
+    #ifndef V32MEMORY_HPP
+    #define V32MEMORY_HPP
     
     // include project headers
-    #include "VirconBuses.hpp"
+    #include "V32Buses.hpp"
     
     // include C/C++ headers
     #include <string>       // [ C++ STL ] Strings
@@ -16,7 +16,7 @@
 // =============================================================================
 
 
-class VirconRAM: public VirconMemoryInterface
+class V32RAM: public VirconMemoryInterface
 {
     public:
         
@@ -26,7 +26,7 @@ class VirconRAM: public VirconMemoryInterface
     public:
         
         // instance handling
-        VirconRAM();
+        V32RAM();
         
         // memory connection
         void Connect( uint32_t NumberOfWords );
@@ -48,7 +48,7 @@ class VirconRAM: public VirconMemoryInterface
 // =============================================================================
 
 
-class VirconROM: public VirconMemoryInterface
+class V32ROM: public VirconMemoryInterface
 {
     public:
         
@@ -58,7 +58,7 @@ class VirconROM: public VirconMemoryInterface
     public:
         
         // instance handling
-        VirconROM();
+        V32ROM();
         
         // memory connection
         // (unlike RAM, we can only get the contents upon connection)

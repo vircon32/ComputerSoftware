@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include project headers
-    #include "Definitions.hpp"
+    #include "NumericFunctions.hpp"
     #include "LogStream.hpp"
     #include "Texture.hpp"
     

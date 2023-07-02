@@ -1,19 +1,19 @@
 // *****************************************************************************
     // start include guard
-    #ifndef VIRCONEMULATOR_HPP
-    #define VIRCONEMULATOR_HPP
+    #ifndef V32EMULATOR_HPP
+    #define V32EMULATOR_HPP
     
     // include project headers
-    #include "VirconCPU.hpp"
-    #include "VirconGPU.hpp"
-    #include "VirconSPU.hpp"
-    #include "VirconTimer.hpp"
-    #include "VirconRNG.hpp"
-    #include "VirconMemory.hpp"
-    #include "VirconGamepadController.hpp"
-    #include "VirconCartridgeController.hpp"
-    #include "VirconMemoryCardController.hpp"
-    #include "VirconNullController.hpp"
+    #include "V32CPU.hpp"
+    #include "V32GPU.hpp"
+    #include "V32SPU.hpp"
+    #include "V32Timer.hpp"
+    #include "V32RNG.hpp"
+    #include "V32Memory.hpp"
+    #include "V32GamepadController.hpp"
+    #include "V32CartridgeController.hpp"
+    #include "V32MemoryCardController.hpp"
+    #include "V32NullController.hpp"
 // *****************************************************************************
 
 
@@ -22,28 +22,28 @@
 // =============================================================================
 
 
-class VirconEmulator
+class V32Emulator
 {
     public:
         
         // communication lines
-        VirconMemoryBus  MemoryBus;
-        VirconControlBus ControlBus;
+        V32MemoryBus  MemoryBus;
+        V32ControlBus ControlBus;
         
         // hardwired motherboard components
-        VirconTimer Timer;
-        VirconRNG RNG;
-        VirconGamepadController GamepadController;
-        VirconCartridgeController CartridgeController;
-        VirconMemoryCardController MemoryCardController;
-        VirconNullController NullController;
+        V32Timer Timer;
+        V32RNG RNG;
+        V32GamepadController GamepadController;
+        V32CartridgeController CartridgeController;
+        V32MemoryCardController MemoryCardController;
+        V32NullController NullController;
         
         // components on motherboard slots
-        VirconCPU CPU;
-        VirconGPU GPU;
-        VirconSPU SPU;
-        VirconRAM RAM;
-        VirconROM BiosProgramROM;
+        V32CPU CPU;
+        V32GPU GPU;
+        V32SPU SPU;
+        V32RAM RAM;
+        V32ROM BiosProgramROM;
         
         // internal state
         bool PowerIsOn;
@@ -56,8 +56,8 @@ class VirconEmulator
     public:
         
         // instance handling
-        VirconEmulator();
-       ~VirconEmulator();
+        V32Emulator();
+       ~V32Emulator();
         
         // general setup
         void Initialize();

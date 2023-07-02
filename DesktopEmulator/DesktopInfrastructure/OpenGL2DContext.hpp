@@ -8,7 +8,6 @@
     #include "../../VirconDefinitions/VirconEnumerations.hpp"
     
     // include project headers
-    #include "Definitions.hpp"
     #include "Matrix4D.hpp"
     
     // include SDL2 headers

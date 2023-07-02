@@ -5,7 +5,7 @@
     
     // include project headers
     #include "GUI.hpp"
-    #include "VirconEmulator.hpp"
+    #include "V32Emulator.hpp"
     #include "Globals.hpp"
     #include "Settings.hpp"
     #include "Languages.hpp"

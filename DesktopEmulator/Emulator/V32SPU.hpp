@@ -1,16 +1,13 @@
 // *****************************************************************************
     // start include guard
-    #ifndef VIRCONSPU_HPP
-    #define VIRCONSPU_HPP
+    #ifndef V32SPU_HPP
+    #define V32SPU_HPP
     
     // include common vircon headers
     #include "../../VirconDefinitions/VirconEnumerations.hpp"
     
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/Definitions.hpp"
-    
     // include project headers
-    #include "VirconBuses.hpp"
+    #include "V32Buses.hpp"
     
     // include OpenAL headers
     #if defined(__APPLE__)
@@ -163,11 +160,11 @@ int SPUPlaybackThread( void* Parameters );
 
 
 // =============================================================================
-//      VIRCON SPU CLASS
+//      V32 SPU CLASS
 // =============================================================================
 
 
-class VirconSPU: public VirconControlInterface
+class V32SPU: public VirconControlInterface
 {
     public:
         
@@ -239,8 +236,8 @@ class VirconSPU: public VirconControlInterface
     public:
         
         // instance handling
-        VirconSPU();
-       ~VirconSPU();
+        V32SPU();
+       ~V32SPU();
         
         // handling audio objects
         void InitializeAudio();
@@ -277,20 +274,20 @@ class VirconSPU: public VirconControlInterface
 // =============================================================================
 
 
-void WriteSPUCommand              ( VirconSPU& SPU, VirconWord Value );
-void WriteSPUGlobalVolume         ( VirconSPU& SPU, VirconWord Value );
-void WriteSPUSelectedSound        ( VirconSPU& SPU, VirconWord Value );
-void WriteSPUSelectedChannel      ( VirconSPU& SPU, VirconWord Value );
-void WriteSPUSoundLength          ( VirconSPU& SPU, VirconWord Value );
-void WriteSPUSoundPlayWithLoop    ( VirconSPU& SPU, VirconWord Value );
-void WriteSPUSoundLoopStart       ( VirconSPU& SPU, VirconWord Value );
-void WriteSPUSoundLoopEnd         ( VirconSPU& SPU, VirconWord Value );
-void WriteSPUChannelState         ( VirconSPU& SPU, VirconWord Value );
-void WriteSPUChannelAssignedSound ( VirconSPU& SPU, VirconWord Value );
-void WriteSPUChannelVolume        ( VirconSPU& SPU, VirconWord Value );
-void WriteSPUChannelSpeed         ( VirconSPU& SPU, VirconWord Value );
-void WriteSPUChannelLoopEnabled   ( VirconSPU& SPU, VirconWord Value );
-void WriteSPUChannelPosition      ( VirconSPU& SPU, VirconWord Value );
+void WriteSPUCommand              ( V32SPU& SPU, VirconWord Value );
+void WriteSPUGlobalVolume         ( V32SPU& SPU, VirconWord Value );
+void WriteSPUSelectedSound        ( V32SPU& SPU, VirconWord Value );
+void WriteSPUSelectedChannel      ( V32SPU& SPU, VirconWord Value );
+void WriteSPUSoundLength          ( V32SPU& SPU, VirconWord Value );
+void WriteSPUSoundPlayWithLoop    ( V32SPU& SPU, VirconWord Value );
+void WriteSPUSoundLoopStart       ( V32SPU& SPU, VirconWord Value );
+void WriteSPUSoundLoopEnd         ( V32SPU& SPU, VirconWord Value );
+void WriteSPUChannelState         ( V32SPU& SPU, VirconWord Value );
+void WriteSPUChannelAssignedSound ( V32SPU& SPU, VirconWord Value );
+void WriteSPUChannelVolume        ( V32SPU& SPU, VirconWord Value );
+void WriteSPUChannelSpeed         ( V32SPU& SPU, VirconWord Value );
+void WriteSPUChannelLoopEnabled   ( V32SPU& SPU, VirconWord Value );
+void WriteSPUChannelPosition      ( V32SPU& SPU, VirconWord Value );
 
 
 // *****************************************************************************

@@ -1,10 +1,10 @@
 // *****************************************************************************
     // start include guard
-    #ifndef VIRCONGPU_HPP
-    #define VIRCONGPU_HPP
+    #ifndef V32GPU_HPP
+    #define V32GPU_HPP
     
     // include project headers
-    #include "VirconBuses.hpp"
+    #include "V32Buses.hpp"
     
     // include OpenGL headers
     #include <glad/glad.h>      // [ OpenGL ] GLAD Loader (already includes <GL/gl.h>)
@@ -71,11 +71,11 @@ GPUTexture;
 
 
 // =============================================================================
-//      VIRCON GPU CLASS
+//      V32 GPU CLASS
 // =============================================================================
 
 
-class VirconGPU: public VirconControlInterface
+class V32GPU: public VirconControlInterface
 {
     public:
         
@@ -108,8 +108,8 @@ class VirconGPU: public VirconControlInterface
     public:
         
         // instance handling
-        VirconGPU();
-       ~VirconGPU();
+        V32GPU();
+       ~V32GPU();
         
         // handling video resources
         void LoadTexture( GPUTexture& TargetTexture, void* Pixels, unsigned Width, unsigned Height );
@@ -134,24 +134,24 @@ class VirconGPU: public VirconControlInterface
 // =============================================================================
 
 
-void WriteGPUCommand        ( VirconGPU& GPU, VirconWord Value );
-void WriteGPURemainingPixels( VirconGPU& GPU, VirconWord Value );
-void WriteGPUClearColor     ( VirconGPU& GPU, VirconWord Value );
-void WriteGPUMultiplyColor  ( VirconGPU& GPU, VirconWord Value );
-void WriteGPUActiveBlending ( VirconGPU& GPU, VirconWord Value );
-void WriteGPUSelectedTexture( VirconGPU& GPU, VirconWord Value );
-void WriteGPUSelectedRegion ( VirconGPU& GPU, VirconWord Value );
-void WriteGPUDrawingPointX  ( VirconGPU& GPU, VirconWord Value );
-void WriteGPUDrawingPointY  ( VirconGPU& GPU, VirconWord Value );
-void WriteGPUDrawingScaleX  ( VirconGPU& GPU, VirconWord Value );
-void WriteGPUDrawingScaleY  ( VirconGPU& GPU, VirconWord Value );
-void WriteGPUDrawingAngle   ( VirconGPU& GPU, VirconWord Value );
-void WriteGPURegionMinX     ( VirconGPU& GPU, VirconWord Value );
-void WriteGPURegionMinY     ( VirconGPU& GPU, VirconWord Value );
-void WriteGPURegionMaxX     ( VirconGPU& GPU, VirconWord Value );
-void WriteGPURegionMaxY     ( VirconGPU& GPU, VirconWord Value );
-void WriteGPURegionHotspotX ( VirconGPU& GPU, VirconWord Value );
-void WriteGPURegionHotspotY ( VirconGPU& GPU, VirconWord Value );
+void WriteGPUCommand        ( V32GPU& GPU, VirconWord Value );
+void WriteGPURemainingPixels( V32GPU& GPU, VirconWord Value );
+void WriteGPUClearColor     ( V32GPU& GPU, VirconWord Value );
+void WriteGPUMultiplyColor  ( V32GPU& GPU, VirconWord Value );
+void WriteGPUActiveBlending ( V32GPU& GPU, VirconWord Value );
+void WriteGPUSelectedTexture( V32GPU& GPU, VirconWord Value );
+void WriteGPUSelectedRegion ( V32GPU& GPU, VirconWord Value );
+void WriteGPUDrawingPointX  ( V32GPU& GPU, VirconWord Value );
+void WriteGPUDrawingPointY  ( V32GPU& GPU, VirconWord Value );
+void WriteGPUDrawingScaleX  ( V32GPU& GPU, VirconWord Value );
+void WriteGPUDrawingScaleY  ( V32GPU& GPU, VirconWord Value );
+void WriteGPUDrawingAngle   ( V32GPU& GPU, VirconWord Value );
+void WriteGPURegionMinX     ( V32GPU& GPU, VirconWord Value );
+void WriteGPURegionMinY     ( V32GPU& GPU, VirconWord Value );
+void WriteGPURegionMaxX     ( V32GPU& GPU, VirconWord Value );
+void WriteGPURegionMaxY     ( V32GPU& GPU, VirconWord Value );
+void WriteGPURegionHotspotX ( V32GPU& GPU, VirconWord Value );
+void WriteGPURegionHotspotY ( V32GPU& GPU, VirconWord Value );
 
 
 // *****************************************************************************

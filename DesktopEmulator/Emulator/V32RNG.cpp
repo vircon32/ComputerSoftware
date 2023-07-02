@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include project headers
-    #include "VirconRNG.hpp"
+    #include "V32RNG.hpp"
     
     // include C/C++ headers
     #include <stdlib.h>     // [ ANSI C ] Standard library
@@ -11,11 +11,11 @@
 
 
 // =============================================================================
-//      CLASS: VIRCON RNG
+//      CLASS: V32 RNG
 // =============================================================================
 
 
-VirconRNG::VirconRNG()
+V32RNG::V32RNG()
 {
     // do not use a seed value of 0!
     CurrentValue = 1;
@@ -23,7 +23,7 @@ VirconRNG::VirconRNG()
 
 // -----------------------------------------------------------------------------
 
-bool VirconRNG::ReadPort( int32_t LocalPort, VirconWord& Result )
+bool V32RNG::ReadPort( int32_t LocalPort, VirconWord& Result )
 {
     // check range
     if( LocalPort != (int32_t)RNG_LocalPorts::CurrentValue )
@@ -44,7 +44,7 @@ bool VirconRNG::ReadPort( int32_t LocalPort, VirconWord& Result )
 
 // -----------------------------------------------------------------------------
 
-bool VirconRNG::WritePort( int32_t LocalPort, VirconWord Value )
+bool V32RNG::WritePort( int32_t LocalPort, VirconWord Value )
 {
     if( LocalPort != (int32_t)RNG_LocalPorts::CurrentValue )
       return false;
@@ -68,7 +68,7 @@ bool VirconRNG::WritePort( int32_t LocalPort, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void VirconRNG::Reset()
+void V32RNG::Reset()
 {
     // initialize seed
     // do not use a seed value of 0!

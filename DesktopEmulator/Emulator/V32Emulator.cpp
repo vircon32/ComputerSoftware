@@ -4,12 +4,13 @@
     #include "../../VirconDefinitions/VirconROMFormat.hpp"
     
     // include infrastructure headers
+    #include "../DesktopInfrastructure/NumericFunctions.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
     #include "../DesktopInfrastructure/LogStream.hpp"
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     
     // include project headers
-    #include "VirconEmulator.hpp"
+    #include "V32Emulator.hpp"
     #include "Globals.hpp"
     #include "GUI.hpp"
     #include "Settings.hpp"
@@ -20,11 +21,11 @@
 
 
 // =============================================================================
-//      VIRCON EMULATOR: INSTANCE HANDLING
+//      V32 EMULATOR: INSTANCE HANDLING
 // =============================================================================
 
 
-VirconEmulator::VirconEmulator()
+V32Emulator::V32Emulator()
 {
     // connect memory bus master
     CPU.MemoryBus = &MemoryBus;
@@ -66,18 +67,18 @@ VirconEmulator::VirconEmulator()
 
 // -----------------------------------------------------------------------------
 
-VirconEmulator::~VirconEmulator()
+V32Emulator::~V32Emulator()
 {
     // (do nothing, for now)
 }
 
        
 // =============================================================================
-//      VIRCON EMULATOR: BIOS MANAGEMENT
+//      V32 EMULATOR: BIOS MANAGEMENT
 // =============================================================================
 
 
-void VirconEmulator::LoadBios( const std::string& FilePath )
+void V32Emulator::LoadBios( const std::string& FilePath )
 {
     // open bios file
     LOG_SCOPE( "Loading bios" );
@@ -249,11 +250,11 @@ void VirconEmulator::LoadBios( const std::string& FilePath )
 
 
 // =============================================================================
-//      VIRCON EMULATOR: CARTRIDGE MANAGEMENT
+//      V32 EMULATOR: CARTRIDGE MANAGEMENT
 // =============================================================================
 
 
-void VirconEmulator::LoadCartridge( const std::string& FilePath )
+void V32Emulator::LoadCartridge( const std::string& FilePath )
 {
     LOG_SCOPE( "Loading cartridge" );
     LOG( "File path: \"" << FilePath << "\"" );
@@ -493,7 +494,7 @@ void VirconEmulator::LoadCartridge( const std::string& FilePath )
 
 // -----------------------------------------------------------------------------
 
-void VirconEmulator::UnloadCartridge()
+void V32Emulator::UnloadCartridge()
 {
     // do nothing if a cartridge is not loaded
     if( !HasCartridge() ) return;
@@ -521,11 +522,11 @@ void VirconEmulator::UnloadCartridge()
 
 
 // =============================================================================
-//      VIRCON EMULATOR: MEMORY CARD MANAGEMENT
+//      V32 EMULATOR: MEMORY CARD MANAGEMENT
 // =============================================================================
 
 
-void VirconEmulator::CreateMemoryCard( const std::string& FilePath )
+void V32Emulator::CreateMemoryCard( const std::string& FilePath )
 {
     LOG_SCOPE( "Creating memory card" );
     LOG( "File path: \"" << FilePath << "\"" );
@@ -535,7 +536,7 @@ void VirconEmulator::CreateMemoryCard( const std::string& FilePath )
 
 // -----------------------------------------------------------------------------
 
-void VirconEmulator::LoadMemoryCard( const std::string& FilePath )
+void V32Emulator::LoadMemoryCard( const std::string& FilePath )
 {
     LOG_SCOPE( "Loading memory card" );
     LOG( "File path: \"" << FilePath << "\"" );
@@ -552,7 +553,7 @@ void VirconEmulator::LoadMemoryCard( const std::string& FilePath )
 
 // -----------------------------------------------------------------------------
 
-void VirconEmulator::UnloadMemoryCard()
+void V32Emulator::UnloadMemoryCard()
 {
     // do nothing if a card is not loaded
     if( !HasMemoryCard() ) return;
@@ -563,11 +564,11 @@ void VirconEmulator::UnloadMemoryCard()
 
 
 // =============================================================================
-//      VIRCON EMULATOR: GENERAL OPERATION
+//      V32 EMULATOR: GENERAL OPERATION
 // =============================================================================
 
 
-void VirconEmulator::Initialize()
+void V32Emulator::Initialize()
 {
     // initialize audio playback
     SPU.InitializeAudio();
@@ -575,7 +576,7 @@ void VirconEmulator::Initialize()
 
 // -----------------------------------------------------------------------------
 
-void VirconEmulator::Terminate()
+void V32Emulator::Terminate()
 {
     // terminate audio playback
     SPU.TerminateAudio();
@@ -586,7 +587,7 @@ void VirconEmulator::Terminate()
 
 // -----------------------------------------------------------------------------
 
-void VirconEmulator::RunNextFrame()
+void V32Emulator::RunNextFrame()
 {
     // do nothing when not applicable
     if( !PowerIsOn || Paused )
@@ -629,7 +630,7 @@ void VirconEmulator::RunNextFrame()
 
 // -----------------------------------------------------------------------------
 
-void VirconEmulator::Reset()
+void V32Emulator::Reset()
 {
     LOG( "Emulator reset" );
     
@@ -651,7 +652,7 @@ void VirconEmulator::Reset()
 
 // -----------------------------------------------------------------------------
 
-void VirconEmulator::PowerOn()
+void V32Emulator::PowerOn()
 {
     LOG( "Emulator power ON" );
     
@@ -665,7 +666,7 @@ void VirconEmulator::PowerOn()
 
 // -----------------------------------------------------------------------------
 
-void VirconEmulator::PowerOff()
+void V32Emulator::PowerOff()
 {
     LOG( "Emulator power OFF" );
     
@@ -679,7 +680,7 @@ void VirconEmulator::PowerOff()
 
 // -----------------------------------------------------------------------------
 
-void VirconEmulator::Pause()
+void V32Emulator::Pause()
 {
     // do nothing when not applicable
     if( !PowerIsOn || Paused ) return;
@@ -693,7 +694,7 @@ void VirconEmulator::Pause()
 
 // -----------------------------------------------------------------------------
 
-void VirconEmulator::Resume()
+void V32Emulator::Resume()
 {
     // do nothing when not applicable
     if( !PowerIsOn || !Paused ) return;
@@ -707,36 +708,36 @@ void VirconEmulator::Resume()
 
 
 // =============================================================================
-//      VIRCON EMULATOR: EXTERNAL QUERIES
+//      V32 EMULATOR: EXTERNAL QUERIES
 // =============================================================================
 
 
-bool VirconEmulator::HasCartridge()
+bool V32Emulator::HasCartridge()
 {
     return (CartridgeController.MemorySize != 0);
 }
 
 // -----------------------------------------------------------------------------
 
-bool VirconEmulator::HasMemoryCard()
+bool V32Emulator::HasMemoryCard()
 {
     return (MemoryCardController.MemorySize != 0);
 }
 
 // -----------------------------------------------------------------------------
 
-bool VirconEmulator::HasGamepad( int Number )
+bool V32Emulator::HasGamepad( int Number )
 {
     return GamepadController.IsGamepadConnected( Number );
 }
 
 
 // =============================================================================
-//      EXTERNAL VOLUME CONTROL
+//      V32 EMULATOR: EXTERNAL VOLUME CONTROL
 // =============================================================================
 
 
-float VirconEmulator::GetOutputVolume()
+float V32Emulator::GetOutputVolume()
 {
     float SPUVolume = SPU.OutputVolume;
     
@@ -751,7 +752,7 @@ float VirconEmulator::GetOutputVolume()
 
 // -----------------------------------------------------------------------------
 
-void VirconEmulator::SetOutputVolume( float Volume )
+void V32Emulator::SetOutputVolume( float Volume )
 {
     // within SPU output volume works linearly
     // (it is just a gain level) but here we
@@ -766,25 +767,25 @@ void VirconEmulator::SetOutputVolume( float Volume )
 
 // -----------------------------------------------------------------------------
 
-bool VirconEmulator::IsMuted()
+bool V32Emulator::IsMuted()
 {
     return SPU.Mute;
 }
 
 // -----------------------------------------------------------------------------
 
-void VirconEmulator::SetMute( bool Mute )
+void V32Emulator::SetMute( bool Mute )
 {
     SPU.SetMute( Mute );
 }
 
 
 // =============================================================================
-//      VIRCON EMULATOR: I/O FUNCTIONS
+//      V32 EMULATOR: I/O FUNCTIONS
 // =============================================================================
 
 
-void VirconEmulator::ProcessEvent( SDL_Event Event )
+void V32Emulator::ProcessEvent( SDL_Event Event )
 {
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // JOYSTICK CONNECTION EVENTS

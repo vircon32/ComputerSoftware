@@ -3,11 +3,8 @@
     #include "../../VirconDefinitions/VirconDefinitions.hpp"
     #include "../../VirconDefinitions/VirconEnumerations.hpp"    // (for debug only)
     
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/Definitions.hpp"
-    
     // include project headers
-    #include "VirconCPU.hpp"
+    #include "V32CPU.hpp"
     
     // include C/C++ headers
     #include <cstring>          // [ ANSI C ] Strings
@@ -22,7 +19,7 @@
 // =============================================================================
 
 
-typedef void (*InstructionProcessor)( VirconCPU&, CPUInstruction );
+typedef void (*InstructionProcessor)( V32CPU&, CPUInstruction );
 
 // -----------------------------------------------------------------------------
 
@@ -112,11 +109,11 @@ const InstructionProcessor MOVProcessorTable[] =
 
 
 // =============================================================================
-//      CLASS: VIRCON CPU
+//      CLASS: V32 CPU
 // =============================================================================
 
 
-VirconCPU::VirconCPU()
+V32CPU::V32CPU()
 {
     MemoryBus = nullptr;
     ControlBus = nullptr;
@@ -124,7 +121,7 @@ VirconCPU::VirconCPU()
 
 // -----------------------------------------------------------------------------
 
-void VirconCPU::Reset()
+void V32CPU::Reset()
 {
     // clear general purpose registers
     memset( &Registers[ 0 ], 0, 16 * sizeof(VirconWord) );
@@ -147,14 +144,14 @@ void VirconCPU::Reset()
 
 // -----------------------------------------------------------------------------
 
-void VirconCPU::ChangeFrame()
+void V32CPU::ChangeFrame()
 {
     Waiting = false;
 }
 
 // -----------------------------------------------------------------------------
 
-void VirconCPU::RunNextCycle()
+void V32CPU::RunNextCycle()
 {
     // do nothing when stopped for some reason
     if( Halted || Waiting ) return;
@@ -180,7 +177,7 @@ void VirconCPU::RunNextCycle()
 
 // -----------------------------------------------------------------------------
 
-void VirconCPU::RaiseHardwareError( CPUErrorCodes Code )
+void V32CPU::RaiseHardwareError( CPUErrorCodes Code )
 {
     // use registers to pass values
     // (don't use stack, since it may fail)

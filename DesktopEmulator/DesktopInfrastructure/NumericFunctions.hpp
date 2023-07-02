@@ -1,7 +1,7 @@
 // *****************************************************************************
     // start include guard
-    #ifndef DEFINITIONS_HPP
-    #define DEFINITIONS_HPP
+    #ifndef NUMERICFUNCTIONS_HPP
+    #define NUMERICFUNCTIONS_HPP
 // *****************************************************************************
 
 

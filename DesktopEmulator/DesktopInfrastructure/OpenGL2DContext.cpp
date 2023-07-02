@@ -4,6 +4,7 @@
     
     // include project headers
     #include "OpenGL2DContext.hpp"
+    #include "NumericFunctions.hpp"
     #include "LogStream.hpp"
     
     // declare used namespaces

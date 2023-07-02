@@ -3,9 +3,6 @@
     #ifndef LOGSTREAM_HPP
     #define LOGSTREAM_HPP
     
-    // include project headers
-    #include "Definitions.hpp"
-    
     // include C/C++ headers
     #include <string>		      // [ C++ STL ] Strings
     #include <fstream>            // [ C++ STL ] File Streams

@@ -1,58 +1,63 @@
 // *****************************************************************************
     // start include guard
-    #ifndef VIRCONTIMER_HPP
-    #define VIRCONTIMER_HPP
+    #ifndef V32CARTRIDGECONTROLLER_HPP
+    #define V32CARTRIDGECONTROLLER_HPP
     
     // include project headers
-    #include "VirconBuses.hpp"
+    #include "V32Buses.hpp"
+    #include "V32Memory.hpp"
+    
+    // include C/C++ headers
+    #include <string>           // [ C++ STL ] Strings
 // *****************************************************************************
 
 
 // =============================================================================
-//      TIMER DEFINITIONS
+//      CARTRIDGE CONTROLLER DEFINITIONS
 // =============================================================================
 
 
-// local port numbers
-enum class CLK_LocalPorts: int32_t
+// LOCAL port numbers!
+// (to be added the initial address)
+enum class CAR_LocalPorts: int32_t
 {
-    CurrentDate = 0,
-    CurrentTime,
-    FrameCounter,
-    CycleCounter
+    Connected = 0,
+    ProgramROMSize,
+    NumberOfTextures,
+    NumberOfSounds
 };
 
 // used as limit of local port numbers
-const int32_t CLK_LastPort = (int32_t)CLK_LocalPorts::CycleCounter;
+const int32_t CAR_LastPort = (int32_t)CAR_LocalPorts::NumberOfSounds;
 
 
 // =============================================================================
-//      VIRCON TIME MANAGER
+//      CARTRIDGE CONTROLLER CLASS
 // =============================================================================
 
 
-class VirconTimer: public VirconControlInterface
+class V32CartridgeController: public VirconControlInterface, public V32ROM
 {
     public:
         
-        int32_t CurrentDate;
-        int32_t CurrentTime;
-        int32_t FrameCounter;
-        int32_t CycleCounter;
+        // state of ports
+        int32_t NumberOfTextures;
+        int32_t NumberOfSounds;
+        
+        // additional data about the connected cartridge
+        std::string CartridgeFileName;
+        std::string CartridgeTitle;
+        uint32_t CartridgeVersion;
+        uint32_t CartridgeRevision;
         
     public:
         
         // instance handling
-        VirconTimer();
+        V32CartridgeController();
         
         // connection to control bus
         virtual bool ReadPort( int32_t LocalPort, VirconWord& Result );
         virtual bool WritePort( int32_t LocalPort, VirconWord Value );
-        
-        // general operation
-        void RunNextCycle();
-        void ChangeFrame();
-        void Reset();
 };
 
 

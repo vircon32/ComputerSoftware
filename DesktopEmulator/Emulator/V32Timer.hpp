@@ -1,46 +1,57 @@
 // *****************************************************************************
     // start include guard
-    #ifndef VIRCONRNG_HPP
-    #define VIRCONRNG_HPP
+    #ifndef V32TIMER_HPP
+    #define V32TIMER_HPP
     
     // include project headers
-    #include "VirconBuses.hpp"
+    #include "V32Buses.hpp"
 // *****************************************************************************
 
 
 // =============================================================================
-//      RNG DEFINITIONS
+//      TIMER DEFINITIONS
 // =============================================================================
 
 
 // local port numbers
-enum class RNG_LocalPorts: int32_t
+enum class CLK_LocalPorts: int32_t
 {
-    CurrentValue = 0
+    CurrentDate = 0,
+    CurrentTime,
+    FrameCounter,
+    CycleCounter
 };
 
+// used as limit of local port numbers
+const int32_t CLK_LastPort = (int32_t)CLK_LocalPorts::CycleCounter;
+
 
 // =============================================================================
-//      VIRCON RANDOM NUMBER GENERATOR
+//      V32 TIME MANAGER
 // =============================================================================
 
 
-class VirconRNG: public VirconControlInterface
+class V32Timer: public VirconControlInterface
 {
     public:
         
-        int32_t CurrentValue;
+        int32_t CurrentDate;
+        int32_t CurrentTime;
+        int32_t FrameCounter;
+        int32_t CycleCounter;
         
     public:
         
         // instance handling
-        VirconRNG();
+        V32Timer();
         
         // connection to control bus
         virtual bool ReadPort( int32_t LocalPort, VirconWord& Result );
         virtual bool WritePort( int32_t LocalPort, VirconWord Value );
         
         // general operation
+        void RunNextCycle();
+        void ChangeFrame();
         void Reset();
 };
 

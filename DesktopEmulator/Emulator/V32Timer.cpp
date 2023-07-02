@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include project headers
-    #include "VirconTimer.hpp"
+    #include "V32Timer.hpp"
     
     // include C/C++ headers
     #include <time.h>           // [ ANSI C ] Date and time
@@ -11,11 +11,11 @@
 
 
 // =============================================================================
-//      CLASS: VIRCON TIMER
+//      CLASS: V32 TIMER
 // =============================================================================
 
 
-VirconTimer::VirconTimer()
+V32Timer::V32Timer()
 {
     // obtain current time
     time_t CreationTime;
@@ -34,7 +34,7 @@ VirconTimer::VirconTimer()
 
 // -----------------------------------------------------------------------------
 
-bool VirconTimer::ReadPort( int32_t LocalPort, VirconWord& Result )
+bool V32Timer::ReadPort( int32_t LocalPort, VirconWord& Result )
 {
     // check range
     if( LocalPort > CLK_LastPort )
@@ -59,7 +59,7 @@ bool VirconTimer::ReadPort( int32_t LocalPort, VirconWord& Result )
 
 // -----------------------------------------------------------------------------
 
-bool VirconTimer::WritePort( int32_t LocalPort, VirconWord Value )
+bool V32Timer::WritePort( int32_t LocalPort, VirconWord Value )
 {
     // ignore write request (all these registers are read-only)
     return false;
@@ -67,14 +67,14 @@ bool VirconTimer::WritePort( int32_t LocalPort, VirconWord Value )
 
 // -----------------------------------------------------------------------------
 
-void VirconTimer::RunNextCycle()
+void V32Timer::RunNextCycle()
 {
     CycleCounter++;
 }
 
 // -----------------------------------------------------------------------------
 
-void VirconTimer::ChangeFrame()
+void V32Timer::ChangeFrame()
 {
     CycleCounter = 0;
     FrameCounter++;
@@ -103,7 +103,7 @@ void VirconTimer::ChangeFrame()
 
 // -----------------------------------------------------------------------------
 
-void VirconTimer::Reset()
+void V32Timer::Reset()
 {
     CycleCounter = 0;
     FrameCounter = 0;

@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include project headers
-    #include "VirconCartridgeController.hpp"
+    #include "V32CartridgeController.hpp"
     
     // include C/C++ headers
     #include <iostream>         // [ C++ STL ] I/O Streams
@@ -13,11 +13,11 @@
 
 
 // =============================================================================
-//      CLASS: VIRCON CARTRIDGE CONTROLLER
+//      CLASS: V32 CARTRIDGE CONTROLLER
 // =============================================================================
 
 
-VirconCartridgeController::VirconCartridgeController()
+V32CartridgeController::V32CartridgeController()
 {
     // initial state of ports
     NumberOfTextures = 0;
@@ -31,7 +31,7 @@ VirconCartridgeController::VirconCartridgeController()
 
 // -----------------------------------------------------------------------------
 
-bool VirconCartridgeController::ReadPort( int32_t LocalPort, VirconWord& Result )
+bool V32CartridgeController::ReadPort( int32_t LocalPort, VirconWord& Result )
 {
     // check range
     if( LocalPort > CAR_LastPort )
@@ -55,7 +55,7 @@ bool VirconCartridgeController::ReadPort( int32_t LocalPort, VirconWord& Result 
 
 // -----------------------------------------------------------------------------
 
-bool VirconCartridgeController::WritePort( int32_t LocalPort, VirconWord Value )
+bool V32CartridgeController::WritePort( int32_t LocalPort, VirconWord Value )
 {
     // all these registers are read-only, so just ignore the request
     return false;

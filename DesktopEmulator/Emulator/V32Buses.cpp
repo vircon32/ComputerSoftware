@@ -1,7 +1,7 @@
 // *****************************************************************************
     // include project headers
-    #include "VirconBuses.hpp"
-    #include "VirconCPU.hpp"
+    #include "V32Buses.hpp"
+    #include "V32CPU.hpp"
     
     // declare used namespaces
     using namespace std;
@@ -9,11 +9,11 @@
 
 
 // =============================================================================
-//      CLASS: VIRCON MEMORY BUS
+//      CLASS: V32 MEMORY BUS
 // =============================================================================
 
 
-VirconMemoryBus::VirconMemoryBus()
+V32MemoryBus::V32MemoryBus()
 {
     Master = nullptr;
     
@@ -23,7 +23,7 @@ VirconMemoryBus::VirconMemoryBus()
 
 // -----------------------------------------------------------------------------
 
-bool VirconMemoryBus::ReadAddress( int32_t GlobalAddress, VirconWord& Result )
+bool V32MemoryBus::ReadAddress( int32_t GlobalAddress, VirconWord& Result )
 {
     // separate device ID and local address
     int32_t DeviceID = (GlobalAddress >> 28) & 3;
@@ -41,7 +41,7 @@ bool VirconMemoryBus::ReadAddress( int32_t GlobalAddress, VirconWord& Result )
 
 // -----------------------------------------------------------------------------
 
-bool VirconMemoryBus::WriteAddress( int32_t GlobalAddress, VirconWord Value )
+bool V32MemoryBus::WriteAddress( int32_t GlobalAddress, VirconWord Value )
 {
     // separate device ID and local address
     int32_t DeviceID = (GlobalAddress >> 28) & 3;
@@ -59,11 +59,11 @@ bool VirconMemoryBus::WriteAddress( int32_t GlobalAddress, VirconWord Value )
 
 
 // =============================================================================
-//      CLASS: VIRCON CONTROL BUS
+//      CLASS: V32 CONTROL BUS
 // =============================================================================
 
 
-VirconControlBus::VirconControlBus()
+V32ControlBus::V32ControlBus()
 {
     Master = nullptr;
     
@@ -73,7 +73,7 @@ VirconControlBus::VirconControlBus()
 
 // -----------------------------------------------------------------------------
 
-void VirconControlBus::ReadPort( int32_t GlobalPort, VirconWord& Result )
+void V32ControlBus::ReadPort( int32_t GlobalPort, VirconWord& Result )
 {
     // separate device ID and local address
     int32_t DeviceID = (GlobalPort >> 8) & 7;
@@ -89,7 +89,7 @@ void VirconControlBus::ReadPort( int32_t GlobalPort, VirconWord& Result )
 
 // -----------------------------------------------------------------------------
 
-void VirconControlBus::WritePort( int32_t GlobalPort, VirconWord Value )
+void V32ControlBus::WritePort( int32_t GlobalPort, VirconWord Value )
 {
     // separate device ID and local address
     int32_t DeviceID = (GlobalPort >> 8) & 7;

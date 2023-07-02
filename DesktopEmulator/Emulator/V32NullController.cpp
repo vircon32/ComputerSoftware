@@ -1,15 +1,15 @@
 // *****************************************************************************
     // include project headers
-    #include "VirconNullController.hpp"
+    #include "V32NullController.hpp"
 // *****************************************************************************
 
 
 // =============================================================================
-//      CLASS: VIRCON NULL CONTROLLER
+//      CLASS: V32 NULL CONTROLLER
 // =============================================================================
 
 
-bool VirconNullController::ReadPort( int32_t LocalPort, VirconWord& Result )
+bool V32NullController::ReadPort( int32_t LocalPort, VirconWord& Result )
 {
     // ports can never be read from
     return false;
@@ -17,7 +17,7 @@ bool VirconNullController::ReadPort( int32_t LocalPort, VirconWord& Result )
 
 // -----------------------------------------------------------------------------
 
-bool VirconNullController::WritePort( int32_t LocalPort, VirconWord Value )
+bool V32NullController::WritePort( int32_t LocalPort, VirconWord Value )
 {
     // ports can never be written to
     return false;

@@ -1,13 +1,10 @@
 // *****************************************************************************
     // start include guard
-    #ifndef VIRCONGAMEPADCONTROLLER_HPP
-    #define VIRCONGAMEPADCONTROLLER_HPP
-    
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/Definitions.hpp"
+    #ifndef V32GAMEPADCONTROLLER_HPP
+    #define V32GAMEPADCONTROLLER_HPP
     
     // include project headers
-    #include "VirconBuses.hpp"
+    #include "V32Buses.hpp"
 // *****************************************************************************
 
 
@@ -84,7 +81,7 @@ enum class GamepadDirections
 // =============================================================================
 
 
-class VirconGamepadController: public VirconControlInterface
+class V32GamepadController: public VirconControlInterface
 {
     public:
         
@@ -101,7 +98,7 @@ class VirconGamepadController: public VirconControlInterface
     public:
         
         // instance handling
-        VirconGamepadController();
+        V32GamepadController();
         
         // connection to control bus
         virtual bool ReadPort( int32_t LocalPort, VirconWord& Result );
