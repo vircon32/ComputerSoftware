@@ -12,17 +12,24 @@
 // *****************************************************************************
 
 
-// enforce the definition of host system's endianness
-// (otherwise, correctness of binary ABI cannot be guaranteed)
-#ifndef __BYTE_ORDER__
-#error "Endianness is not defined"
-#endif
+// We need to enforce host systems to have a defined endianness
+// (otherwise, correctness of binary ABI cannot be guaranteed).
+// Vircon32 is little endian, both in its internal data and in
+// its external ROM/card file formats. For now we will demand
+// hosts to be little endian.
+#if defined(__BYTE_ORDER__)
 
-// Vircon32 is little endian, both in its internal
-// data and in its external ROM/save file formats.
-// For now we will demand host to be little endian.
-#if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
-#error "Current Vircon tools only exist for little endian systems"
+  #if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
+  #error "Current Vircon32 tools only exist for little endian systems"
+  #endif
+
+#elif defined(__BIG_ENDIAN__)
+  #error "Current Vircon32 tools only exist for little endian systems"
+
+// we will assume all current Windows systems to be little endian
+#elif !defined(WIN32) && !defined(WIN64) && !defined(__LITTLE_ENDIAN__)
+  #error "Endianness is not defined"
+
 #endif
 
 
@@ -152,6 +159,18 @@ namespace V32
         }
         Header;
     }
+    
+    
+    // =============================================================================
+    //      COMPILE-TIME CHECKS FOR HEADER SIZES
+    // =============================================================================
+    
+    
+    static_assert( sizeof(BinaryFileFormat::Header) == 12, "Wrong size for binary file header" );
+    static_assert( sizeof(TextureFileFormat::Header)  == 16, "Wrong size for texture file header" );
+    static_assert( sizeof(SoundFileFormat::Header) == 12, "Wrong size for sound file header" );
+    static_assert( sizeof(ROMFileFormat::Header) == 128, "Wrong size for ROM file header" );
+    static_assert( sizeof(MemoryCardFileFormat::Header) == 8, "Wrong size for memory card file header" );
 }
 
 
