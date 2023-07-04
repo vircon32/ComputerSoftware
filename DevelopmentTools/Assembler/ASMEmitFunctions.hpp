@@ -3,9 +3,6 @@
     #ifndef ASMEMITFUNCTIONS_HPP
     #define ASMEMITFUNCTIONS_HPP
     
-    // include common Vircon headers
-    #include "../../VirconDefinitions/VirconEnumerations.hpp"
-    
     // use forward declarations to avoid dependencies
     class VirconASMEmitter;
     class InstructionNode;

@@ -1,4 +1,7 @@
 // *****************************************************************************
+    // include infrastructure headers
+    #include "../DevToolsInfrastructure/EnumStringConversions.hpp"
+    
     // include project headers
     #include "ASTNodes.hpp"
     

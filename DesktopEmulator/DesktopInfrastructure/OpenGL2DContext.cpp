@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include common Vircon headers
-    #include "../../VirconDefinitions/VirconDefinitions.hpp"
+    #include "../../VirconDefinitions/Constants.hpp"
     
     // include project headers
     #include "OpenGL2DContext.hpp"
@@ -9,6 +9,7 @@
     
     // declare used namespaces
     using namespace std;
+    using namespace V32;
 // *****************************************************************************
 
 

@@ -1,7 +1,7 @@
 // *****************************************************************************
     // include vircon common headers
-    #include "../../VirconDefinitions/VirconDefinitions.hpp"
-    #include "../../VirconDefinitions/VirconEnumerations.hpp"
+    #include "../../VirconDefinitions/Constants.hpp"
+    #include "../../VirconDefinitions/Enumerations.hpp"
     
     // include infrastructure headers
     #include "../DevToolsInfrastructure/FilePaths.hpp"

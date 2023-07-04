@@ -4,7 +4,7 @@
     #define VIRCONASMEMITTER_HPP
     
     // include common Vircon headers
-    #include "../../VirconDefinitions/VirconDataStructures.hpp"
+    #include "../../VirconDefinitions/DataStructures.hpp"
     
     // include project headers
     #include "ASTNodes.hpp"
@@ -29,7 +29,7 @@ class VirconASMEmitter
     public:
         
         // results
-        std::vector< VirconWord > ROM;
+        std::vector< V32::VirconWord > ROM;
         std::map< std::string, int32_t > LabelAddresses;
         
     public:
@@ -43,8 +43,8 @@ class VirconASMEmitter
         int32_t GetLabelAddress( ASTNode& ReferringNode, std::string LabelName );
         void ReadDataFile( DataFileNode& Node );
         
-        int32_t    GetValueAsAddress  ( InstructionNode& Node, BasicValue& Value );
-        VirconWord GetValueAsImmediate( InstructionNode& Node, BasicValue& Value );
+        int32_t         GetValueAsAddress  ( InstructionNode& Node, BasicValue& Value );
+        V32::VirconWord GetValueAsImmediate( InstructionNode& Node, BasicValue& Value );
         
         // emit function for an instruction node
         void EmitInstructionFromNode( InstructionNode& Node );

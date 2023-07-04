@@ -4,8 +4,8 @@
     #define OPENGL2DCONTEXT_HPP
     
     // include common Vircon headers
-    #include "../../VirconDefinitions/VirconDataStructures.hpp"
-    #include "../../VirconDefinitions/VirconEnumerations.hpp"
+    #include "../../VirconDefinitions/DataStructures.hpp"
+    #include "../../VirconDefinitions/Enumerations.hpp"
     
     // include project headers
     #include "Matrix4D.hpp"
@@ -71,7 +71,7 @@ class OpenGL2DContext
         Matrix4D TransformMatrix;
         
         // multiply color
-        GPUColor MultiplyColor;
+        V32::GPUColor MultiplyColor;
         
         // white texture used to draw solid colors
         GLuint WhiteTextureID;
@@ -102,8 +102,8 @@ class OpenGL2DContext
         void DrawFramebufferOnScreen();
         
         // color functions
-        void SetMultiplyColor( GPUColor NewMultiplyColor );
-        void SetBlendingMode( IOPortValues BlendingMode );
+        void SetMultiplyColor( V32::GPUColor NewMultiplyColor );
+        void SetBlendingMode( V32::IOPortValues BlendingMode );
         
         // 2D transform functions
         void SetTranslation( int TranslationX, int TranslationY );
@@ -115,7 +115,7 @@ class OpenGL2DContext
         void SetQuadVertexPosition( int Vertex, int x, int y );
         void SetQuadVertexTexCoords( int Vertex, float u, float v );
         void DrawTexturedQuad();
-        void ClearScreen( GPUColor ClearColor );
+        void ClearScreen( V32::GPUColor ClearColor );
 };
 
 

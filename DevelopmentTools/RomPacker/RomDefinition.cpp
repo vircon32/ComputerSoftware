@@ -1,11 +1,12 @@
 // *****************************************************************************
     // include common Vircon headers
-    #include "../../VirconDefinitions/VirconDefinitions.hpp"
-    #include "../../VirconDefinitions/VirconROMFormat.hpp"
+    #include "../../VirconDefinitions/Constants.hpp"
+    #include "../../VirconDefinitions/FileFormats.hpp"
     
     // include infrastructure headers
     #include "../DevToolsInfrastructure/Definitions.hpp"
     #include "../DevToolsInfrastructure/FilePaths.hpp"
+    #include "../DevToolsInfrastructure/FileSignatures.hpp"
     #include "../DevToolsInfrastructure/StringFunctions.hpp"
     
     // include project headers
@@ -21,6 +22,7 @@
     
     // declare used namespaces
     using namespace std;
+    using namespace V32;
     using namespace tinyxml2;
 // *****************************************************************************
 

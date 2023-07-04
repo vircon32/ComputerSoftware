@@ -4,8 +4,8 @@
     #define ASTNODES_HPP
     
     // include common Vircon headers
-    #include "../../VirconDefinitions/VirconEnumerations.hpp"
-    #include "../../VirconDefinitions/VirconDataStructures.hpp"
+    #include "../../VirconDefinitions/Enumerations.hpp"
+    #include "../../VirconDefinitions/DataStructures.hpp"
     
     // include infrastructure headers
     #include "../DevToolsInfrastructure/Definitions.hpp"
@@ -88,12 +88,12 @@ class BasicValue
         
         BasicValueTypes Type;
         
-        int32_t        IntegerField;
-        float          FloatField;
-        CPURegisters   RegisterField;
-        IOPorts        PortField;
-        IOPortValues   PortValueField;
-        std::string    LabelField;
+        int32_t             IntegerField;
+        float               FloatField;
+        V32::CPURegisters   RegisterField;
+        V32::IOPorts        PortField;
+        V32::IOPortValues   PortValueField;
+        std::string         LabelField;
     
     public:
         
@@ -132,7 +132,7 @@ class InstructionNode: public ASTNode
 {
     public:
         
-        InstructionOpCodes OpCode;
+        V32::InstructionOpCodes OpCode;
         std::vector< InstructionOperand > Operands;
         
     public:
@@ -224,7 +224,7 @@ class DataFileNode: public ASTNode
         std::string FilePath;
         
         // needed for ROM address allocation
-        std::vector< VirconWord > FileContents;
+        std::vector< V32::VirconWord > FileContents;
         
     public:
         

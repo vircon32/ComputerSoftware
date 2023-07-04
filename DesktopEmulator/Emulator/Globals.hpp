@@ -12,7 +12,7 @@
     #include <list>         // [ C++ STL ] Lists
     
     // forward declarations for all needed classes
-    class V32Emulator;
+    namespace V32{ class V32Emulator; }
 // *****************************************************************************
 
 
@@ -53,7 +53,7 @@ extern std::string FragmentShader;
 extern Texture NoSignalTexture;
 
 // instance of the Vircon virtual machine
-extern V32Emulator Vircon;
+extern V32::V32Emulator Vircon;
 
 
 // =============================================================================

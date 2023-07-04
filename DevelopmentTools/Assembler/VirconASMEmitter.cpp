@@ -4,12 +4,16 @@
     #include "ASMEmitFunctions.hpp"
     #include "Globals.hpp"
     
+    // include infrastructure headers
+    #include "../DevToolsInfrastructure/EnumStringConversions.hpp"
+    
     // include C/C++ headers
     #include <iostream>             // [ C++ STL ] I/O Streams
     #include <fstream>              // [ C++ STL ] File streams
     
     // declare used namespaces
     using namespace std;
+    using namespace V32;
 // *****************************************************************************
 
 

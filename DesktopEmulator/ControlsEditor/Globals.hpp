@@ -3,9 +3,6 @@
     #ifndef GLOBALS_HPP
     #define GLOBALS_HPP
     
-    // include common Vircon headers
-    #include "../../VirconDefinitions/VirconDefinitions.hpp"
-    
     // include infrastructure headers
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/Texture.hpp"

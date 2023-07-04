@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include common Vircon headers
-    #include "../../VirconDefinitions/VirconDefinitions.hpp"
+    #include "../../VirconDefinitions/Constants.hpp"
     
     // include project headers
     #include "CTokens.hpp"

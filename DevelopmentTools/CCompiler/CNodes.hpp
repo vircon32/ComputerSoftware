@@ -4,7 +4,7 @@
     #define ASTNODES_HPP
     
     // include common Vircon headers
-    #include "../../VirconDefinitions/VirconDataStructures.hpp"
+    #include "../../VirconDefinitions/DataStructures.hpp"
     
     // include project headers
     #include "CTokens.hpp"

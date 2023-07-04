@@ -8,19 +8,22 @@
 // *****************************************************************************
 
 
-// =============================================================================
-//      DUMMY CONTROLLER FOR NON-EXISTENT PORTS
-// =============================================================================
-
-
-class V32NullController: public VirconControlInterface
+namespace V32
 {
-    public:
-        
-        // connection to control bus
-        virtual bool ReadPort( int32_t LocalPort, VirconWord& Result );
-        virtual bool WritePort( int32_t LocalPort, VirconWord Value );
-};
+    // =============================================================================
+    //      DUMMY CONTROLLER FOR NON-EXISTENT PORTS
+    // =============================================================================
+    
+    
+    class V32NullController: public VirconControlInterface
+    {
+        public:
+            
+            // connection to control bus
+            virtual bool ReadPort( int32_t LocalPort, VirconWord& Result );
+            virtual bool WritePort( int32_t LocalPort, VirconWord Value );
+    };
+}
 
 
 // *****************************************************************************

@@ -266,10 +266,9 @@ set(C_COMPILER_SRC
     ${C_COMPILER_DIR}/VirconCParser.cpp
     ${C_COMPILER_DIR}/VirconCPreprocessor.cpp
     ${INFRASTRUCTURE_DIR}/Definitions.cpp
+    ${INFRASTRUCTURE_DIR}/EnumStringConversions.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
-    ${INFRASTRUCTURE_DIR}/StringFunctions.cpp
-    ${DEFINITIONS_DIR}/VirconDefinitions.cpp
-    ${DEFINITIONS_DIR}/VirconEnumerations.cpp)
+    ${INFRASTRUCTURE_DIR}/StringFunctions.cpp)
 
 # Source files to compile for the assembler
 set(ASSEMBLER_SRC
@@ -282,11 +281,9 @@ set(ASSEMBLER_SRC
     ${ASSEMBLER_DIR}/VirconASMLexer.cpp
     ${ASSEMBLER_DIR}/VirconASMParser.cpp
     ${INFRASTRUCTURE_DIR}/Definitions.cpp
+    ${INFRASTRUCTURE_DIR}/EnumStringConversions.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
-    ${INFRASTRUCTURE_DIR}/StringFunctions.cpp
-    ${DEFINITIONS_DIR}/VirconDefinitions.cpp
-    ${DEFINITIONS_DIR}/VirconEnumerations.cpp
-    ${DEFINITIONS_DIR}/VirconROMFormat.cpp)
+    ${INFRASTRUCTURE_DIR}/StringFunctions.cpp)
 
 # Source files to compile for the ROM packer
 set(ROM_PACKER_SRC
@@ -294,9 +291,8 @@ set(ROM_PACKER_SRC
     ${ROM_PACKER_DIR}/RomDefinition.cpp
     ${INFRASTRUCTURE_DIR}/Definitions.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
-    ${INFRASTRUCTURE_DIR}/StringFunctions.cpp
-    ${DEFINITIONS_DIR}/VirconDefinitions.cpp
-    ${DEFINITIONS_DIR}/VirconROMFormat.cpp)
+    ${INFRASTRUCTURE_DIR}/FileSignatures.cpp
+    ${INFRASTRUCTURE_DIR}/StringFunctions.cpp)
 
 # Source files to compile for the PNG converter
 set(PNG_CONVERTER_SRC

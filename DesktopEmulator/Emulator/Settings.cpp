@@ -19,6 +19,7 @@
     
     // declare used namespaces
     using namespace std;
+    using namespace V32;
     using namespace tinyxml2;
 // *****************************************************************************
 

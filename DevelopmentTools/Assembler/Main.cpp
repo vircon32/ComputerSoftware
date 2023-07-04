@@ -1,10 +1,11 @@
 // *****************************************************************************
     // include common Vircon headers
-    #include "../../VirconDefinitions/VirconDefinitions.hpp"
-    #include "../../VirconDefinitions/VirconROMFormat.hpp"
+    #include "../../VirconDefinitions/Constants.hpp"
+    #include "../../VirconDefinitions/FileFormats.hpp"
     
     // include infrastructure headers
     #include "../DevToolsInfrastructure/FilePaths.hpp"
+    #include "../DevToolsInfrastructure/StringFunctions.hpp"
     
     // include project headers
     #include "VirconASMLexer.hpp"
@@ -18,6 +19,7 @@
     
     // declare used namespaces
     using namespace std;
+    using namespace V32;
 // *****************************************************************************
 
 

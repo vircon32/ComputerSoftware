@@ -1,14 +1,17 @@
 // *****************************************************************************
     // include project headers
-    #include "VirconEnumerations.hpp"
+    #include "EnumStringConversions.hpp"
+    #include "StringFunctions.hpp"
     
     // include C/C++ headers
+    #include <iomanip>      // [ C++ STL ] I/O Manipulation
     #include <iostream>     // [ C++ STL ] I/O Streams
     #include <map>          // [ C++ STL ] Maps
     #include <stdexcept>    // [ C++ STL ] Exceptions
     
     // declare used namespaces
     using namespace std;
+    using namespace V32;
 // *****************************************************************************
 
 

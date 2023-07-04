@@ -20,6 +20,16 @@ std::string ToUpperCase( const std::string& Text );
 std::vector<std::string> SplitString( const std::string& str, char separator );
 
 
+// =============================================================================
+//      NUMBER FORMATTING FUNCTIONS
+// =============================================================================
+
+
+// number to string conversions in non-decimal formats
+std::string Hex( uint32_t Value, int Digits );
+std::string Bin( uint32_t Value, int Digits );
+
+
 // *****************************************************************************
     // end include guard
     #endif

@@ -4,7 +4,7 @@
     #define TOKENS_HPP
     
     // include common Vircon headers
-    #include "../../VirconDefinitions/VirconEnumerations.hpp"
+    #include "../../VirconDefinitions/Enumerations.hpp"
     
     // include C/C++ headers
     #include <string>       // [ C++ STL ] Strings
@@ -150,7 +150,7 @@ class InstructionOpCodeToken: public Token
 {
     public:
         
-        InstructionOpCodes Which;
+        V32::InstructionOpCodes Which;
         
         virtual TokenTypes Type() { return TokenTypes::InstructionOpCode; }
         virtual std::string ToString();
@@ -163,7 +163,7 @@ class CPURegisterToken: public Token
 {
     public:
         
-        CPURegisters Which;
+        V32::CPURegisters Which;
         
         virtual TokenTypes Type() { return TokenTypes::CPURegister; }
         virtual std::string ToString();
@@ -176,7 +176,7 @@ class IOPortToken: public Token
 {
     public:
         
-        IOPorts Which;
+        V32::IOPorts Which;
         
         virtual TokenTypes Type() { return TokenTypes::IOPort; }
         virtual std::string ToString();
@@ -189,7 +189,7 @@ class IOPortValueToken: public Token
 {
     public:
         
-        IOPortValues Which;
+        V32::IOPortValues Which;
         
         virtual TokenTypes Type() { return TokenTypes::IOPortValue; }
         virtual std::string ToString();
@@ -342,10 +342,10 @@ LiteralIntegerToken* NewIntegerToken( int LineNumber, int32_t Value );
 LiteralFloatToken* NewFloatToken( int LineNumber, float Value );
 LiteralStringToken* NewStringToken( int LineNumber, std::string Value );
 LabelToken* NewLabelToken( int LineNumber, std::string& Name );
-InstructionOpCodeToken* NewOpCodeToken( int LineNumber, InstructionOpCodes Which );
-CPURegisterToken* NewRegisterToken( int LineNumber, CPURegisters Which );
-IOPortToken* NewPortToken( int LineNumber, IOPorts Which );
-IOPortValueToken* NewPortValueToken( int LineNumber, IOPortValues Which );
+InstructionOpCodeToken* NewOpCodeToken( int LineNumber, V32::InstructionOpCodes Which );
+CPURegisterToken* NewRegisterToken( int LineNumber, V32::CPURegisters Which );
+IOPortToken* NewPortToken( int LineNumber, V32::IOPorts Which );
+IOPortValueToken* NewPortValueToken( int LineNumber, V32::IOPortValues Which );
 VariableToken* NewVariableToken( int LineNumber, std::string& Name );
 IntegerKeywordToken* NewIntegerKeywordToken( int LineNumber );
 FloatKeywordToken* NewFloatKeywordToken( int LineNumber );

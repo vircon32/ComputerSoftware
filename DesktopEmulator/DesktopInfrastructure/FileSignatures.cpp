@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include project headers
-    #include "VirconROMFormat.hpp"
+    #include "FileSignatures.hpp"
     
     // declare used namespaces
     using namespace std;
@@ -22,7 +22,7 @@ void WriteSignature( ofstream& OutputFile, const char* Value )
 bool CheckSignature( char* Signature, const char* Expected )
 {
     for( int i = 0; i < 8; i++ )
-      if( Signature[i] != Expected[i] )
+      if( Signature[ i ] != Expected[ i ] )
         return false;
     
     return true;

@@ -20,70 +20,73 @@
 // -------------------------------------------------------------------------- */
 
 
-// =============================================================================
-//      THREAD FUNCTION FOR BACKGROUND CONTINUOUS PLAY
-// =============================================================================
-
-
-int SPUPlaybackThread( void* Parameters )
+namespace V32
 {
-    // thread exit code defaults to success
-    int ExitCode = 0;
+    // =============================================================================
+    //      THREAD FUNCTION FOR BACKGROUND CONTINUOUS PLAY
+    // =============================================================================
     
-    // (1) obtain class instance from parameters
-    if( !Parameters )
+    
+    int SPUPlaybackThread( void* Parameters )
     {
-        throw runtime_error( "Vircon SPU instance not received" );
-        return 1;
-    }
-    
-    V32SPU* SPUInstance = (V32SPU*)Parameters;
-    
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    
-    try
-    {
-        // (2) keep thread alive until the SPU stops it
-        while( !SPUInstance->ThreadExitFlag )
+        // thread exit code defaults to success
+        int ExitCode = 0;
+        
+        // (1) obtain class instance from parameters
+        if( !Parameters )
         {
-            // (2.1) if not paused, update sound buffers
-            if( !SPUInstance->ThreadPauseFlag )
-            {
-                SPUInstance->QueueFilledBuffers();
-                SPUInstance->UnqueuePlayedBuffers();
-            }
-            
-            // (2.2) when idle, sleep and re-check playback state periodically
-            SDL_Delay( 5 );
+            throw runtime_error( "Vircon SPU instance not received" );
+            return 1;
         }
-    }
-    
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    //   THREAD TERMINATION HANDLING
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    
-    catch( const exception& e )
-    {
-        // log in thread
-        cout << "[EXCEPTION]: " << e.what() << endl;
         
-        // store exception message to treat it in the main thread
-        // (necessary since exceptions do not cross threads)
-        SPUInstance->ThreadErrorMessage = e.what();
+        V32SPU* SPUInstance = (V32SPU*)Parameters;
         
-        // provide an error exit code
-        ExitCode = 1;
-    }
-    
-    catch( ... )
-    {
-        // store exception message to treat it in the main thread
-        cout << "[EXCEPTION]: Unknown exception happened" << endl;
+        // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
-        // provide an error exit code
-        ExitCode = 2;
+        try
+        {
+            // (2) keep thread alive until the SPU stops it
+            while( !SPUInstance->ThreadExitFlag )
+            {
+                // (2.1) if not paused, update sound buffers
+                if( !SPUInstance->ThreadPauseFlag )
+                {
+                    SPUInstance->QueueFilledBuffers();
+                    SPUInstance->UnqueuePlayedBuffers();
+                }
+                
+                // (2.2) when idle, sleep and re-check playback state periodically
+                SDL_Delay( 5 );
+            }
+        }
+        
+        // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        //   THREAD TERMINATION HANDLING
+        // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        
+        catch( const exception& e )
+        {
+            // log in thread
+            cout << "[EXCEPTION]: " << e.what() << endl;
+            
+            // store exception message to treat it in the main thread
+            // (necessary since exceptions do not cross threads)
+            SPUInstance->ThreadErrorMessage = e.what();
+            
+            // provide an error exit code
+            ExitCode = 1;
+        }
+        
+        catch( ... )
+        {
+            // store exception message to treat it in the main thread
+            cout << "[EXCEPTION]: Unknown exception happened" << endl;
+            
+            // provide an error exit code
+            ExitCode = 2;
+        }
+        
+        // provide exit code
+        return ExitCode;
     }
-    
-    // provide exit code
-    return ExitCode;
 }

@@ -8,6 +8,9 @@
     
     // include OpenGL headers
     #include <glad/glad.h>      // [ OpenGL ] GLAD Loader (already includes <GL/gl.h>)
+    
+    // include C/C++ headers
+    #include <string>		    // [ C++ STL ] Strings
 // *****************************************************************************
 
 

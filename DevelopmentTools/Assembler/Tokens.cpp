@@ -1,6 +1,10 @@
 // *****************************************************************************
     // include common Vircon headers
-    #include "../../VirconDefinitions/VirconDefinitions.hpp"
+    #include "../../VirconDefinitions/Constants.hpp"
+    
+    // include infrastructure headers
+    #include "../DevToolsInfrastructure/StringFunctions.hpp"
+    #include "../DevToolsInfrastructure/EnumStringConversions.hpp"
     
     // include project headers
     #include "Tokens.hpp"
@@ -13,6 +17,7 @@
     
     // declare used namespaces
     using namespace std;
+    using namespace V32;
 // *****************************************************************************
 
 

@@ -1,9 +1,12 @@
 // *****************************************************************************
     // include common Vircon headers
-    #include "../../VirconDefinitions/VirconDefinitions.hpp"
+    #include "../../VirconDefinitions/Constants.hpp"
     
     // include project headers
     #include "Globals.hpp"
+    
+    // declare used namespaces
+    using namespace V32;
 // *****************************************************************************
 
 

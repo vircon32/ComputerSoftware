@@ -4,7 +4,7 @@
     #define STATICVALUE_HPP
     
     // include common Vircon headers
-    #include "../../VirconDefinitions/VirconDataStructures.hpp"
+    #include "../../VirconDefinitions/DataStructures.hpp"
     
     // include project headers
     #include "DataTypes.hpp"
@@ -23,7 +23,7 @@ class StaticValue
 {
     public:
         
-        VirconWord Word;
+        V32::VirconWord Word;
         PrimitiveTypes Type;    // static values can only be primitives
         
     public:

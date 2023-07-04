@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include common Vircon headers
-    #include "../../VirconDefinitions/VirconEnumerations.hpp"
+    #include "../../VirconDefinitions/Enumerations.hpp"
     
     // include project headers
     #include "VirconCEmitter.hpp"
@@ -8,6 +8,7 @@
     
     // declare used namespaces
     using namespace std;
+    using namespace V32;
 // *****************************************************************************
 
 

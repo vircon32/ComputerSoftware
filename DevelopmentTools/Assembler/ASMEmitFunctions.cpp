@@ -3,8 +3,16 @@
     #include "ASMEmitFunctions.hpp"
     #include "VirconASMEmitter.hpp"
     
+    // include common Vircon headers
+    #include "../../VirconDefinitions/Enumerations.hpp"
+    #include "../../VirconDefinitions/DataStructures.hpp"
+    
+    // include infrastructure headers
+    #include "../DevToolsInfrastructure/EnumStringConversions.hpp"
+    
     // declare used namespaces
     using namespace std;
+    using namespace V32;
 // *****************************************************************************
 
 

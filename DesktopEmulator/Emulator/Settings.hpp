@@ -3,6 +3,9 @@
     #ifndef SETTINGS_HPP
     #define SETTINGS_HPP
     
+    // include common Vircon headers
+    #include "../../VirconDefinitions/Constants.hpp"
+    
     // include project headers
     #include "V32GamepadController.hpp"
     
@@ -137,7 +140,7 @@ extern KeyboardMapping KeyboardProfile;
 extern std::map< SDL_JoystickGUID, JoystickMapping* > JoystickProfiles;
 
 // maps {Vircon gamepads} --> {PC devices}
-extern DeviceInfo MappedGamepads[ Constants::MaximumGamepads ];
+extern DeviceInfo MappedGamepads[ V32::Constants::MaximumGamepads ];
 
 
 // =============================================================================

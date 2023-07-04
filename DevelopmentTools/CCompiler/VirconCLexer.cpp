@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include common Vircon headers
-    #include "../../VirconDefinitions/VirconDataStructures.hpp"
+    #include "../../VirconDefinitions/DataStructures.hpp"
     
     // include infrastructure headers
     #include "../DevToolsInfrastructure/FilePaths.hpp"
@@ -16,6 +16,7 @@
     
     // declare used namespaces
     using namespace std;
+    using namespace V32;
 // *****************************************************************************
 
 

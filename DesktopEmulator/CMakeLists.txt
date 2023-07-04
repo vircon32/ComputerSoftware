@@ -278,15 +278,13 @@ set(EMULATOR_SRC
     ${EMULATOR_DIR}/V32SPUWriters.cpp
     ${EMULATOR_DIR}/V32Timer.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
+    ${INFRASTRUCTURE_DIR}/FileSignatures.cpp
     ${INFRASTRUCTURE_DIR}/LogStream.cpp
     ${INFRASTRUCTURE_DIR}/Matrix4D.cpp
     ${INFRASTRUCTURE_DIR}/OpenGL2DContext.cpp
     ${INFRASTRUCTURE_DIR}/StopWatch.cpp
     ${INFRASTRUCTURE_DIR}/StringFunctions.cpp
-    ${INFRASTRUCTURE_DIR}/Texture.cpp
-    ${DEFINITIONS_DIR}/VirconDefinitions.cpp
-    ${DEFINITIONS_DIR}/VirconEnumerations.cpp
-    ${DEFINITIONS_DIR}/VirconROMFormat.cpp)
+    ${INFRASTRUCTURE_DIR}/Texture.cpp)
 
 # Source files to compile for the EditControls tool
 set(EDITCONTROLS_SRC
