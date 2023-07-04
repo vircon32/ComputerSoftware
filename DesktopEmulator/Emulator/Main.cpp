@@ -47,10 +47,10 @@
 void PerformABIAssertions()
 {
     LOG( "Performing ABI assertions" );
-    VirconWord TestWord = {0};
+    V32Word TestWord = {0};
     
     // determine the correct packing sizes
-    if( sizeof(VirconWord) != 4 )
+    if( sizeof(V32Word) != 4 )
       throw runtime_error( "ABI check failed: Vircon words are not 4 bytes in size" );
     
     // determine the correct bit endianness: instructions
@@ -77,7 +77,7 @@ void PerformPortAssertions()
     V32GPU TestGPU;
     
     // determine the correct location of ports
-    int DetectedGPUPortDistance = (int)((VirconWord*)(&TestGPU.DrawingAngle) - (VirconWord*)(&TestGPU.Command));
+    int DetectedGPUPortDistance = (int)((V32Word*)(&TestGPU.DrawingAngle) - (V32Word*)(&TestGPU.Command));
     int ExpectedGPUPortDistance = ((int)GPU_LocalPorts::DrawingAngle - (int)GPU_LocalPorts::Command);
     
     if( DetectedGPUPortDistance != ExpectedGPUPortDistance )

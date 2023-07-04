@@ -339,7 +339,7 @@ LiteralValueToken* VirconCLexer::ReadHexInteger()
     
     // convert to a number token
     // (use an unsigned, or else INT_MIN will throw an exception)
-    VirconWord NumberWord;
+    V32Word NumberWord;
     
     try
     {

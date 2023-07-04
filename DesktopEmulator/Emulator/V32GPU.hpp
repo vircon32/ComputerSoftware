@@ -118,8 +118,8 @@ namespace V32
             void UnloadTexture( GPUTexture& TargetTexture );
             
             // connection to control bus
-            virtual bool ReadPort( int32_t LocalPort, VirconWord& Result );
-            virtual bool WritePort( int32_t LocalPort, VirconWord Value );
+            virtual bool ReadPort( int32_t LocalPort, V32Word& Result );
+            virtual bool WritePort( int32_t LocalPort, V32Word Value );
             
             // general operation
             void ChangeFrame();
@@ -136,24 +136,24 @@ namespace V32
     // =============================================================================
     
     
-    void WriteGPUCommand        ( V32GPU& GPU, VirconWord Value );
-    void WriteGPURemainingPixels( V32GPU& GPU, VirconWord Value );
-    void WriteGPUClearColor     ( V32GPU& GPU, VirconWord Value );
-    void WriteGPUMultiplyColor  ( V32GPU& GPU, VirconWord Value );
-    void WriteGPUActiveBlending ( V32GPU& GPU, VirconWord Value );
-    void WriteGPUSelectedTexture( V32GPU& GPU, VirconWord Value );
-    void WriteGPUSelectedRegion ( V32GPU& GPU, VirconWord Value );
-    void WriteGPUDrawingPointX  ( V32GPU& GPU, VirconWord Value );
-    void WriteGPUDrawingPointY  ( V32GPU& GPU, VirconWord Value );
-    void WriteGPUDrawingScaleX  ( V32GPU& GPU, VirconWord Value );
-    void WriteGPUDrawingScaleY  ( V32GPU& GPU, VirconWord Value );
-    void WriteGPUDrawingAngle   ( V32GPU& GPU, VirconWord Value );
-    void WriteGPURegionMinX     ( V32GPU& GPU, VirconWord Value );
-    void WriteGPURegionMinY     ( V32GPU& GPU, VirconWord Value );
-    void WriteGPURegionMaxX     ( V32GPU& GPU, VirconWord Value );
-    void WriteGPURegionMaxY     ( V32GPU& GPU, VirconWord Value );
-    void WriteGPURegionHotspotX ( V32GPU& GPU, VirconWord Value );
-    void WriteGPURegionHotspotY ( V32GPU& GPU, VirconWord Value );
+    void WriteGPUCommand        ( V32GPU& GPU, V32Word Value );
+    void WriteGPURemainingPixels( V32GPU& GPU, V32Word Value );
+    void WriteGPUClearColor     ( V32GPU& GPU, V32Word Value );
+    void WriteGPUMultiplyColor  ( V32GPU& GPU, V32Word Value );
+    void WriteGPUActiveBlending ( V32GPU& GPU, V32Word Value );
+    void WriteGPUSelectedTexture( V32GPU& GPU, V32Word Value );
+    void WriteGPUSelectedRegion ( V32GPU& GPU, V32Word Value );
+    void WriteGPUDrawingPointX  ( V32GPU& GPU, V32Word Value );
+    void WriteGPUDrawingPointY  ( V32GPU& GPU, V32Word Value );
+    void WriteGPUDrawingScaleX  ( V32GPU& GPU, V32Word Value );
+    void WriteGPUDrawingScaleY  ( V32GPU& GPU, V32Word Value );
+    void WriteGPUDrawingAngle   ( V32GPU& GPU, V32Word Value );
+    void WriteGPURegionMinX     ( V32GPU& GPU, V32Word Value );
+    void WriteGPURegionMinY     ( V32GPU& GPU, V32Word Value );
+    void WriteGPURegionMaxX     ( V32GPU& GPU, V32Word Value );
+    void WriteGPURegionMaxY     ( V32GPU& GPU, V32Word Value );
+    void WriteGPURegionHotspotX ( V32GPU& GPU, V32Word Value );
+    void WriteGPURegionHotspotY ( V32GPU& GPU, V32Word Value );
 }
 
 

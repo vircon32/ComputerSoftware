@@ -105,20 +105,20 @@ namespace V32
           throw runtime_error( "Incorrect V32 file format (file size must be a multiple of 4)" );
         
         // ensure that we can at least load the file header
-        if( FileBytes < sizeof(ROMFileHeader) )
+        if( FileBytes < sizeof(ROMFileFormat::Header) )
           throw runtime_error( "Incorrect V32 file format (file is too small)" );
         
         // now we can safely read the global header
         InputFile.seekg( 0, ios_base::beg );
-        ROMFileHeader ROMHeader;
-        InputFile.read( (char*)(&ROMHeader), sizeof(ROMFileHeader) );
+        ROMFileFormat::Header ROMHeader;
+        InputFile.read( (char*)(&ROMHeader), sizeof(ROMFileFormat::Header) );
         
         // check if the ROM is actually a cartridge
-        if( CheckSignature( ROMHeader.Signature, Signatures::CartridgeFile ) )
+        if( CheckSignature( ROMHeader.Signature, ROMFileFormat::CartridgeSignature ) )
           THROW( "Input V32 ROM cannot be loaded as a BIOS (is it a cartridge instead)" );
         
         // now check the actual BIOS signature
-        if( !CheckSignature( ROMHeader.Signature, Signatures::BiosFile ) )
+        if( !CheckSignature( ROMHeader.Signature, ROMFileFormat::BiosSignature ) )
           THROW( "Incorrect V32 file format (file does not have a valid signature)" );
         
         // check current Vircon version
@@ -143,7 +143,7 @@ namespace V32
           THROW( "A BIOS audio rom should have exactly 1 sound" );
         
         // check for correct program rom location
-        if( ROMHeader.ProgramROMLocation.StartOffset != sizeof(ROMFileHeader) )
+        if( ROMHeader.ProgramROMLocation.StartOffset != sizeof(ROMFileFormat::Header) )
           THROW( "Incorrect V32 file format (program ROM is not located after file header)" );
         
         // check for correct video rom location
@@ -169,11 +169,11 @@ namespace V32
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
         // load a binary file header
-        BinaryFileHeader BinaryHeader;
-        InputFile.read( (char*)(&BinaryHeader), sizeof(BinaryFileHeader) );
+        BinaryFileFormat::Header BinaryHeader;
+        InputFile.read( (char*)(&BinaryHeader), sizeof(BinaryFileFormat::Header) );
         
         // check signature for embedded binary
-        if( !CheckSignature( BinaryHeader.Signature, Signatures::BinaryFile ) )
+        if( !CheckSignature( BinaryHeader.Signature, BinaryFileFormat::Signature ) )
           THROW( "BIOS binary does not have a valid signature" );
         
         // checking program rom size limitations
@@ -181,10 +181,10 @@ namespace V32
           THROW( "BIOS binary does not have a correct size (from 1 word up to 1M words)" );
         
         // load the binary contents
-        vector< VirconWord > LoadedBinary;
+        vector< V32Word > LoadedBinary;
         LoadedBinary.resize( BinaryHeader.NumberOfWords );
-        InputFile.read( (char*)(&LoadedBinary[0]), BinaryHeader.NumberOfWords*4 );
-        BiosProgramROM.Connect( &LoadedBinary[0], BinaryHeader.NumberOfWords );
+        InputFile.read( (char*)(&LoadedBinary[ 0 ]), BinaryHeader.NumberOfWords * 4 );
+        BiosProgramROM.Connect( &LoadedBinary[ 0 ], BinaryHeader.NumberOfWords );
         
         // discard the temporary buffer
         LoadedBinary.clear();
@@ -194,11 +194,11 @@ namespace V32
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
         // load a texture file signature
-        TextureFileHeader TextureHeader;
-        InputFile.read( (char*)(&TextureHeader), sizeof(TextureFileHeader) );
+        TextureFileFormat::Header TextureHeader;
+        InputFile.read( (char*)(&TextureHeader), sizeof(TextureFileFormat::Header) );
         
         // check signature for embedded texture
-        if( !CheckSignature( TextureHeader.Signature, Signatures::TextureFile ) )
+        if( !CheckSignature( TextureHeader.Signature, TextureFileFormat::Signature ) )
           THROW( "BIOS texture does not have a valid signature" );
         
         // report texture size
@@ -211,10 +211,10 @@ namespace V32
         
         // load the texture pixels
         uint32_t TexturePixels = TextureHeader.TextureWidth * TextureHeader.TextureHeight;
-        vector< VirconWord > LoadedTexture;
+        vector< V32Word > LoadedTexture;
         LoadedTexture.resize( TexturePixels );
-        InputFile.read( (char*)(&LoadedTexture[0]), TexturePixels*4 );
-        GPU.LoadTexture( GPU.BiosTexture, &LoadedTexture[0], TextureHeader.TextureWidth, TextureHeader.TextureHeight );
+        InputFile.read( (char*)(&LoadedTexture[ 0 ]), TexturePixels * 4 );
+        GPU.LoadTexture( GPU.BiosTexture, &LoadedTexture[ 0 ], TextureHeader.TextureWidth, TextureHeader.TextureHeight );
         
         // discard the temporary buffer
         LoadedTexture.clear();
@@ -224,11 +224,11 @@ namespace V32
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
         // load a sound file signature
-        SoundFileHeader SoundHeader;
-        InputFile.read( (char*)(&SoundHeader), sizeof(SoundFileHeader) );
+        SoundFileFormat::Header SoundHeader;
+        InputFile.read( (char*)(&SoundHeader), sizeof(SoundFileFormat::Header) );
         
         // check signature for embedded sound
-        if( !CheckSignature( SoundHeader.Signature, Signatures::SoundFile ) )
+        if( !CheckSignature( SoundHeader.Signature, SoundFileFormat::Signature ) )
           THROW( "BIOS sound does not have a valid signature" );
         
         // report sound length
@@ -241,8 +241,8 @@ namespace V32
         // load the sound samples
         vector< SPUSample > LoadedSound;
         LoadedSound.resize( SoundHeader.SoundSamples );
-        InputFile.read( (char*)(&LoadedSound[0]), SoundHeader.SoundSamples*4 );
-        SPU.LoadSound( SPU.BiosSound, &LoadedSound[0], SoundHeader.SoundSamples );
+        InputFile.read( (char*)(&LoadedSound[ 0 ]), SoundHeader.SoundSamples * 4 );
+        SPU.LoadSound( SPU.BiosSound, &LoadedSound[ 0 ], SoundHeader.SoundSamples );
         
         // discard the temporary buffer
         LoadedSound.clear();
@@ -284,20 +284,20 @@ namespace V32
           throw runtime_error( "Incorrect V32 file format (file size must be a multiple of 4)" );
         
         // ensure that we can at least load the file header
-        if( FileBytes < sizeof(ROMFileHeader) )
+        if( FileBytes < sizeof(ROMFileFormat::Header) )
           throw runtime_error( "Incorrect V32 file format (file is too small)" );
         
         // now we can safely read the global header
         InputFile.seekg( 0, ios_base::beg );
-        ROMFileHeader ROMHeader;
-        InputFile.read( (char*)(&ROMHeader), sizeof(ROMFileHeader) );
+        ROMFileFormat::Header ROMHeader;
+        InputFile.read( (char*)(&ROMHeader), sizeof(ROMFileFormat::Header) );
         
         // check if the ROM is actually a BIOS
-        if( CheckSignature( ROMHeader.Signature, Signatures::BiosFile ) )
+        if( CheckSignature( ROMHeader.Signature, ROMFileFormat::BiosSignature ) )
           THROW( "Input V32 ROM cannot be loaded as a cartridge (is it a BIOS instead)" );
         
         // now check the actual cartridge signature
-        if( !CheckSignature( ROMHeader.Signature, Signatures::CartridgeFile ) )
+        if( !CheckSignature( ROMHeader.Signature, ROMFileFormat::CartridgeSignature ) )
           THROW( "Incorrect V32 file format (file does not have a valid signature)" );
         
         // check current Vircon version
@@ -326,7 +326,7 @@ namespace V32
           THROW( "Audio ROM contains too many sounds (Vircon SPU only allows up to 1024)" );
         
         // check for correct program rom location
-        if( ROMHeader.ProgramROMLocation.StartOffset != sizeof(ROMFileHeader) )
+        if( ROMHeader.ProgramROMLocation.StartOffset != sizeof(ROMFileFormat::Header) )
           THROW( "Incorrect V32 file format (program ROM is not located after file header)" );
         
         // check for correct video rom location
@@ -354,11 +354,11 @@ namespace V32
             LOG_SCOPE( "Loading cartridge program ROM" );
             
             // load a binary file signature
-            BinaryFileHeader BinaryHeader;
-            InputFile.read( (char*)(&BinaryHeader), sizeof(BinaryFileHeader) );
+            BinaryFileFormat::Header BinaryHeader;
+            InputFile.read( (char*)(&BinaryHeader), sizeof(BinaryFileFormat::Header) );
             
             // check signature for embedded binary
-            if( !CheckSignature( BinaryHeader.Signature, Signatures::BinaryFile ) )
+            if( !CheckSignature( BinaryHeader.Signature, BinaryFileFormat::Signature ) )
               THROW( "Cartridge binary does not have a valid signature" );
             
             LOG( "Program ROM is " << BinaryHeader.NumberOfWords << " words" );
@@ -368,10 +368,10 @@ namespace V32
               THROW( "Cartridge program ROM does not have a correct size (from 1 word up to 128M words)" );
             
             // load the binary contents
-            vector< VirconWord > LoadedBinary;
+            vector< V32Word > LoadedBinary;
             LoadedBinary.resize( BinaryHeader.NumberOfWords );
-            InputFile.read( (char*)(&LoadedBinary[0]), BinaryHeader.NumberOfWords*4 );
-            CartridgeController.Connect( &LoadedBinary[0], BinaryHeader.NumberOfWords );
+            InputFile.read( (char*)(&LoadedBinary[ 0 ]), BinaryHeader.NumberOfWords * 4 );
+            CartridgeController.Connect( &LoadedBinary[ 0 ], BinaryHeader.NumberOfWords );
             
             // discard the temporary buffer
             LoadedBinary.clear();
@@ -387,11 +387,11 @@ namespace V32
             for( unsigned i = 0; i < ROMHeader.NumberOfTextures; i++ )
             {
                 // load a texture file signature
-                TextureFileHeader TextureHeader;
-                InputFile.read( (char*)(&TextureHeader), sizeof(TextureFileHeader) );
+                TextureFileFormat::Header TextureHeader;
+                InputFile.read( (char*)(&TextureHeader), sizeof(TextureFileFormat::Header) );
                 
                 // check signature for embedded texture
-                if( !CheckSignature( TextureHeader.Signature, Signatures::TextureFile ) )
+                if( !CheckSignature( TextureHeader.Signature, TextureFileFormat::Signature ) )
                   THROW( "Cartridge texture does not have a valid signature" );
                 
                 // report texture size
@@ -405,13 +405,13 @@ namespace V32
                 
                 // load the texture pixels
                 uint32_t TexturePixels = TextureHeader.TextureWidth * TextureHeader.TextureHeight;
-                vector< VirconWord > LoadedTexture;
+                vector< V32Word > LoadedTexture;
                 LoadedTexture.resize( TexturePixels );
-                InputFile.read( (char*)(&LoadedTexture[0]), TexturePixels*4 );
+                InputFile.read( (char*)(&LoadedTexture[ 0 ]), TexturePixels * 4 );
                 
                 // create a new GPU texture and load data into it
                 GPU.CartridgeTextures.emplace_back();
-                GPU.LoadTexture( GPU.CartridgeTextures.back(), &LoadedTexture[0],
+                GPU.LoadTexture( GPU.CartridgeTextures.back(), &LoadedTexture[ 0 ],
                                  TextureHeader.TextureWidth, TextureHeader.TextureHeight );
                 
                 // discard the temporary buffer
@@ -432,11 +432,11 @@ namespace V32
             for( unsigned i = 0; i < ROMHeader.NumberOfSounds; i++ )
             {
                 // load a sound file signature
-                SoundFileHeader SoundHeader;
-                InputFile.read( (char*)(&SoundHeader), sizeof(SoundFileHeader) );
+                SoundFileFormat::Header SoundHeader;
+                InputFile.read( (char*)(&SoundHeader), sizeof(SoundFileFormat::Header) );
                 
                 // check signature for embedded sound
-                if( !CheckSignature( SoundHeader.Signature, Signatures::SoundFile ) )
+                if( !CheckSignature( SoundHeader.Signature, SoundFileFormat::Signature ) )
                   THROW( "Cartridge sound does not have a valid signature" );
                 
                 // report sound length
@@ -456,11 +456,11 @@ namespace V32
                 // load the sound samples
                 vector< SPUSample > LoadedSound;
                 LoadedSound.resize( SoundHeader.SoundSamples );
-                InputFile.read( (char*)(&LoadedSound[0]), SoundHeader.SoundSamples*4 );
+                InputFile.read( (char*)(&LoadedSound[ 0 ]), SoundHeader.SoundSamples * 4 );
                 
                 // create a new SPU sound and load data into it
                 SPU.CartridgeSounds.emplace_back();
-                SPU.LoadSound( SPU.CartridgeSounds.back(), &LoadedSound[0], SoundHeader.SoundSamples );
+                SPU.LoadSound( SPU.CartridgeSounds.back(), &LoadedSound[ 0 ], SoundHeader.SoundSamples );
                 
                 // discard the temporary buffer
                 LoadedSound.clear();
@@ -649,8 +649,8 @@ namespace V32
         RAM.ClearContents();
         
         // loads become 0 on a reset
-        LastCPULoads[0] = LastCPULoads[1] = 0;
-        LastGPULoads[0] = LastGPULoads[1] = 0;
+        LastCPULoads[ 0 ] = LastCPULoads[ 1 ] = 0;
+        LastGPULoads[ 0 ] = LastGPULoads[ 1 ] = 0;
     }
     
     // -----------------------------------------------------------------------------

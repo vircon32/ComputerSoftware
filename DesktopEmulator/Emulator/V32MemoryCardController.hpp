@@ -50,11 +50,11 @@ namespace V32
             V32MemoryCardController();
             
             // connection to control bus
-            virtual bool ReadPort( int32_t LocalPort, VirconWord& Result );
-            virtual bool WritePort( int32_t LocalPort, VirconWord Value );
+            virtual bool ReadPort( int32_t LocalPort, V32Word& Result );
+            virtual bool WritePort( int32_t LocalPort, V32Word Value );
             
             // connection to memory bus (overriden)
-            virtual bool WriteAddress( int32_t LocalAddress, VirconWord Value );
+            virtual bool WriteAddress( int32_t LocalAddress, V32Word Value );
             
             // memory contents (overriden)
             virtual void LoadContents( const std::string& FilePath );

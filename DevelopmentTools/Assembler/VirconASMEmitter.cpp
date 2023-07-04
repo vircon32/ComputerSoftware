@@ -217,10 +217,10 @@ int32_t VirconASMEmitter::GetValueAsAddress( InstructionNode& Node, BasicValue& 
 
 // -----------------------------------------------------------------------------
 
-VirconWord VirconASMEmitter::GetValueAsImmediate( InstructionNode& Node, BasicValue& Value )
+V32Word VirconASMEmitter::GetValueAsImmediate( InstructionNode& Node, BasicValue& Value )
 {
     string OpCodeName = OpCodeToString( Node.OpCode );
-    VirconWord Result;
+    V32Word Result;
     
     // case 1: literal integer
     if( Value.Type == BasicValueTypes::LiteralInteger )
@@ -377,7 +377,7 @@ void VirconASMEmitter::Emit( NodeList& ProgramAST_ )
         {
             DataFileNode* DFN = (DataFileNode*)Node;
             
-            for( VirconWord Word: DFN->FileContents )
+            for( V32Word Word: DFN->FileContents )
               ROM.push_back( Word );
         }
         

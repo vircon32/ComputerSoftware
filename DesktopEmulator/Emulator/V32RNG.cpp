@@ -25,7 +25,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32RNG::ReadPort( int32_t LocalPort, VirconWord& Result )
+    bool V32RNG::ReadPort( int32_t LocalPort, V32Word& Result )
     {
         // check range
         if( LocalPort != (int32_t)RNG_LocalPorts::CurrentValue )
@@ -46,7 +46,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32RNG::WritePort( int32_t LocalPort, VirconWord Value )
+    bool V32RNG::WritePort( int32_t LocalPort, V32Word Value )
     {
         if( LocalPort != (int32_t)RNG_LocalPorts::CurrentValue )
           return false;
@@ -59,7 +59,7 @@ namespace V32
         // write value, disregarding the sign bit
         // (don't just use abs, since negative range
         // is higher and it can overflow our variable)
-        VirconWord ConvertedValue;
+        V32Word ConvertedValue;
         ConvertedValue.AsInteger = Value.AsInteger;
         ConvertedValue.AsBinary &= 0x7FFFFFFF;
         

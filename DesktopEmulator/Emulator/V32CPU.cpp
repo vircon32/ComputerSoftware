@@ -126,7 +126,7 @@ namespace V32
     void V32CPU::Reset()
     {
         // clear general purpose registers
-        memset( &Registers[ 0 ], 0, 16 * sizeof(VirconWord) );
+        memset( &Registers[ 0 ], 0, 16 * sizeof(V32Word) );
         
         // point BP and SP at the last word of RAM
         StackPointer.AsBinary = Constants::RAMFirstAddress + Constants::RAMSize - 1;
@@ -140,7 +140,7 @@ namespace V32
         Waiting = false;
         
         // clear instruction registers
-        memset( &Instruction, 0, sizeof(VirconWord) );
+        memset( &Instruction, 0, sizeof(V32Word) );
         ImmediateValue.AsBinary = 0;
     }
     
@@ -159,7 +159,7 @@ namespace V32
         if( Halted || Waiting ) return;
         
         // fetch next instruction
-        if( !MemoryBus->ReadAddress( InstructionPointer.AsInteger++, (VirconWord&)Instruction ) )
+        if( !MemoryBus->ReadAddress( InstructionPointer.AsInteger++, (V32Word&)Instruction ) )
           return;
         
         // fetch its immediate value, if needed

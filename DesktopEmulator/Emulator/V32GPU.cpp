@@ -23,7 +23,7 @@ namespace V32
     // =============================================================================
     
     
-    typedef void (*GPUPortWriter)( V32GPU&, VirconWord );
+    typedef void (*GPUPortWriter)( V32GPU&, V32Word );
     
     // -----------------------------------------------------------------------------
     
@@ -171,7 +171,7 @@ namespace V32
     // =============================================================================
     
     
-    bool V32GPU::ReadPort( int32_t LocalPort, VirconWord& Result )
+    bool V32GPU::ReadPort( int32_t LocalPort, V32Word& Result )
     {
         // check range
         if( LocalPort > GPU_LastPort )
@@ -184,14 +184,14 @@ namespace V32
         // CASE 1: read from GPU-level parameters
         if( LocalPort < (int32_t)GPU_LocalPorts::RegionMinX )
         {
-            VirconWord* GPURegisters = (VirconWord*)(&Command);
+            V32Word* GPURegisters = (V32Word*)(&Command);
             Result = GPURegisters[ LocalPort ];
         }
         
         // CASE 2: Read from region-level parameters
         else
         {
-            VirconWord* RegionRegisters = (VirconWord*)PointedRegion;
+            V32Word* RegionRegisters = (V32Word*)PointedRegion;
             int32_t RegionPort = LocalPort - (int32_t)GPU_LocalPorts::RegionMinX;
             Result = RegionRegisters[ RegionPort ];
         }
@@ -201,7 +201,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32GPU::WritePort( int32_t LocalPort, VirconWord Value )
+    bool V32GPU::WritePort( int32_t LocalPort, V32Word Value )
     {
         // check range
         if( LocalPort > GPU_LastPort )

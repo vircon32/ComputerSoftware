@@ -22,7 +22,7 @@ namespace V32
     {
         public:
             
-            std::vector< VirconWord > Memory;
+            std::vector< V32Word > Memory;
             int32_t MemorySize;
             
         public:
@@ -40,8 +40,8 @@ namespace V32
             void ClearContents();
             
             // bus connection
-            virtual bool ReadAddress( int32_t LocalAddress, VirconWord& Result );
-            virtual bool WriteAddress( int32_t LocalAddress, VirconWord Value );
+            virtual bool ReadAddress( int32_t LocalAddress, V32Word& Result );
+            virtual bool WriteAddress( int32_t LocalAddress, V32Word Value );
     };
     
     
@@ -54,7 +54,7 @@ namespace V32
     {
         public:
             
-            std::vector< VirconWord > Memory;
+            std::vector< V32Word > Memory;
             int32_t MemorySize;
             
         public:
@@ -68,8 +68,8 @@ namespace V32
             void Disconnect();
             
             // bus connection
-            virtual bool ReadAddress( int32_t LocalAddress, VirconWord& Result );
-            virtual bool WriteAddress( int32_t LocalAddress, VirconWord Value );
+            virtual bool ReadAddress( int32_t LocalAddress, V32Word& Result );
+            virtual bool WriteAddress( int32_t LocalAddress, V32Word Value );
     };
 }
 

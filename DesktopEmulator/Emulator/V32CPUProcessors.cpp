@@ -21,7 +21,7 @@ namespace V32
     // =============================================================================
     
     
-    inline void Push( V32CPU& CPU, VirconWord Value )
+    inline void Push( V32CPU& CPU, V32Word Value )
     {
         // first decrement
         int32_t* SP = &CPU.StackPointer.AsInteger;
@@ -40,7 +40,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    inline void Pop( V32CPU& CPU, VirconWord& Register )
+    inline void Pop( V32CPU& CPU, V32Word& Register )
     {
         // first read the value
         int32_t* SP = &CPU.StackPointer.AsInteger;
@@ -144,8 +144,8 @@ namespace V32
     
     void ProcessIEQ( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord Value;
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word Value;
         
         if( Instruction.UsesImmediate )
           Value = CPU.ImmediateValue;
@@ -159,8 +159,8 @@ namespace V32
     
     void ProcessINE( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord Value;
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word Value;
         
         if( Instruction.UsesImmediate )
           Value = CPU.ImmediateValue;
@@ -174,8 +174,8 @@ namespace V32
     
     void ProcessIGT( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord Value;
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word Value;
         
         if( Instruction.UsesImmediate )
           Value = CPU.ImmediateValue;
@@ -189,8 +189,8 @@ namespace V32
     
     void ProcessIGE( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord Value;
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word Value;
         
         if( Instruction.UsesImmediate )
           Value = CPU.ImmediateValue;
@@ -204,8 +204,8 @@ namespace V32
     
     void ProcessILT( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord Value;
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word Value;
         
         if( Instruction.UsesImmediate )
           Value = CPU.ImmediateValue;
@@ -219,8 +219,8 @@ namespace V32
     
     void ProcessILE( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord Value;
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word Value;
         
         if( Instruction.UsesImmediate )
           Value = CPU.ImmediateValue;
@@ -234,8 +234,8 @@ namespace V32
     
     void ProcessFEQ( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord Value;
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word Value;
         
         if( Instruction.UsesImmediate )
           Value = CPU.ImmediateValue;
@@ -249,8 +249,8 @@ namespace V32
     
     void ProcessFNE( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord Value;
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word Value;
         
         if( Instruction.UsesImmediate )
           Value = CPU.ImmediateValue;
@@ -264,8 +264,8 @@ namespace V32
     
     void ProcessFGT( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord Value;
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word Value;
         
         if( Instruction.UsesImmediate )
           Value = CPU.ImmediateValue;
@@ -279,8 +279,8 @@ namespace V32
     
     void ProcessFGE( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord Value;
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word Value;
         
         if( Instruction.UsesImmediate )
           Value = CPU.ImmediateValue;
@@ -294,8 +294,8 @@ namespace V32
     
     void ProcessFLT( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord Value;
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word Value;
         
         if( Instruction.UsesImmediate )
           Value = CPU.ImmediateValue;
@@ -309,8 +309,8 @@ namespace V32
     
     void ProcessFLE( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord Value;
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word Value;
         
         if( Instruction.UsesImmediate )
           Value = CPU.ImmediateValue;
@@ -332,8 +332,8 @@ namespace V32
     
     void ProcessLEA( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register2 = &CPU.Registers[ Instruction.Register2 ];
         
         if( Instruction.UsesImmediate )
           Register1->AsInteger = Register2->AsInteger + CPU.ImmediateValue.AsInteger;
@@ -360,7 +360,7 @@ namespace V32
     
     void ProcessIN( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
         CPU.ControlBus->ReadPort( Instruction.PortNumber, *DestinationRegister );
     }
     
@@ -368,7 +368,7 @@ namespace V32
     
     void ProcessOUT( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
+        V32Word* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
         
         if( Instruction.UsesImmediate )
           CPU.ControlBus->WritePort( Instruction.PortNumber, CPU.ImmediateValue );
@@ -381,7 +381,7 @@ namespace V32
     void ProcessMOVS( V32CPU& CPU, CPUInstruction Instruction )
     {
         // move 1 word as in a supposed MOV [DR], [SR]
-        VirconWord Value;
+        V32Word Value;
         
         if( !CPU.MemoryBus->ReadAddress( CPU.SourceRegister.AsInteger, Value ) )
           return;
@@ -434,10 +434,10 @@ namespace V32
     // - zero if both strings are equal
     void ProcessCMPS( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* ResultRegister = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* ResultRegister = &CPU.Registers[ Instruction.Register1 ];
         
         // subtract 1 word as in a supposed ResultRegister = [DR] - [SR]
-        VirconWord SRValue;
+        V32Word SRValue;
         
         if( !CPU.MemoryBus->ReadAddress( CPU.DestinationRegister.AsInteger, *ResultRegister ) )
           return;
@@ -470,7 +470,7 @@ namespace V32
     
     void ProcessCIF( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register = &CPU.Registers[ Instruction.Register1 ];
         Register->AsFloat = (float)Register->AsInteger;
     }
     
@@ -478,7 +478,7 @@ namespace V32
     
     void ProcessCFI( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register = &CPU.Registers[ Instruction.Register1 ];
         Register->AsInteger = (int32_t)Register->AsFloat;
     }
     
@@ -486,7 +486,7 @@ namespace V32
     
     void ProcessCIB( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register = &CPU.Registers[ Instruction.Register1 ];
         Register->AsInteger = (bool)Register->AsInteger;
     }
     
@@ -494,7 +494,7 @@ namespace V32
     
     void ProcessCFB( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register = &CPU.Registers[ Instruction.Register1 ];
         Register->AsInteger = (bool)Register->AsFloat;
     }
     
@@ -502,7 +502,7 @@ namespace V32
     
     void ProcessNOT( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register = &CPU.Registers[ Instruction.Register1 ];
         Register->AsBinary = ~Register->AsBinary;
     }
     
@@ -510,7 +510,7 @@ namespace V32
     
     void ProcessAND( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         
         if( Instruction.UsesImmediate )
           Register1->AsBinary &= CPU.ImmediateValue.AsBinary;
@@ -522,7 +522,7 @@ namespace V32
     
     void ProcessOR( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         
         if( Instruction.UsesImmediate )
           Register1->AsBinary |= CPU.ImmediateValue.AsBinary;
@@ -534,7 +534,7 @@ namespace V32
     
     void ProcessXOR( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         
         if( Instruction.UsesImmediate )
           Register1->AsBinary ^= CPU.ImmediateValue.AsBinary;
@@ -546,7 +546,7 @@ namespace V32
     
     void ProcessBNOT( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register = &CPU.Registers[ Instruction.Register1 ];
         Register->AsBinary = (Register->AsBinary? 0 : 1);
     }
     
@@ -554,7 +554,7 @@ namespace V32
     
     void ProcessSHL( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         int32_t ShiftAmount;
         
         if( Instruction.UsesImmediate )
@@ -573,14 +573,14 @@ namespace V32
     
     void ProcessIADD( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
         
         if( Instruction.UsesImmediate )
           DestinationRegister->AsInteger += CPU.ImmediateValue.AsInteger;
         
         else
         {
-            VirconWord* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
+            V32Word* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
             DestinationRegister->AsInteger += SourceRegister->AsInteger;
         }
     }
@@ -589,14 +589,14 @@ namespace V32
     
     void ProcessISUB( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
         
         if( Instruction.UsesImmediate )
           DestinationRegister->AsInteger -= CPU.ImmediateValue.AsInteger;
         
         else
         {
-            VirconWord* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
+            V32Word* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
             DestinationRegister->AsInteger -= SourceRegister->AsInteger;
         }
     }
@@ -605,14 +605,14 @@ namespace V32
     
     void ProcessIMUL( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
         
         if( Instruction.UsesImmediate )
           DestinationRegister->AsInteger *= CPU.ImmediateValue.AsInteger;
         
         else
         {
-            VirconWord* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
+            V32Word* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
             DestinationRegister->AsInteger *= SourceRegister->AsInteger;
         }
     }
@@ -637,7 +637,7 @@ namespace V32
         }
         
         // now perform division normally
-        VirconWord* DividendRegister = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* DividendRegister = &CPU.Registers[ Instruction.Register1 ];
         DividendRegister->AsInteger /= Divisor;
     }
     
@@ -646,7 +646,7 @@ namespace V32
     void ProcessIMOD( V32CPU& CPU, CPUInstruction Instruction )
     {
         // determine the operands
-        VirconWord* DividendRegister = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* DividendRegister = &CPU.Registers[ Instruction.Register1 ];
         int32_t Divisor = 1;
         
         if( Instruction.UsesImmediate )
@@ -669,7 +669,7 @@ namespace V32
     
     void ProcessISGN( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         Register1->AsInteger = -Register1->AsInteger;
     }
     
@@ -677,7 +677,7 @@ namespace V32
     
     void ProcessIABS( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         Register1->AsInteger = abs( Register1->AsInteger );
     }
     
@@ -685,14 +685,14 @@ namespace V32
     
     void ProcessIMIN( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         
         if( Instruction.UsesImmediate )
           Register1->AsInteger = min( Register1->AsInteger, CPU.ImmediateValue.AsInteger );
         
         else
         {
-            VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
+            V32Word* Register2 = &CPU.Registers[ Instruction.Register2 ];
             Register1->AsInteger = min( Register1->AsInteger, Register2->AsInteger );
         }
     }
@@ -701,14 +701,14 @@ namespace V32
     
     void ProcessIMAX( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         
         if( Instruction.UsesImmediate )
           Register1->AsInteger = max( Register1->AsInteger, CPU.ImmediateValue.AsInteger );
         
         else
         {
-            VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
+            V32Word* Register2 = &CPU.Registers[ Instruction.Register2 ];
             Register1->AsInteger = max( Register1->AsInteger, Register2->AsInteger );
         }
     }
@@ -717,14 +717,14 @@ namespace V32
     
     void ProcessFADD( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
         
         if( Instruction.UsesImmediate )
           DestinationRegister->AsFloat += CPU.ImmediateValue.AsFloat;
         
         else
         {
-            VirconWord* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
+            V32Word* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
             DestinationRegister->AsFloat += SourceRegister->AsFloat;
         }
     }
@@ -733,14 +733,14 @@ namespace V32
     
     void ProcessFSUB( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
         
         if( Instruction.UsesImmediate )
           DestinationRegister->AsFloat -= CPU.ImmediateValue.AsFloat;
         
         else
         {
-            VirconWord* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
+            V32Word* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
             DestinationRegister->AsFloat -= SourceRegister->AsFloat;
         }
     }
@@ -749,14 +749,14 @@ namespace V32
     
     void ProcessFMUL( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* DestinationRegister = &CPU.Registers[ Instruction.Register1 ];
         
         if( Instruction.UsesImmediate )
           DestinationRegister->AsFloat *= CPU.ImmediateValue.AsFloat;
         
         else
         {
-            VirconWord* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
+            V32Word* SourceRegister = &CPU.Registers[ Instruction.Register2 ];
             DestinationRegister->AsFloat *= SourceRegister->AsFloat;
         }
     }
@@ -781,7 +781,7 @@ namespace V32
         }
         
         // now perform division normally
-        VirconWord* DividendRegister = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* DividendRegister = &CPU.Registers[ Instruction.Register1 ];
         DividendRegister->AsFloat /= Divisor;
     }
     
@@ -805,7 +805,7 @@ namespace V32
         }
         
         // now perform modulus normally
-        VirconWord* DividendRegister = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* DividendRegister = &CPU.Registers[ Instruction.Register1 ];
         DividendRegister->AsFloat = fmod( DividendRegister->AsFloat, Divisor );
     }
     
@@ -813,7 +813,7 @@ namespace V32
     
     void ProcessFSGN( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         Register1->AsFloat = -Register1->AsFloat;
     }
     
@@ -821,7 +821,7 @@ namespace V32
     
     void ProcessFABS( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         Register1->AsFloat = abs( Register1->AsFloat );
     }
     
@@ -829,14 +829,14 @@ namespace V32
     
     void ProcessFMIN( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         
         if( Instruction.UsesImmediate )
           Register1->AsFloat = min( Register1->AsFloat, CPU.ImmediateValue.AsFloat );
         
         else
         {
-            VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
+            V32Word* Register2 = &CPU.Registers[ Instruction.Register2 ];
             Register1->AsFloat = min( Register1->AsFloat, Register2->AsFloat );
         }
     }
@@ -845,14 +845,14 @@ namespace V32
     
     void ProcessFMAX( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         
         if( Instruction.UsesImmediate )
           Register1->AsFloat = max( Register1->AsFloat, CPU.ImmediateValue.AsFloat );
         
         else
         {
-            VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
+            V32Word* Register2 = &CPU.Registers[ Instruction.Register2 ];
             Register1->AsFloat = max( Register1->AsFloat, Register2->AsFloat );
         }
     }
@@ -861,7 +861,7 @@ namespace V32
     
     void ProcessFLR( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         Register1->AsFloat = floor( Register1->AsFloat );
     }
     
@@ -869,7 +869,7 @@ namespace V32
     
     void ProcessCEIL( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         Register1->AsFloat = ceil( Register1->AsFloat );
     }
     
@@ -877,7 +877,7 @@ namespace V32
     
     void ProcessROUND( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         Register1->AsFloat = round( Register1->AsFloat );
     }
     
@@ -885,7 +885,7 @@ namespace V32
     
     void ProcessSIN( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         Register1->AsFloat = sin( Register1->AsFloat );
     }
     
@@ -893,7 +893,7 @@ namespace V32
     
     void ProcessACOS( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         float Operand = Register1->AsFloat;
         
         // check that the operand is in range
@@ -910,8 +910,8 @@ namespace V32
     
     void ProcessATAN2( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register2 = &CPU.Registers[ Instruction.Register2 ];
         
         // check that the operands are not both zero
         if( !Register1->AsFloat && !Register2->AsFloat )
@@ -927,7 +927,7 @@ namespace V32
     
     void ProcessLOG( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         
         // check that the operand is positive
         if( Register1->AsFloat <= 0 )
@@ -943,8 +943,8 @@ namespace V32
     
     void ProcessPOW( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register2 = &CPU.Registers[ Instruction.Register2 ];
         
         // check that there is a real solution
         if( Register1->AsFloat < 0 && trunc( Register2->AsFloat ) != Register2->AsFloat )
@@ -964,7 +964,7 @@ namespace V32
     
     void ProcessMOVRegFromImm( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         *Register1 = CPU.ImmediateValue;
     }
     
@@ -972,8 +972,8 @@ namespace V32
     
     void ProcessMOVRegFromReg( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register2 = &CPU.Registers[ Instruction.Register2 ];
         *Register1 = *Register2;
     }
     
@@ -981,7 +981,7 @@ namespace V32
     
     void ProcessMOVRegFromImmAdd( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
         CPU.MemoryBus->ReadAddress( CPU.ImmediateValue.AsInteger, *Register1 );
     }
     
@@ -989,8 +989,8 @@ namespace V32
     
     void ProcessMOVRegFromRegAdd( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register2 = &CPU.Registers[ Instruction.Register2 ];
         CPU.MemoryBus->ReadAddress( Register2->AsInteger, *Register1 );
     }
     
@@ -998,8 +998,8 @@ namespace V32
     
     void ProcessMOVRegFromAddOff( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register2 = &CPU.Registers[ Instruction.Register2 ];
         CPU.MemoryBus->ReadAddress( Register2->AsInteger + CPU.ImmediateValue.AsInteger, *Register1 );
     }
     
@@ -1007,7 +1007,7 @@ namespace V32
     
     void ProcessMOVImmAddFromReg( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
+        V32Word* Register2 = &CPU.Registers[ Instruction.Register2 ];
         CPU.MemoryBus->WriteAddress( CPU.ImmediateValue.AsInteger, *Register2 );
     }
     
@@ -1015,8 +1015,8 @@ namespace V32
     
     void ProcessMOVRegAddFromReg( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register2 = &CPU.Registers[ Instruction.Register2 ];
         CPU.MemoryBus->WriteAddress( Register1->AsInteger, *Register2 );
     }
     
@@ -1024,8 +1024,8 @@ namespace V32
     
     void ProcessMOVAddOffFromReg( V32CPU& CPU, CPUInstruction Instruction )
     {
-        VirconWord* Register1 = &CPU.Registers[ Instruction.Register1 ];
-        VirconWord* Register2 = &CPU.Registers[ Instruction.Register2 ];
+        V32Word* Register1 = &CPU.Registers[ Instruction.Register1 ];
+        V32Word* Register2 = &CPU.Registers[ Instruction.Register2 ];
         CPU.MemoryBus->WriteAddress( Register1->AsInteger + CPU.ImmediateValue.AsInteger, *Register2 );
     }
 }

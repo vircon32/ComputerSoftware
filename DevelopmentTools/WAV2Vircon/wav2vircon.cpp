@@ -105,13 +105,13 @@ void SaveVSND( const char *VSNDFilePath )
       throw runtime_error( string("Cannot open output file \"") + VSNDFilePath + "\"" );
     
     // create the VSND file header
-    SoundFileHeader VSNDHeader;
-    memcpy( VSNDHeader.Signature, Signatures::SoundFile, 8 );
+    SoundFileFormat::Header VSNDHeader;
+    memcpy( VSNDHeader.Signature, SoundFileFormat::Signature, 8 );
     VSNDHeader.SoundSamples = NumberOfSamples;
     
     // write the header in the file
     fseek( VSNDFile, 0, SEEK_SET );
-    fwrite( &VSNDHeader, sizeof(SoundFileHeader), 1, VSNDFile );
+    fwrite( &VSNDHeader, sizeof(SoundFileFormat::Header), 1, VSNDFile );
     
     // now write all samples
     fwrite( &RawSamples[0], NumberOfSamples*4, 1, VSNDFile );

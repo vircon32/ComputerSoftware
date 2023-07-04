@@ -29,7 +29,7 @@ class VirconASMEmitter
     public:
         
         // results
-        std::vector< V32::VirconWord > ROM;
+        std::vector< V32::V32Word > ROM;
         std::map< std::string, int32_t > LabelAddresses;
         
     public:
@@ -44,7 +44,7 @@ class VirconASMEmitter
         void ReadDataFile( DataFileNode& Node );
         
         int32_t         GetValueAsAddress  ( InstructionNode& Node, BasicValue& Value );
-        V32::VirconWord GetValueAsImmediate( InstructionNode& Node, BasicValue& Value );
+        V32::V32Word GetValueAsImmediate( InstructionNode& Node, BasicValue& Value );
         
         // emit function for an instruction node
         void EmitInstructionFromNode( InstructionNode& Node );

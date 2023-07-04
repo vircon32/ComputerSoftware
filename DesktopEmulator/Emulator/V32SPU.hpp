@@ -253,8 +253,8 @@ namespace V32
             void UnloadSound( SPUSound& TargetSound );
             
             // I/O bus connection
-            virtual bool ReadPort( int32_t LocalPort, VirconWord& Result );
-            virtual bool WritePort( int32_t LocalPort, VirconWord Value );
+            virtual bool ReadPort( int32_t LocalPort, V32Word& Result );
+            virtual bool WritePort( int32_t LocalPort, V32Word Value );
             
             // general operation
             void ChangeFrame();
@@ -279,20 +279,20 @@ namespace V32
     // =============================================================================
     
     
-    void WriteSPUCommand              ( V32SPU& SPU, VirconWord Value );
-    void WriteSPUGlobalVolume         ( V32SPU& SPU, VirconWord Value );
-    void WriteSPUSelectedSound        ( V32SPU& SPU, VirconWord Value );
-    void WriteSPUSelectedChannel      ( V32SPU& SPU, VirconWord Value );
-    void WriteSPUSoundLength          ( V32SPU& SPU, VirconWord Value );
-    void WriteSPUSoundPlayWithLoop    ( V32SPU& SPU, VirconWord Value );
-    void WriteSPUSoundLoopStart       ( V32SPU& SPU, VirconWord Value );
-    void WriteSPUSoundLoopEnd         ( V32SPU& SPU, VirconWord Value );
-    void WriteSPUChannelState         ( V32SPU& SPU, VirconWord Value );
-    void WriteSPUChannelAssignedSound ( V32SPU& SPU, VirconWord Value );
-    void WriteSPUChannelVolume        ( V32SPU& SPU, VirconWord Value );
-    void WriteSPUChannelSpeed         ( V32SPU& SPU, VirconWord Value );
-    void WriteSPUChannelLoopEnabled   ( V32SPU& SPU, VirconWord Value );
-    void WriteSPUChannelPosition      ( V32SPU& SPU, VirconWord Value );
+    void WriteSPUCommand              ( V32SPU& SPU, V32Word Value );
+    void WriteSPUGlobalVolume         ( V32SPU& SPU, V32Word Value );
+    void WriteSPUSelectedSound        ( V32SPU& SPU, V32Word Value );
+    void WriteSPUSelectedChannel      ( V32SPU& SPU, V32Word Value );
+    void WriteSPUSoundLength          ( V32SPU& SPU, V32Word Value );
+    void WriteSPUSoundPlayWithLoop    ( V32SPU& SPU, V32Word Value );
+    void WriteSPUSoundLoopStart       ( V32SPU& SPU, V32Word Value );
+    void WriteSPUSoundLoopEnd         ( V32SPU& SPU, V32Word Value );
+    void WriteSPUChannelState         ( V32SPU& SPU, V32Word Value );
+    void WriteSPUChannelAssignedSound ( V32SPU& SPU, V32Word Value );
+    void WriteSPUChannelVolume        ( V32SPU& SPU, V32Word Value );
+    void WriteSPUChannelSpeed         ( V32SPU& SPU, V32Word Value );
+    void WriteSPUChannelLoopEnabled   ( V32SPU& SPU, V32Word Value );
+    void WriteSPUChannelPosition      ( V32SPU& SPU, V32Word Value );
 }
 
 

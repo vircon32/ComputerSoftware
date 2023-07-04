@@ -14,9 +14,8 @@
     #undef IN
     #undef OUT
 // -----------------------------------------------------------------------------
-//  This file defines all enumeration-based values for the different
-//  Vircon32 components. It also covers their conversions to and from
-//  strings to support logging, assembly and disassembly.
+//  This file defines all enumeration-based values for the
+//  different Vircon32 components.
 // *****************************************************************************
 
 

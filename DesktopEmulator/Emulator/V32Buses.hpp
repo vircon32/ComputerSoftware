@@ -29,8 +29,8 @@ namespace V32
         public:
             
             // R/W methods
-            virtual bool ReadAddress( int32_t LocalAddress, VirconWord& Result ) = 0;
-            virtual bool WriteAddress( int32_t LocalAddress, VirconWord Value  ) = 0;
+            virtual bool ReadAddress( int32_t LocalAddress, V32Word& Result ) = 0;
+            virtual bool WriteAddress( int32_t LocalAddress, V32Word Value  ) = 0;
     };
     
     // -----------------------------------------------------------------------------
@@ -51,8 +51,8 @@ namespace V32
             V32MemoryBus();
             
             // R/W methods
-            bool ReadAddress( int32_t GlobalAddress, VirconWord& Result );
-            bool WriteAddress( int32_t GlobalAddress, VirconWord Value );
+            bool ReadAddress( int32_t GlobalAddress, V32Word& Result );
+            bool WriteAddress( int32_t GlobalAddress, V32Word Value );
     };
     
     
@@ -66,8 +66,8 @@ namespace V32
         public:
             
             // I/O port access
-            virtual bool ReadPort( int32_t LocalPort, VirconWord& Result ) = 0;
-            virtual bool WritePort( int32_t LocalPort, VirconWord Value ) = 0;
+            virtual bool ReadPort( int32_t LocalPort, V32Word& Result ) = 0;
+            virtual bool WritePort( int32_t LocalPort, V32Word Value ) = 0;
     };
     
     // -----------------------------------------------------------------------------
@@ -88,8 +88,8 @@ namespace V32
             V32ControlBus();
             
             // I/O port access
-            void ReadPort( int32_t GlobalPort, VirconWord& Result );
-            void WritePort( int32_t GlobalPort, VirconWord Value );
+            void ReadPort( int32_t GlobalPort, V32Word& Result );
+            void WritePort( int32_t GlobalPort, V32Word Value );
     };
 }
 

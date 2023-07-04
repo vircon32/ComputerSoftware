@@ -34,7 +34,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32MemoryCardController::ReadPort( int32_t LocalPort, VirconWord& Result )
+    bool V32MemoryCardController::ReadPort( int32_t LocalPort, V32Word& Result )
     {
         // check range
         if( LocalPort > MEM_LastPort )
@@ -49,7 +49,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32MemoryCardController::WritePort( int32_t LocalPort, VirconWord Value )
+    bool V32MemoryCardController::WritePort( int32_t LocalPort, V32Word Value )
     {
         // all memory card ports are read-only!
         return false;
@@ -72,7 +72,7 @@ namespace V32
     // =============================================================================
     
     
-    bool V32MemoryCardController::WriteAddress( int32_t LocalAddress, VirconWord Value )
+    bool V32MemoryCardController::WriteAddress( int32_t LocalAddress, V32Word Value )
     {
         // check that the normal RAM write is successful
         if( !V32RAM::WriteAddress( LocalAddress, Value ) )
@@ -112,14 +112,14 @@ namespace V32
         char FileSignature[ 8 ];
         InputFile.read( FileSignature, 8 );
         
-        if( !CheckSignature( FileSignature, Signatures::MemoryCardFile ) )
+        if( !CheckSignature( FileSignature, MemoryCardFileFormat::Signature ) )
           THROW( "Memory card file does not have a valid signature" );
         
         // connect the memory
         Connect( Constants::MemoryCardSize );
         
         // now load the whole memory card contents
-        InputFile.read( (char*)(&Memory[0]), MemorySize * 4 );
+        InputFile.read( (char*)(&Memory[ 0 ]), MemorySize * 4 );
         
         // close the file
         InputFile.close();
@@ -143,10 +143,10 @@ namespace V32
           THROW( "Cannot open memory card file" );
         
         // save the signature
-        WriteSignature( OutputFile, Signatures::MemoryCardFile );
+        WriteSignature( OutputFile, MemoryCardFileFormat::Signature );
         
         // now save all contents
-        OutputFile.write( (char*)(&Memory[0]), MemorySize * 4 );
+        OutputFile.write( (char*)(&Memory[ 0 ]), MemorySize * 4 );
         
         // close the file
         OutputFile.close();
@@ -166,12 +166,12 @@ namespace V32
           THROW( "Cannot create memory card file" );
         
         // save the signature
-        WriteSignature( OutputFile, Signatures::MemoryCardFile );
+        WriteSignature( OutputFile, MemoryCardFileFormat::Signature );
         
         // now save all empty contents
-        vector< VirconWord > EmptyWords;
+        vector< V32Word > EmptyWords;
         EmptyWords.resize( Constants::MemoryCardSize );
-        OutputFile.write( (char*)(&EmptyWords[0]), Constants::MemoryCardSize * 4 );
+        OutputFile.write( (char*)(&EmptyWords[ 0 ]), Constants::MemoryCardSize * 4 );
         
         // close the file
         OutputFile.close();

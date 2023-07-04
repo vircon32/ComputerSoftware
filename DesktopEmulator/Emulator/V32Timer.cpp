@@ -36,7 +36,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32Timer::ReadPort( int32_t LocalPort, VirconWord& Result )
+    bool V32Timer::ReadPort( int32_t LocalPort, V32Word& Result )
     {
         // check range
         if( LocalPort > CLK_LastPort )
@@ -61,7 +61,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32Timer::WritePort( int32_t LocalPort, VirconWord Value )
+    bool V32Timer::WritePort( int32_t LocalPort, V32Word Value )
     {
         // ignore write request (all these registers are read-only)
         return false;

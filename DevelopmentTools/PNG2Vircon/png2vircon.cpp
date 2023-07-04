@@ -131,14 +131,14 @@ void SaveVTEX( const char *VTEXFilePath )
       throw runtime_error( string("cannot open output file \"") + VTEXFilePath + "\"" );
     
     // create the VTEX file header
-    TextureFileHeader VTEXHeader;
-    memcpy( VTEXHeader.Signature, Signatures::TextureFile, 8 );
+    TextureFileFormat::Header VTEXHeader;
+    memcpy( VTEXHeader.Signature, TextureFileFormat::Signature, 8 );
     VTEXHeader.TextureWidth = ImageWidth;
     VTEXHeader.TextureHeight = ImageHeight;
     
     // write the header in the file
     fseek( VTEXFile, 0, SEEK_SET );
-    fwrite( &VTEXHeader, sizeof(TextureFileHeader), 1, VTEXFile );
+    fwrite( &VTEXHeader, sizeof(TextureFileFormat::Header), 1, VTEXFile );
     
     // now write every row of pixels
     for( int y = 0; y < ImageHeight; y++ )

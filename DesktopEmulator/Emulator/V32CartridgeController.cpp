@@ -33,7 +33,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32CartridgeController::ReadPort( int32_t LocalPort, VirconWord& Result )
+    bool V32CartridgeController::ReadPort( int32_t LocalPort, V32Word& Result )
     {
         // check range
         if( LocalPort > CAR_LastPort )
@@ -57,7 +57,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32CartridgeController::WritePort( int32_t LocalPort, VirconWord Value )
+    bool V32CartridgeController::WritePort( int32_t LocalPort, V32Word Value )
     {
         // all these registers are read-only, so just ignore the request
         return false;

@@ -39,7 +39,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32GamepadController::ReadPort( int32_t LocalPort, VirconWord& Result )
+    bool V32GamepadController::ReadPort( int32_t LocalPort, V32Word& Result )
     {
         // check range
         if( LocalPort > INP_LastPort )
@@ -50,14 +50,14 @@ namespace V32
           Result.AsInteger = SelectedGamepad;
         
         // gamepad-specific ports
-        VirconWord* PortArray = (VirconWord*)(&ProvidedGamepadStates[ SelectedGamepad ]);
+        V32Word* PortArray = (V32Word*)(&ProvidedGamepadStates[ SelectedGamepad ]);
         Result = PortArray[ LocalPort - 1 ];
         return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    bool V32GamepadController::WritePort( int32_t LocalPort, VirconWord Value )
+    bool V32GamepadController::WritePort( int32_t LocalPort, V32Word Value )
     {
         // only the active gamepad register can be written to
         if( LocalPort != (int32_t)INP_LocalPorts::SelectedGamepad )

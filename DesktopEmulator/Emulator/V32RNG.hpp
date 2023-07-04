@@ -39,8 +39,8 @@ namespace V32
             V32RNG();
             
             // connection to control bus
-            virtual bool ReadPort( int32_t LocalPort, VirconWord& Result );
-            virtual bool WritePort( int32_t LocalPort, VirconWord Value );
+            virtual bool ReadPort( int32_t LocalPort, V32Word& Result );
+            virtual bool WritePort( int32_t LocalPort, V32Word Value );
             
             // general operation
             void Reset();

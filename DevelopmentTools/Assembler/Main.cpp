@@ -225,13 +225,13 @@ int main( int NumberOfArguments, char* Arguments[] )
         uint32_t ROMSizeInBytes = ROMSizeInWords * 4;
         
         // create the VBIN file header
-        BinaryFileHeader VBINHeader;
-        memcpy( VBINHeader.Signature, Signatures::BinaryFile, 8 );
+        BinaryFileFormat::Header VBINHeader;
+        memcpy( VBINHeader.Signature, BinaryFileFormat::Signature, 8 );
         VBINHeader.NumberOfWords = ROMSizeInWords;
         
         // write the header in the file
         OutputFile.seekp( 0, ios_base::beg );
-        OutputFile.write( (char*)(&VBINHeader), sizeof(BinaryFileHeader) );
+        OutputFile.write( (char*)(&VBINHeader), sizeof(BinaryFileFormat::Header) );
         
         // now add the whole ROM to the output
         OutputFile.write( (char*)(&Emitter.ROM[0]), ROMSizeInBytes );

@@ -25,7 +25,7 @@ void EmitInstructionWithoutOperands( VirconASMEmitter &Emitter, InstructionNode&
 {
     Emitter.CheckOperands( Node, 0 );
     
-    VirconWord InstructionWord = {0};
+    V32Word InstructionWord = {0};
     InstructionWord.AsInstruction.OpCode = (int)Node.OpCode;
     Emitter.ROM.push_back( InstructionWord );
 }
@@ -34,8 +34,8 @@ void EmitInstructionWithoutOperands( VirconASMEmitter &Emitter, InstructionNode&
 
 void EmitJumpInstruction( VirconASMEmitter &Emitter, InstructionNode& Node )
 {
-    VirconWord InstructionWord = {0};
-    VirconWord ImmediateWord   = {0};
+    V32Word InstructionWord = {0};
+    V32Word ImmediateWord   = {0};
     InstructionWord.AsInstruction.OpCode = (int)Node.OpCode;
     string OpCodeName = OpCodeToString( Node.OpCode );
     
@@ -66,8 +66,8 @@ void EmitJumpInstruction( VirconASMEmitter &Emitter, InstructionNode& Node )
 
 void EmitConditionalJumpInstruction( VirconASMEmitter &Emitter, InstructionNode& Node )
 {
-    VirconWord InstructionWord = {0};
-    VirconWord ImmediateWord   = {0};
+    V32Word InstructionWord = {0};
+    V32Word ImmediateWord   = {0};
     InstructionWord.AsInstruction.OpCode = (int)Node.OpCode;
     string OpCodeName = OpCodeToString( Node.OpCode );
     
@@ -105,7 +105,7 @@ void EmitConditionalJumpInstruction( VirconASMEmitter &Emitter, InstructionNode&
 
 void EmitInstructionWith1Register( VirconASMEmitter &Emitter, InstructionNode& Node )
 {
-    VirconWord InstructionWord = {0};
+    V32Word InstructionWord = {0};
     InstructionWord.AsInstruction.OpCode = (int)Node.OpCode;
     string OpCodeName = OpCodeToString( Node.OpCode );
     
@@ -126,7 +126,7 @@ void EmitInstructionWith1Register( VirconASMEmitter &Emitter, InstructionNode& N
 
 void EmitInstructionWith2Registers( VirconASMEmitter &Emitter, InstructionNode& Node )
 {
-    VirconWord InstructionWord = {0};
+    V32Word InstructionWord = {0};
     InstructionWord.AsInstruction.OpCode = (int)Node.OpCode;
     string OpCodeName = OpCodeToString( Node.OpCode );
     
@@ -152,8 +152,8 @@ void EmitInstructionWith2Registers( VirconASMEmitter &Emitter, InstructionNode& 
 
 void EmitInstructionWithRegAndInteger( VirconASMEmitter &Emitter, InstructionNode& Node )
 {
-    VirconWord InstructionWord = {0};
-    VirconWord ImmediateWord   = {0};
+    V32Word InstructionWord = {0};
+    V32Word ImmediateWord   = {0};
     InstructionWord.AsInstruction.OpCode = (int)Node.OpCode;
     string OpCodeName = OpCodeToString( Node.OpCode );
     
@@ -196,8 +196,8 @@ void EmitInstructionWithRegAndInteger( VirconASMEmitter &Emitter, InstructionNod
 
 void EmitInstructionWithRegAndFloat( VirconASMEmitter &Emitter, InstructionNode& Node )
 {
-    VirconWord InstructionWord = {0};
-    VirconWord ImmediateWord   = {0};
+    V32Word InstructionWord = {0};
+    V32Word ImmediateWord   = {0};
     InstructionWord.AsInstruction.OpCode = (int)Node.OpCode;
     string OpCodeName = OpCodeToString( Node.OpCode );
     
@@ -389,8 +389,8 @@ void EmitFLE( VirconASMEmitter &Emitter, InstructionNode& Node )
 void EmitMOV( VirconASMEmitter &Emitter, InstructionNode& Node )
 {
     // gather basic information
-    VirconWord InstructionWord = {0};
-    VirconWord ImmediateWord   = {0};
+    V32Word InstructionWord = {0};
+    V32Word ImmediateWord   = {0};
     InstructionWord.AsInstruction.OpCode = (int)Node.OpCode;
     string OpCodeName = OpCodeToString( Node.OpCode );
     
@@ -535,8 +535,8 @@ void EmitMOV( VirconASMEmitter &Emitter, InstructionNode& Node )
 void EmitLEA( VirconASMEmitter &Emitter, InstructionNode& Node )
 {
     // gather basic information
-    VirconWord InstructionWord = {0};
-    VirconWord ImmediateWord   = {0};
+    V32Word InstructionWord = {0};
+    V32Word ImmediateWord   = {0};
     string OpCodeName = OpCodeToString( Node.OpCode );
     
     // obtain its operands
@@ -604,7 +604,7 @@ void EmitPOP( VirconASMEmitter &Emitter, InstructionNode& Node )
 
 void EmitIN( VirconASMEmitter &Emitter, InstructionNode& Node )
 {
-    VirconWord InstructionWord = {0};
+    V32Word InstructionWord = {0};
     InstructionWord.AsInstruction.OpCode = (int)Node.OpCode;
     string OpCodeName = OpCodeToString( Node.OpCode );
     
@@ -631,8 +631,8 @@ void EmitIN( VirconASMEmitter &Emitter, InstructionNode& Node )
 
 void EmitOUT( VirconASMEmitter &Emitter, InstructionNode& Node )
 {
-    VirconWord InstructionWord = {0};
-    VirconWord ImmediateWord   = {0};
+    V32Word InstructionWord = {0};
+    V32Word ImmediateWord   = {0};
     InstructionWord.AsInstruction.OpCode = (int)Node.OpCode;
     string OpCodeName = OpCodeToString( Node.OpCode );
     

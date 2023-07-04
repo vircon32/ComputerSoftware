@@ -23,7 +23,7 @@ class StaticValue
 {
     public:
         
-        V32::VirconWord Word;
+        V32::V32Word Word;
         PrimitiveTypes Type;    // static values can only be primitives
         
     public:

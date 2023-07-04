@@ -60,10 +60,10 @@ void PrintVersion()
 
 void PerformABIAssertions()
 {
-    VirconWord TestWord = {0};
+    V32Word TestWord = {0};
     
     // determine the correct packing sizes
-    if( sizeof(VirconWord) != 4 )
+    if( sizeof(V32Word) != 4 )
       throw runtime_error( "ABI check failed: Vircon words are not 4 bytes in size" );
     
     // determine the correct bit endianness: instructions

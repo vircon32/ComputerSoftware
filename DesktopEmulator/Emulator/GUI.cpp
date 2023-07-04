@@ -1048,7 +1048,7 @@ void ShowEmulatorWindow()
       OpenGL2D.ClearScreen( GPUColor{ 0, 16, 32, 210 } );
     
     // now restore the Vircon render parameters
-    VirconWord BlendValue;
+    V32Word BlendValue;
     BlendValue.AsInteger = Vircon.GPU.ActiveBlending;
     Vircon.GPU.WritePort( (int32_t)GPU_LocalPorts::ActiveBlending, BlendValue );
     OpenGL2D.MultiplyColor = Vircon.GPU.MultiplyColor;
@@ -1106,7 +1106,7 @@ void RenderGUI()
     else Vircon.Resume();
     
     // restore emulator blending modes
-    VirconWord BlendValue;
+    V32Word BlendValue;
     BlendValue.AsInteger = Vircon.GPU.ActiveBlending;
     Vircon.GPU.WritePort( (int32_t)GPU_LocalPorts::ActiveBlending, BlendValue );
     

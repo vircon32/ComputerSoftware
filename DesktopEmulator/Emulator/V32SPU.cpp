@@ -66,7 +66,7 @@ namespace V32
     // =============================================================================
     
     
-    typedef void (*SPUPortWriter)( V32SPU&, VirconWord );
+    typedef void (*SPUPortWriter)( V32SPU&, V32Word );
     
     // -----------------------------------------------------------------------------
     
@@ -280,7 +280,7 @@ namespace V32
     // =============================================================================
     
     
-    bool V32SPU::ReadPort( int32_t LocalPort, VirconWord& Result )
+    bool V32SPU::ReadPort( int32_t LocalPort, V32Word& Result )
     {
         // check range
         if( LocalPort > SPU_LastPort )
@@ -293,14 +293,14 @@ namespace V32
         // CASE 1: read from SPU-level parameters
         if( LocalPort < (int32_t)SPU_LocalPorts::SoundLength )
         {
-            VirconWord* SPURegisters = (VirconWord*)(&Command);
+            V32Word* SPURegisters = (V32Word*)(&Command);
             Result = SPURegisters[ LocalPort ];
         }
         
         // CASE 2: Read from sound-level parameters
         else if( LocalPort < (int32_t)SPU_LocalPorts::ChannelState )
         {
-            VirconWord* SoundRegisters = (VirconWord*)PointedSound;
+            V32Word* SoundRegisters = (V32Word*)PointedSound;
             int32_t SoundPort = LocalPort - (int32_t)SPU_LocalPorts::SoundLength;
             Result = SoundRegisters[ SoundPort ];
         }
@@ -315,7 +315,7 @@ namespace V32
             // other channel ports can just be read as a word
             else
             {
-                VirconWord* ChannelRegisters = (VirconWord*)PointedChannel;
+                V32Word* ChannelRegisters = (V32Word*)PointedChannel;
                 int32_t ChannelPort = LocalPort - (int32_t)SPU_LocalPorts::ChannelState;
                 Result = ChannelRegisters[ ChannelPort ];
             }
@@ -326,7 +326,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32SPU::WritePort( int32_t LocalPort, VirconWord Value )
+    bool V32SPU::WritePort( int32_t LocalPort, V32Word Value )
     {
         // check range
         if( LocalPort > SPU_LastPort )

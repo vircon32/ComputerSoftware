@@ -224,7 +224,7 @@ class DataFileNode: public ASTNode
         std::string FilePath;
         
         // needed for ROM address allocation
-        std::vector< V32::VirconWord > FileContents;
+        std::vector< V32::V32Word > FileContents;
         
     public:
         

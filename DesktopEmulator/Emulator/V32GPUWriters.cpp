@@ -24,7 +24,7 @@ namespace V32
     // =============================================================================
     
     
-    void WriteGPUCommand( V32GPU& GPU, VirconWord Value )
+    void WriteGPUCommand( V32GPU& GPU, V32Word Value )
     {
         // now execute the command, if valid
         switch( Value.AsInteger )
@@ -59,14 +59,14 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPURemainingPixels( V32GPU& GPU, VirconWord Value )
+    void WriteGPURemainingPixels( V32GPU& GPU, V32Word Value )
     {
         // (ignore request: this register is read-only)
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUClearColor( V32GPU& GPU, VirconWord Value )
+    void WriteGPUClearColor( V32GPU& GPU, V32Word Value )
     {
         // just write the value
         GPU.ClearColor = Value.AsColor;
@@ -74,7 +74,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUMultiplyColor( V32GPU& GPU, VirconWord Value )
+    void WriteGPUMultiplyColor( V32GPU& GPU, V32Word Value )
     {
         // first write the value
         GPU.MultiplyColor = Value.AsColor;
@@ -85,7 +85,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUActiveBlending( V32GPU& GPU, VirconWord Value )
+    void WriteGPUActiveBlending( V32GPU& GPU, V32Word Value )
     {
         switch( Value.AsInteger )
         {
@@ -117,7 +117,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUSelectedTexture( V32GPU& GPU, VirconWord Value )
+    void WriteGPUSelectedTexture( V32GPU& GPU, V32Word Value )
     {
         // prevent setting a non-existent texture
         if( Value.AsInteger < -1 || Value.AsInteger >= (int32_t)GPU.CartridgeTextures.size() )
@@ -143,7 +143,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUSelectedRegion( V32GPU& GPU, VirconWord Value )
+    void WriteGPUSelectedRegion( V32GPU& GPU, V32Word Value )
     {
         // prevent setting a non-existent region
         if( Value.AsInteger < 0 || Value.AsInteger >= Constants::GPURegionsPerTexture )
@@ -158,7 +158,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUDrawingPointX( V32GPU& GPU, VirconWord Value )
+    void WriteGPUDrawingPointX( V32GPU& GPU, V32Word Value )
     {
         // out of range values are accepted, but they are clamped
         Clamp( Value.AsInteger, -1000, Constants::ScreenWidth + 1000 );
@@ -167,7 +167,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUDrawingPointY( V32GPU& GPU, VirconWord Value )
+    void WriteGPUDrawingPointY( V32GPU& GPU, V32Word Value )
     {
         // out of range values are accepted, but they are clamped
         Clamp( Value.AsInteger, -1000, Constants::ScreenHeight + 1000 );
@@ -176,7 +176,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUDrawingScaleX( V32GPU& GPU, VirconWord Value )
+    void WriteGPUDrawingScaleX( V32GPU& GPU, V32Word Value )
     {
         // ignore non-numeric values
         if( isnan( Value.AsFloat ) || isinf( Value.AsFloat ) )
@@ -189,7 +189,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUDrawingScaleY( V32GPU& GPU, VirconWord Value )
+    void WriteGPUDrawingScaleY( V32GPU& GPU, V32Word Value )
     {
         // ignore non-numeric values
         if( isnan( Value.AsFloat ) || isinf( Value.AsFloat ) )
@@ -202,7 +202,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUDrawingAngle( V32GPU& GPU, VirconWord Value )
+    void WriteGPUDrawingAngle( V32GPU& GPU, V32Word Value )
     {
         // ignore non-numeric values
         if( isnan( Value.AsFloat ) || isinf( Value.AsFloat ) )
@@ -215,7 +215,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPURegionMinX( V32GPU& GPU, VirconWord Value )
+    void WriteGPURegionMinX( V32GPU& GPU, V32Word Value )
     {
         // out of texture values are accepted,
         // but they are clamped to texture limits
@@ -225,7 +225,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPURegionMinY( V32GPU& GPU, VirconWord Value )
+    void WriteGPURegionMinY( V32GPU& GPU, V32Word Value )
     {
         // out of texture values are accepted,
         // but they are clamped to texture limits
@@ -235,7 +235,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPURegionMaxX( V32GPU& GPU, VirconWord Value )
+    void WriteGPURegionMaxX( V32GPU& GPU, V32Word Value )
     {
         // out of texture values are accepted,
         // but they are clamped to texture limits
@@ -247,7 +247,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPURegionMaxY( V32GPU& GPU, VirconWord Value )
+    void WriteGPURegionMaxY( V32GPU& GPU, V32Word Value )
     {
         // out of texture values are accepted,
         // but they are clamped to texture limits
@@ -257,7 +257,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPURegionHotspotX( V32GPU& GPU, VirconWord Value )
+    void WriteGPURegionHotspotX( V32GPU& GPU, V32Word Value )
     {
         // out of texture values are valid up to
         // a certain range, then they get clamped
@@ -267,7 +267,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPURegionHotspotY( V32GPU& GPU, VirconWord Value )
+    void WriteGPURegionHotspotY( V32GPU& GPU, V32Word Value )
     {
         // out of texture values are valid
         Clamp( Value.AsInteger, -Constants::GPUTextureSize, (2*Constants::GPUTextureSize)-1 );

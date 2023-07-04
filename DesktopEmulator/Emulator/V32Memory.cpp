@@ -110,7 +110,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32RAM::ReadAddress( int32_t LocalAddress, VirconWord& Result )
+    bool V32RAM::ReadAddress( int32_t LocalAddress, V32Word& Result )
     {
         // check range
         if( LocalAddress >= MemorySize )
@@ -123,7 +123,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32RAM::WriteAddress( int32_t LocalAddress, VirconWord Value )
+    bool V32RAM::WriteAddress( int32_t LocalAddress, V32Word Value )
     {
         // check range
         if( LocalAddress >= MemorySize )
@@ -170,7 +170,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32ROM::ReadAddress( int32_t LocalAddress, VirconWord& Result )
+    bool V32ROM::ReadAddress( int32_t LocalAddress, V32Word& Result )
     {
         // check range
         if( LocalAddress >= MemorySize )
@@ -183,7 +183,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32ROM::WriteAddress( int32_t LocalAddress, VirconWord Value )
+    bool V32ROM::WriteAddress( int32_t LocalAddress, V32Word Value )
     {
         // ROM cannot be written to
         return false;

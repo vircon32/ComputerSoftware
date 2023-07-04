@@ -11,7 +11,7 @@ namespace V32
     // =============================================================================
     
     
-    bool V32NullController::ReadPort( int32_t LocalPort, VirconWord& Result )
+    bool V32NullController::ReadPort( int32_t LocalPort, V32Word& Result )
     {
         // ports can never be read from
         return false;
@@ -19,7 +19,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32NullController::WritePort( int32_t LocalPort, VirconWord Value )
+    bool V32NullController::WritePort( int32_t LocalPort, V32Word Value )
     {
         // ports can never be written to
         return false;

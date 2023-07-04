@@ -90,7 +90,7 @@ namespace V32
         GPUColor        AsColor;
         SPUSample       AsSample;
     }
-    VirconWord;
+    V32Word;
 }
 
 

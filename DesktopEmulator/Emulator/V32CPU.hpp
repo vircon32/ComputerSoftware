@@ -23,17 +23,17 @@ namespace V32
         public:
             
             // general purpose registers
-            VirconWord Registers[ 11 ];
-            VirconWord CountRegister;       // alias for Registers[ 11 ]
-            VirconWord SourceRegister;      // alias for Registers[ 12 ]
-            VirconWord DestinationRegister; // alias for Registers[ 13 ]
-            VirconWord BasePointer;         // alias for Registers[ 14 ]
-            VirconWord StackPointer;        // alias for Registers[ 15 ]
+            V32Word Registers[ 11 ];
+            V32Word CountRegister;       // alias for Registers[ 11 ]
+            V32Word SourceRegister;      // alias for Registers[ 12 ]
+            V32Word DestinationRegister; // alias for Registers[ 13 ]
+            V32Word BasePointer;         // alias for Registers[ 14 ]
+            V32Word StackPointer;        // alias for Registers[ 15 ]
             
             // not accessible registers
-            VirconWord InstructionPointer;
+            V32Word InstructionPointer;
             CPUInstruction Instruction;
-            VirconWord ImmediateValue;
+            V32Word ImmediateValue;
             
             // control flags
             bool Halted;

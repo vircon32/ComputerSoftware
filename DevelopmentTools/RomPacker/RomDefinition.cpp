@@ -159,12 +159,12 @@ void RomDefinition::ProcessBinary( string& BinaryPath, vector< uint32_t >& Progr
       throw runtime_error( "incorrect VBIN format (file is too small)" );
     
     // read program header
-    BinaryFileHeader BinaryHeader;
+    BinaryFileFormat::Header BinaryHeader;
     BinaryFile.seekg( 0, ios_base::beg );
-    BinaryFile.read( (char*)(&BinaryHeader), sizeof(BinaryFileHeader) );
+    BinaryFile.read( (char*)(&BinaryHeader), sizeof(BinaryFileFormat::Header) );
     
     // check signature
-    if( !CheckSignature( BinaryHeader.Signature, Signatures::BinaryFile ) )
+    if( !CheckSignature( BinaryHeader.Signature, BinaryFileFormat::Signature ) )
       throw runtime_error( "incorrect VBIN format (file size does contain a VBIN signature)" );
     
     // file size must match the indicated program size
@@ -211,12 +211,12 @@ void RomDefinition::ProcessTexture( string& TexturePath, vector< uint32_t >& Tex
       throw runtime_error( "incorrect VTEX format (file is too small)" );
     
     // read texture header
-    TextureFileHeader TextureHeader;
+    TextureFileFormat::Header TextureHeader;
     TextureFile.seekg( 0, ios_base::beg );
-    TextureFile.read( (char*)(&TextureHeader), sizeof(TextureFileHeader) );
+    TextureFile.read( (char*)(&TextureHeader), sizeof(TextureFileFormat::Header) );
     
     // check signature
-    if( !CheckSignature( TextureHeader.Signature, Signatures::TextureFile ) )
+    if( !CheckSignature( TextureHeader.Signature, TextureFileFormat::Signature ) )
       throw runtime_error( "incorrect VTEX format (file size does contain a VTEX signature)" );
     
     // file size must match the indicated dimensions
@@ -269,12 +269,12 @@ void RomDefinition::ProcessSound( string& SoundPath, vector< uint32_t >& SoundRO
       throw runtime_error( "incorrect VSND format (file is too small)" );
       
     // read sound header
-    SoundFileHeader SoundHeader;
+    SoundFileFormat::Header SoundHeader;
     SoundFile.seekg( 0, ios_base::beg );
-    SoundFile.read( (char*)(&SoundHeader), sizeof(SoundFileHeader) );
+    SoundFile.read( (char*)(&SoundHeader), sizeof(SoundFileFormat::Header) );
     
     // check signature
-    if( !CheckSignature( SoundHeader.Signature, Signatures::SoundFile ) )
+    if( !CheckSignature( SoundHeader.Signature, SoundFileFormat::Signature ) )
       throw runtime_error( "incorrect VSND format (file size does contain a VSND signature)" );
     
     // file size must match the indicated sound length
@@ -471,11 +471,11 @@ void RomDefinition::PackROM( const string& OutputPath )
     
     // make ROM header initially empty to
     // ensure zeroes at all unused bytes
-    ROMFileHeader ROMHeader;
-    memset( &ROMHeader, 0, sizeof(ROMFileHeader) );
+    ROMFileFormat::Header ROMHeader;
+    memset( &ROMHeader, 0, sizeof(ROMFileFormat::Header) );
     
     // fill in Vircon metadata
-    CopySignature( ROMHeader.Signature, IsBios? Signatures::BiosFile : Signatures::CartridgeFile );
+    CopySignature( ROMHeader.Signature, IsBios? ROMFileFormat::BiosSignature : ROMFileFormat::CartridgeSignature );
     ROMHeader.VirconVersion  = Constants::VirconVersion;
     ROMHeader.VirconRevision = Constants::VirconRevision;
     
@@ -489,7 +489,7 @@ void RomDefinition::PackROM( const string& OutputPath )
     ROMHeader.NumberOfSounds = AudioROM.size();
     
     // calculate bytes of program ROM in the file
-    ROMHeader.ProgramROMLocation.StartOffset = sizeof( ROMFileHeader );
+    ROMHeader.ProgramROMLocation.StartOffset = sizeof(ROMFileFormat::Header);
     ROMHeader.ProgramROMLocation.Length = ProgramROM.size() * 4;
     
     // calculate the total size in bytes of video ROM
@@ -520,18 +520,18 @@ void RomDefinition::PackROM( const string& OutputPath )
       throw runtime_error( string("cannot open output file \"") + OutputPath + "\"" );
     
     // write global header to file
-    OutputFile.write( (char*)(&ROMHeader), sizeof(ROMFileHeader) );
+    OutputFile.write( (char*)(&ROMHeader), sizeof(ROMFileFormat::Header) );
     
     // write program ROM
-    OutputFile.write( (char*)(&ProgramROM[0]), ProgramROM.size() * 4 );
+    OutputFile.write( (char*)(&ProgramROM[ 0 ]), ProgramROM.size() * 4 );
     
     // write video ROM
     for( vector< uint32_t >& TextureROM: VideoROM )
-      OutputFile.write( (char*)(&TextureROM[0]), TextureROM.size() * 4 );
+      OutputFile.write( (char*)(&TextureROM[ 0 ]), TextureROM.size() * 4 );
     
     // write audio ROM
     for( vector< uint32_t >& SoundROM: AudioROM )
-      OutputFile.write( (char*)(&SoundROM[0]), SoundROM.size() * 4 );
+      OutputFile.write( (char*)(&SoundROM[ 0 ]), SoundROM.size() * 4 );
     
     // close the output file
     OutputFile.close();

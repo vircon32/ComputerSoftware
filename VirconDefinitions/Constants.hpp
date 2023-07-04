@@ -3,8 +3,8 @@
     #ifndef V32CONSTANTS_HPP
     #define V32CONSTANTS_HPP
 // -----------------------------------------------------------------------------
-//  This file is the most basic Vircon32 header. It centralizes
-//  the declaration of constants covering all console specs.
+//  This file is the most basic Vircon32 header. It centralizes the
+//  declaration of basic constants for all Vircon32 programs and tools
 // *****************************************************************************
 
 
@@ -36,9 +36,9 @@ namespace V32
         const int   GPUMaximumCartridgeTextures = 256;
         const int   GPURegionsPerTexture        = 4096;
         const int   GPUPixelCapacityPerFrame    = 9 * ScreenPixels;
-        const float GPUClearScreenPenalty       = -0.5;
-        const float GPUScalingPenalty           = +0.15;
-        const float GPURotationPenalty          = +0.25;
+        const float GPUClearScreenPenalty       = -0.50f;
+        const float GPUScalingPenalty           = +0.15f;
+        const float GPURotationPenalty          = +0.25f;
         
         // SPU specs
         const int SPUMaximumCartridgeSounds  = 1024;

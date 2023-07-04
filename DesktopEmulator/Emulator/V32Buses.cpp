@@ -25,7 +25,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32MemoryBus::ReadAddress( int32_t GlobalAddress, VirconWord& Result )
+    bool V32MemoryBus::ReadAddress( int32_t GlobalAddress, V32Word& Result )
     {
         // separate device ID and local address
         int32_t DeviceID = (GlobalAddress >> 28) & 3;
@@ -43,7 +43,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32MemoryBus::WriteAddress( int32_t GlobalAddress, VirconWord Value )
+    bool V32MemoryBus::WriteAddress( int32_t GlobalAddress, V32Word Value )
     {
         // separate device ID and local address
         int32_t DeviceID = (GlobalAddress >> 28) & 3;
@@ -75,7 +75,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void V32ControlBus::ReadPort( int32_t GlobalPort, VirconWord& Result )
+    void V32ControlBus::ReadPort( int32_t GlobalPort, V32Word& Result )
     {
         // separate device ID and local address
         int32_t DeviceID = (GlobalPort >> 8) & 7;
@@ -91,7 +91,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void V32ControlBus::WritePort( int32_t GlobalPort, VirconWord Value )
+    void V32ControlBus::WritePort( int32_t GlobalPort, V32Word Value )
     {
         // separate device ID and local address
         int32_t DeviceID = (GlobalPort >> 8) & 7;
