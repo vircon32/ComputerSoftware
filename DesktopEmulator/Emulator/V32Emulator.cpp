@@ -7,7 +7,7 @@
     #include "../DesktopInfrastructure/NumericFunctions.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
     #include "../DesktopInfrastructure/FileSignatures.hpp"
-    #include "../DesktopInfrastructure/LogStream.hpp"
+    #include "../DesktopInfrastructure/Logger.hpp"
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     
     // include project headers
@@ -84,8 +84,8 @@ namespace V32
     void V32Emulator::LoadBios( const std::string& FilePath )
     {
         // open bios file
-        LOG_SCOPE( "Loading bios" );
-        LOG( "File path: \"" << FilePath << "\"" );
+        LOG( "Loading bios" );
+        LOG( "File path: \"" + FilePath + "\"" );
     
         ifstream InputFile;
         InputFile.open( FilePath, ios_base::binary | ios_base::ate );
@@ -102,11 +102,11 @@ namespace V32
         unsigned FileBytes = InputFile.tellg();
         
         if( (FileBytes % 4) != 0 )
-          throw runtime_error( "Incorrect V32 file format (file size must be a multiple of 4)" );
+          THROW( "Incorrect V32 file format (file size must be a multiple of 4)" );
         
         // ensure that we can at least load the file header
         if( FileBytes < sizeof(ROMFileFormat::Header) )
-          throw runtime_error( "Incorrect V32 file format (file is too small)" );
+          THROW( "Incorrect V32 file format (file is too small)" );
         
         // now we can safely read the global header
         InputFile.seekg( 0, ios_base::beg );
@@ -128,7 +128,7 @@ namespace V32
         
         // report the title
         ROMHeader.Title[ 63 ] = 0;
-        LOG( "BIOS title: \"" << ROMHeader.Title << "\"" );
+        LOG( string("BIOS title: \"") + ROMHeader.Title + "\"" );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 2: Check the declared rom contents
@@ -202,7 +202,8 @@ namespace V32
           THROW( "BIOS texture does not have a valid signature" );
         
         // report texture size
-        LOG( "BIOS texture is " << TextureHeader.TextureWidth << "x" << TextureHeader.TextureHeight );
+        LOG( "BIOS texture is " + to_string( TextureHeader.TextureWidth )
+           + "x" + to_string( TextureHeader.TextureHeight ) );
         
         // check texture size limitations
         if( !IsBetween( TextureHeader.TextureWidth , 0, 1024 )
@@ -232,7 +233,7 @@ namespace V32
           THROW( "BIOS sound does not have a valid signature" );
         
         // report sound length
-        LOG( "BIOS sound is " << SoundHeader.SoundSamples << " samples" );
+        LOG( "BIOS sound is " + to_string( SoundHeader.SoundSamples ) + " samples" );
         
         // check sound length limitations
         if( !IsBetween( SoundHeader.SoundSamples, 1, Constants::SPUMaximumBiosSamples ) )
@@ -249,6 +250,7 @@ namespace V32
         
         // close the file
         InputFile.close();
+        LOG( "Finished loading BIOS" );
     }
     
     
@@ -259,8 +261,8 @@ namespace V32
     
     void V32Emulator::LoadCartridge( const std::string& FilePath )
     {
-        LOG_SCOPE( "Loading cartridge" );
-        LOG( "File path: \"" << FilePath << "\"" );
+        LOG( "Loading cartridge" );
+        LOG( "File path: \"" + FilePath + "\"" );
     
         // unload any previous cartridge
         UnloadCartridge();
@@ -281,11 +283,11 @@ namespace V32
         unsigned FileBytes = InputFile.tellg();
         
         if( (FileBytes % 4) != 0 )
-          throw runtime_error( "Incorrect V32 file format (file size must be a multiple of 4)" );
+          THROW( "Incorrect V32 file format (file size must be a multiple of 4)" );
         
         // ensure that we can at least load the file header
         if( FileBytes < sizeof(ROMFileFormat::Header) )
-          throw runtime_error( "Incorrect V32 file format (file is too small)" );
+          THROW( "Incorrect V32 file format (file is too small)" );
         
         // now we can safely read the global header
         InputFile.seekg( 0, ios_base::beg );
@@ -307,20 +309,20 @@ namespace V32
         
         // report the title
         ROMHeader.Title[ 63 ] = 0;
-        LOG( "Cartridge title: \"" << ROMHeader.Title << "\"" );
+        LOG( string("Cartridge title: \"") + ROMHeader.Title + "\"" );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 2: Check the declared rom contents
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
         // check that there are not too many textures
-        LOG( "Video ROM contains " << ROMHeader.NumberOfTextures << " textures" );
+        LOG( "Video ROM contains " + to_string( ROMHeader.NumberOfTextures ) + " textures" );
         
         if( ROMHeader.NumberOfTextures > (uint32_t)Constants::GPUMaximumCartridgeTextures )
           THROW( "Video ROM contains too many textures (Vircon GPU only allows up to 256)" );
         
         // check that there are not too many sounds
-        LOG( "Audio ROM contains " << ROMHeader.NumberOfSounds << " sounds" );
+        LOG( "Audio ROM contains " + to_string( ROMHeader.NumberOfSounds ) + " sounds" );
         
         if( ROMHeader.NumberOfSounds > (uint32_t)Constants::SPUMaximumCartridgeSounds )
           THROW( "Audio ROM contains too many sounds (Vircon SPU only allows up to 1024)" );
@@ -350,121 +352,118 @@ namespace V32
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 3: Load program rom
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        {
-            LOG_SCOPE( "Loading cartridge program ROM" );
-            
-            // load a binary file signature
-            BinaryFileFormat::Header BinaryHeader;
-            InputFile.read( (char*)(&BinaryHeader), sizeof(BinaryFileFormat::Header) );
-            
-            // check signature for embedded binary
-            if( !CheckSignature( BinaryHeader.Signature, BinaryFileFormat::Signature ) )
-              THROW( "Cartridge binary does not have a valid signature" );
-            
-            LOG( "Program ROM is " << BinaryHeader.NumberOfWords << " words" );
-            
-            // check program rom size limitations
-            if( !IsBetween( BinaryHeader.NumberOfWords, 1, Constants::MaximumCartridgeProgramROM ) )
-              THROW( "Cartridge program ROM does not have a correct size (from 1 word up to 128M words)" );
-            
-            // load the binary contents
-            vector< V32Word > LoadedBinary;
-            LoadedBinary.resize( BinaryHeader.NumberOfWords );
-            InputFile.read( (char*)(&LoadedBinary[ 0 ]), BinaryHeader.NumberOfWords * 4 );
-            CartridgeController.Connect( &LoadedBinary[ 0 ], BinaryHeader.NumberOfWords );
-            
-            // discard the temporary buffer
-            LoadedBinary.clear();
-        }
+        
+        LOG( "Loading cartridge program ROM" );
+        
+        // load a binary file signature
+        BinaryFileFormat::Header BinaryHeader;
+        InputFile.read( (char*)(&BinaryHeader), sizeof(BinaryFileFormat::Header) );
+        
+        // check signature for embedded binary
+        if( !CheckSignature( BinaryHeader.Signature, BinaryFileFormat::Signature ) )
+          THROW( "Cartridge binary does not have a valid signature" );
+        
+        LOG( "-> Program ROM is " + to_string( BinaryHeader.NumberOfWords ) + " words" );
+        
+        // check program rom size limitations
+        if( !IsBetween( BinaryHeader.NumberOfWords, 1, Constants::MaximumCartridgeProgramROM ) )
+          THROW( "Cartridge program ROM does not have a correct size (from 1 word up to 128M words)" );
+        
+        // load the binary contents
+        vector< V32Word > LoadedBinary;
+        LoadedBinary.resize( BinaryHeader.NumberOfWords );
+        InputFile.read( (char*)(&LoadedBinary[ 0 ]), BinaryHeader.NumberOfWords * 4 );
+        CartridgeController.Connect( &LoadedBinary[ 0 ], BinaryHeader.NumberOfWords );
+        
+        // discard the temporary buffer
+        LoadedBinary.clear();
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 4: Load video rom
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        
+        LOG( "Loading cartridge video ROM" );
+        
+        // load all textures in sequence
+        for( unsigned i = 0; i < ROMHeader.NumberOfTextures; i++ )
         {
-            LOG_SCOPE( "Loading cartridge video ROM" );
+            // load a texture file signature
+            TextureFileFormat::Header TextureHeader;
+            InputFile.read( (char*)(&TextureHeader), sizeof(TextureFileFormat::Header) );
             
-            // load all textures in sequence
-            for( unsigned i = 0; i < ROMHeader.NumberOfTextures; i++ )
-            {
-                // load a texture file signature
-                TextureFileFormat::Header TextureHeader;
-                InputFile.read( (char*)(&TextureHeader), sizeof(TextureFileFormat::Header) );
-                
-                // check signature for embedded texture
-                if( !CheckSignature( TextureHeader.Signature, TextureFileFormat::Signature ) )
-                  THROW( "Cartridge texture does not have a valid signature" );
-                
-                // report texture size
-                LOG( "Texture " << i << ": " << TextureHeader.TextureWidth
-                     << " x " << TextureHeader.TextureHeight << " pixels" );
-                
-                // check texture size limitations
-                if( !IsBetween( TextureHeader.TextureWidth , 0, 1024 )
-                ||  !IsBetween( TextureHeader.TextureHeight, 0, 1024 ) )
-                  THROW( "Cartridge texture does not have correct dimensions (1x1 up to 1024x1024 pixels)" );
-                
-                // load the texture pixels
-                uint32_t TexturePixels = TextureHeader.TextureWidth * TextureHeader.TextureHeight;
-                vector< V32Word > LoadedTexture;
-                LoadedTexture.resize( TexturePixels );
-                InputFile.read( (char*)(&LoadedTexture[ 0 ]), TexturePixels * 4 );
-                
-                // create a new GPU texture and load data into it
-                GPU.CartridgeTextures.emplace_back();
-                GPU.LoadTexture( GPU.CartridgeTextures.back(), &LoadedTexture[ 0 ],
-                                 TextureHeader.TextureWidth, TextureHeader.TextureHeight );
-                
-                // discard the temporary buffer
-                LoadedTexture.clear();
-            }
+            // check signature for embedded texture
+            if( !CheckSignature( TextureHeader.Signature, TextureFileFormat::Signature ) )
+              THROW( "Cartridge texture does not have a valid signature" );
+            
+            // report texture size
+            LOG( "-> Texture " + to_string( i ) + ": " + to_string( TextureHeader.TextureWidth )
+               + " x " + to_string( TextureHeader.TextureHeight ) + " pixels" );
+            
+            // check texture size limitations
+            if( !IsBetween( TextureHeader.TextureWidth , 0, 1024 )
+            ||  !IsBetween( TextureHeader.TextureHeight, 0, 1024 ) )
+              THROW( "Cartridge texture does not have correct dimensions (1x1 up to 1024x1024 pixels)" );
+            
+            // load the texture pixels
+            uint32_t TexturePixels = TextureHeader.TextureWidth * TextureHeader.TextureHeight;
+            vector< V32Word > LoadedTexture;
+            LoadedTexture.resize( TexturePixels );
+            InputFile.read( (char*)(&LoadedTexture[ 0 ]), TexturePixels * 4 );
+            
+            // create a new GPU texture and load data into it
+            GPU.CartridgeTextures.emplace_back();
+            GPU.LoadTexture( GPU.CartridgeTextures.back(), &LoadedTexture[ 0 ],
+                             TextureHeader.TextureWidth, TextureHeader.TextureHeight );
+            
+            // discard the temporary buffer
+            LoadedTexture.clear();
         }
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 5: Load audio rom
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        
+        LOG( "Loading cartridge audio ROM" );
+        
+        // keep count of the total sound samples
+        uint32_t TotalSPUSamples = 0;
+        
+        // load all sounds in sequence
+        for( unsigned i = 0; i < ROMHeader.NumberOfSounds; i++ )
         {
-            LOG_SCOPE( "Loading cartridge audio ROM" );
+            // load a sound file signature
+            SoundFileFormat::Header SoundHeader;
+            InputFile.read( (char*)(&SoundHeader), sizeof(SoundFileFormat::Header) );
             
-            // keep count of the total sound samples
-            uint32_t TotalSPUSamples = 0;
+            // check signature for embedded sound
+            if( !CheckSignature( SoundHeader.Signature, SoundFileFormat::Signature ) )
+              THROW( "Cartridge sound does not have a valid signature" );
             
-            // load all sounds in sequence
-            for( unsigned i = 0; i < ROMHeader.NumberOfSounds; i++ )
-            {
-                // load a sound file signature
-                SoundFileFormat::Header SoundHeader;
-                InputFile.read( (char*)(&SoundHeader), sizeof(SoundFileFormat::Header) );
-                
-                // check signature for embedded sound
-                if( !CheckSignature( SoundHeader.Signature, SoundFileFormat::Signature ) )
-                  THROW( "Cartridge sound does not have a valid signature" );
-                
-                // report sound length
-                LOG( "Sound " << i << ": " << SoundHeader.SoundSamples << " samples ("
-                     << (SoundHeader.SoundSamples/44100.0f) << " seconds)" );
-                
-                // check length limitations for this sound
-                if( !IsBetween( SoundHeader.SoundSamples, 1, Constants::SPUMaximumCartridgeSamples ) )
-                  THROW( "Cartridge sound does not have correct length (1 up to 256M samples)" );
-                
-                // check length limitations for the whole SPU
-                TotalSPUSamples += SoundHeader.SoundSamples;
-                
-                if( TotalSPUSamples > (uint32_t)Constants::SPUMaximumCartridgeSamples )
-                  THROW( "Cartridge sounds contain too many total samples (Vircon SPU only allows up to 256M total samples)" );
-                
-                // load the sound samples
-                vector< SPUSample > LoadedSound;
-                LoadedSound.resize( SoundHeader.SoundSamples );
-                InputFile.read( (char*)(&LoadedSound[ 0 ]), SoundHeader.SoundSamples * 4 );
-                
-                // create a new SPU sound and load data into it
-                SPU.CartridgeSounds.emplace_back();
-                SPU.LoadSound( SPU.CartridgeSounds.back(), &LoadedSound[ 0 ], SoundHeader.SoundSamples );
-                
-                // discard the temporary buffer
-                LoadedSound.clear();
-            }
+            // report sound length
+            LOG( "-> Sound " + to_string( i ) + ": " + to_string( SoundHeader.SoundSamples )
+               + " samples (" + to_string( SoundHeader.SoundSamples/44100.0f ) + " seconds)" );
+            
+            // check length limitations for this sound
+            if( !IsBetween( SoundHeader.SoundSamples, 1, Constants::SPUMaximumCartridgeSamples ) )
+              THROW( "Cartridge sound does not have correct length (1 up to 256M samples)" );
+            
+            // check length limitations for the whole SPU
+            TotalSPUSamples += SoundHeader.SoundSamples;
+            
+            if( TotalSPUSamples > (uint32_t)Constants::SPUMaximumCartridgeSamples )
+              THROW( "Cartridge sounds contain too many total samples (Vircon SPU only allows up to 256M total samples)" );
+            
+            // load the sound samples
+            vector< SPUSample > LoadedSound;
+            LoadedSound.resize( SoundHeader.SoundSamples );
+            InputFile.read( (char*)(&LoadedSound[ 0 ]), SoundHeader.SoundSamples * 4 );
+            
+            // create a new SPU sound and load data into it
+            SPU.CartridgeSounds.emplace_back();
+            SPU.LoadSound( SPU.CartridgeSounds.back(), &LoadedSound[ 0 ], SoundHeader.SoundSamples );
+            
+            // discard the temporary buffer
+            LoadedSound.clear();
         }
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -493,6 +492,7 @@ namespace V32
         
         // save the file name
         CartridgeController.CartridgeFileName = GetPathFileName( FilePath );
+        LOG( "Finished loading cartridge" );
     }
     
     // -----------------------------------------------------------------------------
@@ -501,6 +501,7 @@ namespace V32
     {
         // do nothing if a cartridge is not loaded
         if( !HasCartridge() ) return;
+        LOG( "Unloading cartridge" );
         
         // release cartridge program ROM
         CartridgeController.Disconnect();
@@ -531,8 +532,8 @@ namespace V32
     
     void V32Emulator::CreateMemoryCard( const std::string& FilePath )
     {
-        LOG_SCOPE( "Creating memory card" );
-        LOG( "File path: \"" << FilePath << "\"" );
+        LOG( "Creating memory card" );
+        LOG( "File path: \"" + FilePath + "\"" );
         
         MemoryCardController.CreateNewFile( FilePath );
     }
@@ -541,8 +542,8 @@ namespace V32
     
     void V32Emulator::LoadMemoryCard( const std::string& FilePath )
     {
-        LOG_SCOPE( "Loading memory card" );
-        LOG( "File path: \"" << FilePath << "\"" );
+        LOG( "Loading memory card" );
+        LOG( "File path: \"" + FilePath + "\"" );
     
         // unload any previous card
         UnloadMemoryCard();
@@ -552,6 +553,8 @@ namespace V32
         
         // update list of recent cards
         AddRecentMemoryCardPath( FilePath );
+        
+        LOG( "Finished loading memory card" );
     }
     
     // -----------------------------------------------------------------------------

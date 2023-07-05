@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/LogStream.hpp"
+    #include "../DesktopInfrastructure/Logger.hpp"
     #include "../DesktopInfrastructure/NumericFunctions.hpp"
     #include "../DesktopInfrastructure/StringFunctions.hpp"
     
@@ -438,10 +438,10 @@ void LoadControls( const std::string& FilePath )
     // as backup, set our default configuration
     catch( exception& e )
     {
-        LOG( "Cannot load controls file: " << e.what() );
+        LOG( "Cannot load controls file: " + string(e.what()) );
         
-        string Message = Texts(TextIDs::Errors_LoadControls_Label) + string(e.what()) + "\n";
-        Message += Texts(TextIDs::Errors_LoadControls_SetDefaults);
+        string Message = Texts( TextIDs::Errors_LoadControls_Label ) + string(e.what()) + "\n";
+        Message += Texts( TextIDs::Errors_LoadControls_SetDefaults );
         
         DelayedMessageBox
         (
@@ -601,8 +601,8 @@ void LoadSettings( const string& FilePath )
                 DelayedMessageBox
                 (
                     SDL_MESSAGEBOX_WARNING,
-                    Texts(TextIDs::Errors_InvalidLanguage_Title),
-                    Texts(TextIDs::Errors_InvalidLanguage_Label)
+                    Texts( TextIDs::Errors_InvalidLanguage_Title ),
+                    Texts( TextIDs::Errors_InvalidLanguage_Label )
                 );
                 
                 SetLanguage( "English" );
@@ -688,14 +688,14 @@ void LoadSettings( const string& FilePath )
             // warn when a profile name is not found
             if( MappedGamepads[ Gamepad ].Type != DeviceTypes::Joystick )
             {
-                string Message = Texts(TextIDs::Errors_InvalidDevice_CannotFind) + string("\"") + ProfileName + "\".\n";
-                Message += Texts(TextIDs::Errors_InvalidDevice_Gamepad) + to_string( Gamepad+1 );
-                Message += Texts(TextIDs::Errors_InvalidDevice_SetNoDevice);
+                string Message = Texts( TextIDs::Errors_InvalidDevice_CannotFind ) + string("\"") + ProfileName + "\".\n";
+                Message += Texts( TextIDs::Errors_InvalidDevice_Gamepad ) + to_string( Gamepad+1 );
+                Message += Texts( TextIDs::Errors_InvalidDevice_SetNoDevice );
                 
                 DelayedMessageBox
                 (
                     SDL_MESSAGEBOX_WARNING,
-                    Texts(TextIDs::Errors_InvalidDevice_Title),
+                    Texts( TextIDs::Errors_InvalidDevice_Title ),
                     Message.c_str()
                 );
             }
@@ -751,10 +751,10 @@ void LoadSettings( const string& FilePath )
     // as backup, set our default configuration
     catch( exception& e )
     {
-        LOG( "Cannot load settings file: " << e.what() );
+        LOG( "Cannot load settings file: " + string(e.what()) );
         
-        string Message = Texts(TextIDs::Errors_LoadSettings_Label) + string(e.what()) + "\n";
-        Message += Texts(TextIDs::Errors_LoadSettings_SetDefaults);
+        string Message = Texts( TextIDs::Errors_LoadSettings_Label ) + string(e.what()) + "\n";
+        Message += Texts( TextIDs::Errors_LoadSettings_SetDefaults );
         
         DelayedMessageBox
         (
@@ -882,9 +882,9 @@ void SaveSettings( const string& FilePath )
     // as backup, set our default configuration
     catch( exception& e )
     {
-        LOG( "Cannot save settings file: " << e.what() );
+        LOG( "Cannot save settings file: " + string(e.what()) );
         
-        string Message = Texts(TextIDs::Errors_SaveSettings_Label) + string(e.what());
+        string Message = Texts( TextIDs::Errors_SaveSettings_Label ) + string(e.what());
         DelayedMessageBox( SDL_MESSAGEBOX_ERROR, "Error", Message.c_str() );
     }
 }

@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/LogStream.hpp"
+    #include "../DesktopInfrastructure/Logger.hpp"
     
     // include project headers
     #include "Languages.hpp"

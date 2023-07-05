@@ -1,7 +1,7 @@
 // *****************************************************************************
     // include project headers
     #include "NumericFunctions.hpp"
-    #include "LogStream.hpp"
+    #include "Logger.hpp"
     #include "Texture.hpp"
     
     // include SDL2 headers
@@ -53,7 +53,7 @@ void Texture::Load( const string& FileName )
     // STEP 1: USE SDL_IMAGE TO LOAD IMAGE FROM FILE
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
-    LOG( "Texture -> Load \"" << FileName << "\"" );
+    LOG( "Texture -> Load \"" + FileName + "\"" );
     SDL_Surface* LoadedImage = NULL;
     
     // load image from file
@@ -155,7 +155,7 @@ void Texture::Release()
     if( !TextureID ) return;
     
     // delete the OpenGL texture
-    LOG( "Texture -> Release \"" << LoadedFile << "\"" );
+    LOG( "Texture -> Release \"" + LoadedFile + "\"" );
     glDeleteTextures( 1, &TextureID );
     TextureID = 0;
 }

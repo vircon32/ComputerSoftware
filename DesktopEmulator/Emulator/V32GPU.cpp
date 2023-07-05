@@ -5,7 +5,7 @@
     
     // include infrastructure headers
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
-    #include "../DesktopInfrastructure/LogStream.hpp"
+    #include "../DesktopInfrastructure/Logger.hpp"
     
     // include project headers
     #include "V32GPU.hpp"

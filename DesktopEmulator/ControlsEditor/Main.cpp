@@ -2,7 +2,7 @@
     // include infrastructure headers
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
-    #include "../DesktopInfrastructure/LogStream.hpp"
+    #include "../DesktopInfrastructure/Logger.hpp"
     
     // include project headers
     #include "Controls.hpp"
@@ -243,7 +243,7 @@ void ProcessJoystickRemoved( SDL_JoyDeviceEvent DeviceEvent )
 string GetProgramFolder()
 {
     if( SDL_Init( 0 ) )
-      throw runtime_error( "cannot initialize SDL" );
+      THROW( "cannot initialize SDL" );
     
     char* SDLString = SDL_GetBasePath();
     string Result = SDLString;
@@ -287,7 +287,7 @@ int main()
         
         // open all connected joysticks
         int NumberOfJoysticks = SDL_NumJoysticks();
-        LOG( "Active joysticks: " << NumberOfJoysticks );
+        LOG( "Active joysticks: " + to_string( NumberOfJoysticks ) );
         
         for( int Joystick = 0; Joystick < NumberOfJoysticks; Joystick++ )
         {
@@ -377,7 +377,7 @@ int main()
           }
           catch( exception& e )
           {
-              LOG( "Cannot set window icon: " << e.what() );
+              LOG( "Cannot set window icon: " + string(e.what()) );
           }
         #endif
         
@@ -458,7 +458,7 @@ int main()
     
     catch( const exception& e )
     {
-        LOG( "ERROR: " << e.what() );
+        LOG( "ERROR: " + string(e.what()) );
         string ErrorMessage = Texts(TextIDs::Errors_TopLevel_Label) + string(e.what());
         
         SDL_ShowSimpleMessageBox

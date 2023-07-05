@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/LogStream.hpp"
+    #include "../DesktopInfrastructure/Logger.hpp"
     
     // include project headers
     #include "V32Memory.hpp"
@@ -53,7 +53,8 @@ namespace V32
     void V32RAM::SaveContents( const string& FilePath )
     {
         // open the file
-        LOG( "Saving RAM file \"" << FilePath << "\"" );
+        LOG( "Saving RAM" );
+        LOG( "File path: \"" + FilePath + "\"" );
         
         ofstream OutputFile;
         OutputFile.open( FilePath, ios::binary );
@@ -66,6 +67,7 @@ namespace V32
         
         // close the file
         OutputFile.close();
+        LOG( "Finished saving RAM" );
     }
     
     // -----------------------------------------------------------------------------
@@ -73,7 +75,8 @@ namespace V32
     void V32RAM::LoadContents( const string& FilePath )
     {
         // open the file
-        LOG( "Loading RAM file \"" << FilePath << "\"" );
+        LOG( "Loading RAM" );
+        LOG( "File path: \"" + FilePath + "\"" );
         
         ifstream InputFile;
         InputFile.open( FilePath, ios::binary | ios::ate );
@@ -84,7 +87,7 @@ namespace V32
         // obtain file size
         int NumberOfBytes = InputFile.tellg();
         int NumberOfWords = NumberOfBytes / 4;
-        LOG( "RAM size: " << NumberOfBytes << " bytes = " << NumberOfWords << " words" );
+        LOG( "RAM size: " + to_string( NumberOfBytes ) + " bytes = " + to_string( NumberOfWords ) + " words" );
         
         // check size coherency
         if( NumberOfBytes != int(MemorySize * 4) )
@@ -99,6 +102,7 @@ namespace V32
         
         // close the file
         InputFile.close();
+        LOG( "Finished loading RAM" );
     }
     
     // -----------------------------------------------------------------------------

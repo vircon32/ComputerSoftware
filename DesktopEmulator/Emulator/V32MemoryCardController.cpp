@@ -6,7 +6,7 @@
     // include infrastructure headers
     #include "../DesktopInfrastructure/FilePaths.hpp"
     #include "../DesktopInfrastructure/FileSignatures.hpp"
-    #include "../DesktopInfrastructure/LogStream.hpp"
+    #include "../DesktopInfrastructure/Logger.hpp"
     
     // include project headers
     #include "V32MemoryCardController.hpp"
@@ -89,7 +89,8 @@ namespace V32
     void V32MemoryCardController::LoadContents( const std::string& FilePath )
     {
         // open the file
-        LOG( "Loading memory card file \"" << FilePath << "\"" );
+        LOG( "Loading memory card" );
+        LOG( "File path: \"" + FilePath + "\"" );
         
         ifstream InputFile;
         InputFile.open( FilePath, ios::binary | ios::ate );
@@ -127,6 +128,8 @@ namespace V32
         // save the file path for later
         CardSavePath = FilePath;
         CardFileName = GetPathFileName( FilePath );
+        
+        LOG( "Finished loading memory card" );
     }
     
     // -----------------------------------------------------------------------------
@@ -134,7 +137,8 @@ namespace V32
     void V32MemoryCardController::SaveContents( const std::string& FilePath )
     {
         // open the file
-        LOG( "Saving memory card file \"" << FilePath << "\"" );
+        LOG( "Saving memory card" );
+        LOG( "File path: \"" + FilePath + "\"" );
         
         ofstream OutputFile;
         OutputFile.open( FilePath, ios::binary );
@@ -150,13 +154,15 @@ namespace V32
         
         // close the file
         OutputFile.close();
+        LOG( "Finished saving memory card" );
     }
     
     // -----------------------------------------------------------------------------
     
     void V32MemoryCardController::CreateNewFile( const std::string& FilePath )
     {
-        LOG( "Creating memory card file \"" << FilePath << "\"" );
+        LOG( "Creating memory card" );
+        LOG( "File path: \"" + FilePath + "\"" );
         
         // open the file
         ofstream OutputFile;
@@ -175,5 +181,6 @@ namespace V32
         
         // close the file
         OutputFile.close();
+        LOG( "Finished creating memory card" );
     }
 }

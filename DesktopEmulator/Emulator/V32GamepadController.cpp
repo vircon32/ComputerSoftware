@@ -1,16 +1,12 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/LogStream.hpp"
     #include "../DesktopInfrastructure/NumericFunctions.hpp"
     
     // include project headers
     #include "V32GamepadController.hpp"
     
     // include C/C++ headers
-    #include <string.h>         // [ ANSI C ] Strings
-    
-    // declare used namespaces
-    using namespace std;
+    #include <cstring>          // [ ANSI C ] Strings
 // *****************************************************************************
 
 

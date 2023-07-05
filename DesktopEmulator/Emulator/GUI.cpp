@@ -2,6 +2,7 @@
     // include infrastructure headers
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
+    #include "../DesktopInfrastructure/Logger.hpp"
     
     // include project headers
     #include "GUI.hpp"
@@ -230,22 +231,22 @@ void SaveScreenshot( const string& FilePath )
     FILE *PNGFile = fopen( FilePath.c_str(), "wb" );
     
     if( !PNGFile )
-      throw runtime_error( "Cannot open output file" );
+      THROW( "Cannot open output file" );
     
     // initialize PNG functions
     png_struct* PNGHandler = png_create_write_struct( PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr );
     
     if( !PNGHandler )
-      throw runtime_error( "Cannot create PNG handler" );
+      THROW( "Cannot create PNG handler" );
 
     png_info* PNGInfo = png_create_info_struct( PNGHandler );
     
     if( !PNGInfo )
-      throw runtime_error( "Cannot write PNG information" );
+      THROW( "Cannot write PNG information" );
 
     // define a callback function expected by libpng for error handling
     if( setjmp( png_jmpbuf(PNGHandler) ) )
-      throw runtime_error( "Cannot initialize PNG error handling" );
+      THROW( "Cannot initialize PNG error handling" );
       
     // begin writing
     png_init_io( PNGHandler, PNGFile );
@@ -361,15 +362,15 @@ void GUI_CreateMemoryCard()
             DelayedMessageBox
             (
                 SDL_MESSAGEBOX_INFORMATION,
-                Texts(TextIDs::Dialogs_Done),
-                Texts(TextIDs::Dialogs_CardCreated_Label)
+                Texts( TextIDs::Dialogs_Done ),
+                Texts( TextIDs::Dialogs_CardCreated_Label )
             );
         }
     }
     
     catch( const exception& e )
     {
-        string Message = Texts(TextIDs::Errors_CreateCard_Label) + string(e.what());
+        string Message = Texts( TextIDs::Errors_CreateCard_Label ) + string(e.what());
         DelayedMessageBox( SDL_MESSAGEBOX_ERROR, "Error", Message.c_str() );
     }
 }
@@ -385,7 +386,7 @@ void GUI_UnloadMemoryCard()
     
     catch( const exception& e )
     {
-        string Message = Texts(TextIDs::Errors_UnloadCard_Label) + string(e.what());
+        string Message = Texts( TextIDs::Errors_UnloadCard_Label ) + string(e.what());
         DelayedMessageBox( SDL_MESSAGEBOX_ERROR, "Error", Message.c_str() );
     }
 }
@@ -408,7 +409,7 @@ void GUI_LoadMemoryCard( string MemoryCardPath )
     
     catch( const exception& e )
     {
-        string Message = Texts(TextIDs::Errors_LoadCard_Label) + string(e.what());
+        string Message = Texts( TextIDs::Errors_LoadCard_Label ) + string(e.what());
         DelayedMessageBox( SDL_MESSAGEBOX_ERROR, "Error", Message.c_str() );
     }
 }
@@ -432,7 +433,7 @@ void GUI_ChangeMemoryCard( string MemoryCardPath )
     
     catch( const exception& e )
     {
-        string Message = Texts(TextIDs::Errors_ChangeCard_Label) + string(e.what());
+        string Message = Texts( TextIDs::Errors_ChangeCard_Label ) + string(e.what());
         DelayedMessageBox( SDL_MESSAGEBOX_ERROR, "Error", Message.c_str() );
     }
 }
@@ -448,7 +449,7 @@ void GUI_UnloadCartridge()
     
     catch( const exception& e )
     {
-        string Message = Texts(TextIDs::Errors_UnloadCartridge_Label) + string(e.what());
+        string Message = Texts( TextIDs::Errors_UnloadCartridge_Label ) + string(e.what());
         DelayedMessageBox( SDL_MESSAGEBOX_ERROR, "Error", Message.c_str() );
     }
 }
@@ -477,7 +478,7 @@ void GUI_LoadCartridge( string CartridgePath )
     
     catch( const exception& e )
     {
-        string Message = Texts(TextIDs::Errors_LoadCartridge_Label) + string(e.what());
+        string Message = Texts( TextIDs::Errors_LoadCartridge_Label ) + string(e.what());
         DelayedMessageBox( SDL_MESSAGEBOX_ERROR, "Error", Message.c_str() );
     }
 }
@@ -507,7 +508,7 @@ void GUI_ChangeCartridge( string CartridgePath )
     
     catch( const exception& e )
     {
-        string Message = Texts(TextIDs::Errors_ChangeCartridge_Label) + string(e.what());
+        string Message = Texts( TextIDs::Errors_ChangeCartridge_Label ) + string(e.what());
         DelayedMessageBox( SDL_MESSAGEBOX_ERROR, "Error", Message.c_str() );
     }
 }
@@ -554,14 +555,14 @@ void GUI_SaveScreenshot( string FilePath )
         DelayedMessageBox
         (
             SDL_MESSAGEBOX_INFORMATION,
-            Texts(TextIDs::Dialogs_Done),
-            Texts(TextIDs::Dialogs_ScreenshotSaved_Label)
+            Texts( TextIDs::Dialogs_Done ),
+            Texts( TextIDs::Dialogs_ScreenshotSaved_Label )
         );
     }
     
     catch( exception& e )
     {
-        string MessageBoxText = Texts(TextIDs::Errors_SaveScreenshot_Label) + string(e.what());
+        string MessageBoxText = Texts( TextIDs::Errors_SaveScreenshot_Label ) + string(e.what());
         DelayedMessageBox( SDL_MESSAGEBOX_ERROR, "Error", MessageBoxText.c_str() );
     }
 }
@@ -934,8 +935,8 @@ void ProcessMenuHelp()
         DelayedMessageBox
         (
             SDL_MESSAGEBOX_INFORMATION,
-            Texts(TextIDs::Dialogs_Guide_Title),
-            Texts(TextIDs::Dialogs_Guide_Label)
+            Texts( TextIDs::Dialogs_Guide_Title ),
+            Texts( TextIDs::Dialogs_Guide_Label )
         );
     }
     
@@ -965,8 +966,8 @@ void ProcessMenuHelp()
         DelayedMessageBox
         (
             SDL_MESSAGEBOX_INFORMATION,
-            Texts(TextIDs::Dialogs_About_Title),
-            Texts(TextIDs::Dialogs_About_Label)
+            Texts( TextIDs::Dialogs_About_Title ),
+            Texts( TextIDs::Dialogs_About_Label )
         );
     }
     

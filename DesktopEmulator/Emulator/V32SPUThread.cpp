@@ -35,7 +35,7 @@ namespace V32
         // (1) obtain class instance from parameters
         if( !Parameters )
         {
-            throw runtime_error( "Vircon SPU instance not received" );
+            cout << "Audio thread: Vircon32 SPU instance not received" << endl;
             return 1;
         }
         

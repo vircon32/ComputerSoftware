@@ -2,6 +2,9 @@
     // include common Vircon headers
     #include "../../VirconDefinitions/Enumerations.hpp"
     
+    // include infrastructure headers
+    #include "../DesktopInfrastructure/Logger.hpp"
+    
     // include project headers
     #include "V32CPU.hpp"
     
@@ -68,7 +71,7 @@ namespace V32
     void ProcessHLT( V32CPU& CPU, CPUInstruction Instruction )
     {
         CPU.Halted = true;
-        cout << "CPU halted" << endl;
+        LOG( "CPU halted" );
     }
     
     // -----------------------------------------------------------------------------

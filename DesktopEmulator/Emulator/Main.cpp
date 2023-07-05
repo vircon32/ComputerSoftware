@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/LogStream.hpp"
+    #include "../DesktopInfrastructure/Logger.hpp"
     #include "../DesktopInfrastructure/StopWatch.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
@@ -51,13 +51,13 @@ void PerformABIAssertions()
     
     // determine the correct packing sizes
     if( sizeof(V32Word) != 4 )
-      throw runtime_error( "ABI check failed: Vircon words are not 4 bytes in size" );
+      THROW( "ABI check failed: Vircon words are not 4 bytes in size" );
     
     // determine the correct bit endianness: instructions
     TestWord.AsInstruction.OpCode = 0x1;
     
     if( TestWord.AsBinary != 0x04000000 )
-      throw runtime_error( "ABI check failed: Fields of CPU instructions are not correctly ordered" );
+      THROW( "ABI check failed: Fields of CPU instructions are not correctly ordered" );
     
     // determine the correct byte endianness
     TestWord.AsColor.R = 0x11;
@@ -66,7 +66,7 @@ void PerformABIAssertions()
     TestWord.AsColor.A = 0x44;
     
     if( TestWord.AsBinary != 0x44332211 )
-      throw runtime_error( "ABI check failed: Components GPU colors are not correctly ordered as RGBA" );
+      THROW( "ABI check failed: Components GPU colors are not correctly ordered as RGBA" );
 }
 
 // -----------------------------------------------------------------------------
@@ -91,7 +91,7 @@ void PerformPortAssertions()
 string GetProgramFolder()
 {
     if( SDL_Init( 0 ) )
-      throw runtime_error( "cannot initialize SDL" );
+      THROW( "cannot initialize SDL" );
     
     char* SDLString = SDL_GetBasePath();
     string Result = SDLString;
@@ -149,7 +149,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         
         // open all connected joysticks
         int NumberOfJoysticks = SDL_NumJoysticks();
-        LOG( "Active joysticks: " << NumberOfJoysticks );
+        LOG( "Active joysticks: " + to_string( NumberOfJoysticks ) );
         
         for( int JoystickIndex = 0; JoystickIndex < NumberOfJoysticks; JoystickIndex++ )
         {
@@ -172,8 +172,8 @@ int main( int NumberOfArguments, char* Arguments[] )
         string GraphicDeviceVendor = (const char *)glGetString( GL_VENDOR );
         string GraphicDeviceModel = (const char *)glGetString( GL_RENDERER );
         
-        LOG( string("Graphic device vendor: ") << GraphicDeviceVendor );
-        LOG( string("Graphic device model: ") << GraphicDeviceModel );
+        LOG( "Graphic device vendor: " + GraphicDeviceVendor );
+        LOG( "Graphic device model: " + GraphicDeviceModel );
         
         // =======================
         
@@ -258,7 +258,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         }
         catch( exception& e )
         {
-            LOG( "Cannot set window icon: " << e.what() );
+            LOG( "Cannot set window icon: " + string(e.what()) );
         }
         
         // load our configuration from XML files
@@ -266,7 +266,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         LoadSettings( EmulatorFolder + "Config-Settings.xml" );
         
         // initialize the window
-        string WindowTitle = string("Vircon32: ") + Texts(TextIDs::Status_NoCartridge);
+        string WindowTitle = string("Vircon32: ") + Texts( TextIDs::Status_NoCartridge );
         SDL_SetWindowTitle( OpenGL2D.Window, WindowTitle.c_str() );
         SDL_SetWindowPosition( OpenGL2D.Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED );
         
@@ -539,13 +539,13 @@ int main( int NumberOfArguments, char* Arguments[] )
     
     catch( const exception& e )
     {
-        LOG( "ERROR: " << e.what() );
-        string Message = Texts(TextIDs::Errors_TopLevel_Label) + string(e.what());
+        LOG( "ERROR: " + string(e.what()) );
+        string Message = Texts( TextIDs::Errors_TopLevel_Label ) + string(e.what());
         
         DelayedMessageBox
         (
             SDL_MESSAGEBOX_ERROR,
-            Texts(TextIDs::Errors_TopLevel_Title),
+            Texts( TextIDs::Errors_TopLevel_Title ),
             Message.c_str()
         );
     }

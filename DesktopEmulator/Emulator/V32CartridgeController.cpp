@@ -1,14 +1,6 @@
 // *****************************************************************************
     // include project headers
     #include "V32CartridgeController.hpp"
-    
-    // include C/C++ headers
-    #include <iostream>         // [ C++ STL ] I/O Streams
-    #include <fstream>          // [ C++ STL ] File streams
-    #include <stdexcept>        // [ C++ STL ] Exceptions
-    
-    // declare used namespaces
-    using namespace std;
 // *****************************************************************************
 
 

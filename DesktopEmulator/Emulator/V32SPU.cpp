@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/LogStream.hpp"
+    #include "../DesktopInfrastructure/Logger.hpp"
     
     // include project headers
     #include "V32SPU.hpp"
@@ -699,8 +699,7 @@ namespace V32
         
         catch( const exception& e )
         {
-            cout << "[Exception caught]: " << e.what() << endl;
-            cout.flush();
+            LOG( "Exception clearing sound buffer queue: " + string(e.what()) );
         }
     }
     

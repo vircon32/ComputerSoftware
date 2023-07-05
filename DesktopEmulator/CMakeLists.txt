@@ -279,7 +279,7 @@ set(EMULATOR_SRC
     ${EMULATOR_DIR}/V32Timer.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
     ${INFRASTRUCTURE_DIR}/FileSignatures.cpp
-    ${INFRASTRUCTURE_DIR}/LogStream.cpp
+    ${INFRASTRUCTURE_DIR}/Logger.cpp
     ${INFRASTRUCTURE_DIR}/Matrix4D.cpp
     ${INFRASTRUCTURE_DIR}/OpenGL2DContext.cpp
     ${INFRASTRUCTURE_DIR}/StopWatch.cpp
@@ -294,7 +294,7 @@ set(EDITCONTROLS_SRC
     ${EDITCONTROLS_DIR}/Languages.cpp
     ${EDITCONTROLS_DIR}/Main.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
-    ${INFRASTRUCTURE_DIR}/LogStream.cpp
+    ${INFRASTRUCTURE_DIR}/Logger.cpp
     ${INFRASTRUCTURE_DIR}/Matrix4D.cpp
     ${INFRASTRUCTURE_DIR}/OpenGL2DContext.cpp
     ${INFRASTRUCTURE_DIR}/StringFunctions.cpp

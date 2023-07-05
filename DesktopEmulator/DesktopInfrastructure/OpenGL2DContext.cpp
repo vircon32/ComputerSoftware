@@ -5,7 +5,7 @@
     // include project headers
     #include "OpenGL2DContext.hpp"
     #include "NumericFunctions.hpp"
-    #include "LogStream.hpp"
+    #include "Logger.hpp"
     
     // declare used namespaces
     using namespace std;
@@ -154,7 +154,7 @@ OpenGL2DContext::~OpenGL2DContext()
 
 void OpenGL2DContext::CreateOpenGLWindow()
 {
-    LOG_SCOPE( "Creating OpenGL window" );
+    LOG( "Creating OpenGL window" );
     
     // load default dynamic OpenGL libraries
     SDL_GL_LoadLibrary( nullptr );
@@ -236,8 +236,8 @@ void OpenGL2DContext::CreateOpenGLWindow()
     #endif
     
     // show basic OpenGL information
-    LOG( "OpenGL renderer: " << (char*)glGetString( GL_RENDERER ) );
-    LOG( "GLSL version: " << (char*)glGetString( GL_SHADING_LANGUAGE_VERSION ) );
+    LOG( string("OpenGL renderer: ") + (char*)glGetString( GL_RENDERER ) );
+    LOG( string("GLSL version: ") + (char*)glGetString( GL_SHADING_LANGUAGE_VERSION ) );
     
     // use vsync
     LOG( "Activating VSync" );
@@ -254,24 +254,25 @@ void OpenGL2DContext::CreateOpenGLWindow()
     
     // enable textures
     glEnable( GL_TEXTURE_2D );
+    
+    LOG( "Finished creating OpenGL window" );
 }
 
 // -----------------------------------------------------------------------------
 
 void OpenGL2DContext::CreateFramebuffer()
 {
-    LOG_SCOPE( "Creating Framebuffer" );
+    LOG( "Creating Framebuffer" );
     ClearOpenGLErrors();
     
     // create our frame buffer and select it
-    {   LOG_SCOPE( "Creating Framebuffer object" );
+    LOG( "Creating Framebuffer object" );
     
-        glGenFramebuffers( 1, &FramebufferID );
-        LogOpenGLResult( "glGenFramebuffers" );
-        
-        glBindFramebuffer( GL_FRAMEBUFFER, FramebufferID );
-        LogOpenGLResult( "glBindFramebuffer" );
-    }
+    glGenFramebuffers( 1, &FramebufferID );
+    LogOpenGLResult( "glGenFramebuffers" );
+    
+    glBindFramebuffer( GL_FRAMEBUFFER, FramebufferID );
+    LogOpenGLResult( "glBindFramebuffer" );
     
     // PART 1: COLOR BUFFER
     
@@ -280,59 +281,59 @@ void OpenGL2DContext::CreateFramebuffer()
     FramebufferHeight = NextPowerOf2( Constants::ScreenHeight );
     
     // create our texture for the frame buffer and select it
-    { LOG_SCOPE( "Creating a new texture" );
+    LOG( "Creating a new texture" );
         
-        glGenTextures( 1, &FBColorTextureID );
-        LogOpenGLResult( "glGenTextures" );
-        
-        glBindTexture( GL_TEXTURE_2D, FBColorTextureID );
-        LogOpenGLResult( "glBindTexture" );
-        
-        // Give an empty image to OpenGL ( the last "0" )    
-        glTexImage2D
-        (
-            GL_TEXTURE_2D,
-            0,
-            GL_RGB8,
-            FramebufferWidth,
-            FramebufferHeight,
-            0,
-            GL_RGB,
-            GL_UNSIGNED_BYTE,
-            0
-        );
-        LogOpenGLResult( "glTexImage2D" );
-
-        // our texture should be drawn to screen scaled with nearest neighbour
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-        LogOpenGLResult( "glTexParameteri" );
-    }
+    glGenTextures( 1, &FBColorTextureID );
+    LogOpenGLResult( "glGenTextures" );
+    
+    glBindTexture( GL_TEXTURE_2D, FBColorTextureID );
+    LogOpenGLResult( "glBindTexture" );
+    
+    // Give an empty image to OpenGL ( the last "0" )    
+    glTexImage2D
+    (
+        GL_TEXTURE_2D,
+        0,
+        GL_RGB8,
+        FramebufferWidth,
+        FramebufferHeight,
+        0,
+        GL_RGB,
+        GL_UNSIGNED_BYTE,
+        0
+    );
+    LogOpenGLResult( "glTexImage2D" );
+    
+    // our texture should be drawn to screen scaled with nearest neighbour
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    LogOpenGLResult( "glTexParameteri" );
     
     // PART 2: FRAME BUFFER
     // Set our color texture as framebuffer's colour attachment #0
-    { LOG_SCOPE( "Binding the render buffer to the Framebuffer" );
-        
-        if( glFramebufferTexture2D == nullptr )
-          LOG( "Function glFramebufferTexture is not linked!" );
-        
-        glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBColorTextureID, 0 );
-        LogOpenGLResult( "glFramebufferTexture" );
-        
-        LOG( "Checking status of the created Framebuffer" );
-        GLenum FBOStatus = glCheckFramebufferStatus( GL_FRAMEBUFFER );
-        LogOpenGLResult( "glCheckFramebufferStatus" );
-        
-        if( FBOStatus != GL_FRAMEBUFFER_COMPLETE )
-          THROW( string("Framebuffer status is not complete. Status: ") + (const char*)glGetString( FBOStatus ) );
-        
-        LOG( "Framebuffer status OK" );
-        
-        // Set the list of draw buffers.
-        GLenum ColorBuffers[ 1 ] = { GL_COLOR_ATTACHMENT0 };
-        glDrawBuffers( 1, ColorBuffers );
-        LogOpenGLResult( "glDrawBuffers" );
-    }
+    LOG( "Binding the render buffer to the Framebuffer" );
+    
+    if( glFramebufferTexture2D == nullptr )
+      LOG( "Function glFramebufferTexture is not linked!" );
+    
+    glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBColorTextureID, 0 );
+    LogOpenGLResult( "glFramebufferTexture" );
+    
+    LOG( "Checking status of the created Framebuffer" );
+    GLenum FBOStatus = glCheckFramebufferStatus( GL_FRAMEBUFFER );
+    LogOpenGLResult( "glCheckFramebufferStatus" );
+    
+    if( FBOStatus != GL_FRAMEBUFFER_COMPLETE )
+      THROW( string("Framebuffer status is not complete. Status: ") + (const char*)glGetString( FBOStatus ) );
+    
+    LOG( "Framebuffer status OK" );
+    
+    // Set the list of draw buffers.
+    GLenum ColorBuffers[ 1 ] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers( 1, ColorBuffers );
+    LogOpenGLResult( "glDrawBuffers" );
+    
+    LOG( "Finished creating Framebuffer" );
 }
 
 // -----------------------------------------------------------------------------
@@ -361,7 +362,7 @@ bool OpenGL2DContext::CompileShaderProgram()
         GLchar* GLInfoLog = new GLchar[ GLInfoLogLength + 1 ];
         glGetShaderInfoLog( VertexShaderID, GLInfoLogLength, nullptr, GLInfoLog );    
         
-        LOG( "ERROR: Vertex shader compilation failed: " << GLInfoLog );
+        LOG( string("ERROR: Vertex shader compilation failed: ") + (char*)GLInfoLog );
         delete GLInfoLog;
         
         glDeleteShader( VertexShaderID );
@@ -369,7 +370,7 @@ bool OpenGL2DContext::CompileShaderProgram()
         return false;
     }
     
-    LOG( "Vertex shader compiled successfully! ID = " << VertexShaderID );
+    LOG( "Vertex shader compiled successfully! ID = " + to_string( VertexShaderID ) );
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // PART 2: Compile our fragment shader
@@ -387,7 +388,7 @@ bool OpenGL2DContext::CompileShaderProgram()
         GLchar* GLInfoLog = new GLchar[ GLInfoLogLength + 1 ];
         glGetShaderInfoLog( FragmentShaderID, GLInfoLogLength, nullptr, GLInfoLog );    
         
-        LOG( "ERROR: Fragment shader compilation failed: " << GLInfoLog );
+        LOG( string("ERROR: Fragment shader compilation failed: ") + (char*)GLInfoLog );
         delete GLInfoLog;
         
         glDeleteShader( VertexShaderID );
@@ -396,7 +397,7 @@ bool OpenGL2DContext::CompileShaderProgram()
         return false;
     }
     
-    LOG( "Fragment shader compiled successfully! ID = " << FragmentShaderID );
+    LOG( "Fragment shader compiled successfully! ID = " + to_string( FragmentShaderID ) );
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // PART 3: Link our compiled shaders to form a GLSL program
@@ -415,7 +416,7 @@ bool OpenGL2DContext::CompileShaderProgram()
         GLchar* GLInfoLog = new GLchar[ GLInfoLogLength + 1 ];
         glGetShaderInfoLog( ShaderProgramID, GLInfoLogLength, nullptr, GLInfoLog );    
         
-        LOG( "ERROR: Linking shader program failed: " << GLInfoLog );
+        LOG( string("ERROR: Linking shader program failed: ") + (char*)GLInfoLog );
         delete GLInfoLog;
         
         glDeleteShader( VertexShaderID );
@@ -423,7 +424,7 @@ bool OpenGL2DContext::CompileShaderProgram()
         return false;
     }
     
-    LOG( "Shader program linked successfully! ID = " << ShaderProgramID );
+    LOG( "Shader program linked successfully! ID = " + to_string( ShaderProgramID ) );
     
     // clean-up temporary compilation objects
     glDetachShader( ShaderProgramID, VertexShaderID );
@@ -438,7 +439,7 @@ bool OpenGL2DContext::CompileShaderProgram()
 
 void OpenGL2DContext::InitRendering()
 {
-    LOG_SCOPE( "Initializing rendering" );
+    LOG( "Initializing rendering" );
     ClearOpenGLErrors();
     
     // compile our shader program
@@ -529,13 +530,15 @@ void OpenGL2DContext::InitRendering()
     );
     
     glEnableVertexAttribArray( TexCoordsLocation );
+    
+    LOG( "Finished initializing rendering" );
 }
 
 // -----------------------------------------------------------------------------
 
 void OpenGL2DContext::CreateWhiteTexture()
 {
-    LOG_SCOPE( "Creating white texture" );
+    LOG( "Creating white texture" );
     ClearOpenGLErrors();
     
     // create new texture ID
@@ -566,6 +569,8 @@ void OpenGL2DContext::CreateWhiteTexture()
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    
+    LOG( "Finished creating white texture" );
 }
 
 // -----------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/LogStream.hpp"
+    #include "../DesktopInfrastructure/Logger.hpp"
     #include "../DesktopInfrastructure/StringFunctions.hpp"
     
     // include project headers
@@ -443,9 +443,9 @@ void LoadControls( const string& FilePath )
     // as backup, set our default configuration
     catch( exception& e )
     {
-        LOG( "Error loading controls: " << e.what() );
-        string ErrorMessage = Texts(TextIDs::Errors_LoadControls_Label) + string(e.what()) + "\n";
-        ErrorMessage += Texts(TextIDs::Errors_LoadControls_SetDefaults);
+        LOG( "Error loading controls: " + string(e.what()) );
+        string ErrorMessage = Texts( TextIDs::Errors_LoadControls_Label ) + string(e.what()) + "\n";
+        ErrorMessage += Texts( TextIDs::Errors_LoadControls_SetDefaults );
         SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", ErrorMessage.c_str(), nullptr );
         
         SetDefaultControls();
@@ -593,8 +593,8 @@ void SaveControls( const std::string& FilePath )
     // no backup; just report to the user
     catch( exception& e )
     {
-        LOG( "Error saving controls: " << e.what() );
-        string ErrorMessage = Texts(TextIDs::Errors_SaveControls_Label) + string(e.what());
+        LOG( "Error saving controls: " + string(e.what()) );
+        string ErrorMessage = Texts( TextIDs::Errors_SaveControls_Label ) + string(e.what());
         SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", ErrorMessage.c_str(), nullptr );
     }
 }
