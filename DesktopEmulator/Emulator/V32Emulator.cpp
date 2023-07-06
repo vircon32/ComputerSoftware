@@ -72,7 +72,9 @@ namespace V32
     
     V32Emulator::~V32Emulator()
     {
-        // (do nothing, for now)
+        // unload any present media
+        if( HasMemoryCard() )  UnloadMemoryCard();
+        if( HasCartridge() )   UnloadCartridge();
     }
     
            
@@ -124,7 +126,7 @@ namespace V32
         // check current Vircon version
         if( ROMHeader.VirconVersion  > (unsigned)Constants::VirconVersion
         ||  ROMHeader.VirconRevision > (unsigned)Constants::VirconRevision )
-          THROW( "This BIOS was made for a more recent version of Vircon. Please use an updated emulator" );
+          THROW( "This BIOS was made for a more recent version of Vircon32. Please use an updated emulator" );
         
         // report the title
         ROMHeader.Title[ 63 ] = 0;
@@ -305,7 +307,7 @@ namespace V32
         // check current Vircon version
         if( ROMHeader.VirconVersion  > (unsigned)Constants::VirconVersion
         ||  ROMHeader.VirconRevision > (unsigned)Constants::VirconRevision )
-          THROW( "This cartridge was made for a more recent version of Vircon. Please use an updated emulator" );
+          THROW( "This cartridge was made for a more recent version of Vircon32. Please use an updated emulator" );
         
         // report the title
         ROMHeader.Title[ 63 ] = 0;
@@ -535,7 +537,24 @@ namespace V32
         LOG( "Creating memory card" );
         LOG( "File path: \"" + FilePath + "\"" );
         
-        MemoryCardController.CreateNewFile( FilePath );
+        // open the file
+        ofstream OutputFile;
+        OutputFile.open( FilePath, ios::binary | ios::trunc );
+        
+        if( OutputFile.fail() )
+          THROW( "Cannot create memory card file" );
+        
+        // save the signature
+        WriteSignature( OutputFile, MemoryCardFileFormat::Signature );
+        
+        // now save all empty contents
+        vector< V32Word > EmptyWords;
+        EmptyWords.resize( Constants::MemoryCardSize );
+        OutputFile.write( (char*)(&EmptyWords[ 0 ]), Constants::MemoryCardSize * 4 );
+        
+        // close the file
+        OutputFile.close();
+        LOG( "Finished creating memory card" );
     }
     
     // -----------------------------------------------------------------------------
@@ -548,10 +567,43 @@ namespace V32
         // unload any previous card
         UnloadMemoryCard();
         
-        // load the card into memory
-        Vircon.MemoryCardController.LoadContents( FilePath );
+        // open the file for random access
+        fstream& InputFile = MemoryCardController.LinkedFile;
+        InputFile.open( FilePath, ios_base::in | ios_base::out | ios::binary | ios::ate );
         
-        // update list of recent cards
+        if( InputFile.fail() )
+          THROW( "Cannot open memory card file" );
+        
+        // check file size coherency
+        int NumberOfBytes = InputFile.tellg();
+        int ExpectedBytes = 8 + Constants::MemoryCardSize * 4;
+        
+        if( NumberOfBytes != ExpectedBytes )
+        {
+            InputFile.close();
+            THROW( "Invalid memory card: File does not match the size of a Vircon memory card" );
+        }
+        
+        // read and check signature
+        InputFile.seekg( 0, ios_base::beg );
+        char FileSignature[ 8 ];
+        InputFile.read( FileSignature, 8 );
+        
+        if( !CheckSignature( FileSignature, MemoryCardFileFormat::Signature ) )
+          THROW( "Memory card file does not have a valid signature" );
+        
+        // connect the memory
+        MemoryCardController.Connect( Constants::MemoryCardSize );
+        
+        // now load the whole memory card contents
+        InputFile.read( (char*)(&MemoryCardController.Memory[ 0 ]), Constants::MemoryCardSize * 4 );
+        
+        // do NOT close the file! leave it open until
+        // card is unloaded or emulation is stopped,
+        // so that it can be saved if card is modified
+        
+        // update file name and list of recent cards
+        MemoryCardController.CardFileName = GetPathFileName( FilePath );
         AddRecentMemoryCardPath( FilePath );
         
         LOG( "Finished loading memory card" );
@@ -563,9 +615,40 @@ namespace V32
     {
         // do nothing if a card is not loaded
         if( !HasMemoryCard() ) return;
+        LOG( "Unloading memory card" );
+        
+        // save the card if it was modified
+        if( MemoryCardController.PendingSave )
+          SaveMemoryCard();
         
         // remove the card memory
-        Vircon.MemoryCardController.Disconnect();
+        MemoryCardController.Disconnect();
+        
+        // close the open file
+        MemoryCardController.LinkedFile.close();
+        LOG( "Finished unloading memory card" );
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    void V32Emulator::SaveMemoryCard()
+    {
+        // do nothing if a card is not loaded
+        if( !HasMemoryCard() ) return;
+        
+        // check the file
+        fstream& OutputFile = MemoryCardController.LinkedFile;
+        
+        if( !OutputFile.is_open() || OutputFile.fail() )
+          THROW( "Cannot save memory card file" );
+        
+        // save the signature
+        OutputFile.seekp( ios_base::beg );
+        WriteSignature( OutputFile, MemoryCardFileFormat::Signature );
+        
+        // now save all contents
+        OutputFile.write( (char*)(&MemoryCardController.Memory[ 0 ]), Constants::MemoryCardSize * 4 );
+        MemoryCardController.PendingSave = false;
     }
     
     
@@ -605,7 +688,6 @@ namespace V32
         CPU.ChangeFrame();
         GPU.ChangeFrame();
         SPU.ChangeFrame();
-        MemoryCardController.ChangeFrame();
         GamepadController.ChangeFrame();
         
         // STEP 2: Run a frame's worth of cycles
@@ -632,6 +714,10 @@ namespace V32
         // STEP 3: after running, ensure that all GPU
         // commands run in the current frame are drawn
         glFlush();
+        
+        // STEP 4: save memory card to file when modified
+        if( MemoryCardController.PendingSave )
+          SaveMemoryCard();
     }
     
     // -----------------------------------------------------------------------------

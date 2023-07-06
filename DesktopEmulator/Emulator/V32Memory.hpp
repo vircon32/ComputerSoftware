@@ -35,8 +35,6 @@ namespace V32
             void Disconnect();
             
             // memory contents
-            virtual void SaveContents( const std::string& FilePath );
-            virtual void LoadContents( const std::string& FilePath );
             void ClearContents();
             
             // bus connection

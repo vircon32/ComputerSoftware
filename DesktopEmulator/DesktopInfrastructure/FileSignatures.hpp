@@ -15,7 +15,7 @@
 // =============================================================================
 
 
-void WriteSignature( std::ofstream& OutputFile, const char* Value );
+void WriteSignature( std::ostream& OutputFile, const char* Value );
 bool CheckSignature( char* Signature, const char* Expected );
 
 

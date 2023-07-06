@@ -78,6 +78,7 @@ namespace V32
             void CreateMemoryCard( const std::string& FilePath );
             void LoadMemoryCard( const std::string& FilePath );
             void UnloadMemoryCard();
+            void SaveMemoryCard();
             
             // general operation
             void RunNextFrame();

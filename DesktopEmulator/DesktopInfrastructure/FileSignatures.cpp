@@ -12,7 +12,7 @@
 // =============================================================================
 
 
-void WriteSignature( ofstream& OutputFile, const char* Value )
+void WriteSignature( ostream& OutputFile, const char* Value )
 {
     OutputFile.write( Value, 8 );
 }

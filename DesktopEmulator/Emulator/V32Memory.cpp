@@ -50,63 +50,6 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void V32RAM::SaveContents( const string& FilePath )
-    {
-        // open the file
-        LOG( "Saving RAM" );
-        LOG( "File path: \"" + FilePath + "\"" );
-        
-        ofstream OutputFile;
-        OutputFile.open( FilePath, ios::binary );
-        
-        if( OutputFile.fail() )
-          THROW( "Cannot open RAM file" );
-        
-        // save all contents
-        OutputFile.write( (char*)(&Memory[0]), MemorySize * 4 );
-        
-        // close the file
-        OutputFile.close();
-        LOG( "Finished saving RAM" );
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    void V32RAM::LoadContents( const string& FilePath )
-    {
-        // open the file
-        LOG( "Loading RAM" );
-        LOG( "File path: \"" + FilePath + "\"" );
-        
-        ifstream InputFile;
-        InputFile.open( FilePath, ios::binary | ios::ate );
-        
-        if( InputFile.fail() )
-          THROW( "Cannot open RAM file" );
-            
-        // obtain file size
-        int NumberOfBytes = InputFile.tellg();
-        int NumberOfWords = NumberOfBytes / 4;
-        LOG( "RAM size: " + to_string( NumberOfBytes ) + " bytes = " + to_string( NumberOfWords ) + " words" );
-        
-        // check size coherency
-        if( NumberOfBytes != int(MemorySize * 4) )
-        {
-            InputFile.close();
-            THROW( "Invalid RAM: File must match the size of the current RAM module" );
-        }
-        
-        // load whole file to RAM
-        InputFile.seekg( 0, ios::beg );
-        InputFile.read( (char*)(&Memory[0]), MemorySize * 4 );
-        
-        // close the file
-        InputFile.close();
-        LOG( "Finished loading RAM" );
-    }
-    
-    // -----------------------------------------------------------------------------
-    
     void V32RAM::ClearContents()
     {
         memset( &Memory[ 0 ], 0, Memory.size() * 4 );

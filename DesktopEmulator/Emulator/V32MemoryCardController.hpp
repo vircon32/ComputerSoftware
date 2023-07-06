@@ -40,14 +40,17 @@ namespace V32
         public:
             
             // file save control
-            std::string CardFileName;
-            std::string CardSavePath;
+            std::fstream LinkedFile;
             bool PendingSave;
+            
+            // displayed file name for GUI
+            std::string CardFileName;
             
         public:
             
             // instance handling
             V32MemoryCardController();
+           ~V32MemoryCardController();
             
             // connection to control bus
             virtual bool ReadPort( int32_t LocalPort, V32Word& Result );
@@ -55,16 +58,6 @@ namespace V32
             
             // connection to memory bus (overriden)
             virtual bool WriteAddress( int32_t LocalAddress, V32Word Value );
-            
-            // memory contents (overriden)
-            virtual void LoadContents( const std::string& FilePath );
-            virtual void SaveContents( const std::string& FilePath );
-            
-            // additional method for creating a new file
-            void CreateNewFile( const std::string& FilePath );
-            
-            // general operation
-            void ChangeFrame();
     };
 }
 
