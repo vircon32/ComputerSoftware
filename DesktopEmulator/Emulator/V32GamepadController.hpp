@@ -74,8 +74,8 @@ namespace V32
             int32_t SelectedGamepad;
             
             // state of the 4 gamepads
-            GamepadState RealTimeGamepadStates[ Constants::MaximumGamepads ];
-            GamepadState ProvidedGamepadStates[ Constants::MaximumGamepads ];
+            GamepadState RealTimeGamepadStates[ Constants::GamepadPorts ];
+            GamepadState ProvidedGamepadStates[ Constants::GamepadPorts ];
             
             // mapping configuration
             // (pending)
@@ -95,9 +95,8 @@ namespace V32
             void ResetGamepad( int GamepadPort );
             
             // gamepad events
-            void ProcessConnectionChange( int GamepadPort, bool Connected );
-            void ProcessButtonChange( int GamepadPort, GamepadButtons Button, bool Pressed );
-            void ProcessDirectionChange( int GamepadPort, GamepadDirections Direction, bool Pressed );
+            void SetGamepadConnection( int GamepadPort, bool Connected );
+            void SetGamepadControl( int GamepadPort, GamepadControls Control, bool Pressed );
             
             // external queries
             bool IsGamepadConnected( int GamepadPort );

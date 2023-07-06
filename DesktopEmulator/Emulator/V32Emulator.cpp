@@ -928,7 +928,7 @@ namespace V32
             if( ControlIsPressed ) return;
             
             // in other cases process the key normally
-            for( int Gamepad = 0; Gamepad < Constants::MaximumGamepads; Gamepad++ )
+            for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
             {
                 // non-connected gamepads are ignored
                 if( !GamepadController.IsGamepadConnected( Gamepad ) )
@@ -940,38 +940,38 @@ namespace V32
                 
                 // check the mapped keys for directions
                 if( KeyCode == KeyboardProfile.Left )
-                  GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Left, true );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Left, true );
                   
                 if( KeyCode == KeyboardProfile.Right )
-                  GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Right, true );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Right, true );
                   
                 if( KeyCode == KeyboardProfile.Up )
-                  GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Up, true );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Up, true );
                   
                 if( KeyCode == KeyboardProfile.Down )
-                  GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Down, true );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Down, true );
                   
                 // check the mapped keys for buttons
                 if( KeyCode == KeyboardProfile.ButtonA )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::A, true );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonA, true );
                 
                 if( KeyCode == KeyboardProfile.ButtonB )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::B, true );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonB, true );
                 
                 if( KeyCode == KeyboardProfile.ButtonX )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::X, true );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonX, true );
                 
                 if( KeyCode == KeyboardProfile.ButtonY )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::Y, true );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonY, true );
                   
                 if( KeyCode == KeyboardProfile.ButtonL )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::L, true );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonL, true );
                 
                 if( KeyCode == KeyboardProfile.ButtonR )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::R, true );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonR, true );
                 
                 if( KeyCode == KeyboardProfile.ButtonStart )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::Start, true );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, true );
             }
         }
         
@@ -985,7 +985,7 @@ namespace V32
             if( ControlIsPressed ) return;
             
             // in other cases process the key normally
-            for( int Gamepad = 0; Gamepad < Constants::MaximumGamepads; Gamepad++ )
+            for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
             {
                 // non-connected gamepads are ignored
                 if( !GamepadController.IsGamepadConnected( Gamepad ) )
@@ -997,38 +997,38 @@ namespace V32
                 
                 // check the mapped keys for directions
                 if( KeyCode == KeyboardProfile.Left )
-                  GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Left, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Left, false );
                   
                 if( KeyCode == KeyboardProfile.Right )
-                  GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Right, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Right, false );
                   
                 if( KeyCode == KeyboardProfile.Up )
-                  GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Up, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Up, false );
                   
                 if( KeyCode == KeyboardProfile.Down )
-                  GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Down, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Down, false );
                   
                 // check the mapped keys for buttons
                 if( KeyCode == KeyboardProfile.ButtonA )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::A, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonA, false );
                 
                 if( KeyCode == KeyboardProfile.ButtonB )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::B, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonB, false );
                 
                 if( KeyCode == KeyboardProfile.ButtonX )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::X, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonX, false );
                 
                 if( KeyCode == KeyboardProfile.ButtonY )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::Y, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonY, false );
                   
                 if( KeyCode == KeyboardProfile.ButtonL )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::L, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonL, false );
                 
                 if( KeyCode == KeyboardProfile.ButtonR )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::R, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonR, false );
                 
                 if( KeyCode == KeyboardProfile.ButtonStart )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::Start, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, false );
             }
         }
         
@@ -1054,7 +1054,7 @@ namespace V32
             bool NegativePressed = (AxisPosition < -16000);
             
             // check all gamepads
-            for( int Gamepad = 0; Gamepad < Constants::MaximumGamepads; Gamepad++ )
+            for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
             {
                 // non-connected gamepads are ignored
                 if( !GamepadController.IsGamepadConnected( Gamepad ) )
@@ -1080,48 +1080,48 @@ namespace V32
                 // check the mapped axes for directions
                 if( JoystickProfile->Left.IsAxis )
                   if( AxisIndex == JoystickProfile->Left.AxisIndex )
-                    GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Left, JoystickProfile->Left.AxisPositive? PositivePressed : NegativePressed );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Left, JoystickProfile->Left.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->Right.IsAxis )
                   if( AxisIndex == JoystickProfile->Right.AxisIndex )
-                    GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Right, JoystickProfile->Right.AxisPositive? PositivePressed : NegativePressed );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Right, JoystickProfile->Right.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->Up.IsAxis )
                   if( AxisIndex == JoystickProfile->Up.AxisIndex )
-                    GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Up, JoystickProfile->Up.AxisPositive? PositivePressed : NegativePressed );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Up, JoystickProfile->Up.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->Down.IsAxis )
                   if( AxisIndex == JoystickProfile->Down.AxisIndex )
-                    GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Down, JoystickProfile->Down.AxisPositive? PositivePressed : NegativePressed );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Down, JoystickProfile->Down.AxisPositive? PositivePressed : NegativePressed );
                 
                 // check the mapped axes for buttons
                 if( JoystickProfile->ButtonA.IsAxis )
                   if( AxisIndex == JoystickProfile->ButtonA.AxisIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::A, JoystickProfile->ButtonA.AxisPositive? PositivePressed : NegativePressed );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonA, JoystickProfile->ButtonA.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->ButtonB.IsAxis )
                   if( AxisIndex == JoystickProfile->ButtonB.AxisIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::B, JoystickProfile->ButtonB.AxisPositive? PositivePressed : NegativePressed );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonB, JoystickProfile->ButtonB.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->ButtonX.IsAxis )
                   if( AxisIndex == JoystickProfile->ButtonX.AxisIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::X, JoystickProfile->ButtonX.AxisPositive? PositivePressed : NegativePressed );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonX, JoystickProfile->ButtonX.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->ButtonY.IsAxis )
                   if( AxisIndex == JoystickProfile->ButtonY.AxisIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::Y, JoystickProfile->ButtonY.AxisPositive? PositivePressed : NegativePressed );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonY, JoystickProfile->ButtonY.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->ButtonL.IsAxis )
                   if( AxisIndex == JoystickProfile->ButtonL.AxisIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::L, JoystickProfile->ButtonL.AxisPositive? PositivePressed : NegativePressed );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonL, JoystickProfile->ButtonL.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->ButtonR.IsAxis )
                   if( AxisIndex == JoystickProfile->ButtonR.AxisIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::R, JoystickProfile->ButtonR.AxisPositive? PositivePressed : NegativePressed );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonR, JoystickProfile->ButtonR.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->ButtonStart.IsAxis )
                   if( AxisIndex == JoystickProfile->ButtonStart.AxisIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::Start, JoystickProfile->ButtonStart.AxisPositive? PositivePressed : NegativePressed );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, JoystickProfile->ButtonStart.AxisPositive? PositivePressed : NegativePressed );
             }
         }
         
@@ -1132,7 +1132,7 @@ namespace V32
             SDL_Joystick* Joystick = SDL_JoystickFromInstanceID( InstanceID );
             SDL_JoystickGUID GUID = SDL_JoystickGetGUID( Joystick );
             
-            for( int Gamepad = 0; Gamepad < Constants::MaximumGamepads; Gamepad++ )
+            for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
             {
                 // non-connected gamepads are ignored
                 if( !GamepadController.IsGamepadConnected( Gamepad ) )
@@ -1158,48 +1158,48 @@ namespace V32
                 // check the mapped buttons for directions
                 if( !JoystickProfile->Left.IsAxis )
                   if( ButtonIndex == JoystickProfile->Left.ButtonIndex )
-                    GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Left, true );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Left, true );
                   
                 if( !JoystickProfile->Right.IsAxis )
                   if( ButtonIndex == JoystickProfile->Right.ButtonIndex )
-                    GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Right, true );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Right, true );
                   
                 if( !JoystickProfile->Up.IsAxis )
                   if( ButtonIndex == JoystickProfile->Up.ButtonIndex )
-                    GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Up, true );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Up, true );
                   
                 if( !JoystickProfile->Down.IsAxis )
                   if( ButtonIndex == JoystickProfile->Down.ButtonIndex )
-                    GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Down, true );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Down, true );
                   
                 // check the mapped buttons for buttons
                 if( !JoystickProfile->ButtonA.IsAxis )
                   if( ButtonIndex == JoystickProfile->ButtonA.ButtonIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::A, true );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonA, true );
                 
                 if( !JoystickProfile->ButtonB.IsAxis )
                   if( ButtonIndex == JoystickProfile->ButtonB.ButtonIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::B, true );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonB, true );
                 
                 if( !JoystickProfile->ButtonX.IsAxis )
                   if( ButtonIndex == JoystickProfile->ButtonX.ButtonIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::X, true );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonX, true );
                 
                 if( !JoystickProfile->ButtonY.IsAxis )
                   if( ButtonIndex == JoystickProfile->ButtonY.ButtonIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::Y, true );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonY, true );
                   
                 if( !JoystickProfile->ButtonL.IsAxis )
                   if( ButtonIndex == JoystickProfile->ButtonL.ButtonIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::L, true );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonL, true );
                 
                 if( !JoystickProfile->ButtonR.IsAxis )
                   if( ButtonIndex == JoystickProfile->ButtonR.ButtonIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::R, true );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonR, true );
                 
                 if( !JoystickProfile->ButtonStart.IsAxis )
                   if( ButtonIndex == JoystickProfile->ButtonStart.ButtonIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::Start, true );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, true );
             }
         }
         
@@ -1210,7 +1210,7 @@ namespace V32
             SDL_Joystick* Joystick = SDL_JoystickFromInstanceID( InstanceID );
             SDL_JoystickGUID GUID = SDL_JoystickGetGUID( Joystick );
             
-            for( int Gamepad = 0; Gamepad < Constants::MaximumGamepads; Gamepad++ )
+            for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
             {
                 // non-connected gamepads are ignored
                 if( !GamepadController.IsGamepadConnected( Gamepad ) )
@@ -1235,38 +1235,38 @@ namespace V32
                 
                 // check the mapped buttons for directions
                 if( ButtonIndex == JoystickProfile->Left.ButtonIndex )
-                  GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Left, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Left, false );
                   
                 if( ButtonIndex == JoystickProfile->Right.ButtonIndex )
-                  GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Right, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Right, false );
                   
                 if( ButtonIndex == JoystickProfile->Up.ButtonIndex )
-                  GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Up, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Up, false );
                   
                 if( ButtonIndex == JoystickProfile->Down.ButtonIndex )
-                  GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Down, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Down, false );
                   
                 // check the mapped buttons for buttons
                 if( ButtonIndex == JoystickProfile->ButtonA.ButtonIndex )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::A, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonA, false );
                 
                 if( ButtonIndex == JoystickProfile->ButtonB.ButtonIndex )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::B, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonB, false );
                 
                 if( ButtonIndex == JoystickProfile->ButtonX.ButtonIndex )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::X, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonX, false );
                 
                 if( ButtonIndex == JoystickProfile->ButtonY.ButtonIndex )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::Y, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonY, false );
                   
                 if( ButtonIndex == JoystickProfile->ButtonL.ButtonIndex )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::L, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonL, false );
                 
                 if( ButtonIndex == JoystickProfile->ButtonR.ButtonIndex )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::R, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonR, false );
                 
                 if( ButtonIndex == JoystickProfile->ButtonStart.ButtonIndex )
-                  GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::Start, false );
+                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, false );
             }
         }
         
@@ -1282,7 +1282,7 @@ namespace V32
             // for each axis we need to process both directions
             
             // check all gamepads
-            for( int Gamepad = 0; Gamepad < Constants::MaximumGamepads; Gamepad++ )
+            for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
             {
                 // non-connected gamepads are ignored
                 if( !GamepadController.IsGamepadConnected( Gamepad ) )
@@ -1308,48 +1308,48 @@ namespace V32
                 // check the mapped axes for directions
                 if( JoystickProfile->Left.IsHat )
                   if( HatIndex == JoystickProfile->Left.HatIndex )
-                    GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Left, (bool)(HatDirection & JoystickProfile->Left.HatDirection) );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Left, (bool)(HatDirection & JoystickProfile->Left.HatDirection) );
                 
                 if( JoystickProfile->Right.IsHat )
                   if( HatIndex == JoystickProfile->Right.HatIndex )
-                    GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Right, (bool)(HatDirection & JoystickProfile->Right.HatDirection) );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Right, (bool)(HatDirection & JoystickProfile->Right.HatDirection) );
                 
                 if( JoystickProfile->Up.IsHat )
                   if( HatIndex == JoystickProfile->Up.HatIndex )
-                    GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Up, (bool)(HatDirection & JoystickProfile->Up.HatDirection) );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Up, (bool)(HatDirection & JoystickProfile->Up.HatDirection) );
                 
                 if( JoystickProfile->Down.IsHat )
                   if( HatIndex == JoystickProfile->Down.HatIndex )
-                    GamepadController.ProcessDirectionChange( Gamepad, GamepadDirections::Down, (bool)(HatDirection & JoystickProfile->Down.HatDirection) );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Down, (bool)(HatDirection & JoystickProfile->Down.HatDirection) );
                 
                 // check the mapped buttons for buttons
                 if( !JoystickProfile->ButtonA.IsHat )
                   if( HatIndex == JoystickProfile->ButtonA.HatIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::A, (bool)(HatDirection & JoystickProfile->ButtonA.HatDirection) );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonA, (bool)(HatDirection & JoystickProfile->ButtonA.HatDirection) );
                 
                 if( !JoystickProfile->ButtonB.IsHat )
                   if( HatIndex == JoystickProfile->ButtonB.HatIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::B, (bool)(HatDirection & JoystickProfile->ButtonB.HatDirection) );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonB, (bool)(HatDirection & JoystickProfile->ButtonB.HatDirection) );
                 
                 if( !JoystickProfile->ButtonX.IsHat )
                   if( HatIndex == JoystickProfile->ButtonX.HatIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::X, (bool)(HatDirection & JoystickProfile->ButtonX.HatDirection) );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonX, (bool)(HatDirection & JoystickProfile->ButtonX.HatDirection) );
                 
                 if( !JoystickProfile->ButtonY.IsHat )
                   if( HatIndex == JoystickProfile->ButtonY.HatIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::Y, (bool)(HatDirection & JoystickProfile->ButtonY.HatDirection) );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonY, (bool)(HatDirection & JoystickProfile->ButtonY.HatDirection) );
                 
                 if( !JoystickProfile->ButtonL.IsHat )
                   if( HatIndex == JoystickProfile->ButtonL.HatIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::L, (bool)(HatDirection & JoystickProfile->ButtonL.HatDirection) );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonL, (bool)(HatDirection & JoystickProfile->ButtonL.HatDirection) );
                 
                 if( !JoystickProfile->ButtonR.IsHat )
                   if( HatIndex == JoystickProfile->ButtonR.HatIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::R, (bool)(HatDirection & JoystickProfile->ButtonR.HatDirection) );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonR, (bool)(HatDirection & JoystickProfile->ButtonR.HatDirection) );
                 
                 if( !JoystickProfile->ButtonStart.IsHat )
                   if( HatIndex == JoystickProfile->ButtonStart.HatIndex )
-                    GamepadController.ProcessButtonChange( Gamepad, GamepadButtons::Start, (bool)(HatDirection & JoystickProfile->ButtonStart.HatDirection) );
+                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, (bool)(HatDirection & JoystickProfile->ButtonStart.HatDirection) );
             }
         }
     }

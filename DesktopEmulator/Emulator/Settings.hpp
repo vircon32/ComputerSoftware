@@ -140,7 +140,7 @@ extern KeyboardMapping KeyboardProfile;
 extern std::map< SDL_JoystickGUID, JoystickMapping* > JoystickProfiles;
 
 // maps {Vircon gamepads} --> {PC devices}
-extern DeviceInfo MappedGamepads[ V32::Constants::MaximumGamepads ];
+extern DeviceInfo MappedGamepads[ V32::Constants::GamepadPorts ];
 
 
 // =============================================================================

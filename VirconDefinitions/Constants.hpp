@@ -59,7 +59,7 @@ namespace V32
         const int ControlBusSlaves = 8;
         
         // other specs
-        const int MaximumGamepads = 4;
+        const int GamepadPorts = 4;
         
         // base memory addresses
         const int RAMFirstAddress                 = 0x00000000;

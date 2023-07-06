@@ -108,7 +108,7 @@ KeyboardMapping KeyboardProfile;
 map< SDL_JoystickGUID, JoystickMapping* > JoystickProfiles;
 
 // maps {Vircon gamepads} --> {PC devices}
-DeviceInfo MappedGamepads[ Constants::MaximumGamepads ];
+DeviceInfo MappedGamepads[ Constants::GamepadPorts ];
 
 
 // =============================================================================
@@ -462,12 +462,12 @@ void AssignInputDevices()
     bool IsKeyboardUsed = false;
     
     // update mappings for gamepads
-    for( int Gamepad = 0; Gamepad < Constants::MaximumGamepads; Gamepad++ )
+    for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
     {
         DeviceInfo* GamepadDevice = &MappedGamepads[ Gamepad ];
         
         // preemptively disconnect the gamepad
-        Vircon.GamepadController.ProcessConnectionChange( Gamepad, false );
+        Vircon.GamepadController.SetGamepadConnection( Gamepad, false );
         
         // process non-joystick devices
         if( GamepadDevice->Type == DeviceTypes::NoDevice )
@@ -482,7 +482,7 @@ void AssignInputDevices()
             else
             {
                 IsKeyboardUsed = true;
-                Vircon.GamepadController.ProcessConnectionChange( Gamepad, true );
+                Vircon.GamepadController.SetGamepadConnection( Gamepad, true );
             }
             
             continue;
@@ -506,7 +506,7 @@ void AssignInputDevices()
             {
                 MappedInstanceIDs.insert( JoystickInstanceID );
                 GamepadDevice->InstanceID = JoystickInstanceID;
-                Vircon.GamepadController.ProcessConnectionChange( Gamepad, true );
+                Vircon.GamepadController.SetGamepadConnection( Gamepad, true );
                 break;
             }
         }
@@ -539,13 +539,13 @@ void SetDefaultSettings()
     Vircon.UnloadMemoryCard();
     
     // set keyboard for first gamepad
-    Vircon.GamepadController.ProcessConnectionChange( 0, true );
+    Vircon.GamepadController.SetGamepadConnection( 0, true );
     MappedGamepads[ 0 ].Type = DeviceTypes::Keyboard;
     
     // set no device for the rest of gamepads
-    for( int i = 1; i < Constants::MaximumGamepads; i++ )
+    for( int i = 1; i < Constants::GamepadPorts; i++ )
     {
-        Vircon.GamepadController.ProcessConnectionChange( i, false );
+        Vircon.GamepadController.SetGamepadConnection( i, false );
         MappedGamepads[ i ].Type = DeviceTypes::NoDevice;
     }
     
@@ -643,7 +643,7 @@ void LoadSettings( const string& FilePath )
         Vircon.SPU.NumberOfBuffers = NumberOfBuffers;
         
         // configure gamepads
-        for( int Gamepad = 0; Gamepad < Constants::MaximumGamepads; Gamepad++ )
+        for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
         {
             // access the Nth gamepad element
             string GamepadElementName = string("gamepad-") + to_string( Gamepad+1 );
@@ -651,7 +651,7 @@ void LoadSettings( const string& FilePath )
             
             // preemptively leave the gamepad unmapped and disconnected
             // unless a valid profile is found for it later
-            Vircon.GamepadController.ProcessConnectionChange( Gamepad, false );
+            Vircon.GamepadController.SetGamepadConnection( Gamepad, false );
             MappedGamepads[ Gamepad ].Type = DeviceTypes::NoDevice;
             
             // read profile name
@@ -668,7 +668,7 @@ void LoadSettings( const string& FilePath )
             if( ToLowerCase( ProfileName ) == "keyboard" )
             {
                 MappedGamepads[ Gamepad ].Type = DeviceTypes::Keyboard;
-                Vircon.GamepadController.ProcessConnectionChange( Gamepad, true );
+                Vircon.GamepadController.SetGamepadConnection( Gamepad, true );
                 continue;
             }
             
@@ -680,7 +680,7 @@ void LoadSettings( const string& FilePath )
                 {
                     MappedGamepads[ Gamepad ].Type = DeviceTypes::Joystick;
                     MappedGamepads[ Gamepad ].GUID = Position->first;
-                    Vircon.GamepadController.ProcessConnectionChange( Gamepad, true );
+                    Vircon.GamepadController.SetGamepadConnection( Gamepad, true );
                     continue;
                 }
             }
@@ -810,7 +810,7 @@ void SaveSettings( const string& FilePath )
         SettingsRoot->LinkEndChild( AudioBuffersElement );
         
         // save gamepad profiles
-        for( int Gamepad = 0; Gamepad < Constants::MaximumGamepads; Gamepad++ )
+        for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
         {
             // determine profile name
             DeviceInfo MappedDevice = MappedGamepads[ Gamepad ];

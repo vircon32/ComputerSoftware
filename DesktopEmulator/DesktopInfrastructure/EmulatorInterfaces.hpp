@@ -16,22 +16,20 @@ namespace V32
     // =============================================================================
     
     
-    // button codes for input events
-    enum class GamepadButtons
-    {
-        Start = 0,
-        A, B, X, Y, L, R
-    };
-    
-    // -----------------------------------------------------------------------------
-    
-    // directions codes for input events
-    enum class GamepadDirections
+    // gamepad controls for input events
+    enum class GamepadControls
     {
         Left = 0,
         Right,
         Up,
-        Down
+        Down,
+        ButtonStart,
+        ButtonA,
+        ButtonB,
+        ButtonX,
+        ButtonY,
+        ButtonL,
+        ButtonR
     };
     
     
