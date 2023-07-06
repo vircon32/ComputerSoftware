@@ -426,40 +426,72 @@ namespace V32
         int RelativeMaxX = RelativeMinX + RegionWidth;
         int RelativeMaxY = RelativeMinY + RegionHeight;
         
-        // for some reason negative scaling displaces images 1 pixel
-        int TranslationX = DrawingPointX;
-        int TranslationY = DrawingPointY;
+        // initialize quad vertex positions (in render coordinates)
+        RegionQuad.VertexPositions[ 0 ].x = RelativeMinX;
+        RegionQuad.VertexPositions[ 0 ].y = RelativeMinY;
+        RegionQuad.VertexPositions[ 1 ].x = RelativeMaxX;
+        RegionQuad.VertexPositions[ 1 ].y = RelativeMinY;
+        RegionQuad.VertexPositions[ 2 ].x = RelativeMinX;
+        RegionQuad.VertexPositions[ 2 ].y = RelativeMaxY;
+        RegionQuad.VertexPositions[ 3 ].x = RelativeMaxX;
+        RegionQuad.VertexPositions[ 3 ].y = RelativeMaxY;
         
-        if( ScalingEnabled )
-        {
-            if( DrawingScaleX < 0 ) TranslationX += 1;
-            if( DrawingScaleY < 0 ) TranslationY += 1;
-        }
+        // initialize quad texture coordinates (relative to texture: [0-1])
+        RegionQuad.VertexTexCoords[ 0 ].x = TextureMinX;
+        RegionQuad.VertexTexCoords[ 0 ].y = TextureMinY;
+        RegionQuad.VertexTexCoords[ 1 ].x = TextureMaxX;
+        RegionQuad.VertexTexCoords[ 1 ].y = TextureMinY;
+        RegionQuad.VertexTexCoords[ 2 ].x = TextureMinX;
+        RegionQuad.VertexTexCoords[ 2 ].y = TextureMaxY;
+        RegionQuad.VertexTexCoords[ 3 ].x = TextureMaxX;
+        RegionQuad.VertexTexCoords[ 3 ].y = TextureMaxY;
         
-        // set vertex positions (in render coordinates)
-        OpenGL2D.SetQuadVertexPosition( 0, RelativeMinX, RelativeMinY );
-        OpenGL2D.SetQuadVertexPosition( 1, RelativeMaxX, RelativeMinY );
-        OpenGL2D.SetQuadVertexPosition( 2, RelativeMinX, RelativeMaxY );
-        OpenGL2D.SetQuadVertexPosition( 3, RelativeMaxX, RelativeMaxY );
-        
-        // and texture coordinates (relative to texture: [0-1])
-        OpenGL2D.SetQuadVertexTexCoords( 0, TextureMinX, TextureMinY );
-        OpenGL2D.SetQuadVertexTexCoords( 1, TextureMaxX, TextureMinY );
-        OpenGL2D.SetQuadVertexTexCoords( 2, TextureMinX, TextureMaxY );
-        OpenGL2D.SetQuadVertexTexCoords( 3, TextureMaxX, TextureMaxY );
-        
-        // prepare the needed 2D spatial transforms
-        OpenGL2D.SetTranslation( TranslationX, TranslationY );
-        
-        if( ScalingEnabled )
-          OpenGL2D.SetScale( DrawingScaleX, DrawingScaleY );
+        // precalculate angle properties when needed
+        float AngleCos, AngleSin;
         
         if( RotationEnabled )
-          OpenGL2D.SetRotation( DrawingAngle );
+        {
+            AngleCos = cos( DrawingAngle );
+            AngleSin = sin( DrawingAngle );
+        }
         
-        OpenGL2D.ComposeTransform( ScalingEnabled, RotationEnabled );
+        // apply 2D transforms to the quad
+        for( int i = 0; i < 4; i++ )
+        {
+            float* VertexX = &RegionQuad.VertexPositions[ i ].x;
+            float* VertexY = &RegionQuad.VertexPositions[ i ].y;
+            
+            // transform 1: apply scaling
+            if( ScalingEnabled )
+            {
+                *VertexX *= DrawingScaleX;
+                *VertexY *= DrawingScaleY;        
+            }
+            
+            // transform 2: apply rotation
+            if( RotationEnabled )
+            {
+                float CopiedX = *VertexX;
+                float CopiedY = *VertexY;
+                
+                *VertexX = CopiedX * AngleCos - CopiedY * AngleSin;
+                *VertexY = CopiedX * AngleSin + CopiedY * AngleCos;
+            }
+            
+            // transform 3: apply translation
+            *VertexX += DrawingPointX;
+            *VertexY += DrawingPointY;
+            
+            // for some reason negative scaling displaces images
+            // by 1 pixel, so fix it after all transforms
+            if( ScalingEnabled )
+            {
+                if( DrawingScaleX < 0 ) *VertexX += 1;
+                if( DrawingScaleY < 0 ) *VertexY += 1;
+            }
+        }
         
         // draw rectangle defined as a quad (4-vertex polygon)
-        OpenGL2D.DrawTexturedQuad();
+        OpenGL2D.DrawTexturedQuad( RegionQuad );
     }
 }

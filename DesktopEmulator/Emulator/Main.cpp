@@ -81,7 +81,7 @@ void PerformPortAssertions()
     int ExpectedGPUPortDistance = ((int)GPU_LocalPorts::DrawingAngle - (int)GPU_LocalPorts::Command);
     
     if( DetectedGPUPortDistance != ExpectedGPUPortDistance )
-      THROW( "ABI check failed: GPU ports are not correctly ordered, or there is padding between them" );
+      THROW( "Port check failed: GPU ports are not correctly ordered, or there is padding between them" );
 }
 
 // -----------------------------------------------------------------------------

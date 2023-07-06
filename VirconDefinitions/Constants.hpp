@@ -46,6 +46,7 @@ namespace V32
         const int SPUMaximumBiosSamples      = 1024 * 1024 * 1;
         const int SPUSoundChannels           = 16;
         const int SPUSamplingRate            = 44100;
+        const int SPUSamplesPerFrame         = SPUSamplingRate / FramesPerSecond;
         
         // memory specs (all sizes in words)
         const int MaximumCartridgeProgramROM = 1024 * 1024 * 128;

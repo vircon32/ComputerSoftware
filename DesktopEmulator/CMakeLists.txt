@@ -280,7 +280,6 @@ set(EMULATOR_SRC
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
     ${INFRASTRUCTURE_DIR}/FileSignatures.cpp
     ${INFRASTRUCTURE_DIR}/Logger.cpp
-    ${INFRASTRUCTURE_DIR}/Matrix4D.cpp
     ${INFRASTRUCTURE_DIR}/OpenGL2DContext.cpp
     ${INFRASTRUCTURE_DIR}/StopWatch.cpp
     ${INFRASTRUCTURE_DIR}/StringFunctions.cpp
@@ -295,7 +294,6 @@ set(EDITCONTROLS_SRC
     ${EDITCONTROLS_DIR}/Main.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
     ${INFRASTRUCTURE_DIR}/Logger.cpp
-    ${INFRASTRUCTURE_DIR}/Matrix4D.cpp
     ${INFRASTRUCTURE_DIR}/OpenGL2DContext.cpp
     ${INFRASTRUCTURE_DIR}/StringFunctions.cpp
     ${INFRASTRUCTURE_DIR}/Texture.cpp)

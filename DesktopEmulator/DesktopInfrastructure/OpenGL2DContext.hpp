@@ -8,7 +8,7 @@
     #include "../../VirconDefinitions/Enumerations.hpp"
     
     // include project headers
-    #include "Matrix4D.hpp"
+    #include "EmulatorInterfaces.hpp"
     
     // include SDL2 headers
     #define SDL_MAIN_HANDLED
@@ -60,15 +60,10 @@ class OpenGL2DContext
         GLuint TexCoordsLocation;
         GLuint TextureUnitLocation;
         GLuint MultiplyColorLocation;
-        GLuint TransformMatrixLocation;
         
         // arrays to hold buffer info
-        GLint QuadPositionCoords[ 8 ];
+        GLfloat QuadPositionCoords[ 8 ];
         GLfloat QuadTextureCoords[ 8 ];
-        
-        // transformation matrices
-        Matrix4D TranslationMatrix, ScalingMatrix, RotationMatrix;
-        Matrix4D TransformMatrix;
         
         // multiply color
         V32::GPUColor MultiplyColor;
@@ -101,20 +96,12 @@ class OpenGL2DContext
         void RenderToFramebuffer();
         void DrawFramebufferOnScreen();
         
-        // color functions
+        // color control functions
         void SetMultiplyColor( V32::GPUColor NewMultiplyColor );
         void SetBlendingMode( V32::IOPortValues BlendingMode );
         
-        // 2D transform functions
-        void SetTranslation( int TranslationX, int TranslationY );
-        void SetScale( float ScaleX, float ScaleY );
-        void SetRotation( float AngleZ );
-        void ComposeTransform( bool ScalingEnabled, bool RotationEnabled );
-        
         // render functions
-        void SetQuadVertexPosition( int Vertex, int x, int y );
-        void SetQuadVertexTexCoords( int Vertex, float u, float v );
-        void DrawTexturedQuad();
+        void DrawTexturedQuad( const V32::GPUQuad& Quad );
         void ClearScreen( V32::GPUColor ClearColor );
 };
 

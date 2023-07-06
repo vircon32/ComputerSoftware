@@ -79,25 +79,21 @@ void LogOpenGLResult( const string& EntryText )
 const string VertexShaderCode =
     "#version 100                                                                               \n"
     "                                                                                           \n"
-    "uniform mediump mat4 TransformMatrix;                                                      \n"
     "attribute vec2 Position;                                                                   \n"
     "attribute vec2 InputTextureCoordinate;                                                     \n"
     "varying highp vec2 TextureCoordinate;                                                      \n"
     "                                                                                           \n"
     "void main()                                                                                \n"
     "{                                                                                          \n"
-    "    // (1) first, apply transformations in the Vircon32 screen space (640x360, Y inverted) \n"
-    "    gl_Position = TransformMatrix * vec4( Position.x, Position.y, 0.0, 1.0 );              \n"
-    "                                                                                           \n"
-    "    // (2) now convert coordinates to the standard OpenGL screen space                     \n"
+    "    // (1) first convert coordinates to the standard OpenGL screen space                   \n"
     "                                                                                           \n"
     "    // x is transformed from (0.0,640.0) to (-1.0,+1.0)                                    \n"
-    "    gl_Position.x = (gl_Position.x / (640.0/2.0)) - 1.0;                                   \n"
+    "    gl_Position.x = (Position.x / (640.0/2.0)) - 1.0;                                      \n"
     "                                                                                           \n"
     "    // y is transformed from (0.0,360.0) to (+1.0,-1.0), so it undoes its inversion        \n"
-    "    gl_Position.y = 1.0 - (gl_Position.y / (360.0/2.0));                                   \n"
+    "    gl_Position.y = 1.0 - (Position.y / (360.0/2.0));                                      \n"
     "                                                                                           \n"
-    "    // (3) texture coordinate is just provided as is to the fragment shader                \n"
+    "    // (2) now texture coordinate is just provided as is to the fragment shader            \n"
     "    // (it is only needed here because fragment shaders cannot take inputs directly)       \n"
     "    TextureCoordinate = InputTextureCoordinate;                                            \n"
     "}                                                                                          \n";
@@ -458,7 +454,6 @@ void OpenGL2DContext::InitRendering()
     // find the position for all our input uniforms within the shader program
     TextureUnitLocation = glGetUniformLocation( ShaderProgramID, "TextureUnit" );
     MultiplyColorLocation = glGetUniformLocation( ShaderProgramID, "MultiplyColor" );
-    TransformMatrixLocation = glGetUniformLocation( ShaderProgramID, "TransformMatrix" );
     
     // on a core OpenGL profile, we need this since
     // the default VAO is not valid!
@@ -476,8 +471,7 @@ void OpenGL2DContext::InitRendering()
     glBindTexture( GL_TEXTURE_2D, 0 );      // set no texture until we load one
     glEnable( GL_TEXTURE_2D );
     
-    // initialize our transform parameters to neutral
-    TransformMatrix.LoadIdentity();
+    // initialize our multiply color to neutral
     SetMultiplyColor( GPUColor{ 255, 255, 255, 255 } );
     
     // create a white texture to draw solid color
@@ -489,7 +483,7 @@ void OpenGL2DContext::InitRendering()
     glBufferData
     (
         GL_ARRAY_BUFFER,
-        8 * sizeof( GLint ),
+        8 * sizeof( GLfloat ),
         QuadPositionCoords,
         GL_DYNAMIC_DRAW
     );
@@ -499,7 +493,7 @@ void OpenGL2DContext::InitRendering()
     (
         PositionsLocation,  // location (0-based index) within the shader program
         2,                  // 2 components per vertex (x,y)
-        GL_INT,             // each component is of type GLint
+        GL_FLOAT,           // each component is of type GLfloat
         GL_FALSE,           // do not normalize values (convert directly to fixed-point)
         0,                  // no gap between values (adjacent in memory)
         nullptr             // pointer to the array
@@ -633,9 +627,6 @@ void OpenGL2DContext::RenderToScreen()
     
     // map viewport's rectangle to the window's client area
     glViewport( 0, 0, WindowWidth, WindowHeight );
-    
-    // reset transforms
-    TransformMatrix.LoadIdentity();
 }
 
 // -----------------------------------------------------------------------------
@@ -647,9 +638,6 @@ void OpenGL2DContext::RenderToFramebuffer()
     
     // map viewport's rectangle to the framebuffer's screen area
     glViewport( 0, 0, Constants::ScreenWidth, Constants::ScreenHeight );
-    
-    // reset transforms
-    TransformMatrix.LoadIdentity();
 }
 
 // -----------------------------------------------------------------------------
@@ -670,7 +658,7 @@ void OpenGL2DContext::DrawFramebufferOnScreen()
         (int)WindowWidth, (int)WindowHeight,                // destination bottom-right
         GL_COLOR_BUFFER_BIT,                                // which bitfield to copy
         GL_NEAREST                                          // interpolation mode
-    );    
+    );
 }
 
 
@@ -713,70 +701,16 @@ void OpenGL2DContext::SetBlendingMode( IOPortValues BlendingMode )
 
 
 // =============================================================================
-//      OPENGL 2D CONTEXT: 2D TRANSFORM FUNCTIONS
-// =============================================================================
-
-
-void OpenGL2DContext::SetTranslation( int TranslationX, int TranslationY )
-{
-    TranslationMatrix.LoadIdentity();
-    TranslationMatrix.Components[ 0 ][ 3 ] = TranslationX;
-    TranslationMatrix.Components[ 1 ][ 3 ] = TranslationY;    
-}
-
-// -----------------------------------------------------------------------------
-
-void OpenGL2DContext::SetScale( float ScaleX, float ScaleY )
-{
-    ScalingMatrix.LoadIdentity();
-    ScalingMatrix.Components[ 0 ][ 0 ] = ScaleX;
-    ScalingMatrix.Components[ 1 ][ 1 ] = ScaleY;
-}
-
-// -----------------------------------------------------------------------------
-
-void OpenGL2DContext::SetRotation( float AngleZ )
-{
-    RotationMatrix.LoadIdentity();
-    RotationMatrix.Components[ 0 ][ 0 ] =  cos( AngleZ );
-    RotationMatrix.Components[ 0 ][ 1 ] = -sin( AngleZ );
-    RotationMatrix.Components[ 1 ][ 0 ] =  sin( AngleZ );
-    RotationMatrix.Components[ 1 ][ 1 ] =  cos( AngleZ );
-}
-
-// -----------------------------------------------------------------------------
-
-void OpenGL2DContext::ComposeTransform( bool ScalingEnabled, bool RotationEnabled )
-{
-    TransformMatrix = TranslationMatrix;
-    if( RotationEnabled ) TransformMatrix *= RotationMatrix;
-    if( ScalingEnabled  ) TransformMatrix *= ScalingMatrix;
-}
-
-
-// =============================================================================
 //      OPENGL 2D CONTEXT: BASE RENDER FUNCTIONS
 // =============================================================================
 
 
-void OpenGL2DContext::SetQuadVertexPosition( int Vertex, int x, int y )
+void OpenGL2DContext::DrawTexturedQuad( const GPUQuad& Quad )
 {
-    QuadPositionCoords[ 2*Vertex ] = x;
-    QuadPositionCoords[ 2*Vertex + 1 ] = y;
-}
-
-// -----------------------------------------------------------------------------
-
-void OpenGL2DContext::SetQuadVertexTexCoords( int Vertex, float u, float v )
-{
-    QuadTextureCoords[ 2*Vertex ] = u;
-    QuadTextureCoords[ 2*Vertex + 1 ] = v;
-}
-
-// -----------------------------------------------------------------------------
-
-void OpenGL2DContext::DrawTexturedQuad()
-{
+    // copy information from the received GPU quad
+    memcpy( QuadPositionCoords, Quad.VertexPositions, 8 * sizeof( float ) );
+    memcpy( QuadTextureCoords, Quad.VertexTexCoords, 8 * sizeof( float ) );
+    
     // PART 1: Update uniforms (i.e. shader globals)
     // - - - - - - - - - - - - - - - - - - - - - - - -
     
@@ -793,15 +727,6 @@ void OpenGL2DContext::DrawTexturedQuad()
         MultiplyColor.A / 255.0
     );
     
-    // send our vertex transform matrix to the GPU
-    glUniformMatrix4fv
-    (
-        TransformMatrixLocation,                // location (0-based index) within the shader program
-        1,                                      // number of matrices (only 1)
-        GL_TRUE,                                // transpose (our arrays represent rows, not columns)
-        &TransformMatrix.Components[ 0 ][ 0 ]   // pointer to the data
-    );
-    
     // PART 2: Send attributes (i.e. shader input variables)
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
@@ -812,7 +737,7 @@ void OpenGL2DContext::DrawTexturedQuad()
     (
         GL_ARRAY_BUFFER,
         0,
-        8 * sizeof( GLint ),
+        8 * sizeof( GLfloat ),
         QuadPositionCoords
     );
     
@@ -821,7 +746,7 @@ void OpenGL2DContext::DrawTexturedQuad()
     (
         PositionsLocation,  // location (0-based index) within the shader program
         2,                  // 2 components per vertex (x,y)
-        GL_INT,             // each component is of type GLint
+        GL_FLOAT,           // each component is of type GLfloat
         GL_FALSE,           // do not normalize values (convert directly to fixed-point)
         0,                  // no gap between values (adjacent in memory)
         nullptr             // pointer to the array
@@ -873,28 +798,32 @@ void OpenGL2DContext::ClearScreen( GPUColor ClearColor )
     GPUColor PreviousMultiplyColor = MultiplyColor;
     MultiplyColor = ClearColor;
     
-    // temporarily reset transformation
-    Matrix4D PreviousTransformMatrix;
-    TransformMatrix.LoadIdentity();
-    
     // bind white texture
     glBindTexture( GL_TEXTURE_2D, WhiteTextureID );
     
     // set a full-screen quad with the same texture pixel
-    SetQuadVertexPosition( 0,                      0,                       0 );
-    SetQuadVertexPosition( 1, Constants::ScreenWidth,                       0 );
-    SetQuadVertexPosition( 2,                      0, Constants::ScreenHeight );
-    SetQuadVertexPosition( 3, Constants::ScreenWidth, Constants::ScreenHeight );
-    
-    SetQuadVertexTexCoords( 0, 0.5, 0.5 );
-    SetQuadVertexTexCoords( 1, 0.5, 0.5 );
-    SetQuadVertexTexCoords( 2, 0.5, 0.5 );
-    SetQuadVertexTexCoords( 3, 0.5, 0.5 );
+    const GPUQuad ScreenQuad =
+    {
+        // vertex positions
+        {
+            { 0, 0 },
+            { Constants::ScreenWidth, 0 },
+            { 0, Constants::ScreenHeight },
+            { Constants::ScreenWidth, Constants::ScreenHeight }
+        },
+        
+        // texture coordinates
+        {
+            { 0.5, 0.5 },
+            { 0.5, 0.5 },
+            { 0.5, 0.5 },
+            { 0.5, 0.5 }
+        }
+    };
     
     // draw quad as "textured"
-    DrawTexturedQuad();
+    DrawTexturedQuad( ScreenQuad );
     
-    // restore previous render settings
+    // restore previous multiply color
     MultiplyColor = PreviousMultiplyColor;
-    TransformMatrix = PreviousTransformMatrix;
 }

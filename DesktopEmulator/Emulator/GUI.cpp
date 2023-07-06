@@ -1030,8 +1030,6 @@ void ShowEmulatorWindow()
     // correctly we have to temporarily 
     // override render settings in OpenGL
     OpenGL2D.SetMultiplyColor( GPUColor{ 255, 255, 255, 255 } );
-    OpenGL2D.SetTranslation( 0, 0 );
-    OpenGL2D.ComposeTransform( false, false );
     OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
     
     // if the emulator is on, draw its display

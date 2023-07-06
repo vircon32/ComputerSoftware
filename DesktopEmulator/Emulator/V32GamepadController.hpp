@@ -3,6 +3,9 @@
     #ifndef V32GAMEPADCONTROLLER_HPP
     #define V32GAMEPADCONTROLLER_HPP
     
+    // include infrastructure headers
+    #include "../DesktopInfrastructure/EmulatorInterfaces.hpp"
+    
     // include project headers
     #include "V32Buses.hpp"
 // *****************************************************************************
@@ -56,26 +59,6 @@ namespace V32
         int32_t ButtonR;
     }
     GamepadState;
-    
-    // -----------------------------------------------------------------------------
-    
-    // button codes for input events
-    enum class GamepadButtons
-    {
-        Start = 0,
-        A, B, X, Y, L, R
-    };
-    
-    // -----------------------------------------------------------------------------
-    
-    // directions codes for input events
-    enum class GamepadDirections
-    {
-        Left = 0,
-        Right,
-        Up,
-        Down
-    };
     
     
     // =============================================================================

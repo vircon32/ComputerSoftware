@@ -3,6 +3,9 @@
     #ifndef V32GPU_HPP
     #define V32GPU_HPP
     
+    // include infrastructure headers
+    #include "../DesktopInfrastructure/EmulatorInterfaces.hpp"
+    
     // include project headers
     #include "V32Buses.hpp"
     
@@ -50,7 +53,7 @@ namespace V32
     
     
     // =============================================================================
-    //      GPU DATA STRUCTURES
+    //      GPU INTERNAL DATA STRUCTURES
     // =============================================================================
     
     
@@ -106,6 +109,9 @@ namespace V32
             float   DrawingScaleX;
             float   DrawingScaleY;
             float   DrawingAngle;
+            
+            // quad coordinated for drawing regions
+            GPUQuad RegionQuad;
             
         public:
             

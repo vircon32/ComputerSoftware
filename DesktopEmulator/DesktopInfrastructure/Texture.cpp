@@ -11,6 +11,7 @@
     
     // declare used namespaces
     using namespace std;
+    using namespace V32;
 // *****************************************************************************
 
 
@@ -201,23 +202,28 @@ void Texture::Draw( OpenGL2DContext& OpenGL2D, int RenderXMin, int RenderYMin, i
     float XFactor = (float)ImageWidth/TextureWidth;
     float YFactor = (float)ImageHeight/TextureHeight;
     
-    // set vertex positions (in render coordinates)
-    OpenGL2D.SetQuadVertexPosition( 0, RenderXMin, RenderYMin );
-    OpenGL2D.SetQuadVertexPosition( 1, RenderXMax, RenderYMin );
-    OpenGL2D.SetQuadVertexPosition( 2, RenderXMin, RenderYMax );
-    OpenGL2D.SetQuadVertexPosition( 3, RenderXMax, RenderYMax );
+    // build a quad to draw the texture
+    GPUQuad DrawnQuad =
+    {
+        // vertex positions
+        {
+            { (float)RenderXMin, (float)RenderYMin },
+            { (float)RenderXMax, (float)RenderYMin },
+            { (float)RenderXMin, (float)RenderYMax },
+            { (float)RenderXMax, (float)RenderYMax }
+        },
+        
+        // texture coordinates
+        {
+            {     0.0,     0.0 },
+            { XFactor,     0.0 },
+            {     0.0, YFactor },
+            { XFactor, YFactor }
+        }
+    };
     
-    // and texture coordinates (relative to texture: [0-1])
-    OpenGL2D.SetQuadVertexTexCoords( 0,     0.0,     0.0 );
-    OpenGL2D.SetQuadVertexTexCoords( 1, XFactor,     0.0 );
-    OpenGL2D.SetQuadVertexTexCoords( 2,     0.0, YFactor );
-    OpenGL2D.SetQuadVertexTexCoords( 3, XFactor, YFactor );
-    
-    // draw rectangle defined as a quad (4-vertex polygon)
-    // (disable any transformations)
-    OpenGL2D.SetTranslation( 0, 0 );
-    OpenGL2D.ComposeTransform( false, false );
-    OpenGL2D.DrawTexturedQuad();
+    // draw rectangle defined as a quad
+    OpenGL2D.DrawTexturedQuad( DrawnQuad );
     
     // deselect texture
     glBindTexture( GL_TEXTURE_2D, 0 );
