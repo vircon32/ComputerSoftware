@@ -97,9 +97,6 @@ namespace V32
             // gamepad events
             void SetGamepadConnection( int GamepadPort, bool Connected );
             void SetGamepadControl( int GamepadPort, GamepadControls Control, bool Pressed );
-            
-            // external queries
-            bool IsGamepadConnected( int GamepadPort );
     };
 }
 

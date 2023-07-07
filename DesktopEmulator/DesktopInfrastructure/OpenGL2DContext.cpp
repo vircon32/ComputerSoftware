@@ -674,9 +674,9 @@ void OpenGL2DContext::SetMultiplyColor( GPUColor NewMultiplyColor )
 
 // -----------------------------------------------------------------------------
 
-void OpenGL2DContext::SetBlendingMode( IOPortValues BlendingMode )
+void OpenGL2DContext::SetBlendingMode( IOPortValues NewBlendingMode )
 {
-    switch( BlendingMode )
+    switch( NewBlendingMode )
     {
         case IOPortValues::GPUBlendingMode_Alpha:
             glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -695,8 +695,10 @@ void OpenGL2DContext::SetBlendingMode( IOPortValues BlendingMode )
         
         default:
             // ignore invalid values
-            break;
+            return;
     }
+    
+    BlendingMode = NewBlendingMode;
 }
 
 

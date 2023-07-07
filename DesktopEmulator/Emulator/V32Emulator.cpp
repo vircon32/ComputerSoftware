@@ -62,8 +62,8 @@ namespace V32
         Paused = false;
         
         // initial loads are 0
-        LastCPULoads[0] = LastCPULoads[1] = 0;
-        LastGPULoads[0] = LastGPULoads[1] = 0;
+        LastCPULoads[ 0 ] = LastCPULoads[ 1 ] = 0;
+        LastGPULoads[ 0 ] = LastGPULoads[ 1 ] = 0;
         
         // do NOT reset until power on
     }
@@ -77,7 +77,83 @@ namespace V32
         if( HasCartridge() )   UnloadCartridge();
     }
     
-           
+    
+    // =============================================================================
+    //      V32 EMULATOR: RESOURCE MANAGEMENT
+    // =============================================================================
+    
+    
+    void V32Emulator::Initialize()
+    {
+        // initialize audio playback
+        SPU.InitializeAudio();
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    void V32Emulator::Terminate()
+    {
+        // terminate audio playback
+        SPU.TerminateAudio();
+        
+        // release all connected media
+        UnloadCartridge();
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    void V32Emulator::SetSPUSoundBuffers( int NumberOfBuffers )
+    {
+        SPU.NumberOfBuffers = NumberOfBuffers;
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    int V32Emulator::GetSPUSoundBuffers()
+    {
+        return SPU.NumberOfBuffers;
+    }
+    
+    
+    // =============================================================================
+    //      V32 EMULATOR: EXTERNAL GENERAL OPERATION
+    // =============================================================================
+    
+    
+    void V32Emulator::Pause()
+    {
+        // do nothing when not applicable
+        if( !PowerIsOn || Paused ) return;
+        
+        // take pause actions
+        Paused = true;
+        
+        SPU.ThreadPauseFlag = true;
+        alSourcePause( SPU.SoundSourceID );
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    void V32Emulator::Resume()
+    {
+        // do nothing when not applicable
+        if( !PowerIsOn || !Paused ) return;
+        
+        // take resume actions
+        Paused = false;
+        
+        alSourcePlay( SPU.SoundSourceID );
+        SPU.ThreadPauseFlag = false;
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    bool V32Emulator::IsPaused()
+    {
+        return Paused;
+    }
+    
+    
     // =============================================================================
     //      V32 EMULATOR: BIOS MANAGEMENT
     // =============================================================================
@@ -526,6 +602,20 @@ namespace V32
         SDL_SetWindowTitle( OpenGL2D.Window, "Vircon32: No cartridge" );
     }
     
+    // -----------------------------------------------------------------------------
+    
+    bool V32Emulator::HasCartridge()
+    {
+        return (CartridgeController.MemorySize != 0);
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    string V32Emulator::GetCartridgeFileName()
+    {
+        return CartridgeController.CartridgeFileName;
+    }
+    
     
     // =============================================================================
     //      V32 EMULATOR: MEMORY CARD MANAGEMENT
@@ -651,27 +741,75 @@ namespace V32
         MemoryCardController.PendingSave = false;
     }
     
+    // -----------------------------------------------------------------------------
     
-    // =============================================================================
-    //      V32 EMULATOR: GENERAL OPERATION
-    // =============================================================================
-    
-    
-    void V32Emulator::Initialize()
+    bool V32Emulator::HasMemoryCard()
     {
-        // initialize audio playback
-        SPU.InitializeAudio();
+        return (MemoryCardController.MemorySize != 0);
     }
     
     // -----------------------------------------------------------------------------
     
-    void V32Emulator::Terminate()
+    bool V32Emulator::WasMemoryCardModified()
     {
-        // terminate audio playback
-        SPU.TerminateAudio();
+        return MemoryCardController.PendingSave;
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    string V32Emulator::GetMemoryCardFileName()
+    {
+        return MemoryCardController.CardFileName;
+    }
+    
+    
+    // =============================================================================
+    //      V32 EMULATOR: CONTROL SIGNALS
+    // =============================================================================
+    
+    
+    void V32Emulator::SetPower( bool On )
+    {
+        // do nothing for no changes
+        if( PowerIsOn == On ) return;
+        PowerIsOn = On;
         
-        // release all connected media
-        UnloadCartridge();
+        // at power on, send an initial reset
+        // to take care of initializations
+        if( On )
+        {
+            LOG( "Emulator power ON" );
+            Reset();
+        }
+        
+        // at power off, stop all sound
+        else
+        {
+            LOG( "Emulator power OFF" );
+            SPU.StopAllChannels();
+        }
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    void V32Emulator::Reset()
+    {
+        LOG( "Emulator reset" );
+        
+        // first: transmit the message to all components that need it
+        Timer.Reset();
+        RNG.Reset();
+        CPU.Reset();
+        GPU.Reset();
+        SPU.Reset();
+        GamepadController.Reset();
+        
+        // now reset the emulator itself
+        RAM.ClearContents();
+        
+        // loads become 0 on a reset
+        LastCPULoads[ 0 ] = LastCPULoads[ 1 ] = 0;
+        LastGPULoads[ 0 ] = LastGPULoads[ 1 ] = 0;
     }
     
     // -----------------------------------------------------------------------------
@@ -720,107 +858,101 @@ namespace V32
           SaveMemoryCard();
     }
     
-    // -----------------------------------------------------------------------------
     
-    void V32Emulator::Reset()
+    // =============================================================================
+    //      V32 EMULATOR: GENERAL STATUS QUERIES
+    // =============================================================================
+    
+    
+    bool V32Emulator::IsPowerOn()
     {
-        LOG( "Emulator reset" );
-        
-        // first: transmit the message to all components that need it
-        Timer.Reset();
-        RNG.Reset();
-        CPU.Reset();
-        GPU.Reset();
-        SPU.Reset();
-        GamepadController.Reset();
-        
-        // now reset the emulator itself
-        RAM.ClearContents();
-        
-        // loads become 0 on a reset
-        LastCPULoads[ 0 ] = LastCPULoads[ 1 ] = 0;
-        LastGPULoads[ 0 ] = LastGPULoads[ 1 ] = 0;
+        return PowerIsOn;
     }
     
     // -----------------------------------------------------------------------------
     
-    void V32Emulator::PowerOn()
+    bool V32Emulator::IsCPUHalted()
     {
-        LOG( "Emulator power ON" );
-        
-        // do nothing if power was already on
-        if( PowerIsOn ) return;
-        
-        // turn on the console
-        PowerIsOn = true;
-        Reset();
+        return CPU.Halted;
     }
     
     // -----------------------------------------------------------------------------
     
-    void V32Emulator::PowerOff()
+    // CPU load at the end of last frame, given in percentage
+    float V32Emulator::GetCPULoad()
     {
-        LOG( "Emulator power OFF" );
-        
-        // do nothing if power was already off
-        if( !PowerIsOn ) return;
-        
-        // turn off the console
-        PowerIsOn = false;
-        SPU.StopAllChannels();
+        // take the maximum because in case of CPU overload,
+        // there may be load of 100% every 2 frames (first
+        // frame is not enough, and it finishes on next one)
+        return max( LastCPULoads[ 0 ], Vircon.LastCPULoads[ 1 ] );
     }
     
     // -----------------------------------------------------------------------------
     
-    void V32Emulator::Pause()
+    // GPU load at the end of last frame, given in percentage
+    float V32Emulator::GetGPULoad()
     {
-        // do nothing when not applicable
-        if( !PowerIsOn || Paused ) return;
-        
-        // take pause actions
-        Paused = true;
-        
-        SPU.ThreadPauseFlag = true;
-        alSourcePause( SPU.SoundSourceID );
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    void V32Emulator::Resume()
-    {
-        // do nothing when not applicable
-        if( !PowerIsOn || !Paused ) return;
-        
-        // take resume actions
-        Paused = false;
-        
-        alSourcePlay( SPU.SoundSourceID );
-        SPU.ThreadPauseFlag = false;
+        // same reasoning as for CPU load
+        return max( LastGPULoads[ 0 ], Vircon.LastGPULoads[ 1 ] );
     }
     
     
     // =============================================================================
-    //      V32 EMULATOR: EXTERNAL QUERIES
+    //      V32 EMULATOR: GAMEPAD MANAGEMENT
     // =============================================================================
     
     
-    bool V32Emulator::HasCartridge()
+    void V32Emulator::SetGamepadConnection( int GamepadPort, bool Connected )
     {
-        return (CartridgeController.MemorySize != 0);
+        // this function is just an external interface:
+        // just pass the call to the gamepad controller
+        GamepadController.SetGamepadConnection( GamepadPort, Connected );
     }
     
     // -----------------------------------------------------------------------------
     
-    bool V32Emulator::HasMemoryCard()
+    void V32Emulator::SetGamepadControl( int GamepadPort, GamepadControls Control, bool Pressed )  
     {
-        return (MemoryCardController.MemorySize != 0);
+        // this function is just an external interface:
+        // just pass the call to the gamepad controller
+        GamepadController.SetGamepadControl( GamepadPort, Control, Pressed );
     }
     
     // -----------------------------------------------------------------------------
     
-    bool V32Emulator::HasGamepad( int Number )
+    bool V32Emulator::HasGamepad( int GamepadPort )
     {
-        return GamepadController.IsGamepadConnected( Number );
+        if( GamepadPort < 0 || GamepadPort >= Constants::GamepadPorts )
+          return false;
+        
+        return GamepadController.RealTimeGamepadStates[ GamepadPort ].Connected;
+    }
+    
+    
+    // =============================================================================
+    //      V32 CONSOLE: TIMER MANAGEMENT
+    // =============================================================================
+    
+    
+    void V32Emulator::SetCurrentDate( int Year, int DaysWithinYear )
+    {
+        // input range checks
+        Clamp( Year, 0, 32767 );
+        Clamp( DaysWithinYear, 0, 365 );
+        
+        Timer.CurrentDate = (Year << 16) | DaysWithinYear;
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    void V32Emulator::SetCurrentTime( int Hours, int Minutes, int Seconds )
+    {
+        // input range checks
+        Clamp( Hours,   0, 23 );
+        Clamp( Minutes, 0, 59 );
+        Clamp( Seconds, 0, 59 );
+        
+        Timer.CurrentTime = (Hours * 3600) + (Minutes * 60) + Seconds;
     }
     
     
@@ -931,7 +1063,7 @@ namespace V32
             for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
             {
                 // non-connected gamepads are ignored
-                if( !GamepadController.IsGamepadConnected( Gamepad ) )
+                if( !HasGamepad( Gamepad ) )
                   continue;
                 
                 // check if mapped device is the keyboard
@@ -940,38 +1072,38 @@ namespace V32
                 
                 // check the mapped keys for directions
                 if( KeyCode == KeyboardProfile.Left )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Left, true );
+                  SetGamepadControl( Gamepad, GamepadControls::Left, true );
                   
                 if( KeyCode == KeyboardProfile.Right )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Right, true );
+                  SetGamepadControl( Gamepad, GamepadControls::Right, true );
                   
                 if( KeyCode == KeyboardProfile.Up )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Up, true );
+                  SetGamepadControl( Gamepad, GamepadControls::Up, true );
                   
                 if( KeyCode == KeyboardProfile.Down )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Down, true );
+                  SetGamepadControl( Gamepad, GamepadControls::Down, true );
                   
                 // check the mapped keys for buttons
                 if( KeyCode == KeyboardProfile.ButtonA )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonA, true );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonA, true );
                 
                 if( KeyCode == KeyboardProfile.ButtonB )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonB, true );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonB, true );
                 
                 if( KeyCode == KeyboardProfile.ButtonX )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonX, true );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonX, true );
                 
                 if( KeyCode == KeyboardProfile.ButtonY )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonY, true );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonY, true );
                   
                 if( KeyCode == KeyboardProfile.ButtonL )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonL, true );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonL, true );
                 
                 if( KeyCode == KeyboardProfile.ButtonR )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonR, true );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonR, true );
                 
                 if( KeyCode == KeyboardProfile.ButtonStart )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, true );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonStart, true );
             }
         }
         
@@ -988,7 +1120,7 @@ namespace V32
             for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
             {
                 // non-connected gamepads are ignored
-                if( !GamepadController.IsGamepadConnected( Gamepad ) )
+                if( !HasGamepad( Gamepad ) )
                   continue;
                 
                 // check if mapped device is the keyboard
@@ -997,38 +1129,38 @@ namespace V32
                 
                 // check the mapped keys for directions
                 if( KeyCode == KeyboardProfile.Left )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Left, false );
+                  SetGamepadControl( Gamepad, GamepadControls::Left, false );
                   
                 if( KeyCode == KeyboardProfile.Right )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Right, false );
+                  SetGamepadControl( Gamepad, GamepadControls::Right, false );
                   
                 if( KeyCode == KeyboardProfile.Up )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Up, false );
+                  SetGamepadControl( Gamepad, GamepadControls::Up, false );
                   
                 if( KeyCode == KeyboardProfile.Down )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Down, false );
+                  SetGamepadControl( Gamepad, GamepadControls::Down, false );
                   
                 // check the mapped keys for buttons
                 if( KeyCode == KeyboardProfile.ButtonA )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonA, false );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonA, false );
                 
                 if( KeyCode == KeyboardProfile.ButtonB )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonB, false );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonB, false );
                 
                 if( KeyCode == KeyboardProfile.ButtonX )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonX, false );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonX, false );
                 
                 if( KeyCode == KeyboardProfile.ButtonY )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonY, false );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonY, false );
                   
                 if( KeyCode == KeyboardProfile.ButtonL )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonL, false );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonL, false );
                 
                 if( KeyCode == KeyboardProfile.ButtonR )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonR, false );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonR, false );
                 
                 if( KeyCode == KeyboardProfile.ButtonStart )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, false );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonStart, false );
             }
         }
         
@@ -1057,7 +1189,7 @@ namespace V32
             for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
             {
                 // non-connected gamepads are ignored
-                if( !GamepadController.IsGamepadConnected( Gamepad ) )
+                if( !HasGamepad( Gamepad ) )
                   continue;
                 
                 // check if mapped device is a joystick
@@ -1080,48 +1212,48 @@ namespace V32
                 // check the mapped axes for directions
                 if( JoystickProfile->Left.IsAxis )
                   if( AxisIndex == JoystickProfile->Left.AxisIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Left, JoystickProfile->Left.AxisPositive? PositivePressed : NegativePressed );
+                    SetGamepadControl( Gamepad, GamepadControls::Left, JoystickProfile->Left.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->Right.IsAxis )
                   if( AxisIndex == JoystickProfile->Right.AxisIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Right, JoystickProfile->Right.AxisPositive? PositivePressed : NegativePressed );
+                    SetGamepadControl( Gamepad, GamepadControls::Right, JoystickProfile->Right.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->Up.IsAxis )
                   if( AxisIndex == JoystickProfile->Up.AxisIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Up, JoystickProfile->Up.AxisPositive? PositivePressed : NegativePressed );
+                    SetGamepadControl( Gamepad, GamepadControls::Up, JoystickProfile->Up.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->Down.IsAxis )
                   if( AxisIndex == JoystickProfile->Down.AxisIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Down, JoystickProfile->Down.AxisPositive? PositivePressed : NegativePressed );
+                    SetGamepadControl( Gamepad, GamepadControls::Down, JoystickProfile->Down.AxisPositive? PositivePressed : NegativePressed );
                 
                 // check the mapped axes for buttons
                 if( JoystickProfile->ButtonA.IsAxis )
                   if( AxisIndex == JoystickProfile->ButtonA.AxisIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonA, JoystickProfile->ButtonA.AxisPositive? PositivePressed : NegativePressed );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonA, JoystickProfile->ButtonA.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->ButtonB.IsAxis )
                   if( AxisIndex == JoystickProfile->ButtonB.AxisIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonB, JoystickProfile->ButtonB.AxisPositive? PositivePressed : NegativePressed );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonB, JoystickProfile->ButtonB.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->ButtonX.IsAxis )
                   if( AxisIndex == JoystickProfile->ButtonX.AxisIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonX, JoystickProfile->ButtonX.AxisPositive? PositivePressed : NegativePressed );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonX, JoystickProfile->ButtonX.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->ButtonY.IsAxis )
                   if( AxisIndex == JoystickProfile->ButtonY.AxisIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonY, JoystickProfile->ButtonY.AxisPositive? PositivePressed : NegativePressed );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonY, JoystickProfile->ButtonY.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->ButtonL.IsAxis )
                   if( AxisIndex == JoystickProfile->ButtonL.AxisIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonL, JoystickProfile->ButtonL.AxisPositive? PositivePressed : NegativePressed );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonL, JoystickProfile->ButtonL.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->ButtonR.IsAxis )
                   if( AxisIndex == JoystickProfile->ButtonR.AxisIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonR, JoystickProfile->ButtonR.AxisPositive? PositivePressed : NegativePressed );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonR, JoystickProfile->ButtonR.AxisPositive? PositivePressed : NegativePressed );
                 
                 if( JoystickProfile->ButtonStart.IsAxis )
                   if( AxisIndex == JoystickProfile->ButtonStart.AxisIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, JoystickProfile->ButtonStart.AxisPositive? PositivePressed : NegativePressed );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonStart, JoystickProfile->ButtonStart.AxisPositive? PositivePressed : NegativePressed );
             }
         }
         
@@ -1135,7 +1267,7 @@ namespace V32
             for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
             {
                 // non-connected gamepads are ignored
-                if( !GamepadController.IsGamepadConnected( Gamepad ) )
+                if( !HasGamepad( Gamepad ) )
                   continue;
                 
                 // check if mapped device is a joystick
@@ -1158,48 +1290,48 @@ namespace V32
                 // check the mapped buttons for directions
                 if( !JoystickProfile->Left.IsAxis )
                   if( ButtonIndex == JoystickProfile->Left.ButtonIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Left, true );
+                    SetGamepadControl( Gamepad, GamepadControls::Left, true );
                   
                 if( !JoystickProfile->Right.IsAxis )
                   if( ButtonIndex == JoystickProfile->Right.ButtonIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Right, true );
+                    SetGamepadControl( Gamepad, GamepadControls::Right, true );
                   
                 if( !JoystickProfile->Up.IsAxis )
                   if( ButtonIndex == JoystickProfile->Up.ButtonIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Up, true );
+                    SetGamepadControl( Gamepad, GamepadControls::Up, true );
                   
                 if( !JoystickProfile->Down.IsAxis )
                   if( ButtonIndex == JoystickProfile->Down.ButtonIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Down, true );
+                    SetGamepadControl( Gamepad, GamepadControls::Down, true );
                   
                 // check the mapped buttons for buttons
                 if( !JoystickProfile->ButtonA.IsAxis )
                   if( ButtonIndex == JoystickProfile->ButtonA.ButtonIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonA, true );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonA, true );
                 
                 if( !JoystickProfile->ButtonB.IsAxis )
                   if( ButtonIndex == JoystickProfile->ButtonB.ButtonIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonB, true );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonB, true );
                 
                 if( !JoystickProfile->ButtonX.IsAxis )
                   if( ButtonIndex == JoystickProfile->ButtonX.ButtonIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonX, true );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonX, true );
                 
                 if( !JoystickProfile->ButtonY.IsAxis )
                   if( ButtonIndex == JoystickProfile->ButtonY.ButtonIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonY, true );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonY, true );
                   
                 if( !JoystickProfile->ButtonL.IsAxis )
                   if( ButtonIndex == JoystickProfile->ButtonL.ButtonIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonL, true );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonL, true );
                 
                 if( !JoystickProfile->ButtonR.IsAxis )
                   if( ButtonIndex == JoystickProfile->ButtonR.ButtonIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonR, true );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonR, true );
                 
                 if( !JoystickProfile->ButtonStart.IsAxis )
                   if( ButtonIndex == JoystickProfile->ButtonStart.ButtonIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, true );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonStart, true );
             }
         }
         
@@ -1213,7 +1345,7 @@ namespace V32
             for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
             {
                 // non-connected gamepads are ignored
-                if( !GamepadController.IsGamepadConnected( Gamepad ) )
+                if( !HasGamepad( Gamepad ) )
                   continue;
                 
                 // check if mapped device is a joystick
@@ -1235,38 +1367,38 @@ namespace V32
                 
                 // check the mapped buttons for directions
                 if( ButtonIndex == JoystickProfile->Left.ButtonIndex )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Left, false );
+                  SetGamepadControl( Gamepad, GamepadControls::Left, false );
                   
                 if( ButtonIndex == JoystickProfile->Right.ButtonIndex )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Right, false );
+                  SetGamepadControl( Gamepad, GamepadControls::Right, false );
                   
                 if( ButtonIndex == JoystickProfile->Up.ButtonIndex )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Up, false );
+                  SetGamepadControl( Gamepad, GamepadControls::Up, false );
                   
                 if( ButtonIndex == JoystickProfile->Down.ButtonIndex )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::Down, false );
+                  SetGamepadControl( Gamepad, GamepadControls::Down, false );
                   
                 // check the mapped buttons for buttons
                 if( ButtonIndex == JoystickProfile->ButtonA.ButtonIndex )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonA, false );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonA, false );
                 
                 if( ButtonIndex == JoystickProfile->ButtonB.ButtonIndex )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonB, false );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonB, false );
                 
                 if( ButtonIndex == JoystickProfile->ButtonX.ButtonIndex )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonX, false );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonX, false );
                 
                 if( ButtonIndex == JoystickProfile->ButtonY.ButtonIndex )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonY, false );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonY, false );
                   
                 if( ButtonIndex == JoystickProfile->ButtonL.ButtonIndex )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonL, false );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonL, false );
                 
                 if( ButtonIndex == JoystickProfile->ButtonR.ButtonIndex )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonR, false );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonR, false );
                 
                 if( ButtonIndex == JoystickProfile->ButtonStart.ButtonIndex )
-                  GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, false );
+                  SetGamepadControl( Gamepad, GamepadControls::ButtonStart, false );
             }
         }
         
@@ -1285,7 +1417,7 @@ namespace V32
             for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
             {
                 // non-connected gamepads are ignored
-                if( !GamepadController.IsGamepadConnected( Gamepad ) )
+                if( !HasGamepad( Gamepad ) )
                   continue;
                 
                 // check if mapped device is a joystick
@@ -1308,48 +1440,48 @@ namespace V32
                 // check the mapped axes for directions
                 if( JoystickProfile->Left.IsHat )
                   if( HatIndex == JoystickProfile->Left.HatIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Left, (bool)(HatDirection & JoystickProfile->Left.HatDirection) );
+                    SetGamepadControl( Gamepad, GamepadControls::Left, (bool)(HatDirection & JoystickProfile->Left.HatDirection) );
                 
                 if( JoystickProfile->Right.IsHat )
                   if( HatIndex == JoystickProfile->Right.HatIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Right, (bool)(HatDirection & JoystickProfile->Right.HatDirection) );
+                    SetGamepadControl( Gamepad, GamepadControls::Right, (bool)(HatDirection & JoystickProfile->Right.HatDirection) );
                 
                 if( JoystickProfile->Up.IsHat )
                   if( HatIndex == JoystickProfile->Up.HatIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Up, (bool)(HatDirection & JoystickProfile->Up.HatDirection) );
+                    SetGamepadControl( Gamepad, GamepadControls::Up, (bool)(HatDirection & JoystickProfile->Up.HatDirection) );
                 
                 if( JoystickProfile->Down.IsHat )
                   if( HatIndex == JoystickProfile->Down.HatIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::Down, (bool)(HatDirection & JoystickProfile->Down.HatDirection) );
+                    SetGamepadControl( Gamepad, GamepadControls::Down, (bool)(HatDirection & JoystickProfile->Down.HatDirection) );
                 
                 // check the mapped buttons for buttons
                 if( !JoystickProfile->ButtonA.IsHat )
                   if( HatIndex == JoystickProfile->ButtonA.HatIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonA, (bool)(HatDirection & JoystickProfile->ButtonA.HatDirection) );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonA, (bool)(HatDirection & JoystickProfile->ButtonA.HatDirection) );
                 
                 if( !JoystickProfile->ButtonB.IsHat )
                   if( HatIndex == JoystickProfile->ButtonB.HatIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonB, (bool)(HatDirection & JoystickProfile->ButtonB.HatDirection) );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonB, (bool)(HatDirection & JoystickProfile->ButtonB.HatDirection) );
                 
                 if( !JoystickProfile->ButtonX.IsHat )
                   if( HatIndex == JoystickProfile->ButtonX.HatIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonX, (bool)(HatDirection & JoystickProfile->ButtonX.HatDirection) );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonX, (bool)(HatDirection & JoystickProfile->ButtonX.HatDirection) );
                 
                 if( !JoystickProfile->ButtonY.IsHat )
                   if( HatIndex == JoystickProfile->ButtonY.HatIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonY, (bool)(HatDirection & JoystickProfile->ButtonY.HatDirection) );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonY, (bool)(HatDirection & JoystickProfile->ButtonY.HatDirection) );
                 
                 if( !JoystickProfile->ButtonL.IsHat )
                   if( HatIndex == JoystickProfile->ButtonL.HatIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonL, (bool)(HatDirection & JoystickProfile->ButtonL.HatDirection) );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonL, (bool)(HatDirection & JoystickProfile->ButtonL.HatDirection) );
                 
                 if( !JoystickProfile->ButtonR.IsHat )
                   if( HatIndex == JoystickProfile->ButtonR.HatIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonR, (bool)(HatDirection & JoystickProfile->ButtonR.HatDirection) );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonR, (bool)(HatDirection & JoystickProfile->ButtonR.HatDirection) );
                 
                 if( !JoystickProfile->ButtonStart.IsHat )
                   if( HatIndex == JoystickProfile->ButtonStart.HatIndex )
-                    GamepadController.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, (bool)(HatDirection & JoystickProfile->ButtonStart.HatDirection) );
+                    SetGamepadControl( Gamepad, GamepadControls::ButtonStart, (bool)(HatDirection & JoystickProfile->ButtonStart.HatDirection) );
             }
         }
     }

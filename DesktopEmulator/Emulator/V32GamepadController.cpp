@@ -188,14 +188,4 @@ namespace V32
             default: break;
         }
     }
-    
-    // -----------------------------------------------------------------------------
-    
-    bool V32GamepadController::IsGamepadConnected( int GamepadPort )
-    {
-        if( GamepadPort < 0 || GamepadPort >= Constants::GamepadPorts )
-          return false;
-        
-        return RealTimeGamepadStates[ GamepadPort ].Connected;
-    }
 }

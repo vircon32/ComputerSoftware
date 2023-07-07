@@ -26,7 +26,7 @@ namespace V32
     
     class V32Emulator
     {
-        public:
+        private:
             
             // communication lines
             V32MemoryBus  MemoryBus;
@@ -61,9 +61,27 @@ namespace V32
             V32Emulator();
            ~V32Emulator();
             
-            // general setup
+            // resource management
             void Initialize();
             void Terminate();
+            void SetSPUSoundBuffers( int NumberOfBuffers );
+            int GetSPUSoundBuffers();
+            
+            // external general operation
+            void Pause();
+            void Resume();
+            bool IsPaused();
+            
+            // control signals
+            void SetPower( bool On );
+            void Reset();
+            void RunNextFrame();
+            
+            // general status queries
+            bool IsPowerOn();
+            bool IsCPUHalted();
+            float GetCPULoad();
+            float GetGPULoad();
             
             // bios management
             // (bios cannot be unloaded)
@@ -73,25 +91,26 @@ namespace V32
             // (only accessible when power is off)
             void LoadCartridge( const std::string& FilePath );
             void UnloadCartridge();
+            bool HasCartridge();
+            std::string GetCartridgeFileName();
             
             // memory card management
             void CreateMemoryCard( const std::string& FilePath );
             void LoadMemoryCard( const std::string& FilePath );
             void UnloadMemoryCard();
             void SaveMemoryCard();
-            
-            // general operation
-            void RunNextFrame();
-            void Reset();
-            void PowerOn();
-            void PowerOff();
-            void Pause();
-            void Resume();
-            
-            // external queries
-            bool HasCartridge();
             bool HasMemoryCard();
-            bool HasGamepad( int Number );
+            bool WasMemoryCardModified();
+            std::string GetMemoryCardFileName();
+            
+            // gamepad management
+            void SetGamepadConnection( int GamepadPort, bool Connected );
+            void SetGamepadControl( int GamepadPort, GamepadControls Control, bool Pressed );    
+            bool HasGamepad( int GamepadPort );
+            
+            // timer management
+            void SetCurrentDate( int Year, int DaysWithinYear );
+            void SetCurrentTime( int Hours, int Minutes, int Seconds );
             
             // external volume control
             float GetOutputVolume();

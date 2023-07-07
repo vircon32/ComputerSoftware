@@ -291,7 +291,7 @@ int main( int NumberOfArguments, char* Arguments[] )
             Vircon.LoadCartridge( CartridgePath );
             
             // in this case, turn on the console too
-            Vircon.PowerOn();
+            Vircon.SetPower( true );
         }
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -395,10 +395,10 @@ int main( int NumberOfArguments, char* Arguments[] )
                         // CTRL+P = Power toggle
                         if( Key == SDLK_p )
                         {
-                            if( Vircon.PowerIsOn )
-                              Vircon.PowerOff();
+                            if( Vircon.IsPowerOn() )
+                              Vircon.SetPower( false );
                             else
-                              Vircon.PowerOn();
+                              Vircon.SetPower( true );
                         }
                         
                         // CTRL+R = Reset
@@ -409,7 +409,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                         if( Key == SDLK_l )
                         {
                             // power needs to be off
-                            if( !Vircon.PowerIsOn )
+                            if( !Vircon.IsPowerOn() )
                             {
                                 if( Vircon.HasCartridge() )
                                   GUI_ChangeCartridge();
@@ -422,7 +422,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                         if( Key == SDLK_u )
                         {
                             // power needs to be off
-                            if( !Vircon.PowerIsOn )
+                            if( !Vircon.IsPowerOn() )
                               if( Vircon.HasCartridge() )
                                 GUI_UnloadCartridge();
                         }

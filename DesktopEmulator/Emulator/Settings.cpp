@@ -467,7 +467,7 @@ void AssignInputDevices()
         DeviceInfo* GamepadDevice = &MappedGamepads[ Gamepad ];
         
         // preemptively disconnect the gamepad
-        Vircon.GamepadController.SetGamepadConnection( Gamepad, false );
+        Vircon.SetGamepadConnection( Gamepad, false );
         
         // process non-joystick devices
         if( GamepadDevice->Type == DeviceTypes::NoDevice )
@@ -482,7 +482,7 @@ void AssignInputDevices()
             else
             {
                 IsKeyboardUsed = true;
-                Vircon.GamepadController.SetGamepadConnection( Gamepad, true );
+                Vircon.SetGamepadConnection( Gamepad, true );
             }
             
             continue;
@@ -506,7 +506,7 @@ void AssignInputDevices()
             {
                 MappedInstanceIDs.insert( JoystickInstanceID );
                 GamepadDevice->InstanceID = JoystickInstanceID;
-                Vircon.GamepadController.SetGamepadConnection( Gamepad, true );
+                Vircon.SetGamepadConnection( Gamepad, true );
                 break;
             }
         }
@@ -539,13 +539,13 @@ void SetDefaultSettings()
     Vircon.UnloadMemoryCard();
     
     // set keyboard for first gamepad
-    Vircon.GamepadController.SetGamepadConnection( 0, true );
+    Vircon.SetGamepadConnection( 0, true );
     MappedGamepads[ 0 ].Type = DeviceTypes::Keyboard;
     
     // set no device for the rest of gamepads
     for( int i = 1; i < Constants::GamepadPorts; i++ )
     {
-        Vircon.GamepadController.SetGamepadConnection( i, false );
+        Vircon.SetGamepadConnection( i, false );
         MappedGamepads[ i ].Type = DeviceTypes::NoDevice;
     }
     
@@ -640,7 +640,7 @@ void LoadSettings( const string& FilePath )
         Clamp( NumberOfBuffers, MIN_BUFFERS, MAX_BUFFERS );
         
         // apply audio buffers settings
-        Vircon.SPU.NumberOfBuffers = NumberOfBuffers;
+        Vircon.SetSPUSoundBuffers( NumberOfBuffers );
         
         // configure gamepads
         for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
@@ -651,7 +651,7 @@ void LoadSettings( const string& FilePath )
             
             // preemptively leave the gamepad unmapped and disconnected
             // unless a valid profile is found for it later
-            Vircon.GamepadController.SetGamepadConnection( Gamepad, false );
+            Vircon.SetGamepadConnection( Gamepad, false );
             MappedGamepads[ Gamepad ].Type = DeviceTypes::NoDevice;
             
             // read profile name
@@ -668,7 +668,7 @@ void LoadSettings( const string& FilePath )
             if( ToLowerCase( ProfileName ) == "keyboard" )
             {
                 MappedGamepads[ Gamepad ].Type = DeviceTypes::Keyboard;
-                Vircon.GamepadController.SetGamepadConnection( Gamepad, true );
+                Vircon.SetGamepadConnection( Gamepad, true );
                 continue;
             }
             
@@ -680,7 +680,7 @@ void LoadSettings( const string& FilePath )
                 {
                     MappedGamepads[ Gamepad ].Type = DeviceTypes::Joystick;
                     MappedGamepads[ Gamepad ].GUID = Position->first;
-                    Vircon.GamepadController.SetGamepadConnection( Gamepad, true );
+                    Vircon.SetGamepadConnection( Gamepad, true );
                     continue;
                 }
             }
@@ -806,7 +806,7 @@ void SaveSettings( const string& FilePath )
         
         // save audio buffers settings
         XMLElement* AudioBuffersElement = CreatedDoc.NewElement( "audio-buffers" );
-        AudioBuffersElement->SetAttribute( "number", Vircon.SPU.NumberOfBuffers );
+        AudioBuffersElement->SetAttribute( "number", Vircon.GetSPUSoundBuffers() );
         SettingsRoot->LinkEndChild( AudioBuffersElement );
         
         // save gamepad profiles

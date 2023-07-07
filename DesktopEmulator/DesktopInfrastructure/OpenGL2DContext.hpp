@@ -65,8 +65,9 @@ class OpenGL2DContext
         GLfloat QuadPositionCoords[ 8 ];
         GLfloat QuadTextureCoords[ 8 ];
         
-        // multiply color
+        // current color modifiers
         V32::GPUColor MultiplyColor;
+        V32::IOPortValues BlendingMode;
         
         // white texture used to draw solid colors
         GLuint WhiteTextureID;
