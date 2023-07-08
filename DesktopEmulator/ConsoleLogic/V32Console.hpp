@@ -1,7 +1,7 @@
 // *****************************************************************************
     // start include guard
-    #ifndef V32EMULATOR_HPP
-    #define V32EMULATOR_HPP
+    #ifndef V32CONSOLE_HPP
+    #define V32CONSOLE_HPP
     
     // include project headers
     #include "V32CPU.hpp"

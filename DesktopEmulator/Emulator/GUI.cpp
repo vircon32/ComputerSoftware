@@ -4,9 +4,11 @@
     #include "../DesktopInfrastructure/FilePaths.hpp"
     #include "../DesktopInfrastructure/Logger.hpp"
     
+    // include console logic headers
+    #include "../ConsoleLogic/V32Console.hpp"
+    
     // include project headers
     #include "GUI.hpp"
-    #include "V32Emulator.hpp"
     #include "Globals.hpp"
     #include "Settings.hpp"
     #include "Languages.hpp"

@@ -3,11 +3,9 @@
     #ifndef V32GPU_HPP
     #define V32GPU_HPP
     
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/EmulatorInterfaces.hpp"
-    
     // include project headers
     #include "V32Buses.hpp"
+    #include "ExternalInterfaces.hpp"
     
     // include OpenGL headers
     #include <glad/glad.h>      // [ OpenGL ] GLAD Loader (already includes <GL/gl.h>)

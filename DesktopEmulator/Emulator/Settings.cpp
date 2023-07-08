@@ -4,9 +4,11 @@
     #include "../DesktopInfrastructure/NumericFunctions.hpp"
     #include "../DesktopInfrastructure/StringFunctions.hpp"
     
+    // include console logic headers
+    #include "../ConsoleLogic/V32Console.hpp"
+    
     // include project headers
     #include "Settings.hpp"
-    #include "V32Emulator.hpp"
     #include "GUI.hpp"
     #include "Languages.hpp"
     #include "Globals.hpp"

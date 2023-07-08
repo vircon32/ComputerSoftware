@@ -75,6 +75,8 @@ set(PROGRAMS_DIR "ExternalPrograms/"
     CACHE PATH "The path to the external programs.")
 set(EMULATOR_DIR "Emulator/"
     CACHE PATH "The path to the emulator sources.")
+set(CONSOLELOGIC_DIR "ConsoleLogic/"
+    CACHE PATH "The path to the core console logic sources.")
 set(EDITCONTROLS_DIR "ControlsEditor/"
     CACHE PATH "The path to EditControls sources.")
 set(INFRASTRUCTURE_DIR "DesktopInfrastructure/"
@@ -206,6 +208,7 @@ set(ALL_INCLUDE_DIRS
     ${LIBRARIES_DIR}
     ${LIBRARIES_DIR}/glad/include/
     ${EMULATOR_DIR}
+    ${CONSOLELOGIC_DIR}
     ${EDITCONTROLS_DIR}
     ${INFRASTRUCTURE_DIR}
     ${DEFINITIONS_DIR})
@@ -261,22 +264,22 @@ set(EMULATOR_SRC
     ${EMULATOR_DIR}/Languages.cpp
     ${EMULATOR_DIR}/Main.cpp
     ${EMULATOR_DIR}/Settings.cpp
-    ${EMULATOR_DIR}/V32Buses.cpp
-    ${EMULATOR_DIR}/V32CartridgeController.cpp
-    ${EMULATOR_DIR}/V32CPU.cpp
-    ${EMULATOR_DIR}/V32CPUProcessors.cpp
-    ${EMULATOR_DIR}/V32Emulator.cpp
-    ${EMULATOR_DIR}/V32GamepadController.cpp
-    ${EMULATOR_DIR}/V32GPU.cpp
-    ${EMULATOR_DIR}/V32GPUWriters.cpp
-    ${EMULATOR_DIR}/V32Memory.cpp
-    ${EMULATOR_DIR}/V32MemoryCardController.cpp
-    ${EMULATOR_DIR}/V32NullController.cpp
-    ${EMULATOR_DIR}/V32RNG.cpp
-    ${EMULATOR_DIR}/V32SPU.cpp
-    ${EMULATOR_DIR}/V32SPUThread.cpp
-    ${EMULATOR_DIR}/V32SPUWriters.cpp
-    ${EMULATOR_DIR}/V32Timer.cpp
+    ${CONSOLELOGIC_DIR}/V32Buses.cpp
+    ${CONSOLELOGIC_DIR}/V32CartridgeController.cpp
+    ${CONSOLELOGIC_DIR}/V32CPU.cpp
+    ${CONSOLELOGIC_DIR}/V32CPUProcessors.cpp
+    ${CONSOLELOGIC_DIR}/V32Console.cpp
+    ${CONSOLELOGIC_DIR}/V32GamepadController.cpp
+    ${CONSOLELOGIC_DIR}/V32GPU.cpp
+    ${CONSOLELOGIC_DIR}/V32GPUWriters.cpp
+    ${CONSOLELOGIC_DIR}/V32Memory.cpp
+    ${CONSOLELOGIC_DIR}/V32MemoryCardController.cpp
+    ${CONSOLELOGIC_DIR}/V32NullController.cpp
+    ${CONSOLELOGIC_DIR}/V32RNG.cpp
+    ${CONSOLELOGIC_DIR}/V32SPU.cpp
+    ${CONSOLELOGIC_DIR}/V32SPUThread.cpp
+    ${CONSOLELOGIC_DIR}/V32SPUWriters.cpp
+    ${CONSOLELOGIC_DIR}/V32Timer.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
     ${INFRASTRUCTURE_DIR}/FileSignatures.cpp
     ${INFRASTRUCTURE_DIR}/Logger.cpp

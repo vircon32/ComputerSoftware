@@ -3,10 +3,8 @@
     #ifndef V32GAMEPADCONTROLLER_HPP
     #define V32GAMEPADCONTROLLER_HPP
     
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/EmulatorInterfaces.hpp"
-    
     // include project headers
+    #include "ExternalInterfaces.hpp"
     #include "V32Buses.hpp"
 // *****************************************************************************
 

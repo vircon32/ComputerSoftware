@@ -10,11 +10,13 @@
     #include "../DesktopInfrastructure/Logger.hpp"
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     
-    // include project headers
-    #include "V32Emulator.hpp"
+    // include emulator headers
     #include "Globals.hpp"
     #include "GUI.hpp"
     #include "Settings.hpp"
+    
+    // include project headers
+    #include "V32Console.hpp"
     
     // declare used namespaces
     using namespace std;

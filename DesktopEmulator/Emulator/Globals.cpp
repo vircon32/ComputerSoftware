@@ -2,9 +2,11 @@
     // include infrastructure headers
     #include "../DesktopInfrastructure/Logger.hpp"
     
+    // include console logic headers
+    #include "../ConsoleLogic/V32Console.hpp"
+    
     // include project headers
     #include "Globals.hpp"
-    #include "V32Emulator.hpp"
     
     // declare used namespaces
     using namespace std;

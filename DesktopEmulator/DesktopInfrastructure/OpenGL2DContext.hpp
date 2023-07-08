@@ -7,8 +7,8 @@
     #include "../../VirconDefinitions/DataStructures.hpp"
     #include "../../VirconDefinitions/Enumerations.hpp"
     
-    // include project headers
-    #include "EmulatorInterfaces.hpp"
+    // include console logic headers
+    #include "../ConsoleLogic/ExternalInterfaces.hpp"
     
     // include SDL2 headers
     #define SDL_MAIN_HANDLED

@@ -6,9 +6,6 @@
     // include common Vircon headers
     #include "../../VirconDefinitions/Constants.hpp"
     
-    // include project headers
-    #include "V32GamepadController.hpp"
-    
     // include C/C++ headers
     #include <string>               // [ C++ STL ] Strings
     #include <map>                  // [ C++ STL ] Maps

@@ -1,7 +1,7 @@
 // *****************************************************************************
     // start include guard
-    #ifndef EMULATORINTERFACES_HPP
-    #define EMULATORINTERFACES_HPP
+    #ifndef EXTERNALINTERFACES_HPP
+    #define EXTERNALINTERFACES_HPP
     
     // include common vircon headers
     #include "../../VirconDefinitions/Constants.hpp"

@@ -5,8 +5,10 @@
     #include "../DesktopInfrastructure/FilePaths.hpp"
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     
+    // include console logic headers
+    #include "../ConsoleLogic/V32Console.hpp"
+    
     // include project headers
-    #include "V32Emulator.hpp"
     #include "GUI.hpp"
     #include "Settings.hpp"
     #include "Globals.hpp"
