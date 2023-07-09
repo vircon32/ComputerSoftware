@@ -23,7 +23,7 @@ namespace V32
     // =============================================================================
     
     
-    typedef void (*GPUPortWriter)( V32GPU&, V32Word );
+    typedef bool (*GPUPortWriter)( V32GPU&, V32Word );
     
     // -----------------------------------------------------------------------------
     
@@ -208,8 +208,7 @@ namespace V32
           return false;
         
         // redirect to the needed specific writer
-        GPUPortWriterTable[ LocalPort ]( *this, Value );
-        return true;
+        return GPUPortWriterTable[ LocalPort ]( *this, Value );
     }
     
     

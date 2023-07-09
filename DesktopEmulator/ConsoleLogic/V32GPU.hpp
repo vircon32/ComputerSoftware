@@ -140,24 +140,24 @@ namespace V32
     // =============================================================================
     
     
-    void WriteGPUCommand        ( V32GPU& GPU, V32Word Value );
-    void WriteGPURemainingPixels( V32GPU& GPU, V32Word Value );
-    void WriteGPUClearColor     ( V32GPU& GPU, V32Word Value );
-    void WriteGPUMultiplyColor  ( V32GPU& GPU, V32Word Value );
-    void WriteGPUActiveBlending ( V32GPU& GPU, V32Word Value );
-    void WriteGPUSelectedTexture( V32GPU& GPU, V32Word Value );
-    void WriteGPUSelectedRegion ( V32GPU& GPU, V32Word Value );
-    void WriteGPUDrawingPointX  ( V32GPU& GPU, V32Word Value );
-    void WriteGPUDrawingPointY  ( V32GPU& GPU, V32Word Value );
-    void WriteGPUDrawingScaleX  ( V32GPU& GPU, V32Word Value );
-    void WriteGPUDrawingScaleY  ( V32GPU& GPU, V32Word Value );
-    void WriteGPUDrawingAngle   ( V32GPU& GPU, V32Word Value );
-    void WriteGPURegionMinX     ( V32GPU& GPU, V32Word Value );
-    void WriteGPURegionMinY     ( V32GPU& GPU, V32Word Value );
-    void WriteGPURegionMaxX     ( V32GPU& GPU, V32Word Value );
-    void WriteGPURegionMaxY     ( V32GPU& GPU, V32Word Value );
-    void WriteGPURegionHotspotX ( V32GPU& GPU, V32Word Value );
-    void WriteGPURegionHotspotY ( V32GPU& GPU, V32Word Value );
+    bool WriteGPUCommand        ( V32GPU& GPU, V32Word Value );
+    bool WriteGPURemainingPixels( V32GPU& GPU, V32Word Value );
+    bool WriteGPUClearColor     ( V32GPU& GPU, V32Word Value );
+    bool WriteGPUMultiplyColor  ( V32GPU& GPU, V32Word Value );
+    bool WriteGPUActiveBlending ( V32GPU& GPU, V32Word Value );
+    bool WriteGPUSelectedTexture( V32GPU& GPU, V32Word Value );
+    bool WriteGPUSelectedRegion ( V32GPU& GPU, V32Word Value );
+    bool WriteGPUDrawingPointX  ( V32GPU& GPU, V32Word Value );
+    bool WriteGPUDrawingPointY  ( V32GPU& GPU, V32Word Value );
+    bool WriteGPUDrawingScaleX  ( V32GPU& GPU, V32Word Value );
+    bool WriteGPUDrawingScaleY  ( V32GPU& GPU, V32Word Value );
+    bool WriteGPUDrawingAngle   ( V32GPU& GPU, V32Word Value );
+    bool WriteGPURegionMinX     ( V32GPU& GPU, V32Word Value );
+    bool WriteGPURegionMinY     ( V32GPU& GPU, V32Word Value );
+    bool WriteGPURegionMaxX     ( V32GPU& GPU, V32Word Value );
+    bool WriteGPURegionMaxY     ( V32GPU& GPU, V32Word Value );
+    bool WriteGPURegionHotspotX ( V32GPU& GPU, V32Word Value );
+    bool WriteGPURegionHotspotY ( V32GPU& GPU, V32Word Value );
 }
 
 

@@ -279,20 +279,20 @@ namespace V32
     // =============================================================================
     
     
-    void WriteSPUCommand              ( V32SPU& SPU, V32Word Value );
-    void WriteSPUGlobalVolume         ( V32SPU& SPU, V32Word Value );
-    void WriteSPUSelectedSound        ( V32SPU& SPU, V32Word Value );
-    void WriteSPUSelectedChannel      ( V32SPU& SPU, V32Word Value );
-    void WriteSPUSoundLength          ( V32SPU& SPU, V32Word Value );
-    void WriteSPUSoundPlayWithLoop    ( V32SPU& SPU, V32Word Value );
-    void WriteSPUSoundLoopStart       ( V32SPU& SPU, V32Word Value );
-    void WriteSPUSoundLoopEnd         ( V32SPU& SPU, V32Word Value );
-    void WriteSPUChannelState         ( V32SPU& SPU, V32Word Value );
-    void WriteSPUChannelAssignedSound ( V32SPU& SPU, V32Word Value );
-    void WriteSPUChannelVolume        ( V32SPU& SPU, V32Word Value );
-    void WriteSPUChannelSpeed         ( V32SPU& SPU, V32Word Value );
-    void WriteSPUChannelLoopEnabled   ( V32SPU& SPU, V32Word Value );
-    void WriteSPUChannelPosition      ( V32SPU& SPU, V32Word Value );
+    bool WriteSPUCommand              ( V32SPU& SPU, V32Word Value );
+    bool WriteSPUGlobalVolume         ( V32SPU& SPU, V32Word Value );
+    bool WriteSPUSelectedSound        ( V32SPU& SPU, V32Word Value );
+    bool WriteSPUSelectedChannel      ( V32SPU& SPU, V32Word Value );
+    bool WriteSPUSoundLength          ( V32SPU& SPU, V32Word Value );
+    bool WriteSPUSoundPlayWithLoop    ( V32SPU& SPU, V32Word Value );
+    bool WriteSPUSoundLoopStart       ( V32SPU& SPU, V32Word Value );
+    bool WriteSPUSoundLoopEnd         ( V32SPU& SPU, V32Word Value );
+    bool WriteSPUChannelState         ( V32SPU& SPU, V32Word Value );
+    bool WriteSPUChannelAssignedSound ( V32SPU& SPU, V32Word Value );
+    bool WriteSPUChannelVolume        ( V32SPU& SPU, V32Word Value );
+    bool WriteSPUChannelSpeed         ( V32SPU& SPU, V32Word Value );
+    bool WriteSPUChannelLoopEnabled   ( V32SPU& SPU, V32Word Value );
+    bool WriteSPUChannelPosition      ( V32SPU& SPU, V32Word Value );
 }
 
 

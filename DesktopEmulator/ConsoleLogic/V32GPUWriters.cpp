@@ -24,68 +24,73 @@ namespace V32
     // =============================================================================
     
     
-    void WriteGPUCommand( V32GPU& GPU, V32Word Value )
+    bool WriteGPUCommand( V32GPU& GPU, V32Word Value )
     {
         // now execute the command, if valid
         switch( Value.AsInteger )
         {
             case (int32_t)IOPortValues::GPUCommand_ClearScreen:
                 GPU.ClearScreen();
-                return;
+                break;
                 
             case (int32_t)IOPortValues::GPUCommand_DrawRegion:
                 GPU.DrawRegion( false, false );
-                return;
+                break;
                 
             case (int32_t)IOPortValues::GPUCommand_DrawRegionZoomed:
                 GPU.DrawRegion( true, false );
-                return;
+                break;
                 
             case (int32_t)IOPortValues::GPUCommand_DrawRegionRotated:
                 GPU.DrawRegion( false, true );
-                return;
+                break;
                 
             case (int32_t)IOPortValues::GPUCommand_DrawRegionRotozoomed:
                 GPU.DrawRegion( true, true );
-                return;
+                break;
                 
-            // (unknown command codes are just ignored)
-            default: return;
+            // unknown command codes are ignored, but
+            // they don't trigger a port write error
+            default: break;
         }
         
         // do not write the value;
         // it is useless anyway (this port is write-only)
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPURemainingPixels( V32GPU& GPU, V32Word Value )
+    bool WriteGPURemainingPixels( V32GPU& GPU, V32Word Value )
     {
-        // (ignore request: this register is read-only)
+        // reject request: this register is read-only
+        return false;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUClearColor( V32GPU& GPU, V32Word Value )
+    bool WriteGPUClearColor( V32GPU& GPU, V32Word Value )
     {
         // just write the value
         GPU.ClearColor = Value.AsColor;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUMultiplyColor( V32GPU& GPU, V32Word Value )
+    bool WriteGPUMultiplyColor( V32GPU& GPU, V32Word Value )
     {
         // first write the value
         GPU.MultiplyColor = Value.AsColor;
         
         // now update the corresponding value for OpenGL shaders
         OpenGL2D.MultiplyColor = Value.AsColor;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUActiveBlending( V32GPU& GPU, V32Word Value )
+    bool WriteGPUActiveBlending( V32GPU& GPU, V32Word Value )
     {
         switch( Value.AsInteger )
         {
@@ -113,15 +118,16 @@ namespace V32
         
         // unknown blending mode codes are just ignored
         // (the value is not written either)
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUSelectedTexture( V32GPU& GPU, V32Word Value )
+    bool WriteGPUSelectedTexture( V32GPU& GPU, V32Word Value )
     {
         // prevent setting a non-existent texture
         if( Value.AsInteger < -1 || Value.AsInteger >= (int32_t)GPU.CartridgeTextures.size() )
-          return;
+          return true;
             
         // write the value
         GPU.SelectedTexture = Value.AsInteger;
@@ -139,103 +145,113 @@ namespace V32
             GPU.PointedTexture = &GPU.CartridgeTextures[ GPU.SelectedTexture ];
             GPU.PointedRegion = &GPU.PointedTexture->Regions[ GPU.SelectedRegion ];
         }
+        
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUSelectedRegion( V32GPU& GPU, V32Word Value )
+    bool WriteGPUSelectedRegion( V32GPU& GPU, V32Word Value )
     {
         // prevent setting a non-existent region
         if( Value.AsInteger < 0 || Value.AsInteger >= Constants::GPURegionsPerTexture )
-          return;
+          return true;
         
         // write the value
         GPU.SelectedRegion = Value.AsInteger;
         
         // update pointed entity
         GPU.PointedRegion = &GPU.PointedTexture->Regions[ GPU.SelectedRegion ];
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUDrawingPointX( V32GPU& GPU, V32Word Value )
+    bool WriteGPUDrawingPointX( V32GPU& GPU, V32Word Value )
     {
         // out of range values are accepted, but they are clamped
         Clamp( Value.AsInteger, -1000, Constants::ScreenWidth + 1000 );
         GPU.DrawingPointX = Value.AsInteger;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUDrawingPointY( V32GPU& GPU, V32Word Value )
+    bool WriteGPUDrawingPointY( V32GPU& GPU, V32Word Value )
     {
         // out of range values are accepted, but they are clamped
         Clamp( Value.AsInteger, -1000, Constants::ScreenHeight + 1000 );
         GPU.DrawingPointY = Value.AsInteger;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUDrawingScaleX( V32GPU& GPU, V32Word Value )
+    bool WriteGPUDrawingScaleX( V32GPU& GPU, V32Word Value )
     {
         // ignore non-numeric values
         if( isnan( Value.AsFloat ) || isinf( Value.AsFloat ) )
-          return;
+          return true;
         
         // out of range values are accepted, but they are clamped
         Clamp( Value.AsFloat, -1024, 1024 );
         GPU.DrawingScaleX = Value.AsFloat;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUDrawingScaleY( V32GPU& GPU, V32Word Value )
+    bool WriteGPUDrawingScaleY( V32GPU& GPU, V32Word Value )
     {
         // ignore non-numeric values
         if( isnan( Value.AsFloat ) || isinf( Value.AsFloat ) )
-          return;
+          return true;
         
         // out of range values are accepted, but they are clamped
         Clamp( Value.AsFloat, -1024, 1024 );
         GPU.DrawingScaleY = Value.AsFloat;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPUDrawingAngle( V32GPU& GPU, V32Word Value )
+    bool WriteGPUDrawingAngle( V32GPU& GPU, V32Word Value )
     {
         // ignore non-numeric values
         if( isnan( Value.AsFloat ) || isinf( Value.AsFloat ) )
-          return;
+          return true;
         
         // out of range values are accepted, but they are clamped
         Clamp( Value.AsFloat, -1024, 1024 );
         GPU.DrawingAngle = Value.AsFloat;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPURegionMinX( V32GPU& GPU, V32Word Value )
+    bool WriteGPURegionMinX( V32GPU& GPU, V32Word Value )
     {
         // out of texture values are accepted,
         // but they are clamped to texture limits
         Clamp( Value.AsInteger, 0, Constants::GPUTextureSize-1 );
         GPU.PointedRegion->MinX = Value.AsInteger;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPURegionMinY( V32GPU& GPU, V32Word Value )
+    bool WriteGPURegionMinY( V32GPU& GPU, V32Word Value )
     {
         // out of texture values are accepted,
         // but they are clamped to texture limits
         Clamp( Value.AsInteger, 0, Constants::GPUTextureSize-1 );
         GPU.PointedRegion->MinY = Value.AsInteger;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPURegionMaxX( V32GPU& GPU, V32Word Value )
+    bool WriteGPURegionMaxX( V32GPU& GPU, V32Word Value )
     {
         // out of texture values are accepted,
         // but they are clamped to texture limits
@@ -243,34 +259,38 @@ namespace V32
         Clamp( ValidX, 0, Constants::GPUTextureSize-1 );
         
         GPU.PointedRegion->MaxX = ValidX;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPURegionMaxY( V32GPU& GPU, V32Word Value )
+    bool WriteGPURegionMaxY( V32GPU& GPU, V32Word Value )
     {
         // out of texture values are accepted,
         // but they are clamped to texture limits
         Clamp( Value.AsInteger, 0, Constants::GPUTextureSize-1 );
         GPU.PointedRegion->MaxY = Value.AsInteger;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPURegionHotspotX( V32GPU& GPU, V32Word Value )
+    bool WriteGPURegionHotspotX( V32GPU& GPU, V32Word Value )
     {
         // out of texture values are valid up to
         // a certain range, then they get clamped
         Clamp( Value.AsInteger, -Constants::GPUTextureSize, (2*Constants::GPUTextureSize)-1 );
         GPU.PointedRegion->HotspotX = Value.AsInteger;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteGPURegionHotspotY( V32GPU& GPU, V32Word Value )
+    bool WriteGPURegionHotspotY( V32GPU& GPU, V32Word Value )
     {
         // out of texture values are valid
         Clamp( Value.AsInteger, -Constants::GPUTextureSize, (2*Constants::GPUTextureSize)-1 );
         GPU.PointedRegion->HotspotY = Value.AsInteger;
+        return true;
     }
 }

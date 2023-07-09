@@ -17,64 +17,67 @@ namespace V32
     // =============================================================================
     
     
-    void WriteSPUCommand( V32SPU& SPU, V32Word Value )
+    bool WriteSPUCommand( V32SPU& SPU, V32Word Value )
     {
         // now execute the command, if valid
         switch( Value.AsInteger )
         {
             case (int32_t)IOPortValues::SPUCommand_PlaySelectedChannel:
                 SPU.PlayChannel( *SPU.PointedChannel );
-                return;
+                break;
                 
             case (int32_t)IOPortValues::SPUCommand_PauseSelectedChannel:
                 SPU.PauseChannel( *SPU.PointedChannel );
-                return;
+                break;
                 
             case (int32_t)IOPortValues::SPUCommand_StopSelectedChannel:
                 SPU.StopChannel( *SPU.PointedChannel );
-                return;
+                break;
                 
             case (int32_t)IOPortValues::SPUCommand_PauseAllChannels:
                 SPU.PauseAllChannels();
-                return;
+                break;
                 
             case (int32_t)IOPortValues::SPUCommand_ResumeAllChannels:
                 SPU.ResumeAllChannels();
-                return;
+                break;
                 
             case (int32_t)IOPortValues::SPUCommand_StopAllChannels:
                 SPU.StopAllChannels();
-                return;
+                break;
                 
-            // (unknown command codes are just ignored)
-            default: return;
+            // unknown command codes are ignored, but
+            // they don't trigger a port write error
+            default: break;
         }
         
         // do not write the value;
         // it is useless anyway (this port is write-only)
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteSPUGlobalVolume( V32SPU& SPU, V32Word Value )
+    bool WriteSPUGlobalVolume( V32SPU& SPU, V32Word Value )
     {
         // Float parameters are only written if they are valid
         // numeric values (otherwise the request is ignored).
         if( isnan( Value.AsFloat ) || isinf( Value.AsFloat ) )
-          return;
+          return true;
         
         // out of range values are accepted, but they are clamped
         Clamp( Value.AsFloat, 0, 2 );
         SPU.GlobalVolume = Value.AsFloat;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteSPUSelectedSound( V32SPU& SPU, V32Word Value )
+    bool WriteSPUSelectedSound( V32SPU& SPU, V32Word Value )
     {
         // prevent setting a non-existent sound
         if( Value.AsInteger < -1 || Value.AsInteger >= (int32_t)SPU.CartridgeSounds.size() )
-          return;
+          return true;
         
         // write the value
         SPU.SelectedSound = Value.AsInteger;
@@ -90,80 +93,86 @@ namespace V32
             // regular cartridge sounds
             SPU.PointedSound = &SPU.CartridgeSounds[ SPU.SelectedSound ];
         }
+        
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteSPUSelectedChannel( V32SPU& SPU, V32Word Value )
+    bool WriteSPUSelectedChannel( V32SPU& SPU, V32Word Value )
     {
         // prevent setting a non-existent channel
         if( Value.AsInteger < 0 || Value.AsInteger >= (int32_t)Constants::SPUSoundChannels )
-          return;
+          return true;
         
         // write the value
         SPU.SelectedChannel = Value.AsInteger;
         
         // update pointed entity
         SPU.PointedChannel = &SPU.Channels[ SPU.SelectedChannel ];
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteSPUSoundLength( V32SPU& SPU, V32Word Value )
+    bool WriteSPUSoundLength( V32SPU& SPU, V32Word Value )
     {
-        // ignore the request: this port is read-only
-        return;
+        // reject the request: this port is read-only
+        return false;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteSPUSoundPlayWithLoop( V32SPU& SPU, V32Word Value )
+    bool WriteSPUSoundPlayWithLoop( V32SPU& SPU, V32Word Value )
     {
         // write the value as a boolean
         SPU.PointedSound->PlayWithLoop = (Value.AsBinary != 0? 1 : 0);
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteSPUSoundLoopStart( V32SPU& SPU, V32Word Value )
+    bool WriteSPUSoundLoopStart( V32SPU& SPU, V32Word Value )
     {
         // out of range values are accepted, but clamped
         Clamp( Value.AsInteger, 0, SPU.PointedSound->Length - 1 );
         
         // enforce that LoopEnd >= LoopStart
         SPU.PointedSound->LoopStart = min( Value.AsInteger, SPU.PointedSound->LoopEnd );
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteSPUSoundLoopEnd( V32SPU& SPU, V32Word Value )
+    bool WriteSPUSoundLoopEnd( V32SPU& SPU, V32Word Value )
     {
         // out of range values are accepted, but clamped
         Clamp( Value.AsInteger, 0, SPU.PointedSound->Length - 1 );
         
         // enforce that LoopEnd >= LoopStart
         SPU.PointedSound->LoopEnd = max( Value.AsInteger, SPU.PointedSound->LoopStart );
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteSPUChannelState( V32SPU& SPU, V32Word Value )
+    bool WriteSPUChannelState( V32SPU& SPU, V32Word Value )
     {
-        // ignore the request: this port is read-only
-        return;
+        // reject the request: this port is read-only
+        return false;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteSPUChannelAssignedSound( V32SPU& SPU, V32Word Value )
+    bool WriteSPUChannelAssignedSound( V32SPU& SPU, V32Word Value )
     {
         // prevent setting a non-existent sound
         if( Value.AsInteger < -1 || Value.AsInteger >= (int32_t)SPU.CartridgeSounds.size() )
-          return;
+          return true;
         
         // sounds can only be assigned to a non playing channel
         if( SPU.PointedChannel->State != IOPortValues::SPUChannelState_Stopped )
-          return;
+          return true;
         
         // write the value
         SPU.PointedChannel->AssignedSound = Value.AsInteger;
@@ -179,47 +188,52 @@ namespace V32
             // regular cartridge sounds
             SPU.PointedChannel->CurrentSound = &SPU.CartridgeSounds[ Value.AsInteger ];
         }
+        
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteSPUChannelVolume( V32SPU& SPU, V32Word Value )
+    bool WriteSPUChannelVolume( V32SPU& SPU, V32Word Value )
     {
         // Float parameters are only written if they are valid
         // numeric values (otherwise the request is ignored).
         if( isnan( Value.AsFloat ) || isinf( Value.AsFloat ) )
-          return;
+          return true;
         
         // out of range values are accepted, but they are clamped
         Clamp( Value.AsFloat, 0, 8 );
         SPU.PointedChannel->Volume = Value.AsFloat;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteSPUChannelSpeed( V32SPU& SPU, V32Word Value )
+    bool WriteSPUChannelSpeed( V32SPU& SPU, V32Word Value )
     {
         // Float parameters are only written if they are valid
         // numeric values (otherwise the request is ignored).
         if( isnan( Value.AsFloat ) || isinf( Value.AsFloat ) )
-          return;
+          return true;
         
         // out of range values are accepted, but they are clamped
         Clamp( Value.AsFloat, 0, 128 );
         SPU.PointedChannel->Speed = Value.AsFloat;
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteSPUChannelLoopEnabled( V32SPU& SPU, V32Word Value )
+    bool WriteSPUChannelLoopEnabled( V32SPU& SPU, V32Word Value )
     {
         // write the value as a boolean
         SPU.PointedChannel->LoopEnabled = (Value.AsBinary != 0? 1 : 0);
+        return true;
     }
     
     // -----------------------------------------------------------------------------
     
-    void WriteSPUChannelPosition( V32SPU& SPU, V32Word Value )
+    bool WriteSPUChannelPosition( V32SPU& SPU, V32Word Value )
     {
         // out of range values are accepted, but they are clamped
         int32_t SoundLength = SPU.PointedChannel->CurrentSound->Length;
@@ -228,5 +242,6 @@ namespace V32
         // write the value as an integer
         // (decimal part will be reset to zero)
         SPU.PointedChannel->Position = Value.AsInteger;
+        return true;
     }
 }

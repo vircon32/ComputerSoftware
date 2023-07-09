@@ -66,7 +66,7 @@ namespace V32
     // =============================================================================
     
     
-    typedef void (*SPUPortWriter)( V32SPU&, V32Word );
+    typedef bool (*SPUPortWriter)( V32SPU&, V32Word );
     
     // -----------------------------------------------------------------------------
     
@@ -333,11 +333,7 @@ namespace V32
           return false;
         
         // redirect to the needed specific writer
-        SPUPortWriterTable[ LocalPort ]( *this, Value );
-        
-        // all ports can be written to except channel state and sound length
-        return (LocalPort != (int32_t)SPU_LocalPorts::ChannelState)
-            && (LocalPort != (int32_t)SPU_LocalPorts::SoundLength);
+        return SPUPortWriterTable[ LocalPort ]( *this, Value );
     }
     
     

@@ -63,7 +63,7 @@ namespace V32
     
     bool V32Timer::WritePort( int32_t LocalPort, V32Word Value )
     {
-        // ignore write request (all these registers are read-only)
+        // reject write request (all these registers are read-only)
         return false;
     }
     

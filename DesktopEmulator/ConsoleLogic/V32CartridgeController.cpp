@@ -51,7 +51,7 @@ namespace V32
     
     bool V32CartridgeController::WritePort( int32_t LocalPort, V32Word Value )
     {
-        // all these registers are read-only, so just ignore the request
+        // all these registers are read-only, so just reject the request
         return false;
     }
 }
