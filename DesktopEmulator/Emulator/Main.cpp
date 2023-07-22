@@ -10,6 +10,7 @@
     #include "../ConsoleLogic/V32Console.hpp"
     
     // include project headers
+    #include "EmulatorControl.hpp"
     #include "AudioOutput.hpp"
     #include "GUI.hpp"
     #include "Settings.hpp"
@@ -283,7 +284,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         // -----------------------------------------------------------------------------
         
         // turn on Vircon VM
-        Emulator_Initialize();
+        Emulator.Initialize();
         
         // load the standard bios from the emulator's local bios folder
         Console.LoadBios( EmulatorFolder + "Bios" + PathSeparator + BiosFileName );
@@ -295,7 +296,7 @@ int main( int NumberOfArguments, char* Arguments[] )
             Console.LoadCartridge( CartridgePath );
             
             // in this case, turn on the console too
-            Emulator_SetPower( true );
+            Emulator.SetPower( true );
         }
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -344,7 +345,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                         LOG("Focus lost");
                         WindowActive = false;
                         MouseIsOnWindow = false;
-                        Emulator_Pause();
+                        Emulator.Pause();
                     }
                     
                     // on these cases, window updates are resumed
@@ -354,7 +355,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                     {
                         LOG("Focus gained");
                         WindowActive = true;
-                        Emulator_Resume();
+                        Emulator.Resume();
                     }
                     
                     // on this case, window should be redrawn
@@ -385,7 +386,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                       MouseIsOnWindow = !MouseIsOnWindow;
                     
                     // Key F5 resets the machine
-                    if( Key == SDLK_F5 ) Emulator_Reset();
+                    if( Key == SDLK_F5 ) Emulator.Reset();
                     
                     // when CTRL is pressed, process keyboard shortcuts
                     bool ControlIsPressed = (SDL_GetModState() & KMOD_CTRL);
@@ -399,21 +400,21 @@ int main( int NumberOfArguments, char* Arguments[] )
                         // CTRL+P = Power toggle
                         if( Key == SDLK_p )
                         {
-                            if( Emulator_IsPowerOn() )
-                              Emulator_SetPower( false );
+                            if( Emulator.IsPowerOn() )
+                              Emulator.SetPower( false );
                             else
-                              Emulator_SetPower( true );
+                              Emulator.SetPower( true );
                         }
                         
                         // CTRL+R = Reset
                         if( Key == SDLK_r )
-                          Emulator_Reset();
+                          Emulator.Reset();
                         
                         // Ctrl+L = Load cartridge (or change it)
                         if( Key == SDLK_l )
                         {
                             // power needs to be off
-                            if( !Emulator_IsPowerOn() )
+                            if( !Emulator.IsPowerOn() )
                             {
                                 if( Console.HasCartridge() )
                                   GUI_ChangeCartridge();
@@ -426,7 +427,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                         if( Key == SDLK_u )
                         {
                             // power needs to be off
-                            if( !Emulator_IsPowerOn() )
+                            if( !Emulator.IsPowerOn() )
                               if( Console.HasCartridge() )
                                 GUI_UnloadCartridge();
                         }
@@ -474,7 +475,7 @@ int main( int NumberOfArguments, char* Arguments[] )
             // measure cycle time
             double TimeStep = Watch.GetStepTime();
             
-            if( Emulator_IsPowerOn() && !Emulator_IsPaused() )
+            if( Emulator.IsPowerOn() && !Emulator.IsPaused() )
             {
                 // execute frames as needed
                 PendingFrames += TimeStep * 60.0;
@@ -483,7 +484,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                 while( PendingFrames >= 0.9 )
                 {
                     // run another frame
-                    Emulator_RunNextFrame();
+                    Emulator.RunNextFrame();
                     
                     // this frame is done
                     PendingFrames = max( PendingFrames - 1, 0.0f );
@@ -509,7 +510,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
         // turn off Vircon VM
-        Emulator_Terminate();
+        Emulator.Terminate();
         
         // save settings
         SaveSettings( EmulatorFolder + "Config-Settings.xml" );

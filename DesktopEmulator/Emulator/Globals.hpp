@@ -13,6 +13,7 @@
     class OpenGL2DContext;
     class AudioOutput;
     class Texture;
+    class EmulatorControl;
 // *****************************************************************************
 
 
@@ -43,6 +44,7 @@ extern std::string LastMemoryCardDirectory;
 extern V32::V32Console Console;
 
 // wrappers for console I/O operation
+extern EmulatorControl Emulator;
 extern OpenGL2DContext OpenGL2D;
 extern AudioOutput Audio;
 

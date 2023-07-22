@@ -64,6 +64,10 @@ namespace V32
             V32Console();
            ~V32Console();
             
+            // - - - - - - - - - - - - - - - - - - - - - - - -
+            //   EXTERNAL INTERFACES: API FUNCTIONS
+            // - - - - - - - - - - - - - - - - - - - - - - - -
+            
             // control signals
             void SetPower( bool On );
             void Reset();

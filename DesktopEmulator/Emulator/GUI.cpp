@@ -10,6 +10,7 @@
     
     // include project headers
     #include "GUI.hpp"
+    #include "EmulatorControl.hpp"
     #include "AudioOutput.hpp"
     #include "Globals.hpp"
     #include "Settings.hpp"
@@ -42,10 +43,10 @@ string GetLoadFilePath( const char* Filters, const std::string& Directory = Emul
 {
     // pause emulation at window events to
     // ensure sound is restored after them
-    bool WasRunning = Emulator_IsPowerOn() && !Emulator_IsPaused();
+    bool WasRunning = Emulator.IsPowerOn() && !Emulator.IsPaused();
     
     if( WasRunning )
-      Emulator_Pause();
+      Emulator.Pause();
     
     // show the dialog with the requested filter
     osdialog_filters* ParsedFilters = osdialog_filters_parse( Filters );
@@ -54,7 +55,7 @@ string GetLoadFilePath( const char* Filters, const std::string& Directory = Emul
     
     // resume emulation if needed
     if( WasRunning )
-      Emulator_Resume();
+      Emulator.Resume();
     
     // when cancelled, return empty string
     if( !FilePath )
@@ -72,10 +73,10 @@ string GetSaveFilePath( const char* Filters, const std::string& Directory = Emul
 {
     // pause emulation at window events to
     // ensure sound is restored after them
-    bool WasRunning = Emulator_IsPowerOn() && !Emulator_IsPaused();
+    bool WasRunning = Emulator.IsPowerOn() && !Emulator.IsPaused();
     
     if( WasRunning )
-      Emulator_Pause();
+      Emulator.Pause();
     
     // show the dialog with the requested filter
     osdialog_filters* ParsedFilters = osdialog_filters_parse( Filters );
@@ -84,7 +85,7 @@ string GetSaveFilePath( const char* Filters, const std::string& Directory = Emul
     
     // resume emulation if needed
     if( WasRunning )
-      Emulator_Resume();
+      Emulator.Resume();
     
     // when cancelled, return empty string
     if( !FilePath )
@@ -127,10 +128,10 @@ void ShowDelayedMessageBox()
     
     // check current state to restore later
     bool WasFullScreen = OpenGL2D.FullScreen;
-    bool WasRunning = Emulator_IsPowerOn() && !Emulator_IsPaused();
+    bool WasRunning = Emulator.IsPowerOn() && !Emulator.IsPaused();
     
     if( WasRunning )
-      Emulator_Pause();
+      Emulator.Pause();
     
     if( WasFullScreen )
     {
@@ -149,7 +150,7 @@ void ShowDelayedMessageBox()
     }
     
     if( WasRunning )
-      Emulator_Resume();
+      Emulator.Resume();
 }
 
 
@@ -164,10 +165,10 @@ void SetWindowZoom( int ZoomFactor )
 {
     // pause emulation at window events to
     // ensure sound is restored after them
-    bool WasRunning = Emulator_IsPowerOn() && !Emulator_IsPaused();
+    bool WasRunning = Emulator.IsPowerOn() && !Emulator.IsPaused();
     
     if( WasRunning )
-      Emulator_Pause();
+      Emulator.Pause();
     
     // set the zoom
     OpenGL2D.SetWindowZoom( ZoomFactor );
@@ -177,7 +178,7 @@ void SetWindowZoom( int ZoomFactor )
     
     // resume emulation if needed
     if( WasRunning )
-      Emulator_Resume();
+      Emulator.Resume();
 }
 
 // -----------------------------------------------------------------------------
@@ -186,10 +187,10 @@ void SetFullScreen()
 {
     // pause emulation at window events to
     // ensure sound is restored after them
-    bool WasRunning = Emulator_IsPowerOn() && !Emulator_IsPaused();
+    bool WasRunning = Emulator.IsPowerOn() && !Emulator.IsPaused();
     
     if( WasRunning )
-      Emulator_Pause();
+      Emulator.Pause();
     
     // set full screen
     OpenGL2D.SetFullScreen();
@@ -199,7 +200,7 @@ void SetFullScreen()
     
     // resume emulation if needed
     if( WasRunning )
-      Emulator_Resume();
+      Emulator.Resume();
 }
 
 // -----------------------------------------------------------------------------
@@ -472,7 +473,7 @@ void GUI_LoadCartridge( string CartridgePath )
             LastCartridgeDirectory = GetPathDirectory( CartridgePath );
             
             Console.LoadCartridge( CartridgePath );
-            Emulator_SetPower( true );
+            Emulator.SetPower( true );
             
             // fix to prevent GUI from drawing
             // on the console's framebuffer
@@ -502,7 +503,7 @@ void GUI_ChangeCartridge( string CartridgePath )
             
             Console.UnloadCartridge();
             Console.LoadCartridge( CartridgePath );
-            Emulator_SetPower( true );
+            Emulator.SetPower( true );
             
             // fix to prevent GUI from drawing
             // on the console's framebuffer
@@ -608,14 +609,14 @@ void ProcessMenuConsole()
     if( !ImGui::BeginMenu( Texts(TextIDs::Menus_Console) ) )
       return;
     
-    if( Emulator_IsPowerOn() )
+    if( Emulator.IsPowerOn() )
     {
         if( ImGui::MenuItem( Texts(TextIDs::Console_PowerOff) ) )
-          Emulator_SetPower( false );
+          Emulator.SetPower( false );
           
         if( ImGui::MenuItem( Texts(TextIDs::Console_Reset) ) )
         {
-            Emulator_Reset();
+            Emulator.Reset();
             ShowEmulatorWindow();
         }
     }
@@ -623,7 +624,7 @@ void ProcessMenuConsole()
     {
         if( ImGui::MenuItem( Texts(TextIDs::Console_PowerOn) ) )
         {
-            Emulator_SetPower( true );
+            Emulator.SetPower( true );
             MouseIsOnWindow = false;
         }
     }
@@ -659,7 +660,7 @@ void ProcessMenuCartridge()
     }
     
     // now display the actual options
-    if( !Emulator_IsPowerOn() )
+    if( !Emulator.IsPowerOn() )
     {
         if( !Console.HasCartridge() )
         {
@@ -684,7 +685,7 @@ void ProcessMenuCartridge()
         ImGui::PopStyleVar();
     }
     
-    if( !Emulator_IsPowerOn() )
+    if( !Emulator.IsPowerOn() )
     {
         // show title for recent files list
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
@@ -921,7 +922,7 @@ void ProcessMenuOptions()
     }
     
     // allow to take a screenshot only when console is turned on
-    if( ImGui::MenuItem( Texts(TextIDs::Options_Screenshot), nullptr, false, Emulator_IsPowerOn() ) )
+    if( ImGui::MenuItem( Texts(TextIDs::Options_Screenshot), nullptr, false, Emulator.IsPowerOn() ) )
       GUI_SaveScreenshot();
     
     ImGui::EndMenu();
@@ -985,7 +986,7 @@ void ProcessLabelCPU()
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
     
     // loads are not applicable if the machine is off
-    if( !Emulator_IsPowerOn() )
+    if( !Emulator.IsPowerOn() )
       ImGui::Text( Texts(TextIDs::Status_ConsoleOff) );
     
     // not applicable either if the machine is halted
@@ -1043,7 +1044,7 @@ void ShowEmulatorWindow()
     // signal" indicator on a black screen
     OpenGL2D.RenderToScreen();
     
-    if( Emulator_IsPowerOn() )
+    if( Emulator.IsPowerOn() )
       OpenGL2D.DrawFramebufferOnScreen();
     else
       NoSignalTexture.Draw( OpenGL2D, 0, 0, Constants::ScreenWidth, Constants::ScreenHeight );
@@ -1105,10 +1106,10 @@ void RenderGUI()
     
     // pause the emulator when GUI is used
     if( GUIMustBeDrawn() )
-      Emulator_Pause();
+      Emulator.Pause();
     
-    else if( Emulator_IsPaused() )
-      Emulator_Resume();
+    else if( Emulator.IsPaused() )
+      Emulator.Resume();
     
     // now restore the console's render parameters
     OpenGL2D.SetBlendingMode( PreviousBlendingMode );

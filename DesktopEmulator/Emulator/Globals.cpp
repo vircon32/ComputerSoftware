@@ -8,6 +8,7 @@
     #include "../ConsoleLogic/V32Console.hpp"
     
     // include project headers
+    #include "EmulatorControl.hpp"
     #include "AudioOutput.hpp"
     #include "Globals.hpp"
     
@@ -44,6 +45,7 @@ string LastMemoryCardDirectory;
 V32Console Console;
 
 // wrappers for console I/O operation
+EmulatorControl Emulator;
 OpenGL2DContext OpenGL2D;
 AudioOutput Audio;
 
@@ -68,93 +70,4 @@ void InitializeGlobalVariables()
     // called so that logging is initialized
     LastCartridgeDirectory = EmulatorFolder;
     LastMemoryCardDirectory = EmulatorFolder;
-}
-
-
-// =============================================================================
-//      EMULATOR-LEVEL CONTROL
-// =============================================================================
-
-
-bool Emulator_Paused = false;
-
-// -----------------------------------------------------------------------------
-
-void Emulator_Initialize()
-{
-    Audio.Initialize();
-}
-
-// -----------------------------------------------------------------------------
-
-void Emulator_Terminate()
-{
-    Console.SetPower( false );
-    Audio.Terminate();
-}
-
-// -----------------------------------------------------------------------------
-
-void Emulator_Pause()
-{
-    // do nothing when not applicable
-    if( !Console.IsPowerOn() || Emulator_Paused ) return;
-    
-    // take pause actions
-    Emulator_Paused = true;
-    Audio.Pause();
-}
-
-// -----------------------------------------------------------------------------
-
-void Emulator_Resume()
-{
-    // do nothing when not applicable
-    if( !Console.IsPowerOn() || !Emulator_Paused ) return;
-    
-    // take resume actions
-    Emulator_Paused = false;
-    Audio.Resume();
-}
-
-// -----------------------------------------------------------------------------
-
-bool Emulator_IsPaused()
-{
-    return Emulator_Paused;
-}
-
-// -----------------------------------------------------------------------------
-
-void Emulator_SetPower( bool On )
-{
-    Console.SetPower( On );
-    
-    if( On ) Audio.Reset();
-    else Audio.Pause();
-}
-
-// -----------------------------------------------------------------------------
-
-bool Emulator_IsPowerOn()
-{
-    return Console.IsPowerOn();
-}
-
-// -----------------------------------------------------------------------------
-
-void Emulator_Reset()
-{
-    LOG("Emulator_Reset");
-    Emulator_Paused = false;
-    Console.Reset();
-    Audio.Reset();
-}
-
-// -----------------------------------------------------------------------------
-
-void Emulator_RunNextFrame()
-{
-    Console.RunNextFrame();
-    Audio.ChangeFrame();
 }

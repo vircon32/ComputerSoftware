@@ -261,6 +261,7 @@ set(EDITCONTROLS_LIBS
 set(EMULATOR_SRC
     ${EMULATOR_DIR}/AudioOutput.cpp
     ${EMULATOR_DIR}/AudioThread.cpp
+    ${EMULATOR_DIR}/EmulatorControl.cpp
     ${EMULATOR_DIR}/Globals.cpp
     ${EMULATOR_DIR}/GUI.cpp
     ${EMULATOR_DIR}/Languages.cpp
