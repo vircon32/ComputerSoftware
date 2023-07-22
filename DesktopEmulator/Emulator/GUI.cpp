@@ -1,6 +1,7 @@
 // *****************************************************************************
     // include infrastructure headers
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
+    #include "../DesktopInfrastructure/Texture.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
     #include "../DesktopInfrastructure/Logger.hpp"
     
@@ -9,6 +10,7 @@
     
     // include project headers
     #include "GUI.hpp"
+    #include "AudioOutput.hpp"
     #include "Globals.hpp"
     #include "Settings.hpp"
     #include "Languages.hpp"
@@ -40,10 +42,10 @@ string GetLoadFilePath( const char* Filters, const std::string& Directory = Emul
 {
     // pause emulation at window events to
     // ensure sound is restored after them
-    bool WasRunning = Vircon.IsPowerOn() && !Vircon.IsPaused();
+    bool WasRunning = Emulator_IsPowerOn() && !Emulator_IsPaused();
     
     if( WasRunning )
-      Vircon.Pause();
+      Emulator_Pause();
     
     // show the dialog with the requested filter
     osdialog_filters* ParsedFilters = osdialog_filters_parse( Filters );
@@ -52,7 +54,7 @@ string GetLoadFilePath( const char* Filters, const std::string& Directory = Emul
     
     // resume emulation if needed
     if( WasRunning )
-      Vircon.Resume();
+      Emulator_Resume();
     
     // when cancelled, return empty string
     if( !FilePath )
@@ -70,10 +72,10 @@ string GetSaveFilePath( const char* Filters, const std::string& Directory = Emul
 {
     // pause emulation at window events to
     // ensure sound is restored after them
-    bool WasRunning = Vircon.IsPowerOn() && !Vircon.IsPaused();
+    bool WasRunning = Emulator_IsPowerOn() && !Emulator_IsPaused();
     
     if( WasRunning )
-      Vircon.Pause();
+      Emulator_Pause();
     
     // show the dialog with the requested filter
     osdialog_filters* ParsedFilters = osdialog_filters_parse( Filters );
@@ -82,7 +84,7 @@ string GetSaveFilePath( const char* Filters, const std::string& Directory = Emul
     
     // resume emulation if needed
     if( WasRunning )
-      Vircon.Resume();
+      Emulator_Resume();
     
     // when cancelled, return empty string
     if( !FilePath )
@@ -125,10 +127,10 @@ void ShowDelayedMessageBox()
     
     // check current state to restore later
     bool WasFullScreen = OpenGL2D.FullScreen;
-    bool WasRunning = Vircon.IsPowerOn() && !Vircon.IsPaused();
+    bool WasRunning = Emulator_IsPowerOn() && !Emulator_IsPaused();
     
     if( WasRunning )
-      Vircon.Pause();
+      Emulator_Pause();
     
     if( WasFullScreen )
     {
@@ -147,7 +149,7 @@ void ShowDelayedMessageBox()
     }
     
     if( WasRunning )
-      Vircon.Resume();
+      Emulator_Resume();
 }
 
 
@@ -162,10 +164,10 @@ void SetWindowZoom( int ZoomFactor )
 {
     // pause emulation at window events to
     // ensure sound is restored after them
-    bool WasRunning = Vircon.IsPowerOn() && !Vircon.IsPaused();
+    bool WasRunning = Emulator_IsPowerOn() && !Emulator_IsPaused();
     
     if( WasRunning )
-      Vircon.Pause();
+      Emulator_Pause();
     
     // set the zoom
     OpenGL2D.SetWindowZoom( ZoomFactor );
@@ -175,7 +177,7 @@ void SetWindowZoom( int ZoomFactor )
     
     // resume emulation if needed
     if( WasRunning )
-      Vircon.Resume();
+      Emulator_Resume();
 }
 
 // -----------------------------------------------------------------------------
@@ -184,10 +186,10 @@ void SetFullScreen()
 {
     // pause emulation at window events to
     // ensure sound is restored after them
-    bool WasRunning = Vircon.IsPowerOn() && !Vircon.IsPaused();
+    bool WasRunning = Emulator_IsPowerOn() && !Emulator_IsPaused();
     
     if( WasRunning )
-      Vircon.Pause();
+      Emulator_Pause();
     
     // set full screen
     OpenGL2D.SetFullScreen();
@@ -197,7 +199,7 @@ void SetFullScreen()
     
     // resume emulation if needed
     if( WasRunning )
-      Vircon.Resume();
+      Emulator_Resume();
 }
 
 // -----------------------------------------------------------------------------
@@ -358,7 +360,7 @@ void GUI_CreateMemoryCard()
               MemoryCardPath += ".memc";
             
             // create the card
-            Vircon.CreateMemoryCard( MemoryCardPath );
+            Console.CreateMemoryCard( MemoryCardPath );
             
             // report
             DelayedMessageBox
@@ -383,7 +385,7 @@ void GUI_UnloadMemoryCard()
 {
     try
     {
-        Vircon.UnloadMemoryCard();
+        Console.UnloadMemoryCard();
     }
     
     catch( const exception& e )
@@ -405,7 +407,7 @@ void GUI_LoadMemoryCard( string MemoryCardPath )
         if( !MemoryCardPath.empty() )
         {
             LastMemoryCardDirectory = GetPathDirectory( MemoryCardPath );
-            Vircon.LoadMemoryCard( MemoryCardPath );
+            Console.LoadMemoryCard( MemoryCardPath );
         }
     }
     
@@ -428,8 +430,8 @@ void GUI_ChangeMemoryCard( string MemoryCardPath )
         if( !MemoryCardPath.empty() )
         {
             LastMemoryCardDirectory = GetPathDirectory( MemoryCardPath );
-            Vircon.UnloadMemoryCard();
-            Vircon.LoadMemoryCard( MemoryCardPath );
+            Console.UnloadMemoryCard();
+            Console.LoadMemoryCard( MemoryCardPath );
         }
     }
     
@@ -446,7 +448,7 @@ void GUI_UnloadCartridge()
 {
     try
     {
-        Vircon.UnloadCartridge();
+        Console.UnloadCartridge();
     }
     
     catch( const exception& e )
@@ -469,8 +471,8 @@ void GUI_LoadCartridge( string CartridgePath )
         {
             LastCartridgeDirectory = GetPathDirectory( CartridgePath );
             
-            Vircon.LoadCartridge( CartridgePath );
-            Vircon.SetPower( true );
+            Console.LoadCartridge( CartridgePath );
+            Emulator_SetPower( true );
             
             // fix to prevent GUI from drawing
             // on the console's framebuffer
@@ -498,9 +500,9 @@ void GUI_ChangeCartridge( string CartridgePath )
         {
             LastCartridgeDirectory = GetPathDirectory( CartridgePath );
             
-            Vircon.UnloadCartridge();
-            Vircon.LoadCartridge( CartridgePath );
-            Vircon.SetPower( true );
+            Console.UnloadCartridge();
+            Console.LoadCartridge( CartridgePath );
+            Emulator_SetPower( true );
             
             // fix to prevent GUI from drawing
             // on the console's framebuffer
@@ -606,14 +608,14 @@ void ProcessMenuConsole()
     if( !ImGui::BeginMenu( Texts(TextIDs::Menus_Console) ) )
       return;
     
-    if( Vircon.IsPowerOn() )
+    if( Emulator_IsPowerOn() )
     {
         if( ImGui::MenuItem( Texts(TextIDs::Console_PowerOff) ) )
-          Vircon.SetPower( false );
+          Emulator_SetPower( false );
           
         if( ImGui::MenuItem( Texts(TextIDs::Console_Reset) ) )
         {
-            Vircon.Reset();
+            Emulator_Reset();
             ShowEmulatorWindow();
         }
     }
@@ -621,7 +623,7 @@ void ProcessMenuConsole()
     {
         if( ImGui::MenuItem( Texts(TextIDs::Console_PowerOn) ) )
         {
-            Vircon.SetPower( true );
+            Emulator_SetPower( true );
             MouseIsOnWindow = false;
         }
     }
@@ -640,7 +642,7 @@ void ProcessMenuCartridge()
       return;
     
     // first, display the current cartridge
-    if( !Vircon.HasCartridge() )
+    if( !Console.HasCartridge() )
     {
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
         ImGui::Text( Texts(TextIDs::Cartridge_NoCartridge) );
@@ -649,7 +651,7 @@ void ProcessMenuCartridge()
     }
     else
     {
-        string DisplayedName = "[ " + Vircon.GetCartridgeFileName() + " ]";
+        string DisplayedName = "[ " + Console.GetCartridgeFileName() + " ]";
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
         ImGui::Text( DisplayedName.c_str() );
         ImGui::PopStyleVar();
@@ -657,9 +659,9 @@ void ProcessMenuCartridge()
     }
     
     // now display the actual options
-    if( !Vircon.IsPowerOn() )
+    if( !Emulator_IsPowerOn() )
     {
-        if( !Vircon.HasCartridge() )
+        if( !Console.HasCartridge() )
         {
             if( ImGui::MenuItem( Texts(TextIDs::Cartridge_Load) ) )
               PendingAction = DelayedFileActions::LoadCartridge;
@@ -682,7 +684,7 @@ void ProcessMenuCartridge()
         ImGui::PopStyleVar();
     }
     
-    if( !Vircon.IsPowerOn() )
+    if( !Emulator_IsPowerOn() )
     {
         // show title for recent files list
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
@@ -727,7 +729,7 @@ void ProcessMenuMemoryCard()
       return;
     
     // first, display the current cartridge
-    if( !Vircon.HasMemoryCard() )
+    if( !Console.HasMemoryCard() )
     {
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
         ImGui::Text( Texts(TextIDs::Card_NoCard) );
@@ -736,7 +738,7 @@ void ProcessMenuMemoryCard()
     }
     else
     {
-        string DisplayedName = "[ " + Vircon.GetMemoryCardFileName() + " ]";
+        string DisplayedName = "[ " + Console.GetMemoryCardFileName() + " ]";
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
         ImGui::Text( DisplayedName.c_str() );
         ImGui::PopStyleVar();
@@ -747,7 +749,7 @@ void ProcessMenuMemoryCard()
     if( ImGui::MenuItem( Texts(TextIDs::Card_Create) ) )
       PendingAction = DelayedFileActions::CreateMemoryCard;
     
-    if( !Vircon.HasMemoryCard() )
+    if( !Console.HasMemoryCard() )
     {
         if( ImGui::MenuItem( Texts(TextIDs::Card_Load) ) )
           PendingAction = DelayedFileActions::LoadMemoryCard;
@@ -892,17 +894,17 @@ void ProcessMenuOptions()
     if( ImGui::BeginMenu( Texts(TextIDs::Options_SoundVolume) ) )
     {
         // process volume slider
-        int Volume = 100 * Vircon.GetOutputVolume();
+        int Volume = 100 * Audio.GetOutputVolume();
         ImGui::SetNextItemWidth( 80 * OpenGL2D.WindowWidth / Constants::ScreenWidth );
         
         if( ImGui::SliderInt( "##Volume", &Volume, 0, 100 ) )
-          Vircon.SetOutputVolume( Volume / 100.0 );
+          Audio.SetOutputVolume( Volume / 100.0 );
         
         // process mute checkbox
-        bool Mute = Vircon.IsMuted();
+        bool Mute = Audio.IsMuted();
         
         if( ImGui::Checkbox( Texts(TextIDs::Options_Mute), &Mute ) )
-          Vircon.SetMute( Mute );
+          Audio.SetMute( Mute );
         
         ImGui::EndMenu();
     }
@@ -919,7 +921,7 @@ void ProcessMenuOptions()
     }
     
     // allow to take a screenshot only when console is turned on
-    if( ImGui::MenuItem( Texts(TextIDs::Options_Screenshot), nullptr, false, Vircon.IsPowerOn() ) )
+    if( ImGui::MenuItem( Texts(TextIDs::Options_Screenshot), nullptr, false, Emulator_IsPowerOn() ) )
       GUI_SaveScreenshot();
     
     ImGui::EndMenu();
@@ -983,18 +985,18 @@ void ProcessLabelCPU()
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
     
     // loads are not applicable if the machine is off
-    if( !Vircon.IsPowerOn() )
+    if( !Emulator_IsPowerOn() )
       ImGui::Text( Texts(TextIDs::Status_ConsoleOff) );
     
     // not applicable either if the machine is halted
-    else if( Vircon.IsCPUHalted() )
+    else if( Console.IsCPUHalted() )
       ImGui::Text( Texts(TextIDs::Status_CPUHalted) );
     
     // show the maximum load of the last 2 frames
     else
     {
-        int CPULoad = Vircon.GetCPULoad();
-        int GPULoad = Vircon.GetCPULoad();
+        int CPULoad = Console.GetCPULoad();
+        int GPULoad = Console.GetCPULoad();
         ImGui::Text( "CPU %d%%, GPU %d%%", CPULoad, GPULoad );
     }
     
@@ -1041,7 +1043,7 @@ void ShowEmulatorWindow()
     // signal" indicator on a black screen
     OpenGL2D.RenderToScreen();
     
-    if( Vircon.IsPowerOn() )
+    if( Emulator_IsPowerOn() )
       OpenGL2D.DrawFramebufferOnScreen();
     else
       NoSignalTexture.Draw( OpenGL2D, 0, 0, Constants::ScreenWidth, Constants::ScreenHeight );
@@ -1103,9 +1105,10 @@ void RenderGUI()
     
     // pause the emulator when GUI is used
     if( GUIMustBeDrawn() )
-      Vircon.Pause();
+      Emulator_Pause();
     
-    else Vircon.Resume();
+    else if( Emulator_IsPaused() )
+      Emulator_Resume();
     
     // now restore the console's render parameters
     OpenGL2D.SetBlendingMode( PreviousBlendingMode );

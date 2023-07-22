@@ -9,6 +9,7 @@
     
     // include C/C++ headers
     #include <string>           // [ C++ STL ] Strings
+    #include <fstream>          // [ C++ STL ] File streams
 // *****************************************************************************
 
 

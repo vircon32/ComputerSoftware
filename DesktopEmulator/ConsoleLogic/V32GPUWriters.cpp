@@ -3,6 +3,7 @@
     #include "../../VirconDefinitions/Enumerations.hpp"
     
     // include infrastructure headers
+    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/NumericFunctions.hpp"
     
     // include project headers

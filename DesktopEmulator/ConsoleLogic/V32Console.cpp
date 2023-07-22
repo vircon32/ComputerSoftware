@@ -11,9 +11,9 @@
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     
     // include emulator headers
-    #include "Globals.hpp"
-    #include "GUI.hpp"
-    #include "Settings.hpp"
+    #include "../Emulator/Globals.hpp"
+    #include "../Emulator/GUI.hpp"
+    #include "../Emulator/Settings.hpp"
     
     // include project headers
     #include "V32Console.hpp"
@@ -26,11 +26,11 @@
 namespace V32
 {
     // =============================================================================
-    //      V32 EMULATOR: INSTANCE HANDLING
+    //      V32 CONSOLE: INSTANCE HANDLING
     // =============================================================================
     
     
-    V32Emulator::V32Emulator()
+    V32Console::V32Console()
     {
         // connect memory bus master
         CPU.MemoryBus = &MemoryBus;
@@ -61,7 +61,6 @@ namespace V32
         
         // set initial state
         PowerIsOn = false;
-        Paused = false;
         
         // initial loads are 0
         LastCPULoads[ 0 ] = LastCPULoads[ 1 ] = 0;
@@ -72,7 +71,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    V32Emulator::~V32Emulator()
+    V32Console::~V32Console()
     {
         // unload any present media
         if( HasMemoryCard() )  UnloadMemoryCard();
@@ -81,87 +80,11 @@ namespace V32
     
     
     // =============================================================================
-    //      V32 EMULATOR: RESOURCE MANAGEMENT
+    //      V32 CONSOLE: BIOS MANAGEMENT
     // =============================================================================
     
     
-    void V32Emulator::Initialize()
-    {
-        // initialize audio playback
-        SPU.InitializeAudio();
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    void V32Emulator::Terminate()
-    {
-        // terminate audio playback
-        SPU.TerminateAudio();
-        
-        // release all connected media
-        UnloadCartridge();
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    void V32Emulator::SetSPUSoundBuffers( int NumberOfBuffers )
-    {
-        SPU.NumberOfBuffers = NumberOfBuffers;
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    int V32Emulator::GetSPUSoundBuffers()
-    {
-        return SPU.NumberOfBuffers;
-    }
-    
-    
-    // =============================================================================
-    //      V32 EMULATOR: EXTERNAL GENERAL OPERATION
-    // =============================================================================
-    
-    
-    void V32Emulator::Pause()
-    {
-        // do nothing when not applicable
-        if( !PowerIsOn || Paused ) return;
-        
-        // take pause actions
-        Paused = true;
-        
-        SPU.ThreadPauseFlag = true;
-        alSourcePause( SPU.SoundSourceID );
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    void V32Emulator::Resume()
-    {
-        // do nothing when not applicable
-        if( !PowerIsOn || !Paused ) return;
-        
-        // take resume actions
-        Paused = false;
-        
-        alSourcePlay( SPU.SoundSourceID );
-        SPU.ThreadPauseFlag = false;
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    bool V32Emulator::IsPaused()
-    {
-        return Paused;
-    }
-    
-    
-    // =============================================================================
-    //      V32 EMULATOR: BIOS MANAGEMENT
-    // =============================================================================
-    
-    
-    void V32Emulator::LoadBios( const std::string& FilePath )
+    void V32Console::LoadBios( const std::string& FilePath )
     {
         // open bios file
         LOG( "Loading bios" );
@@ -335,11 +258,11 @@ namespace V32
     
     
     // =============================================================================
-    //      V32 EMULATOR: CARTRIDGE MANAGEMENT
+    //      V32 CONSOLE: CARTRIDGE MANAGEMENT
     // =============================================================================
     
     
-    void V32Emulator::LoadCartridge( const std::string& FilePath )
+    void V32Console::LoadCartridge( const std::string& FilePath )
     {
         LOG( "Loading cartridge" );
         LOG( "File path: \"" + FilePath + "\"" );
@@ -577,7 +500,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void V32Emulator::UnloadCartridge()
+    void V32Console::UnloadCartridge()
     {
         // do nothing if a cartridge is not loaded
         if( !HasCartridge() ) return;
@@ -606,25 +529,25 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32Emulator::HasCartridge()
+    bool V32Console::HasCartridge()
     {
         return (CartridgeController.MemorySize != 0);
     }
     
     // -----------------------------------------------------------------------------
     
-    string V32Emulator::GetCartridgeFileName()
+    string V32Console::GetCartridgeFileName()
     {
         return CartridgeController.CartridgeFileName;
     }
     
     
     // =============================================================================
-    //      V32 EMULATOR: MEMORY CARD MANAGEMENT
+    //      V32 CONSOLE: MEMORY CARD MANAGEMENT
     // =============================================================================
     
     
-    void V32Emulator::CreateMemoryCard( const std::string& FilePath )
+    void V32Console::CreateMemoryCard( const std::string& FilePath )
     {
         LOG( "Creating memory card" );
         LOG( "File path: \"" + FilePath + "\"" );
@@ -651,7 +574,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void V32Emulator::LoadMemoryCard( const std::string& FilePath )
+    void V32Console::LoadMemoryCard( const std::string& FilePath )
     {
         LOG( "Loading memory card" );
         LOG( "File path: \"" + FilePath + "\"" );
@@ -703,7 +626,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void V32Emulator::UnloadMemoryCard()
+    void V32Console::UnloadMemoryCard()
     {
         // do nothing if a card is not loaded
         if( !HasMemoryCard() ) return;
@@ -723,7 +646,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void V32Emulator::SaveMemoryCard()
+    void V32Console::SaveMemoryCard()
     {
         // do nothing if a card is not loaded
         if( !HasMemoryCard() ) return;
@@ -745,32 +668,32 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32Emulator::HasMemoryCard()
+    bool V32Console::HasMemoryCard()
     {
         return (MemoryCardController.MemorySize != 0);
     }
     
     // -----------------------------------------------------------------------------
     
-    bool V32Emulator::WasMemoryCardModified()
+    bool V32Console::WasMemoryCardModified()
     {
         return MemoryCardController.PendingSave;
     }
     
     // -----------------------------------------------------------------------------
     
-    string V32Emulator::GetMemoryCardFileName()
+    string V32Console::GetMemoryCardFileName()
     {
         return MemoryCardController.CardFileName;
     }
     
     
     // =============================================================================
-    //      V32 EMULATOR: CONTROL SIGNALS
+    //      V32 CONSOLE: CONTROL SIGNALS
     // =============================================================================
     
     
-    void V32Emulator::SetPower( bool On )
+    void V32Console::SetPower( bool On )
     {
         // do nothing for no changes
         if( PowerIsOn == On ) return;
@@ -794,7 +717,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void V32Emulator::Reset()
+    void V32Console::Reset()
     {
         LOG( "Emulator reset" );
         
@@ -816,10 +739,10 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void V32Emulator::RunNextFrame()
+    void V32Console::RunNextFrame()
     {
         // do nothing when not applicable
-        if( !PowerIsOn || Paused )
+        if( !PowerIsOn )
           return;
         
         // STEP 1: Begin a new frame by sending
@@ -862,18 +785,18 @@ namespace V32
     
     
     // =============================================================================
-    //      V32 EMULATOR: GENERAL STATUS QUERIES
+    //      V32 CONSOLE: GENERAL STATUS QUERIES
     // =============================================================================
     
     
-    bool V32Emulator::IsPowerOn()
+    bool V32Console::IsPowerOn()
     {
         return PowerIsOn;
     }
     
     // -----------------------------------------------------------------------------
     
-    bool V32Emulator::IsCPUHalted()
+    bool V32Console::IsCPUHalted()
     {
         return CPU.Halted;
     }
@@ -881,30 +804,30 @@ namespace V32
     // -----------------------------------------------------------------------------
     
     // CPU load at the end of last frame, given in percentage
-    float V32Emulator::GetCPULoad()
+    float V32Console::GetCPULoad()
     {
         // take the maximum because in case of CPU overload,
         // there may be load of 100% every 2 frames (first
         // frame is not enough, and it finishes on next one)
-        return max( LastCPULoads[ 0 ], Vircon.LastCPULoads[ 1 ] );
+        return max( LastCPULoads[ 0 ], LastCPULoads[ 1 ] );
     }
     
     // -----------------------------------------------------------------------------
     
     // GPU load at the end of last frame, given in percentage
-    float V32Emulator::GetGPULoad()
+    float V32Console::GetGPULoad()
     {
         // same reasoning as for CPU load
-        return max( LastGPULoads[ 0 ], Vircon.LastGPULoads[ 1 ] );
+        return max( LastGPULoads[ 0 ], LastGPULoads[ 1 ] );
     }
     
     
     // =============================================================================
-    //      V32 EMULATOR: GAMEPAD MANAGEMENT
+    //      V32 CONSOLE: GAMEPAD MANAGEMENT
     // =============================================================================
     
     
-    void V32Emulator::SetGamepadConnection( int GamepadPort, bool Connected )
+    void V32Console::SetGamepadConnection( int GamepadPort, bool Connected )
     {
         // this function is just an external interface:
         // just pass the call to the gamepad controller
@@ -913,7 +836,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void V32Emulator::SetGamepadControl( int GamepadPort, GamepadControls Control, bool Pressed )  
+    void V32Console::SetGamepadControl( int GamepadPort, GamepadControls Control, bool Pressed )  
     {
         // this function is just an external interface:
         // just pass the call to the gamepad controller
@@ -922,7 +845,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32Emulator::HasGamepad( int GamepadPort )
+    bool V32Console::HasGamepad( int GamepadPort )
     {
         if( GamepadPort < 0 || GamepadPort >= Constants::GamepadPorts )
           return false;
@@ -936,7 +859,7 @@ namespace V32
     // =============================================================================
     
     
-    void V32Emulator::SetCurrentDate( int Year, int DaysWithinYear )
+    void V32Console::SetCurrentDate( int Year, int DaysWithinYear )
     {
         // input range checks
         Clamp( Year, 0, 32767 );
@@ -947,7 +870,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    void V32Emulator::SetCurrentTime( int Hours, int Minutes, int Seconds )
+    void V32Console::SetCurrentTime( int Hours, int Minutes, int Seconds )
     {
         // input range checks
         Clamp( Hours,   0, 23 );
@@ -959,59 +882,24 @@ namespace V32
     
     
     // =============================================================================
-    //      V32 EMULATOR: EXTERNAL VOLUME CONTROL
+    //      V32 CONSOLE: SOUND OUTPUT MANAGEMENT
     // =============================================================================
     
     
-    float V32Emulator::GetOutputVolume()
+    void V32Console::GetFrameSoundOutput( SPUOutputBuffer& OutputBuffer )
     {
-        float SPUVolume = SPU.OutputVolume;
-        
-        // within SPU output volume works linearly
-        // (it is just a gain level) but here we
-        // will treat it quadratically to get the
-        // human-perceived output volume level
-        // vary in a more progressive way
-        Clamp( SPUVolume, 0, 1 );
-        return sqrt( SPUVolume );
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    void V32Emulator::SetOutputVolume( float Volume )
-    {
-        // within SPU output volume works linearly
-        // (it is just a gain level) but here we
-        // will treat it quadratically to get the
-        // human-perceived output volume level
-        // vary in a more progressive way
-        Clamp( Volume, 0, 1 );
-        Volume = Volume * Volume;
-        
-        SPU.SetOutputVolume( Volume );
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    bool V32Emulator::IsMuted()
-    {
-        return SPU.Mute;
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    void V32Emulator::SetMute( bool Mute )
-    {
-        SPU.SetMute( Mute );
+        // for safety, make a copy of the sound buffer
+        // instead of providing access to the original
+        memcpy( &OutputBuffer, &SPU.OutputBuffer, sizeof(SPU.OutputBuffer) );
     }
     
     
     // =============================================================================
-    //      V32 EMULATOR: I/O FUNCTIONS
+    //      V32 CONSOLE: I/O FUNCTIONS
     // =============================================================================
     
     
-    void V32Emulator::ProcessEvent( SDL_Event Event )
+    void V32Console::ProcessEvent( SDL_Event Event )
     {
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // JOYSTICK CONNECTION EVENTS

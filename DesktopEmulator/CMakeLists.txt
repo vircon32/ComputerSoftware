@@ -259,6 +259,8 @@ set(EDITCONTROLS_LIBS
 
 # Source files to compile for the emulator
 set(EMULATOR_SRC
+    ${EMULATOR_DIR}/AudioOutput.cpp
+    ${EMULATOR_DIR}/AudioThread.cpp
     ${EMULATOR_DIR}/Globals.cpp
     ${EMULATOR_DIR}/GUI.cpp
     ${EMULATOR_DIR}/Languages.cpp
@@ -277,7 +279,6 @@ set(EMULATOR_SRC
     ${CONSOLELOGIC_DIR}/V32NullController.cpp
     ${CONSOLELOGIC_DIR}/V32RNG.cpp
     ${CONSOLELOGIC_DIR}/V32SPU.cpp
-    ${CONSOLELOGIC_DIR}/V32SPUThread.cpp
     ${CONSOLELOGIC_DIR}/V32SPUWriters.cpp
     ${CONSOLELOGIC_DIR}/V32Timer.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp

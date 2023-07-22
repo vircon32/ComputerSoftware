@@ -5,6 +5,9 @@
     // include project headers
     #include "V32SPU.hpp"
     
+    // include C/C++ headers
+    #include <cmath>            // [ ANSI C ] Math
+    
     // declare used namespaces
     using namespace std;
 // *****************************************************************************

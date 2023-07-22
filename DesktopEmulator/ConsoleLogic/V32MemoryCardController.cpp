@@ -11,10 +11,6 @@
     // include project headers
     #include "V32MemoryCardController.hpp"
     
-    // include C/C++ headers
-    #include <iostream>     // [ C++ STL ] I/O Streams
-    #include <fstream>      // [ C++ STL ] File streams
-    
     // declare used namespaces
     using namespace std;
 // *****************************************************************************

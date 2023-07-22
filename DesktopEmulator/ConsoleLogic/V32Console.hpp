@@ -14,17 +14,21 @@
     #include "V32CartridgeController.hpp"
     #include "V32MemoryCardController.hpp"
     #include "V32NullController.hpp"
+    
+    // include SDL2 headers
+    #define SDL_MAIN_HANDLED
+    #include <SDL2/SDL.h>       // [ SDL2 ] Main header
 // *****************************************************************************
 
 
 namespace V32
 {
     // =============================================================================
-    //      EMULATOR CLASS
+    //      CONSOLE CLASS
     // =============================================================================
     
     
-    class V32Emulator
+    class V32Console
     {
         private:
             
@@ -49,7 +53,6 @@ namespace V32
             
             // internal state
             bool PowerIsOn;
-            bool Paused;
             
             // performance info (given in %)
             float LastCPULoads[ 2 ];
@@ -58,19 +61,8 @@ namespace V32
         public:
             
             // instance handling
-            V32Emulator();
-           ~V32Emulator();
-            
-            // resource management
-            void Initialize();
-            void Terminate();
-            void SetSPUSoundBuffers( int NumberOfBuffers );
-            int GetSPUSoundBuffers();
-            
-            // external general operation
-            void Pause();
-            void Resume();
-            bool IsPaused();
+            V32Console();
+           ~V32Console();
             
             // control signals
             void SetPower( bool On );
@@ -112,11 +104,8 @@ namespace V32
             void SetCurrentDate( int Year, int DaysWithinYear );
             void SetCurrentTime( int Hours, int Minutes, int Seconds );
             
-            // external volume control
-            float GetOutputVolume();
-            void SetOutputVolume( float Volume );
-            bool IsMuted();
-            void SetMute( bool Mute );
+            // sound output management
+            void GetFrameSoundOutput( SPUOutputBuffer& OutputBuffer );
             
             // I/O functions
             void ProcessEvent( SDL_Event Event );

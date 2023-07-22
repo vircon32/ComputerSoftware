@@ -3,16 +3,16 @@
     #ifndef GLOBALS_HPP
     #define GLOBALS_HPP
     
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/Texture.hpp"
-    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
-    
     // include C/C++ headers
     #include <map>          // [ C++ STL ] Maps
     #include <list>         // [ C++ STL ] Lists
+    #include <string>       // [ C++ STL ] Strings
     
     // forward declarations for all needed classes
-    namespace V32{ class V32Emulator; }
+    namespace V32{ class V32Console; }
+    class OpenGL2DContext;
+    class AudioOutput;
+    class Texture;
 // *****************************************************************************
 
 
@@ -35,25 +35,19 @@ extern std::string LastMemoryCardDirectory;
 
 
 // =============================================================================
-//      VIDEO OBJECTS
-// =============================================================================
-
-
-extern OpenGL2DContext OpenGL2D;
-extern std::string VertexShader;
-extern std::string FragmentShader;
-
-
-// =============================================================================
 //      PROGRAM OBJECTS
 // =============================================================================
 
 
-// video objects
-extern Texture NoSignalTexture;
-
 // instance of the Vircon virtual machine
-extern V32::V32Emulator Vircon;
+extern V32::V32Console Console;
+
+// wrappers for console I/O operation
+extern OpenGL2DContext OpenGL2D;
+extern AudioOutput Audio;
+
+// video resources
+extern Texture NoSignalTexture;
 
 
 // =============================================================================
@@ -62,6 +56,30 @@ extern V32::V32Emulator Vircon;
 
 
 void InitializeGlobalVariables();
+
+
+// =============================================================================
+//      EMULATOR-LEVEL CONTROL
+// =============================================================================
+
+
+extern bool Emulator_Paused;
+
+// general use methods
+void Emulator_Initialize();
+void Emulator_Terminate();
+
+void Emulator_Pause();
+void Emulator_Resume();
+bool Emulator_IsPaused();
+
+void Emulator_SetPower( bool On );
+bool Emulator_IsPowerOn();
+void Emulator_Reset();
+void Emulator_RunNextFrame();
+
+//void Emulator_Update( float DeltaTime );
+//void Emulator_ProcessEvent( SDL_Event Event );
 
 
 // *****************************************************************************

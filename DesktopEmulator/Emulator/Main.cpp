@@ -4,11 +4,13 @@
     #include "../DesktopInfrastructure/StopWatch.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
     #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
+    #include "../DesktopInfrastructure/Texture.hpp"
     
     // include console logic headers
     #include "../ConsoleLogic/V32Console.hpp"
     
     // include project headers
+    #include "AudioOutput.hpp"
     #include "GUI.hpp"
     #include "Settings.hpp"
     #include "Globals.hpp"
@@ -280,20 +282,20 @@ int main( int NumberOfArguments, char* Arguments[] )
         
         // -----------------------------------------------------------------------------
         
-        // load the standard bios from the emulator's local bios folder
-        Vircon.LoadBios( EmulatorFolder+ "Bios" + PathSeparator + BiosFileName );
-        
         // turn on Vircon VM
-        Vircon.Initialize();
+        Emulator_Initialize();
+        
+        // load the standard bios from the emulator's local bios folder
+        Console.LoadBios( EmulatorFolder + "Bios" + PathSeparator + BiosFileName );
         
         // if a cartridge file has been specified, load it
         if( NumberOfArguments == 2 )
         {
             string CartridgePath = Arguments[ 1 ];
-            Vircon.LoadCartridge( CartridgePath );
+            Console.LoadCartridge( CartridgePath );
             
             // in this case, turn on the console too
-            Vircon.SetPower( true );
+            Emulator_SetPower( true );
         }
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -342,7 +344,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                         LOG("Focus lost");
                         WindowActive = false;
                         MouseIsOnWindow = false;
-                        Vircon.Pause();
+                        Emulator_Pause();
                     }
                     
                     // on these cases, window updates are resumed
@@ -352,7 +354,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                     {
                         LOG("Focus gained");
                         WindowActive = true;
-                        Vircon.Resume();
+                        Emulator_Resume();
                     }
                     
                     // on this case, window should be redrawn
@@ -383,7 +385,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                       MouseIsOnWindow = !MouseIsOnWindow;
                     
                     // Key F5 resets the machine
-                    if( Key == SDLK_F5 ) Vircon.Reset();
+                    if( Key == SDLK_F5 ) Emulator_Reset();
                     
                     // when CTRL is pressed, process keyboard shortcuts
                     bool ControlIsPressed = (SDL_GetModState() & KMOD_CTRL);
@@ -397,23 +399,23 @@ int main( int NumberOfArguments, char* Arguments[] )
                         // CTRL+P = Power toggle
                         if( Key == SDLK_p )
                         {
-                            if( Vircon.IsPowerOn() )
-                              Vircon.SetPower( false );
+                            if( Emulator_IsPowerOn() )
+                              Emulator_SetPower( false );
                             else
-                              Vircon.SetPower( true );
+                              Emulator_SetPower( true );
                         }
                         
                         // CTRL+R = Reset
                         if( Key == SDLK_r )
-                          Vircon.Reset();
+                          Emulator_Reset();
                         
                         // Ctrl+L = Load cartridge (or change it)
                         if( Key == SDLK_l )
                         {
                             // power needs to be off
-                            if( !Vircon.IsPowerOn() )
+                            if( !Emulator_IsPowerOn() )
                             {
-                                if( Vircon.HasCartridge() )
+                                if( Console.HasCartridge() )
                                   GUI_ChangeCartridge();
                                 else
                                   GUI_LoadCartridge();
@@ -424,8 +426,8 @@ int main( int NumberOfArguments, char* Arguments[] )
                         if( Key == SDLK_u )
                         {
                             // power needs to be off
-                            if( !Vircon.IsPowerOn() )
-                              if( Vircon.HasCartridge() )
+                            if( !Emulator_IsPowerOn() )
+                              if( Console.HasCartridge() )
                                 GUI_UnloadCartridge();
                         }
                         
@@ -451,7 +453,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                         
                         // Ctrl+M = Mute toggle
                         if( Key == SDLK_m )
-                          Vircon.SetMute( !Vircon.IsMuted() );
+                          Audio.SetMute( !Audio.IsMuted() );
                     }
                 }
                 
@@ -460,7 +462,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                 // (but while window is inactive, events will get ignored)
                 
                 if( WindowActive )
-                  Vircon.ProcessEvent( Event );
+                  Console.ProcessEvent( Event );
             }
             
             // update frame only when needed
@@ -471,16 +473,21 @@ int main( int NumberOfArguments, char* Arguments[] )
             
             // measure cycle time
             double TimeStep = Watch.GetStepTime();
-            PendingFrames += TimeStep * 60.0;
-            if( PendingFrames < 0.9 ) continue;
             
-            while( PendingFrames >= 0.9 )
+            if( Emulator_IsPowerOn() && !Emulator_IsPaused() )
             {
-                // run another frame
-                Vircon.RunNextFrame();
+                // execute frames as needed
+                PendingFrames += TimeStep * 60.0;
+                if( PendingFrames < 0.9 ) continue;
                 
-                // this frame is done
-                PendingFrames = max( PendingFrames - 1, 0.0f );
+                while( PendingFrames >= 0.9 )
+                {
+                    // run another frame
+                    Emulator_RunNextFrame();
+                    
+                    // this frame is done
+                    PendingFrames = max( PendingFrames - 1, 0.0f );
+                }
             }
             
             // - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -502,7 +509,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
         // turn off Vircon VM
-        Vircon.Terminate();
+        Emulator_Terminate();
         
         // save settings
         SaveSettings( EmulatorFolder + "Config-Settings.xml" );
