@@ -110,9 +110,6 @@ namespace V32
             
             // sound output management
             void GetFrameSoundOutput( SPUOutputBuffer& OutputBuffer );
-            
-            // I/O functions
-            void ProcessEvent( SDL_Event Event );
     };
 }
 

@@ -60,30 +60,6 @@ extern Texture NoSignalTexture;
 void InitializeGlobalVariables();
 
 
-// =============================================================================
-//      EMULATOR-LEVEL CONTROL
-// =============================================================================
-
-
-extern bool Emulator_Paused;
-
-// general use methods
-void Emulator_Initialize();
-void Emulator_Terminate();
-
-void Emulator_Pause();
-void Emulator_Resume();
-bool Emulator_IsPaused();
-
-void Emulator_SetPower( bool On );
-bool Emulator_IsPowerOn();
-void Emulator_Reset();
-void Emulator_RunNextFrame();
-
-//void Emulator_Update( float DeltaTime );
-//void Emulator_ProcessEvent( SDL_Event Event );
-
-
 // *****************************************************************************
     // end include guard
     #endif

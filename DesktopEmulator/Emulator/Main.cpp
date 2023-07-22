@@ -463,7 +463,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                 // (but while window is inactive, events will get ignored)
                 
                 if( WindowActive )
-                  Console.ProcessEvent( Event );
+                  Emulator.ProcessEvent( Event );
             }
             
             // update frame only when needed
