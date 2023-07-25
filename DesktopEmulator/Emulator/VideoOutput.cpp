@@ -3,7 +3,7 @@
     #include "../../VirconDefinitions/Constants.hpp"
     
     // include project headers
-    #include "OpenGL2DContext.hpp"
+    #include "VideoOutput.hpp"
     #include "NumericFunctions.hpp"
     #include "Logger.hpp"
     
@@ -112,11 +112,11 @@ const string FragmentShaderCode =
 
 
 // =============================================================================
-//      OPENGL 2D CONTEXT: INSTANCE HANDLING
+//      VIDEO OUTPUT: INSTANCE HANDLING
 // =============================================================================
 
 
-OpenGL2DContext::OpenGL2DContext()
+VideoOutput::VideoOutput()
 {
     // window defaults to 1X, windowed
     FullScreen = false;
@@ -133,22 +133,28 @@ OpenGL2DContext::OpenGL2DContext()
     // SDL & OpenGL contexts not created yet
     Window = nullptr;
     OpenGLContext = nullptr;
+    
+    // all texture IDs are initially 0
+    BiosTextureID = 0;
+    
+    for( int i = 0; i < Constants::GPUMaximumCartridgeTextures; i++ )
+      CartridgeTextureIDs[ i ] = 0;
 }
 
 // -----------------------------------------------------------------------------
 
-OpenGL2DContext::~OpenGL2DContext()
+VideoOutput::~VideoOutput()
 {
     Destroy();
 }
 
 
 // =============================================================================
-//      OPENGL 2D CONTEXT: HANDLING SDL WINDOW + OPENGL CONTEXT
+//      VIDEO OUTPUT: HANDLING SDL WINDOW + OPENGL CONTEXT
 // =============================================================================
 
 
-void OpenGL2DContext::CreateOpenGLWindow()
+void VideoOutput::CreateOpenGLWindow()
 {
     LOG( "Creating OpenGL window" );
     
@@ -256,7 +262,7 @@ void OpenGL2DContext::CreateOpenGLWindow()
 
 // -----------------------------------------------------------------------------
 
-void OpenGL2DContext::CreateFramebuffer()
+void VideoOutput::CreateFramebuffer()
 {
     LOG( "Creating Framebuffer" );
     ClearOpenGLErrors();
@@ -334,7 +340,7 @@ void OpenGL2DContext::CreateFramebuffer()
 
 // -----------------------------------------------------------------------------
 
-bool OpenGL2DContext::CompileShaderProgram()
+bool VideoOutput::CompileShaderProgram()
 {
     GLuint VertexShaderID = 0;
     GLuint FragmentShaderID = 0;
@@ -433,7 +439,7 @@ bool OpenGL2DContext::CompileShaderProgram()
 
 // -----------------------------------------------------------------------------
 
-void OpenGL2DContext::InitRendering()
+void VideoOutput::InitRendering()
 {
     LOG( "Initializing rendering" );
     ClearOpenGLErrors();
@@ -530,7 +536,7 @@ void OpenGL2DContext::InitRendering()
 
 // -----------------------------------------------------------------------------
 
-void OpenGL2DContext::CreateWhiteTexture()
+void VideoOutput::CreateWhiteTexture()
 {
     LOG( "Creating white texture" );
     ClearOpenGLErrors();
@@ -569,8 +575,11 @@ void OpenGL2DContext::CreateWhiteTexture()
 
 // -----------------------------------------------------------------------------
 
-void OpenGL2DContext::Destroy()
+void VideoOutput::Destroy()
 {
+    // release all textures
+    
+    
     // destroy in reverse order
     if( OpenGLContext )
       SDL_GL_DeleteContext( OpenGLContext );
@@ -581,11 +590,36 @@ void OpenGL2DContext::Destroy()
 
 
 // =============================================================================
-//      OPENGL 2D CONTEXT: VIEW CONFIGURATION FUNCTIONS
+//      VIDEO OUTPUT: EXTERNAL CONTEXT ACCESS
 // =============================================================================
 
 
-void OpenGL2DContext::SetWindowZoom( int ZoomFactor )
+SDL_Window* VideoOutput::GetWindow()
+{
+    return Window;
+}
+
+// -----------------------------------------------------------------------------
+
+SDL_GLContext VideoOutput::GetOpenGLContext()
+{
+    return OpenGLContext;
+}
+
+// -----------------------------------------------------------------------------
+
+GLuint VideoOutput::GetFramebufferID()
+{
+    return FramebufferID;
+}
+
+
+// =============================================================================
+//      VIDEO OUTPUT: VIEW CONFIGURATION FUNCTIONS
+// =============================================================================
+
+
+void VideoOutput::SetWindowZoom( int ZoomFactor )
 {
     // exit full screen
     SDL_SetWindowFullscreen( Window, 0 );
@@ -603,7 +637,14 @@ void OpenGL2DContext::SetWindowZoom( int ZoomFactor )
 
 // -----------------------------------------------------------------------------
 
-void OpenGL2DContext::SetFullScreen()
+int VideoOutput::GetWindowZoom()
+{
+    return WindowedZoomFactor;
+}
+
+// -----------------------------------------------------------------------------
+
+void VideoOutput::SetFullScreen()
 {
     // set SDL window to full screen mode
     // (this flag means that we keep the desktop video mode)
@@ -614,13 +655,27 @@ void OpenGL2DContext::SetFullScreen()
     SDL_GetWindowSize( Window, (int*)(&WindowWidth), (int*)(&WindowHeight) );
 }
 
+// -----------------------------------------------------------------------------
+
+bool VideoOutput::IsFullScreen()
+{
+    return FullScreen;
+}
+
+// -----------------------------------------------------------------------------
+
+float VideoOutput::GetRelativeWindowWidth()
+{
+    return WindowWidth / Constants::ScreenWidth;
+}
+
 
 // =============================================================================
-//      OPENGL 2D CONTEXT: FRAMEBUFFER RENDER FUNCTIONS
+//      VIDEO OUTPUT: FRAMEBUFFER RENDER FUNCTIONS
 // =============================================================================
 
 
-void OpenGL2DContext::RenderToScreen()
+void VideoOutput::RenderToScreen()
 {
     // select the actual screen as the render target
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
@@ -631,7 +686,7 @@ void OpenGL2DContext::RenderToScreen()
 
 // -----------------------------------------------------------------------------
 
-void OpenGL2DContext::RenderToFramebuffer()
+void VideoOutput::RenderToFramebuffer()
 {
     // select framebuffer as the render target
     glBindFramebuffer( GL_FRAMEBUFFER, FramebufferID );
@@ -642,7 +697,7 @@ void OpenGL2DContext::RenderToFramebuffer()
 
 // -----------------------------------------------------------------------------
 
-void OpenGL2DContext::DrawFramebufferOnScreen()
+void VideoOutput::DrawFramebufferOnScreen()
 {
     // 2 framebuffers can be bound for reading and
     // writing separately; we can use this to copy
@@ -663,18 +718,25 @@ void OpenGL2DContext::DrawFramebufferOnScreen()
 
 
 // =============================================================================
-//      OPENGL 2D CONTEXT: COLOR FUNCTIONS
+//      VIDEO OUTPUT: COLOR FUNCTIONS
 // =============================================================================
 
 
-void OpenGL2DContext::SetMultiplyColor( GPUColor NewMultiplyColor )
+void VideoOutput::SetMultiplyColor( GPUColor NewMultiplyColor )
 {
     MultiplyColor = NewMultiplyColor;
 }
 
 // -----------------------------------------------------------------------------
 
-void OpenGL2DContext::SetBlendingMode( IOPortValues NewBlendingMode )
+GPUColor VideoOutput::GetMultiplyColor()
+{
+    return MultiplyColor;
+}
+
+// -----------------------------------------------------------------------------
+
+void VideoOutput::SetBlendingMode( IOPortValues NewBlendingMode )
 {
     switch( NewBlendingMode )
     {
@@ -701,13 +763,20 @@ void OpenGL2DContext::SetBlendingMode( IOPortValues NewBlendingMode )
     BlendingMode = NewBlendingMode;
 }
 
+// -----------------------------------------------------------------------------
+
+IOPortValues VideoOutput::GetBlendingMode()
+{
+    return BlendingMode;
+}
+
 
 // =============================================================================
-//      OPENGL 2D CONTEXT: BASE RENDER FUNCTIONS
+//      VIDEO OUTPUT: BASE RENDER FUNCTIONS
 // =============================================================================
 
 
-void OpenGL2DContext::DrawTexturedQuad( const GPUQuad& Quad )
+void VideoOutput::DrawTexturedQuad( const GPUQuad& Quad )
 {
     // copy information from the received GPU quad
     memcpy( QuadPositionCoords, Quad.VertexPositions, 8 * sizeof( float ) );
@@ -794,7 +863,7 @@ void OpenGL2DContext::DrawTexturedQuad( const GPUQuad& Quad )
 
 // -----------------------------------------------------------------------------
 
-void OpenGL2DContext::ClearScreen( GPUColor ClearColor )
+void VideoOutput::ClearScreen( GPUColor ClearColor )
 {
     // temporarily replace multiply color with clear color
     GPUColor PreviousMultiplyColor = MultiplyColor;
@@ -828,4 +897,81 @@ void OpenGL2DContext::ClearScreen( GPUColor ClearColor )
     
     // restore previous multiply color
     MultiplyColor = PreviousMultiplyColor;
+}
+
+
+// =============================================================================
+//      VIDEO OUTPUT: TEXTURE HANDLING
+// =============================================================================
+
+
+void VideoOutput::LoadTexture( int GPUTextureID, void* Pixels )
+{
+    GLuint* OpenGLTextureID = &BiosTextureID;
+    
+    if( GPUTextureID >= 0 )
+      OpenGLTextureID = &CartridgeTextureIDs[ GPUTextureID ];
+    
+    // create a new OpenGL texture and select it
+    glGenTextures( 1, OpenGLTextureID );
+    glBindTexture( GL_TEXTURE_2D, *OpenGLTextureID );
+    
+    // check correct texture ID
+    if( !OpenGLTextureID )
+      THROW( "OpenGL failed to generate a new texture" );
+    
+    // clear OpenGL errors
+    glGetError();
+    
+    // create an OpenGL texture from the received pixel data
+    glTexImage2D
+    (
+        GL_TEXTURE_2D,              // texture is a 2D rectangle
+        0,                          // level of detail (0 = normal size)
+        GL_RGBA,                    // color components in the texture
+        Constants::GPUTextureSize,  // texture width in pixels
+        Constants::GPUTextureSize,  // texture height in pixels
+        0,                          // border width (must be 0 or 1)
+        GL_RGBA,                    // color components in the source
+        GL_UNSIGNED_BYTE,           // each color component is a byte
+        Pixels                      // buffer storing the texture data
+    );
+    
+    // check correct conversion
+    if( glGetError() != GL_NO_ERROR )
+      THROW( "Could not create an OpenGL texture from pixel data" );
+    
+    // textures must be scaled using only nearest neighbour
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );         
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+    
+    // out-of-texture coordinates must clamp, not wrap
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+}
+
+// -----------------------------------------------------------------------------
+
+void VideoOutput::UnloadTexture( int GPUTextureID )
+{
+    GLuint* OpenGLTextureID = &BiosTextureID;
+    
+    if( GPUTextureID >= 0 )
+      OpenGLTextureID = &CartridgeTextureIDs[ GPUTextureID ];
+    
+    glDeleteTextures( 1, OpenGLTextureID );
+    *OpenGLTextureID = 0;
+}
+
+// -----------------------------------------------------------------------------
+
+void VideoOutput::SelectTexture( int GPUTextureID )
+{
+    GLuint* OpenGLTextureID = &BiosTextureID;
+    
+    if( GPUTextureID >= 0 )
+      OpenGLTextureID = &CartridgeTextureIDs[ GPUTextureID ];
+    
+    glBindTexture( GL_TEXTURE_2D, *OpenGLTextureID );
+    glEnable( GL_TEXTURE_2D );
 }

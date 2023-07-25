@@ -6,17 +6,13 @@
     // include infrastructure headers
     #include "../DesktopInfrastructure/NumericFunctions.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
-    #include "../DesktopInfrastructure/FileSignatures.hpp"
     #include "../DesktopInfrastructure/Logger.hpp"
-    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
-    
-    // include emulator headers
-    #include "../Emulator/Globals.hpp"
-    #include "../Emulator/GUI.hpp"
-    #include "../Emulator/Settings.hpp"
     
     // include project headers
     #include "V32Console.hpp"
+    
+    // include C/C++ headers
+    #include <cstring>          // [ ANSI C ] Strings
     
     // declare used namespaces
     using namespace std;
@@ -25,6 +21,32 @@
 
 namespace V32
 {
+    // buffer used to transmit textures from loaded ROM files to the video library
+    static GPUColor LoadedTexture[ Constants::GPUTextureSize ][ Constants::GPUTextureSize ];
+    
+    
+    // =============================================================================
+    //      FUNCTIONS TO WORK WITH SIGNATURES
+    // =============================================================================
+    
+    
+    void WriteSignature( ostream& OutputFile, const char* Value )
+    {
+        OutputFile.write( Value, 8 );
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    bool CheckSignature( char* Signature, const char* Expected )
+    {
+        for( int i = 0; i < 8; i++ )
+          if( Signature[ i ] != Expected[ i ] )
+            return false;
+        
+        return true;
+    }
+    
+    
     // =============================================================================
     //      V32 CONSOLE: INSTANCE HANDLING
     // =============================================================================
@@ -76,6 +98,136 @@ namespace V32
         // unload any present media
         if( HasMemoryCard() )  UnloadMemoryCard();
         if( HasCartridge() )   UnloadCartridge();
+    }
+    
+    
+    // =============================================================================
+    //      V32 CONSOLE: CONTROL SIGNALS
+    // =============================================================================
+    
+    
+    void V32Console::SetPower( bool On )
+    {
+        // do nothing for no changes
+        if( PowerIsOn == On ) return;
+        PowerIsOn = On;
+        
+        // at power on, send an initial reset
+        // to take care of initializations
+        if( On )
+        {
+            LOG( "Console power ON" );
+            Reset();
+        }
+        
+        // at power off, stop all sound
+        else
+        {
+            LOG( "Console power OFF" );
+            SPU.StopAllChannels();
+        }
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    void V32Console::Reset()
+    {
+        LOG( "Console reset" );
+        
+        // first: transmit the message to all components that need it
+        Timer.Reset();
+        RNG.Reset();
+        CPU.Reset();
+        GPU.Reset();
+        SPU.Reset();
+        GamepadController.Reset();
+        
+        // now reset the console itself
+        RAM.ClearContents();
+        
+        // loads become 0 on a reset
+        LastCPULoads[ 0 ] = LastCPULoads[ 1 ] = 0;
+        LastGPULoads[ 0 ] = LastGPULoads[ 1 ] = 0;
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    void V32Console::RunNextFrame()
+    {
+        // do nothing when not applicable
+        if( !PowerIsOn )
+          return;
+        
+        // STEP 1: Begin a new frame by sending
+        // a frame change message to components
+        Timer.ChangeFrame();
+        CPU.ChangeFrame();
+        GPU.ChangeFrame();
+        SPU.ChangeFrame();
+        GamepadController.ChangeFrame();
+        
+        // STEP 2: Run a frame's worth of cycles
+        for( int i = 0; i < Constants::CyclesPerFrame; i++ )
+        {
+            // only these components need to
+            // be notified of each CPU cycle
+            Timer.RunNextCycle();
+            CPU.RunNextCycle();
+            
+            // end loop early when CPU is set to wait
+            if( CPU.Waiting || CPU.Halted )
+              break;
+        }
+        
+        // after runnning the frame, update load info
+        LastCPULoads[ 1 ] = LastCPULoads[ 0 ];
+        LastCPULoads[ 0 ] = 100.0 * Timer.CycleCounter / Constants::CyclesPerFrame;
+        
+        int GPUUsedPixels = Constants::GPUPixelCapacityPerFrame - max( 0, GPU.RemainingPixels );
+        LastGPULoads[ 1 ] = LastGPULoads[ 0 ];
+        LastGPULoads[ 0 ] = 100.0 * GPUUsedPixels / Constants::GPUPixelCapacityPerFrame;
+        
+        // STEP 3: save memory card to file when modified
+        if( MemoryCardController.PendingSave )
+          SaveMemoryCard();
+    }
+    
+    
+    // =============================================================================
+    //      V32 CONSOLE: GENERAL STATUS QUERIES
+    // =============================================================================
+    
+    
+    bool V32Console::IsPowerOn()
+    {
+        return PowerIsOn;
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    bool V32Console::IsCPUHalted()
+    {
+        return CPU.Halted;
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    // CPU load at the end of last frame, given in percentage
+    float V32Console::GetCPULoad()
+    {
+        // take the maximum because in case of CPU overload,
+        // there may be load of 100% every 2 frames (first
+        // frame is not enough, and it finishes on next one)
+        return max( LastCPULoads[ 0 ], LastCPULoads[ 1 ] );
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    // GPU load at the end of last frame, given in percentage
+    float V32Console::GetGPULoad()
+    {
+        // same reasoning as for CPU load
+        return max( LastGPULoads[ 0 ], LastGPULoads[ 1 ] );
     }
     
     
@@ -213,15 +365,16 @@ namespace V32
         ||  !IsBetween( TextureHeader.TextureHeight, 0, 1024 ) )
           THROW( "BIOS texture does not have correct dimensions (from 1x1 up to 1024x1024 pixels)" );
         
-        // load the texture pixels
-        uint32_t TexturePixels = TextureHeader.TextureWidth * TextureHeader.TextureHeight;
-        vector< V32Word > LoadedTexture;
-        LoadedTexture.resize( TexturePixels );
-        InputFile.read( (char*)(&LoadedTexture[ 0 ]), TexturePixels * 4 );
-        GPU.LoadTexture( GPU.BiosTexture, &LoadedTexture[ 0 ], TextureHeader.TextureWidth, TextureHeader.TextureHeight );
+        // clear all texture pixels
+        memset( LoadedTexture, 0, sizeof(LoadedTexture) );
         
-        // discard the temporary buffer
-        LoadedTexture.clear();
+        // load the texture pixels line by line,
+        // in order to expand it to full size
+        for( unsigned y = 0; y < TextureHeader.TextureHeight; y++ )
+          InputFile.read( (char*)(LoadedTexture[ y ]), TextureHeader.TextureWidth * 4 );
+        
+        // send bios texture to the video library
+        GPU.Callback_LoadTexture( -1, LoadedTexture );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 5: Load audio rom
@@ -407,20 +560,20 @@ namespace V32
             ||  !IsBetween( TextureHeader.TextureHeight, 0, 1024 ) )
               THROW( "Cartridge texture does not have correct dimensions (1x1 up to 1024x1024 pixels)" );
             
-            // load the texture pixels
-            uint32_t TexturePixels = TextureHeader.TextureWidth * TextureHeader.TextureHeight;
-            vector< V32Word > LoadedTexture;
-            LoadedTexture.resize( TexturePixels );
-            InputFile.read( (char*)(&LoadedTexture[ 0 ]), TexturePixels * 4 );
+            // clear all texture pixels
+            memset( LoadedTexture, 0, sizeof(LoadedTexture) );
             
-            // create a new GPU texture and load data into it
-            GPU.CartridgeTextures.emplace_back();
-            GPU.LoadTexture( GPU.CartridgeTextures.back(), &LoadedTexture[ 0 ],
-                             TextureHeader.TextureWidth, TextureHeader.TextureHeight );
+            // load the texture pixels line by line,
+            // in order to expand it to full size
+            for( unsigned y = 0; y < TextureHeader.TextureHeight; y++ )
+              InputFile.read( (char*)(LoadedTexture[ y ]), TextureHeader.TextureWidth * 4 );
             
-            // discard the temporary buffer
-            LoadedTexture.clear();
+            // send this texture to the video library
+            GPU.Callback_LoadTexture( i, LoadedTexture );
         }
+        
+        // now update GPU with the inserted textures
+        GPU.InsertCartridgeTextures( ROMHeader.NumberOfTextures );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 5: Load audio rom
@@ -486,13 +639,6 @@ namespace V32
         // finally, close input file
         InputFile.close();
         
-        // set window title
-        string WindowTitle = string("Vircon32: ") + ROMHeader.Title;
-        SDL_SetWindowTitle( OpenGL2D.Window, WindowTitle.c_str() );
-        
-        // update list of recent roms
-        AddRecentCartridgePath( FilePath );
-        
         // save the file name
         CartridgeController.CartridgeFileName = GetPathFileName( FilePath );
         LOG( "Finished loading cartridge" );
@@ -510,21 +656,17 @@ namespace V32
         CartridgeController.Disconnect();
         CartridgeController.NumberOfTextures = 0;
         CartridgeController.NumberOfSounds = 0;
+        CartridgeController.CartridgeFileName = "";
+        CartridgeController.CartridgeTitle = "";
         
         // tell GPU to release all cartridge textures
-        for( GPUTexture& T: GPU.CartridgeTextures )
-          GPU.UnloadTexture( T );
-        
-        GPU.CartridgeTextures.clear();
+        GPU.RemoveCartridgeTextures();
         
         // tell SPU to release all cartridge sounds
         for( SPUSound& S: SPU.CartridgeSounds )
           SPU.UnloadSound( S );
         
         SPU.CartridgeSounds.clear();
-        
-        // set window title
-        SDL_SetWindowTitle( OpenGL2D.Window, "Vircon32: No cartridge" );
     }
     
     // -----------------------------------------------------------------------------
@@ -539,6 +681,13 @@ namespace V32
     string V32Console::GetCartridgeFileName()
     {
         return CartridgeController.CartridgeFileName;
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    string V32Console::GetCartridgeTitle()
+    {
+        return CartridgeController.CartridgeTitle;
     }
     
     
@@ -617,10 +766,8 @@ namespace V32
         // card is unloaded or emulation is stopped,
         // so that it can be saved if card is modified
         
-        // update file name and list of recent cards
+        // save the file name
         MemoryCardController.CardFileName = GetPathFileName( FilePath );
-        AddRecentMemoryCardPath( FilePath );
-        
         LOG( "Finished loading memory card" );
     }
     
@@ -685,140 +832,6 @@ namespace V32
     string V32Console::GetMemoryCardFileName()
     {
         return MemoryCardController.CardFileName;
-    }
-    
-    
-    // =============================================================================
-    //      V32 CONSOLE: CONTROL SIGNALS
-    // =============================================================================
-    
-    
-    void V32Console::SetPower( bool On )
-    {
-        // do nothing for no changes
-        if( PowerIsOn == On ) return;
-        PowerIsOn = On;
-        
-        // at power on, send an initial reset
-        // to take care of initializations
-        if( On )
-        {
-            LOG( "Emulator power ON" );
-            Reset();
-        }
-        
-        // at power off, stop all sound
-        else
-        {
-            LOG( "Emulator power OFF" );
-            SPU.StopAllChannels();
-        }
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    void V32Console::Reset()
-    {
-        LOG( "Emulator reset" );
-        
-        // first: transmit the message to all components that need it
-        Timer.Reset();
-        RNG.Reset();
-        CPU.Reset();
-        GPU.Reset();
-        SPU.Reset();
-        GamepadController.Reset();
-        
-        // now reset the emulator itself
-        RAM.ClearContents();
-        
-        // loads become 0 on a reset
-        LastCPULoads[ 0 ] = LastCPULoads[ 1 ] = 0;
-        LastGPULoads[ 0 ] = LastGPULoads[ 1 ] = 0;
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    void V32Console::RunNextFrame()
-    {
-        // do nothing when not applicable
-        if( !PowerIsOn )
-          return;
-        
-        // STEP 1: Begin a new frame by sending
-        // a frame change message to components
-        Timer.ChangeFrame();
-        CPU.ChangeFrame();
-        GPU.ChangeFrame();
-        SPU.ChangeFrame();
-        GamepadController.ChangeFrame();
-        
-        // STEP 2: Run a frame's worth of cycles
-        for( int i = 0; i < Constants::CyclesPerFrame; i++ )
-        {
-            // only these components need to
-            // be notified of each CPU cycle
-            Timer.RunNextCycle();
-            CPU.RunNextCycle();
-            
-            // end loop early when CPU is set to wait
-            if( CPU.Waiting || CPU.Halted )
-              break;
-        }
-        
-        // after runnning the frame, update load info
-        LastCPULoads[ 1 ] = LastCPULoads[ 0 ];
-        LastCPULoads[ 0 ] = 100.0 * Timer.CycleCounter / Constants::CyclesPerFrame;
-        
-        int GPUUsedPixels = Constants::GPUPixelCapacityPerFrame - max( 0, GPU.RemainingPixels );
-        LastGPULoads[ 1 ] = LastGPULoads[ 0 ];
-        LastGPULoads[ 0 ] = 100.0 * GPUUsedPixels / Constants::GPUPixelCapacityPerFrame;
-        
-        // STEP 3: after running, ensure that all GPU
-        // commands run in the current frame are drawn
-        glFlush();
-        
-        // STEP 4: save memory card to file when modified
-        if( MemoryCardController.PendingSave )
-          SaveMemoryCard();
-    }
-    
-    
-    // =============================================================================
-    //      V32 CONSOLE: GENERAL STATUS QUERIES
-    // =============================================================================
-    
-    
-    bool V32Console::IsPowerOn()
-    {
-        return PowerIsOn;
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    bool V32Console::IsCPUHalted()
-    {
-        return CPU.Halted;
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    // CPU load at the end of last frame, given in percentage
-    float V32Console::GetCPULoad()
-    {
-        // take the maximum because in case of CPU overload,
-        // there may be load of 100% every 2 frames (first
-        // frame is not enough, and it finishes on next one)
-        return max( LastCPULoads[ 0 ], LastCPULoads[ 1 ] );
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    // GPU load at the end of last frame, given in percentage
-    float V32Console::GetGPULoad()
-    {
-        // same reasoning as for CPU load
-        return max( LastGPULoads[ 0 ], LastGPULoads[ 1 ] );
     }
     
     
@@ -891,5 +904,57 @@ namespace V32
         // for safety, make a copy of the sound buffer
         // instead of providing access to the original
         memcpy( &OutputBuffer, &SPU.OutputBuffer, sizeof(SPU.OutputBuffer) );
+    }
+    
+    
+    // =============================================================================
+    //      V32 CONSOLE: SETTING VIDEO CALLBACK FUNCTIONS
+    // =============================================================================
+    
+    
+    void V32Console::SetCallbackClearScreen( void( *FunctionClearScreen )( GPUColor ) )
+    {
+        GPU.Callback_ClearScreen = FunctionClearScreen;
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    void V32Console::SetCallbackDrawQuad( void( *FunctionDrawQuad )( GPUQuad& ) )
+    {
+        GPU.Callback_DrawQuad = FunctionDrawQuad;
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    void V32Console::SetCallbackSetMultiplyColor( void( *FunctionSetMultiplyColor )( GPUColor ) )
+    {
+        GPU.Callback_SetMultiplyColor = FunctionSetMultiplyColor;
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    void V32Console::SetCallbackSetBlendingMode( void( *FunctionSetBlendingMode )( int ) )
+    {
+        GPU.Callback_SetBlendingMode = FunctionSetBlendingMode;
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    void V32Console::SetCallbackSelectTexture( void( *FunctionSelectTexture )( int ) )
+    {
+        GPU.Callback_SelectTexture = FunctionSelectTexture;
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    void V32Console::SetCallbackLoadTexture( void( *FunctionLoadTexture )( int, void* ) )
+    {
+        GPU.Callback_LoadTexture = FunctionLoadTexture;
+    }
+    
+    
+    void V32Console::SetCallbackUnloadCartridgeTextures( void( *FunctionUnloadCartridgeTextures )() )
+    {
+        GPU.Callback_UnloadCartridgeTextures = FunctionUnloadCartridgeTextures;
     }
 }

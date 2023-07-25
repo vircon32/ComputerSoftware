@@ -1,6 +1,5 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/Logger.hpp"
     #include "../DesktopInfrastructure/NumericFunctions.hpp"
     #include "../DesktopInfrastructure/StringFunctions.hpp"
@@ -11,6 +10,7 @@
     // include project headers
     #include "Settings.hpp"
     #include "AudioOutput.hpp"
+    #include "VideoOutput.hpp"
     #include "GUI.hpp"
     #include "Languages.hpp"
     #include "Globals.hpp"
@@ -798,8 +798,8 @@ void SaveSettings( const string& FilePath )
         
         // save video settings
         XMLElement* VideoElement = CreatedDoc.NewElement( "video" );
-        VideoElement->SetAttribute( "size", (unsigned)OpenGL2D.WindowedZoomFactor );
-        VideoElement->SetAttribute( "fullscreen", OpenGL2D.FullScreen? "yes" : "no" );
+        VideoElement->SetAttribute( "size", (unsigned)Video.GetWindowZoom() );
+        VideoElement->SetAttribute( "fullscreen", Video.IsFullScreen()? "yes" : "no" );
         SettingsRoot->LinkEndChild( VideoElement );
         
         // save audio settings

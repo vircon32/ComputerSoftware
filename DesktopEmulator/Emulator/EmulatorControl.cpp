@@ -7,6 +7,7 @@
     #include "Globals.hpp"
     #include "Settings.hpp"
     #include "AudioOutput.hpp"
+    #include "VideoOutput.hpp"
     #include "Logger.hpp"
     
     // include C/C++ headers
@@ -42,6 +43,14 @@ EmulatorControl::~EmulatorControl()
 void EmulatorControl::Initialize()
 {
     Audio.Initialize();
+    
+    Console.SetCallbackClearScreen( Function_ClearScreen );
+    Console.SetCallbackDrawQuad( Function_DrawQuad );
+    Console.SetCallbackSetMultiplyColor( Function_SetMultiplyColor );
+    Console.SetCallbackSetBlendingMode( Function_SetBlendingMode );
+    Console.SetCallbackSelectTexture( Function_SelectTexture );
+    Console.SetCallbackLoadTexture( Function_LoadTexture );
+    Console.SetCallbackUnloadCartridgeTextures( Function_UnloadCartridgeTextures );
 }
 
 // -----------------------------------------------------------------------------
@@ -87,8 +96,9 @@ bool EmulatorControl::IsPaused()
 
 void EmulatorControl::SetPower( bool On )
 {
+    Video.RenderToFramebuffer();
     Console.SetPower( On );
-    
+
     if( On ) Audio.Reset();
     else Audio.Pause();
 }
@@ -106,6 +116,7 @@ void EmulatorControl::Reset()
 {
     LOG( "EmulatorControl::Reset" );
     Paused = false;
+    Video.RenderToFramebuffer();
     Console.Reset();
     Audio.Reset();
 }
@@ -116,6 +127,10 @@ void EmulatorControl::RunNextFrame()
 {
     Console.RunNextFrame();
     Audio.ChangeFrame();
+    
+    // after running, ensure that all GPU
+    // commands run in the current frame are drawn
+    glFlush();   
 }
 
 

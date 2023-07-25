@@ -3,9 +3,6 @@
     #ifndef TEXTURE_HPP
     #define TEXTURE_HPP
 
-    // include project headers
-    #include "OpenGL2DContext.hpp"
-    
     // include OpenGL headers
     #include <glad/glad.h>      // [ OpenGL ] GLAD Loader (already includes <GL/gl.h>)
     
@@ -48,8 +45,8 @@ class Texture
         void Release();
         
         // drawing on screen
-        void Draw( OpenGL2DContext& OpenGL2D, int HotSpotPositionX, int HotSpotPositionY ) const;
-        void Draw( OpenGL2DContext& OpenGL2D, int RenderXMin, int RenderYMin, int RenderXMax, int RenderYMax ) const;
+        void Draw( int HotSpotPositionX, int HotSpotPositionY ) const;
+        void Draw( int RenderXMin, int RenderYMin, int RenderXMax, int RenderYMax ) const;
 };
 
 

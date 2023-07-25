@@ -3,7 +3,6 @@
     #include "../../VirconDefinitions/Enumerations.hpp"
     
     // include infrastructure headers
-    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/NumericFunctions.hpp"
     
     // include project headers
@@ -84,8 +83,8 @@ namespace V32
         // first write the value
         GPU.MultiplyColor = Value.AsColor;
         
-        // now update the corresponding value for OpenGL shaders
-        OpenGL2D.MultiplyColor = Value.AsColor;
+        // notify the video library
+        GPU.Callback_SetMultiplyColor( Value.AsColor );
         return true;
     }
     
@@ -97,28 +96,29 @@ namespace V32
         {
             case (int32_t)IOPortValues::GPUBlendingMode_Alpha:
             {
-                OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
                 GPU.ActiveBlending = Value.AsInteger;
                 break;
             }
             
             case (int32_t)IOPortValues::GPUBlendingMode_Add:
             {
-                OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Add );
                 GPU.ActiveBlending = Value.AsInteger;
                 break;
             }
             
             case (int32_t)IOPortValues::GPUBlendingMode_Subtract:
             {
-                OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Subtract );
                 GPU.ActiveBlending = Value.AsInteger;
                 break;
             }
+            
+            // unknown blending mode codes are just ignored
+            // (the value is not written either)
+            return true;
         }
         
-        // unknown blending mode codes are just ignored
-        // (the value is not written either)
+        // for valid modes, notify the video library
+        GPU.Callback_SetBlendingMode( Value.AsInteger );
         return true;
     }
     
@@ -132,6 +132,9 @@ namespace V32
             
         // write the value
         GPU.SelectedTexture = Value.AsInteger;
+        
+        // notify the video library
+        GPU.Callback_SelectTexture( Value.AsInteger );
         
         // now update the pointed entities
         if( Value.AsInteger == -1 )

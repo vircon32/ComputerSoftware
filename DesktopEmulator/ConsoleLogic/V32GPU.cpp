@@ -4,12 +4,14 @@
     #include "../../VirconDefinitions/Enumerations.hpp"
     
     // include infrastructure headers
-    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/Logger.hpp"
     
     // include project headers
     #include "V32GPU.hpp"
     #include "Globals.hpp"
+    
+    // include C/C++ headers
+    #include <cmath>            // [ ANSI C ] Mathematics
     
     // declare used namespaces
     using namespace std;
@@ -58,111 +60,54 @@ namespace V32
     
     V32GPU::V32GPU()
     {
+        // no entities were pointed yet
         PointedTexture = nullptr;
         PointedRegion = nullptr;
         
-        BiosTexture.TextureID = 0;
+        // no callbacks were received yet
+        Callback_ClearScreen = nullptr;
+        Callback_DrawQuad = nullptr;
+        Callback_SetMultiplyColor = nullptr;
+        Callback_SetBlendingMode = nullptr;
+        Callback_SelectTexture = nullptr;
+        Callback_LoadTexture = nullptr;
+        Callback_UnloadCartridgeTextures = nullptr;
     }
     
     // -----------------------------------------------------------------------------
     
     V32GPU::~V32GPU()
     {
-        // release BIOS texture
-        UnloadTexture( BiosTexture );
-        
         // release all cartridge textures
-        for( GPUTexture& T: CartridgeTextures )
-          UnloadTexture( T );
-          
-        CartridgeTextures.clear();
+        RemoveCartridgeTextures();
     }
     
     
     // =============================================================================
-    //      V32 GPU: HANDLING VIDEO RESOURCES
+    //      V32 GPU: HANDLING TEXTURES ON CARTRIDGE EVENTS
     // =============================================================================
     
     
-    void V32GPU::LoadTexture( GPUTexture& TargetTexture, void* Pixels, unsigned Width, unsigned Height )
+    void V32GPU::InsertCartridgeTextures( uint32_t NumberOfCartridgeTextures )
     {
-        // check for page number limit
-        if( (int)CartridgeTextures.size() >= Constants::GPUMaximumCartridgeTextures )
-          THROW( "All available GPU textures are already loaded" );
+        if( NumberOfCartridgeTextures > Constants::GPUMaximumCartridgeTextures )
+          THROW( "Attempting to insert too many cartridge textures" );
         
-        // check for size limits
-        if( (int)Width > Constants::GPUTextureSize || (int)Height > Constants::GPUTextureSize )
-          THROW( "Loaded image is too large to fit in a GPU texture" );
+        CartridgeTextures.clear();
         
-        // create a new OpenGL texture and select it
-        GLuint TextureID;
-        glGenTextures( 1, &TextureID );
-        glBindTexture( GL_TEXTURE_2D, TextureID );
-        
-        // check correct texture ID
-        if( !TextureID )
-          THROW( "OpenGL failed to generate a new texture" );
-        
-        // clear OpenGL errors
-        glGetError();
-        
-        // (1) first we build an empty texture of the extented size
-        glTexImage2D
-        (
-            GL_TEXTURE_2D,              // texture is a 2D rectangle
-            0,                          // level of detail (0 = normal size)
-            GL_RGBA,                    // color components in the texture
-            Constants::GPUTextureSize,  // texture width in pixels
-            Constants::GPUTextureSize,  // texture height in pixels
-            0,                          // border width (must be 0 or 1)
-            GL_RGBA,                    // color components in the source
-            GL_UNSIGNED_BYTE,           // each color component is a byte
-            nullptr                     // buffer storing the texture data
-        );
-        
-        // check correct conversion
-        if( glGetError() != GL_NO_ERROR )
-          THROW( "Could not create an empty OpenGL texture" );
-        
-        // (2) then we modify the part of our image
-        glTexSubImage2D
-        (
-            GL_TEXTURE_2D,       // texture is a 2D rectangle
-            0,                   // level of detail (0 = normal size)
-            0,                   // x offset
-            0,                   // y offset
-            Width,               // image width in pixels
-            Height,              // image height in pixels
-            GL_RGBA,             // color components in the source
-            GL_UNSIGNED_BYTE,    // each color component is a byte
-            Pixels               // buffer storing the texture data
-        );
-        
-        // check correct conversion
-        if( glGetError() != GL_NO_ERROR )
-          THROW( "Could not copy the loaded SDL image to the OpenGL texture" );
-        
-        // textures must be scaled using only nearest neighbour
-        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );         
-        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-        
-        // out-of-texture coordinates must clamp, not wrap
-        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-        
-        // finally assign the OpenGL ID to target GPU texture
-        TargetTexture.TextureID = TextureID;
+        for( unsigned i = 0; i < NumberOfCartridgeTextures; i++ )
+          CartridgeTextures.emplace_back();
     }
     
     // -----------------------------------------------------------------------------
     
-    void V32GPU::UnloadTexture( GPUTexture& TargetTexture )
+    void V32GPU::RemoveCartridgeTextures()
     {
-        if( TargetTexture.TextureID == 0 )
+        if( CartridgeTextures.empty() )
           return;
         
-        glDeleteTextures( 1, &TargetTexture.TextureID );
-        TargetTexture.TextureID = 0;
+        CartridgeTextures.clear();
+        Callback_UnloadCartridgeTextures();
     }
     
     
@@ -245,6 +190,11 @@ namespace V32
         SelectedTexture = -1;
         SelectedRegion = 0;
         
+        // notify video library of parameter changes
+        Callback_SelectTexture( SelectedTexture );
+        Callback_SetMultiplyColor( MultiplyColor );
+        Callback_SetBlendingMode( ActiveBlending );
+        
         // reset pointed entities
         PointedTexture = &BiosTexture;
         PointedRegion = &BiosTexture.Regions[ 0 ];
@@ -273,13 +223,8 @@ namespace V32
             BiosTexture.Regions[ i ].HotspotY = 0;
         }
         
-        // initial graphic settings
-        OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
-        OpenGL2D.SetMultiplyColor( MultiplyColor );
-        
-        // clear the screen
-        OpenGL2D.RenderToFramebuffer();
-        OpenGL2D.ClearScreen( ClearColor );
+        // initial screen clear to black
+        Callback_ClearScreen( ClearColor );
     }
     
     
@@ -308,7 +253,7 @@ namespace V32
         }
         
         // clear the screen
-        OpenGL2D.ClearScreen( ClearColor );
+        Callback_ClearScreen( ClearColor );
     }
     
     // -----------------------------------------------------------------------------
@@ -356,10 +301,6 @@ namespace V32
             RemainingPixels = -1;
             return;
         }
-        
-        // select this texture
-        glBindTexture( GL_TEXTURE_2D, PointedTexture->TextureID );
-        glEnable( GL_TEXTURE_2D );
         
         // calculate absolute texture coordinates
         // (initially, they are pixel-centered and uncorrected)
@@ -491,6 +432,7 @@ namespace V32
         }
         
         // draw rectangle defined as a quad (4-vertex polygon)
-        OpenGL2D.DrawTexturedQuad( RegionQuad );
+        Callback_SelectTexture( SelectedTexture );
+        Callback_DrawQuad( RegionQuad );
     }
 }

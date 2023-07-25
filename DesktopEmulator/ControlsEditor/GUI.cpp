@@ -1,9 +1,9 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/StringFunctions.hpp"
     
     // include project headers
+    #include "OpenGL2DContext.hpp"
     #include "GUI.hpp"
     #include "Controls.hpp"
     #include "Globals.hpp"
@@ -650,7 +650,7 @@ void RenderGUI()
         ImGui::Separator();
         
         ImGui::SetCursorScreenPos(ImVec2(95,163));
-        ImGui::Image( (void*)GamepadTexture.TextureID, ImVec2(512,256) );
+        ImGui::Image( (void*)GamepadTextureID, ImVec2(512,256) );
         
         // now write the actual values
         if( SelectedProfile )

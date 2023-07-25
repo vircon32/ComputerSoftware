@@ -1,7 +1,5 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
-    #include "../DesktopInfrastructure/Texture.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
     #include "../DesktopInfrastructure/Logger.hpp"
     
@@ -11,7 +9,9 @@
     // include project headers
     #include "GUI.hpp"
     #include "EmulatorControl.hpp"
+    #include "VideoOutput.hpp"
     #include "AudioOutput.hpp"
+    #include "Texture.hpp"
     #include "Globals.hpp"
     #include "Settings.hpp"
     #include "Languages.hpp"
@@ -127,7 +127,7 @@ void ShowDelayedMessageBox()
       return;
     
     // check current state to restore later
-    bool WasFullScreen = OpenGL2D.FullScreen;
+    bool WasFullScreen = Video.IsFullScreen();
     bool WasRunning = Emulator.IsPowerOn() && !Emulator.IsPaused();
     
     if( WasRunning )
@@ -136,7 +136,7 @@ void ShowDelayedMessageBox()
     if( WasFullScreen )
     {
         SetWindowZoom( 2 );
-        SDL_GL_SwapWindow( OpenGL2D.Window );
+        SDL_GL_SwapWindow( Video.GetWindow() );
     }
     
     SDL_ShowSimpleMessageBox( MessageBoxFlags, MessageBoxTitle, MessageBoxMessage, nullptr );
@@ -146,7 +146,7 @@ void ShowDelayedMessageBox()
     if( WasFullScreen )
     {
         SetFullScreen();
-        SDL_GL_SwapWindow( OpenGL2D.Window );
+        SDL_GL_SwapWindow( Video.GetWindow() );
     }
     
     if( WasRunning )
@@ -171,10 +171,10 @@ void SetWindowZoom( int ZoomFactor )
       Emulator.Pause();
     
     // set the zoom
-    OpenGL2D.SetWindowZoom( ZoomFactor );
+    Video.SetWindowZoom( ZoomFactor );
     
     // scale ImGui
-    ImGui::GetIO().FontGlobalScale = OpenGL2D.WindowedZoomFactor;
+    ImGui::GetIO().FontGlobalScale = Video.GetWindowZoom();
     
     // resume emulation if needed
     if( WasRunning )
@@ -193,10 +193,10 @@ void SetFullScreen()
       Emulator.Pause();
     
     // set full screen
-    OpenGL2D.SetFullScreen();
+    Video.SetFullScreen();
     
     // scale ImGui
-    ImGui::GetIO().FontGlobalScale = (float)OpenGL2D.WindowWidth / Constants::ScreenWidth;
+    ImGui::GetIO().FontGlobalScale = Video.GetRelativeWindowWidth();
     
     // resume emulation if needed
     if( WasRunning )
@@ -221,7 +221,7 @@ void SaveScreenshot( const string& FilePath )
       RowPointers[ (Constants::ScreenHeight-1) - y ] = &Pixels[ 4 * Constants::ScreenWidth * y ];
       
     // dump content of framebuffer
-    glBindFramebuffer( GL_FRAMEBUFFER, OpenGL2D.FramebufferID );
+    glBindFramebuffer( GL_FRAMEBUFFER, Video.GetFramebufferID() );
     glReadBuffer( GL_COLOR_ATTACHMENT0 );
     glReadPixels( 0, 0, Constants::ScreenWidth, Constants::ScreenHeight, GL_RGBA, GL_UNSIGNED_BYTE, Pixels );
     
@@ -409,6 +409,9 @@ void GUI_LoadMemoryCard( string MemoryCardPath )
         {
             LastMemoryCardDirectory = GetPathDirectory( MemoryCardPath );
             Console.LoadMemoryCard( MemoryCardPath );
+            
+            // update  list of recent cards
+            AddRecentMemoryCardPath( MemoryCardPath );
         }
     }
     
@@ -450,6 +453,9 @@ void GUI_UnloadCartridge()
     try
     {
         Console.UnloadCartridge();
+        
+        // set window title
+        SDL_SetWindowTitle( Video.GetWindow(), "Vircon32: No cartridge" );
     }
     
     catch( const exception& e )
@@ -478,6 +484,13 @@ void GUI_LoadCartridge( string CartridgePath )
             // fix to prevent GUI from drawing
             // on the console's framebuffer
             MouseIsOnWindow = false;
+            
+            // set window title
+            string WindowTitle = string("Vircon32: ") + Console.GetCartridgeTitle();
+            SDL_SetWindowTitle( Video.GetWindow(), WindowTitle.c_str() );
+            
+            // update list of recent roms
+            AddRecentCartridgePath( CartridgePath );
         }
     }
     
@@ -508,6 +521,13 @@ void GUI_ChangeCartridge( string CartridgePath )
             // fix to prevent GUI from drawing
             // on the console's framebuffer
             MouseIsOnWindow = false;
+            
+            // set window title
+            string WindowTitle = string("Vircon32: ") + Console.GetCartridgeTitle();
+            SDL_SetWindowTitle( Video.GetWindow(), WindowTitle.c_str() );
+            
+            // update list of recent roms
+            AddRecentCartridgePath( CartridgePath );
         }
     }
     
@@ -896,7 +916,7 @@ void ProcessMenuOptions()
     {
         // process volume slider
         int Volume = 100 * Audio.GetOutputVolume();
-        ImGui::SetNextItemWidth( 80 * OpenGL2D.WindowWidth / Constants::ScreenWidth );
+        ImGui::SetNextItemWidth( 80 * Video.GetRelativeWindowWidth() );
         
         if( ImGui::SliderInt( "##Volume", &Volume, 0, 100 ) )
           Audio.SetOutputVolume( Volume / 100.0 );
@@ -1014,7 +1034,7 @@ void ProcessLabelCPU()
 // sensible policy to decide when it is actually needed
 bool GUIMustBeDrawn()
 {
-    if( OpenGL2D.FullScreen )
+    if( Video.IsFullScreen() )
       return ImGui::GetIO().WantCaptureMouse;
     
     return MouseIsOnWindow;
@@ -1034,28 +1054,28 @@ void ShowEmulatorWindow()
     // to do the actual drawing on the screen
     // correctly we have to temporarily 
     // override render settings in OpenGL
-    GPUColor PreviousMultiplyColor = OpenGL2D.MultiplyColor;
-    IOPortValues PreviousBlendingMode = OpenGL2D.BlendingMode;
-    OpenGL2D.SetMultiplyColor( GPUColor{ 255, 255, 255, 255 } );
-    OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
+    GPUColor PreviousMultiplyColor = Video.GetMultiplyColor();
+    IOPortValues PreviousBlendingMode = Video.GetBlendingMode();
+    Video.SetMultiplyColor( GPUColor{ 255, 255, 255, 255 } );
+    Video.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
     
     // if the emulator is on, draw its display
     // on our window; otherwise just show a "no
     // signal" indicator on a black screen
-    OpenGL2D.RenderToScreen();
+    Video.RenderToScreen();
     
     if( Emulator.IsPowerOn() )
-      OpenGL2D.DrawFramebufferOnScreen();
+      Video.DrawFramebufferOnScreen();
     else
-      NoSignalTexture.Draw( OpenGL2D, 0, 0, Constants::ScreenWidth, Constants::ScreenHeight );
+      NoSignalTexture.Draw( 0, 0, Constants::ScreenWidth, Constants::ScreenHeight );
     
     // if GUI is showing, darken the screen
     if( GUIMustBeDrawn() )
-      OpenGL2D.ClearScreen( GPUColor{ 0, 16, 32, 210 } );
+      Video.ClearScreen( GPUColor{ 0, 16, 32, 210 } );
     
     // now restore the console's render parameters
-    OpenGL2D.SetMultiplyColor( PreviousMultiplyColor );
-    OpenGL2D.SetBlendingMode( PreviousBlendingMode );
+    Video.SetMultiplyColor( PreviousMultiplyColor );
+    Video.SetBlendingMode( PreviousBlendingMode );
 }
 
 // -----------------------------------------------------------------------------
@@ -1071,12 +1091,12 @@ void RenderGUI()
     PendingActionPath = "";
     
     // remove any emulator blending modes
-    IOPortValues PreviousBlendingMode = OpenGL2D.BlendingMode;
-    OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
+    IOPortValues PreviousBlendingMode = Video.GetBlendingMode();
+    Video.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
     
     // start new frame in imgui
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame( OpenGL2D.Window );
+    ImGui_ImplSDL2_NewFrame( Video.GetWindow() );
     ImGui::NewFrame();
     
     // show the main menu bar
@@ -1112,7 +1132,7 @@ void RenderGUI()
       Emulator.Resume();
     
     // now restore the console's render parameters
-    OpenGL2D.SetBlendingMode( PreviousBlendingMode );
+    Video.SetBlendingMode( PreviousBlendingMode );
     
     // only after GUI processing is done, we can
     // safely perform any file processing actions

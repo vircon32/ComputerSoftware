@@ -1,21 +1,21 @@
 // *****************************************************************************
     // include infrastructure headers
     #include "../DesktopInfrastructure/Logger.hpp"
-    #include "../DesktopInfrastructure/StopWatch.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
-    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
-    #include "../DesktopInfrastructure/Texture.hpp"
     
     // include console logic headers
     #include "../ConsoleLogic/V32Console.hpp"
     
     // include project headers
     #include "EmulatorControl.hpp"
+    #include "VideoOutput.hpp"
     #include "AudioOutput.hpp"
     #include "GUI.hpp"
     #include "Settings.hpp"
     #include "Globals.hpp"
     #include "Languages.hpp"
+    #include "StopWatch.hpp"
+    #include "Texture.hpp"
     
     // include C/C++ headers
     #include <iostream>     // [ C++ STL ] I/O Streams
@@ -169,7 +169,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         }
         
         // we need to create a window for SDL to receive any events
-        OpenGL2D.CreateOpenGLWindow();
+        Video.CreateOpenGLWindow();
         
         // =======================
         
@@ -189,7 +189,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         
         // configure ImGui
         ImGui::StyleColorsClassic();
-        ImGui::GetIO().FontGlobalScale = OpenGL2D.WindowWidth / Constants::ScreenWidth;
+        ImGui::GetIO().FontGlobalScale = Video.GetRelativeWindowWidth();
         ImGui::GetIO().IniFilename = NULL;
         
         // add Spanish characters to ImGui
@@ -216,22 +216,22 @@ int main( int NumberOfArguments, char* Arguments[] )
         #endif
         
         // Setup ImGui Platform/Renderer backends
-        ImGui_ImplSDL2_InitForOpenGL( OpenGL2D.Window, OpenGL2D.OpenGLContext );
+        ImGui_ImplSDL2_InitForOpenGL( Video.GetWindow(), Video.GetOpenGLContext() );
         ImGui_ImplOpenGL3_Init( glsl_version );
         
         // =======================
         
         // initialize OpenGL shaders and their infrastructure
-        OpenGL2D.InitRendering();
+        Video.InitRendering();
         
         // create a framebuffer object
-        OpenGL2D.CreateFramebuffer();
-        OpenGL2D.RenderToScreen();
+        Video.CreateFramebuffer();
+        Video.RenderToScreen();
         
         // set alpha blending
         LOG( "Enabling alpha blending" );
         glEnable( GL_BLEND );
-        OpenGL2D.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
+        Video.SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
         
         //initialize audio
         LOG( "Initializing audio" );
@@ -254,7 +254,7 @@ int main( int NumberOfArguments, char* Arguments[] )
             #if !defined(__WIN32__) && !defined(_WIN32) && !defined(_WIN64)            
               string IconPath = string(EmulatorFolder) + "Images" + PathSeparator + "Vircon32Multisize.ico";
               SDL_Surface* WindowIcon = IMG_Load( IconPath.c_str() );
-              SDL_SetWindowIcon( OpenGL2D.Window, WindowIcon );
+              SDL_SetWindowIcon( Video.GetWindow(), WindowIcon );
               LOG( "Loaded program icon" );
             #endif
             
@@ -272,8 +272,8 @@ int main( int NumberOfArguments, char* Arguments[] )
         
         // initialize the window
         string WindowTitle = string("Vircon32: ") + Texts( TextIDs::Status_NoCartridge );
-        SDL_SetWindowTitle( OpenGL2D.Window, WindowTitle.c_str() );
-        SDL_SetWindowPosition( OpenGL2D.Window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED );
+        SDL_SetWindowTitle( Video.GetWindow(), WindowTitle.c_str() );
+        SDL_SetWindowPosition( Video.GetWindow(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED );
         
         // on linux, initialize GTK
         #if defined(__linux__)
@@ -362,7 +362,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                     if( Event.window.event == SDL_WINDOWEVENT_EXPOSED )
                     {
                         ShowEmulatorWindow();
-                        SDL_GL_SwapWindow( OpenGL2D.Window );
+                        SDL_GL_SwapWindow( Video.GetWindow() );
                     }
                     
                     // keep track of when mouse is inside our window
@@ -470,7 +470,7 @@ int main( int NumberOfArguments, char* Arguments[] )
             if( !WindowActive ) continue;
             
             // redirect all rendering to emulator's display
-            OpenGL2D.RenderToFramebuffer();
+            Video.RenderToFramebuffer();
             
             // measure cycle time
             double TimeStep = Watch.GetStepTime();
@@ -501,7 +501,7 @@ int main( int NumberOfArguments, char* Arguments[] )
             RenderGUI();
             
             // (3) Show updates on screen
-            SDL_GL_SwapWindow( OpenGL2D.Window );
+            SDL_GL_SwapWindow( Video.GetWindow() );
             
             // (4) Show message boxes when needed
             ShowDelayedMessageBox();
@@ -543,7 +543,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         
         // clean-up in reverse order
         LOG( "Exiting" );
-        OpenGL2D.Destroy();
+        Video.Destroy();
         SDL_Quit();
     }
     

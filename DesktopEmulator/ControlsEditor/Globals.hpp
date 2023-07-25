@@ -3,9 +3,8 @@
     #ifndef GLOBALS_HPP
     #define GLOBALS_HPP
     
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
-    #include "../DesktopInfrastructure/Texture.hpp"
+    // include project headers
+    #include "OpenGL2DContext.hpp"
     
     // include C/C++ headers
     #include <map>      // [ C++ STL ] Maps
@@ -35,7 +34,7 @@ extern OpenGL2DContext OpenGL2D;
 
 
 extern char ProfileName[ 41 ];
-extern Texture GamepadTexture;
+extern unsigned GamepadTextureID;
 
 
 // *****************************************************************************

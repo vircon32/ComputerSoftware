@@ -3,6 +3,9 @@
     #ifndef GLOBALS_HPP
     #define GLOBALS_HPP
     
+    // include console logic headers
+    #include "../ConsoleLogic/ExternalInterfaces.hpp"
+    
     // include C/C++ headers
     #include <map>          // [ C++ STL ] Maps
     #include <list>         // [ C++ STL ] Lists
@@ -10,7 +13,7 @@
     
     // forward declarations for all needed classes
     namespace V32{ class V32Console; }
-    class OpenGL2DContext;
+    class VideoOutput;
     class AudioOutput;
     class Texture;
     class EmulatorControl;
@@ -45,7 +48,7 @@ extern V32::V32Console Console;
 
 // wrappers for console I/O operation
 extern EmulatorControl Emulator;
-extern OpenGL2DContext OpenGL2D;
+extern VideoOutput Video;
 extern AudioOutput Audio;
 
 // video resources
@@ -58,6 +61,20 @@ extern Texture NoSignalTexture;
 
 
 void InitializeGlobalVariables();
+
+
+// =============================================================================
+//      PLAIN FUNCTION INTERFACES
+// =============================================================================
+
+
+void Function_ClearScreen( V32::GPUColor ClearColor );
+void Function_DrawQuad( V32::GPUQuad& DrawnQuad );
+void Function_SetMultiplyColor( V32::GPUColor MultiplyColor );
+void Function_SetBlendingMode( int NewBlendingMode );
+void Function_SelectTexture( int GPUTextureID );
+void Function_LoadTexture( int GPUTextureID, void* Pixels );
+void Function_UnloadCartridgeTextures();
 
 
 // *****************************************************************************

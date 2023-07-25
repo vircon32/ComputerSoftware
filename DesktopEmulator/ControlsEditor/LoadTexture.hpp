@@ -1,26 +1,26 @@
 // *****************************************************************************
     // start include guard
-    #ifndef FILESIGNATURES_HPP
-    #define FILESIGNATURES_HPP
+    #ifndef LOADTEXTURE_HPP
+    #define LOADTEXTURE_HPP
+
+    // include OpenGL headers
+    #include <glad/glad.h>      // [ OpenGL ] GLAD Loader (already includes <GL/gl.h>)
     
     // include C/C++ headers
-    #include <cstdint>          // [ ANSI C ] Standard integer types
-    #include <iostream>         // [ C++ STL ] I/O Streams
-    #include <fstream>          // [ C++ STL ] File streams
+    #include <string>		    // [ C++ STL ] Strings
 // *****************************************************************************
 
 
 // =============================================================================
-//      FUNCTIONS TO WORK WITH SIGNATURES
+//      LOADING TEXTURES FROM IMAGE FILES
 // =============================================================================
 
 
-void WriteSignature( std::ostream& OutputFile, const char* Value );
-bool CheckSignature( char* Signature, const char* Expected );
+GLuint LoadTexture( const std::string& FileName );
+void ReleaseTexture( GLuint& TextureID );
 
 
 // *****************************************************************************
     // end include guard
     #endif
 // *****************************************************************************
-

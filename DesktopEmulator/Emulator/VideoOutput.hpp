@@ -1,7 +1,7 @@
 // *****************************************************************************
     // start include guard
-    #ifndef OPENGL2DCONTEXT_HPP
-    #define OPENGL2DCONTEXT_HPP
+    #ifndef VIDEOOUTPUT_HPP
+    #define VIDEOOUTPUT_HPP
     
     // include common Vircon headers
     #include "../../VirconDefinitions/DataStructures.hpp"
@@ -29,9 +29,13 @@
 // =============================================================================
 
 
-class OpenGL2DContext
+class VideoOutput
 {
-    public:
+    private:
+        
+        // video context objects
+        SDL_Window* Window;
+        SDL_GLContext OpenGLContext;
         
         // graphical settings
         unsigned WindowWidth;
@@ -39,16 +43,27 @@ class OpenGL2DContext
         unsigned WindowedZoomFactor;
         bool FullScreen;
         
-        // video context objects
-        SDL_Window* Window;
-        SDL_GLContext OpenGLContext;
+        // arrays to hold buffer info
+        GLfloat QuadPositionCoords[ 8 ];
+        GLfloat QuadTextureCoords[ 8 ];
         
-        // framebuffer object
+        // current color modifiers
+        V32::GPUColor MultiplyColor;
+        V32::IOPortValues BlendingMode;
+        
+        // OpenGL IDs of loaded textures
+        GLuint BiosTextureID;
+        GLuint CartridgeTextureIDs[ V32::Constants::GPUMaximumCartridgeTextures ];
+        
+        // white texture used to draw solid colors
+        GLuint WhiteTextureID;
+        
+        // framebuffer object data
         GLuint FramebufferID;
         GLuint FBColorTextureID;
         unsigned FramebufferWidth;
         unsigned FramebufferHeight;
-
+        
         // additional GL objects
         GLuint VAO;
         GLuint VBOPositions;
@@ -61,22 +76,11 @@ class OpenGL2DContext
         GLuint TextureUnitLocation;
         GLuint MultiplyColorLocation;
         
-        // arrays to hold buffer info
-        GLfloat QuadPositionCoords[ 8 ];
-        GLfloat QuadTextureCoords[ 8 ];
-        
-        // current color modifiers
-        V32::GPUColor MultiplyColor;
-        V32::IOPortValues BlendingMode;
-        
-        // white texture used to draw solid colors
-        GLuint WhiteTextureID;
-        
     public:
         
         // instance handling
-        OpenGL2DContext();
-       ~OpenGL2DContext();
+        VideoOutput();
+       ~VideoOutput();
         
         // init functions
         void CreateOpenGLWindow();
@@ -88,9 +92,17 @@ class OpenGL2DContext
         // release functions
         void Destroy();
         
+        // external context access
+        SDL_Window* GetWindow();
+        SDL_GLContext GetOpenGLContext();
+        GLuint GetFramebufferID();
+        
         // view configuration
         void SetWindowZoom( int ZoomFactor );
+        int GetWindowZoom();
         void SetFullScreen();
+        bool IsFullScreen();
+        float GetRelativeWindowWidth();
         
         // framebuffer render functions
         void RenderToScreen();
@@ -99,11 +111,18 @@ class OpenGL2DContext
         
         // color control functions
         void SetMultiplyColor( V32::GPUColor NewMultiplyColor );
+        V32::GPUColor GetMultiplyColor();
         void SetBlendingMode( V32::IOPortValues BlendingMode );
+        V32::IOPortValues GetBlendingMode();
         
         // render functions
         void DrawTexturedQuad( const V32::GPUQuad& Quad );
         void ClearScreen( V32::GPUColor ClearColor );
+        
+        // texture handling
+        void SelectTexture( int GPUTextureID );
+        void LoadTexture( int GPUTextureID, void* Pixels );
+        void UnloadTexture( int GPUTextureID );
 };
 
 

@@ -6,9 +6,6 @@
     // include project headers
     #include "V32Buses.hpp"
     #include "ExternalInterfaces.hpp"
-    
-    // include OpenGL headers
-    #include <glad/glad.h>      // [ OpenGL ] GLAD Loader (already includes <GL/gl.h>)
 // *****************************************************************************
 
 
@@ -67,7 +64,6 @@ namespace V32
     
     typedef struct
     {
-        GLuint TextureID;
         GPURegion Regions[ Constants::GPURegionsPerTexture ];
     }
     GPUTexture;
@@ -111,6 +107,15 @@ namespace V32
             // quad coordinated for drawing regions
             GPUQuad RegionQuad;
             
+            // external interfaces: video function callbacks
+            void( *Callback_ClearScreen )( GPUColor );
+            void( *Callback_DrawQuad )( GPUQuad& );
+            void( *Callback_SetMultiplyColor )( GPUColor );
+            void( *Callback_SetBlendingMode )( int );
+            void( *Callback_SelectTexture )( int );
+            void( *Callback_LoadTexture )( int, void* );
+            void( *Callback_UnloadCartridgeTextures )();
+            
         public:
             
             // instance handling
@@ -118,8 +123,8 @@ namespace V32
            ~V32GPU();
             
             // handling video resources
-            void LoadTexture( GPUTexture& TargetTexture, void* Pixels, unsigned Width, unsigned Height );
-            void UnloadTexture( GPUTexture& TargetTexture );
+            void InsertCartridgeTextures( uint32_t NumberOfCartridgeTextures );
+            void RemoveCartridgeTextures();
             
             // connection to control bus
             virtual bool ReadPort( int32_t LocalPort, V32Word& Result );

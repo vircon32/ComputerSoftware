@@ -1,8 +1,10 @@
 // *****************************************************************************
+    // include infrastructure headers
+    #include "../DesktopInfrastructure/NumericFunctions.hpp"
+    #include "../DesktopInfrastructure/Logger.hpp"
+    
     // include project headers
-    #include "NumericFunctions.hpp"
-    #include "Logger.hpp"
-    #include "Texture.hpp"
+    #include "LoadTexture.hpp"
     
     // include SDL2 headers
     #define SDL_MAIN_HANDLED
@@ -11,44 +13,15 @@
     
     // declare used namespaces
     using namespace std;
-    using namespace V32;
 // *****************************************************************************
 
 
 // =============================================================================
-//      TEXTURE: INSTANCE HANDLING
+//      LOADING TEXTURES FROM IMAGE FILES
 // =============================================================================
 
 
-Texture::Texture()
-// - - - - - - - - - - - -
-:   TextureID    ( 0 ),
-    TextureWidth ( 0 ),
-    TextureHeight( 0 ),
-    ImageWidth   ( 0 ),
-    ImageHeight  ( 0 ),
-    HotSpotX     ( 0 ),
-    HotSpotY     ( 0 )
-// - - - - - - - - - - - -
-{
-    // (do nothing)
-}
-
-// -----------------------------------------------------------------------------
-
-Texture::~Texture()
-{
-    if( TextureID )
-      Release();
-}
-
-
-// =============================================================================
-//      TEXTURE: RESOURCE HANDLING
-// =============================================================================
-
-
-void Texture::Load( const string& FileName )
+GLuint LoadTexture( const string& FileName )
 {
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // STEP 1: USE SDL_IMAGE TO LOAD IMAGE FROM FILE
@@ -69,18 +42,19 @@ void Texture::Load( const string& FileName )
       THROW( "Only true color images are supported (24 or 32 bits per pixel)" );
     
     // read image dimensions
-    ImageWidth  = LoadedImage->w;
-    ImageHeight = LoadedImage->h;
+    int ImageWidth  = LoadedImage->w;
+    int ImageHeight = LoadedImage->h;
     
     // read image dimensions
-    TextureWidth  = NextPowerOf2( ImageWidth  );
-    TextureHeight = NextPowerOf2( ImageHeight );
+    int TextureWidth  = NextPowerOf2( ImageWidth  );
+    int TextureHeight = NextPowerOf2( ImageHeight );
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // STEP 2: CREATE OPENGL TEXTURE FROM LOADED IMAGE
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
     // create a new OpenGL texture and select it
+    GLuint TextureID = 0;
     glGenTextures( 1, &TextureID );
     glBindTexture( GL_TEXTURE_2D, TextureID );
     
@@ -141,90 +115,17 @@ void Texture::Load( const string& FileName )
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     
-    // default hotspot placement is at the center
-    HotSpotX = ImageWidth / 2;
-    HotSpotY = ImageHeight / 2;
-    
-    // save source image path to identify this texture
-    LoadedFile = FileName;
+    return TextureID;
 }
 
 // -----------------------------------------------------------------------------
 
-void Texture::Release()
+void ReleaseTexture( GLuint& TextureID )
 {
     if( !TextureID ) return;
     
     // delete the OpenGL texture
-    LOG( "Texture -> Release \"" + LoadedFile + "\"" );
+    LOG( "Release texture" );
     glDeleteTextures( 1, &TextureID );
     TextureID = 0;
-}
-
-
-// =============================================================================
-//      TEXTURE: DRAWING ON SCREEN (WHOLE TEXTURE)
-// =============================================================================
-
-
-void Texture::Draw( OpenGL2DContext& OpenGL2D, int HotSpotPositionX, int HotSpotPositionY ) const
-{
-    // check that there is a texture
-    if( !TextureID )
-      return;
-    
-    // select current texture
-    glBindTexture( GL_TEXTURE_2D, TextureID );
-    
-    // precalculate limit coordinates
-    float RenderXMin = HotSpotPositionX - HotSpotX;
-    float RenderYMin = HotSpotPositionY - HotSpotY;
-    
-    float RenderXMax = RenderXMin + ImageWidth;
-    float RenderYMax = RenderYMin + ImageHeight;    
-    
-    // call the coordinate-based function
-    Draw( OpenGL2D, RenderXMin, RenderYMin, RenderXMax, RenderYMax );
-}
-
-// -----------------------------------------------------------------------------
-
-void Texture::Draw( OpenGL2DContext& OpenGL2D, int RenderXMin, int RenderYMin, int RenderXMax, int RenderYMax ) const
-{
-    // check that there is a texture
-    if( !TextureID )
-      return;
-    
-    // select current texture
-    glBindTexture( GL_TEXTURE_2D, TextureID );
-    
-    // calculate proportions of the image within the texture
-    float XFactor = (float)ImageWidth/TextureWidth;
-    float YFactor = (float)ImageHeight/TextureHeight;
-    
-    // build a quad to draw the texture
-    GPUQuad DrawnQuad =
-    {
-        // vertex positions
-        {
-            { (float)RenderXMin, (float)RenderYMin },
-            { (float)RenderXMax, (float)RenderYMin },
-            { (float)RenderXMin, (float)RenderYMax },
-            { (float)RenderXMax, (float)RenderYMax }
-        },
-        
-        // texture coordinates
-        {
-            {     0.0,     0.0 },
-            { XFactor,     0.0 },
-            {     0.0, YFactor },
-            { XFactor, YFactor }
-        }
-    };
-    
-    // draw rectangle defined as a quad
-    OpenGL2D.DrawTexturedQuad( DrawnQuad );
-    
-    // deselect texture
-    glBindTexture( GL_TEXTURE_2D, 0 );
 }

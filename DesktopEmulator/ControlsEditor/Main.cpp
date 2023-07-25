@@ -1,10 +1,11 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
     #include "../DesktopInfrastructure/Logger.hpp"
     
     // include project headers
+    #include "OpenGL2DContext.hpp"
+    #include "LoadTexture.hpp"
     #include "Controls.hpp"
     #include "Globals.hpp"
     #include "GUI.hpp"
@@ -26,7 +27,6 @@
     
     // declare used namespaces
     using namespace std;
-    using namespace V32;
 // *****************************************************************************
 
 
@@ -307,9 +307,6 @@ int main()
         if( !OpenGL2D.Window )
           THROW( string("Window cannot be created: ") + SDL_GetError() );
         
-        // initialize OpenGL shaders and their infrastructure
-        OpenGL2D.InitRendering();
-        
         // =======================
         
         // Setup Dear ImGui context
@@ -320,7 +317,7 @@ int main()
         
         // configure ImGui
         ImGui::StyleColorsLight();
-        io.FontGlobalScale = OpenGL2D.WindowWidth / Constants::ScreenWidth;
+        io.FontGlobalScale = 1.0;
         io.IniFilename = NULL;
         
         // add Spanish characters to ImGui
@@ -355,7 +352,7 @@ int main()
         Languages[ "Spanish" ] = LanguageSpanish;
         
         // load our gamepad texture
-        GamepadTexture.Load( ProgramFolder + "Images" + PathSeparator + "GamepadMapping.png" );
+        GamepadTextureID = LoadTexture( ProgramFolder + "Images" + PathSeparator + "GamepadMapping.png" );
         
         // load our configuration from XML file
         LoadControls( ProgramFolder + "Config-Controls.xml" );
@@ -452,7 +449,8 @@ int main()
         
         // clean-up in reverse order
         LOG( "Exiting" );
-        OpenGL2D.Destroy();
+        ReleaseTexture( GamepadTextureID );
+        OpenGL2D.DestroyOpenGLWindow();
         SDL_Quit();
 	}
     

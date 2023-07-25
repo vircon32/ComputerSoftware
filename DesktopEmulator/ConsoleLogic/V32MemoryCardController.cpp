@@ -5,7 +5,6 @@
     
     // include infrastructure headers
     #include "../DesktopInfrastructure/FilePaths.hpp"
-    #include "../DesktopInfrastructure/FileSignatures.hpp"
     #include "../DesktopInfrastructure/Logger.hpp"
     
     // include project headers

@@ -267,6 +267,9 @@ set(EMULATOR_SRC
     ${EMULATOR_DIR}/Languages.cpp
     ${EMULATOR_DIR}/Main.cpp
     ${EMULATOR_DIR}/Settings.cpp
+    ${EMULATOR_DIR}/StopWatch.cpp
+    ${EMULATOR_DIR}/Texture.cpp
+    ${EMULATOR_DIR}/VideoOutput.cpp
     ${CONSOLELOGIC_DIR}/V32Buses.cpp
     ${CONSOLELOGIC_DIR}/V32CartridgeController.cpp
     ${CONSOLELOGIC_DIR}/V32CPU.cpp
@@ -283,12 +286,8 @@ set(EMULATOR_SRC
     ${CONSOLELOGIC_DIR}/V32SPUWriters.cpp
     ${CONSOLELOGIC_DIR}/V32Timer.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
-    ${INFRASTRUCTURE_DIR}/FileSignatures.cpp
     ${INFRASTRUCTURE_DIR}/Logger.cpp
-    ${INFRASTRUCTURE_DIR}/OpenGL2DContext.cpp
-    ${INFRASTRUCTURE_DIR}/StopWatch.cpp
-    ${INFRASTRUCTURE_DIR}/StringFunctions.cpp
-    ${INFRASTRUCTURE_DIR}/Texture.cpp)
+    ${INFRASTRUCTURE_DIR}/StringFunctions.cpp)
 
 # Source files to compile for the EditControls tool
 set(EDITCONTROLS_SRC
@@ -297,11 +296,11 @@ set(EDITCONTROLS_SRC
     ${EDITCONTROLS_DIR}/GUI.cpp
     ${EDITCONTROLS_DIR}/Languages.cpp
     ${EDITCONTROLS_DIR}/Main.cpp
+    ${EDITCONTROLS_DIR}/OpenGL2DContext.cpp
+    ${EDITCONTROLS_DIR}/LoadTexture.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
     ${INFRASTRUCTURE_DIR}/Logger.cpp
-    ${INFRASTRUCTURE_DIR}/OpenGL2DContext.cpp
-    ${INFRASTRUCTURE_DIR}/StringFunctions.cpp
-    ${INFRASTRUCTURE_DIR}/Texture.cpp)
+    ${INFRASTRUCTURE_DIR}/StringFunctions.cpp)
 
 # -----------------------------------------------------
 #   EXECUTABLES

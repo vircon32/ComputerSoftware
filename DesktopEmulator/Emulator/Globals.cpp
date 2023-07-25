@@ -1,7 +1,5 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/Texture.hpp"
-    #include "../DesktopInfrastructure/OpenGL2DContext.hpp"
     #include "../DesktopInfrastructure/Logger.hpp"
     
     // include console logic headers
@@ -9,7 +7,9 @@
     
     // include project headers
     #include "EmulatorControl.hpp"
+    #include "VideoOutput.hpp"
     #include "AudioOutput.hpp"
+    #include "Texture.hpp"
     #include "Globals.hpp"
     
     // declare used namespaces
@@ -46,7 +46,7 @@ V32Console Console;
 
 // wrappers for console I/O operation
 EmulatorControl Emulator;
-OpenGL2DContext OpenGL2D;
+VideoOutput Video;
 AudioOutput Audio;
 
 // video resources
@@ -70,4 +70,58 @@ void InitializeGlobalVariables()
     // called so that logging is initialized
     LastCartridgeDirectory = EmulatorFolder;
     LastMemoryCardDirectory = EmulatorFolder;
+}
+
+
+// =============================================================================
+//      PLAIN FUNCTION INTERFACES
+// =============================================================================
+
+
+void Function_ClearScreen( GPUColor ClearColor )
+{
+    Video.ClearScreen( ClearColor );
+}
+
+// -----------------------------------------------------------------------------
+
+void Function_DrawQuad( GPUQuad& DrawnQuad )
+{
+    Video.DrawTexturedQuad( DrawnQuad );
+}
+
+// -----------------------------------------------------------------------------
+
+void Function_SetMultiplyColor( GPUColor MultiplyColor )
+{
+    Video.SetMultiplyColor( MultiplyColor );
+}
+
+// -----------------------------------------------------------------------------
+
+void Function_SetBlendingMode( int NewBlendingMode )
+{
+    Video.SetBlendingMode( (IOPortValues)NewBlendingMode );
+}
+
+// -----------------------------------------------------------------------------
+
+void Function_SelectTexture( int GPUTextureID )
+{
+    Video.SelectTexture( GPUTextureID );
+}
+
+// -----------------------------------------------------------------------------
+
+void Function_LoadTexture( int GPUTextureID, void* Pixels )
+{
+    Video.LoadTexture( GPUTextureID, Pixels );
+}
+
+// -----------------------------------------------------------------------------
+
+void Function_UnloadCartridgeTextures()
+{
+    for( int i = 0; i < Constants::GPUMaximumCartridgeTextures; i++ )
+      Video.UnloadTexture( i );
 }
