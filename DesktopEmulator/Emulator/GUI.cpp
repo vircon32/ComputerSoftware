@@ -9,6 +9,7 @@
     // include project headers
     #include "GUI.hpp"
     #include "EmulatorControl.hpp"
+    #include "GamepadsInput.hpp"
     #include "VideoOutput.hpp"
     #include "AudioOutput.hpp"
     #include "Texture.hpp"
@@ -830,7 +831,7 @@ void ProcessMenuGamepads()
     bool KeyboardIsUsed = false;
     
     for( int Gamepad = 0; Gamepad < 4; Gamepad++ )
-      if( MappedGamepads[ Gamepad ].Type == DeviceTypes::Keyboard )
+      if( Gamepads.MappedGamepads[ Gamepad ].Type == DeviceTypes::Keyboard )
         KeyboardIsUsed = true;
     
     // show devices for the 4 gamepads
@@ -841,15 +842,15 @@ void ProcessMenuGamepads()
         
         if( ImGui::BeginMenu( MenuText.c_str() ) )
         {
-            OptionSelected = (MappedGamepads[ Gamepad ].Type == DeviceTypes::NoDevice);
+            OptionSelected = (Gamepads.MappedGamepads[ Gamepad ].Type == DeviceTypes::NoDevice);
             
             if( ImGui::MenuItem( Texts(TextIDs::Gamepads_NoDevice), nullptr, OptionSelected, true ) )
             {
-                MappedGamepads[ Gamepad ].Type = DeviceTypes::NoDevice;
-                AssignInputDevices();
+                Gamepads.MappedGamepads[ Gamepad ].Type = DeviceTypes::NoDevice;
+                Gamepads.AssignInputDevices();
             }
             
-            OptionSelected = (MappedGamepads[ Gamepad ].Type == DeviceTypes::Keyboard);
+            OptionSelected = (Gamepads.MappedGamepads[ Gamepad ].Type == DeviceTypes::Keyboard);
             
             bool DisableKeyboard = KeyboardIsUsed && !OptionSelected;
             
@@ -859,25 +860,27 @@ void ProcessMenuGamepads()
             // check if the keyboard is free
             if( ImGui::MenuItem( Texts(TextIDs::Gamepads_Keyboard), nullptr, OptionSelected, !DisableKeyboard ) )
             {
-                MappedGamepads[ Gamepad ].Type = DeviceTypes::Keyboard;
-                AssignInputDevices();
+                Gamepads.MappedGamepads[ Gamepad ].Type = DeviceTypes::Keyboard;
+                Gamepads.AssignInputDevices();
             }
             
-            if( KeyboardIsUsed && MappedGamepads[ Gamepad ].Type != DeviceTypes::Keyboard )
+            if( KeyboardIsUsed && Gamepads.MappedGamepads[ Gamepad ].Type != DeviceTypes::Keyboard )
               ImGui::PopStyleVar();
             
             // show every available profile
+            auto JoystickProfiles = Gamepads.ReadAllJoystickProfiles();
+            
             for( auto Pair = JoystickProfiles.begin(); Pair != JoystickProfiles.end(); Pair++ )
             {
                 JoystickMapping* JoystickProfile = Pair->second;
-                OptionSelected = (MappedGamepads[ Gamepad ].Type == DeviceTypes::Joystick)
-                              && (MappedGamepads[ Gamepad ].GUID == JoystickProfile->GUID);
+                OptionSelected = (Gamepads.MappedGamepads[ Gamepad ].Type == DeviceTypes::Joystick)
+                              && (Gamepads.MappedGamepads[ Gamepad ].GUID == JoystickProfile->GUID);
                 
                 if( ImGui::MenuItem( JoystickProfile->ProfileName.c_str(), nullptr, OptionSelected, true ) )
                 {
-                    MappedGamepads[ Gamepad ].Type = DeviceTypes::Joystick;
-                    MappedGamepads[ Gamepad ].GUID = JoystickProfile->GUID;
-                    AssignInputDevices();
+                    Gamepads.MappedGamepads[ Gamepad ].Type = DeviceTypes::Joystick;
+                    Gamepads.MappedGamepads[ Gamepad ].GUID = JoystickProfile->GUID;
+                    Gamepads.AssignInputDevices();
                 }
             }
             

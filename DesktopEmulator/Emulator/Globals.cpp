@@ -7,6 +7,7 @@
     
     // include project headers
     #include "EmulatorControl.hpp"
+    #include "GamepadsInput.hpp"
     #include "VideoOutput.hpp"
     #include "AudioOutput.hpp"
     #include "Texture.hpp"
@@ -48,6 +49,7 @@ V32Console Console;
 EmulatorControl Emulator;
 VideoOutput Video;
 AudioOutput Audio;
+GamepadsInput Gamepads;
 
 // video resources
 Texture NoSignalTexture;

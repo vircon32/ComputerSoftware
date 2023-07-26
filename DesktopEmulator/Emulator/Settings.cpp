@@ -9,14 +9,12 @@
     
     // include project headers
     #include "Settings.hpp"
+    #include "GamepadsInput.hpp"
     #include "AudioOutput.hpp"
     #include "VideoOutput.hpp"
     #include "GUI.hpp"
     #include "Languages.hpp"
     #include "Globals.hpp"
-    
-    // include C/C++ headers
-    #include <set>                  // [ C++ STL ] Sets
     
     // include external headers
     #include <tinyxml2.h>
@@ -26,93 +24,6 @@
     using namespace V32;
     using namespace tinyxml2;
 // *****************************************************************************
-
-
-// =============================================================================
-//      DEFINITIONS FOR INPUT MAPPINGS
-// =============================================================================
-
-
-JoystickControl::JoystickControl()
-{
-    IsAxis = false;
-    IsHat = false;
-    ButtonIndex = -1;
-    AxisIndex = -1;
-    HatIndex = -1;
-    AxisPositive = true;
-    HatDirection = SDL_HAT_CENTERED;
-}
-
-
-// =============================================================================
-//     OPERATION WITH GUIDS
-// =============================================================================
-
-
-bool operator==( const SDL_JoystickGUID& GUID1, const SDL_JoystickGUID& GUID2 )
-{
-    return !memcmp( &GUID1, &GUID2, sizeof(SDL_JoystickGUID) );
-}
-
-// -----------------------------------------------------------------------------
-
-bool operator!=( const SDL_JoystickGUID& GUID1, const SDL_JoystickGUID& GUID2 )
-{
-    return memcmp( &GUID1, &GUID2, sizeof(SDL_JoystickGUID) );
-}
-
-// -----------------------------------------------------------------------------
-
-bool operator<( const SDL_JoystickGUID& GUID1, const SDL_JoystickGUID& GUID2 )
-{
-    int Result = memcmp( &GUID1, &GUID2, sizeof(SDL_JoystickGUID) );
-    return (Result < 0);
-}
-
-// -----------------------------------------------------------------------------
-
-string GUIDToString( SDL_JoystickGUID GUID )
-{
-    char GUIDString[ 35 ];
-    SDL_JoystickGetGUIDString( GUID, GUIDString, 34 );  
-    return GUIDString;  
-}
-
-// -----------------------------------------------------------------------------
-
-bool GUIDStringIsValid( const string& GUIDString )
-{
-    // length must be even and no greater than 32 characters
-    if( GUIDString.size() > 32 ) return false;
-    if( GUIDString.size() &  1 ) return false;
-    
-    // characters must be hexadecimal and lowercase
-    for( char c: GUIDString )
-    {
-        if( isdigit( c ) ) continue;
-        if( isupper( c ) ) return false;
-        if( c < 'a' && c > 'f' ) return false;
-    }
-    
-    return true;
-}
-
-
-// =============================================================================
-//      GLOBALS FOR INPUT PROFILES
-// =============================================================================
-
-
-// all currently connected joysticks
-map< SDL_JoystickID, SDL_JoystickGUID > ConnectedJoysticks;
-
-// all of our available mappings
-KeyboardMapping KeyboardProfile;
-map< SDL_JoystickGUID, JoystickMapping* > JoystickProfiles;
-
-// maps {Vircon gamepads} --> {PC devices}
-DeviceInfo MappedGamepads[ Constants::GamepadPorts ];
 
 
 // =============================================================================
@@ -193,36 +104,6 @@ bool GetRequiredYesNoAttribute( XMLElement* Element, const string& AtributeName 
       return false;
     
     THROW( "Attribute '" + AtributeName + "' inside <" + Element->Name() + "> must be either 'yes' or 'no'" );
-}
-
-
-// =============================================================================
-//      RESETTING INPUT MAPPINGS
-// =============================================================================
-
-
-void SetDefaultControls()
-{
-    // first delete any joystick profiles
-    for( auto Pair: JoystickProfiles )
-      delete Pair.second;
-    
-    JoystickProfiles.clear();
-    
-    // set the default keyboard profile
-    KeyboardProfile.Left = SDLK_LEFT;
-    KeyboardProfile.Right = SDLK_RIGHT;
-    KeyboardProfile.Up = SDLK_UP;
-    KeyboardProfile.Down = SDLK_DOWN;
-    
-    KeyboardProfile.ButtonA = SDLK_x;
-    KeyboardProfile.ButtonB = SDLK_z;
-    KeyboardProfile.ButtonX = SDLK_s;
-    KeyboardProfile.ButtonY = SDLK_a;
-    KeyboardProfile.ButtonL = SDLK_q;
-    KeyboardProfile.ButtonR = SDLK_w;
-    
-    KeyboardProfile.ButtonStart = SDLK_RETURN;
 }
 
 
@@ -363,6 +244,7 @@ void LoadControls( const std::string& FilePath )
           THROW( "There can only be 1 keyboard mapping" );
         
         // load directions
+        KeyboardMapping& KeyboardProfile = Gamepads.GetKeyboardProfile();
         LoadKey( &KeyboardProfile.Left , KeyboardRoot, "left"  );
         LoadKey( &KeyboardProfile.Right, KeyboardRoot, "right" );
         LoadKey( &KeyboardProfile.Up   , KeyboardRoot, "up"    );
@@ -432,7 +314,7 @@ void LoadControls( const std::string& FilePath )
             LoadJoystickControl( &JoystickProfile->ButtonStart, JoystickRoot, "button-start" );
             
             // create a joystick mapping, replacing the previous
-            JoystickProfiles[ GUID ] = JoystickProfile;
+            Gamepads.AddJoystickProfile( GUID, JoystickProfile );
             
             // advance to next joystick
             JoystickRoot = JoystickRoot->NextSiblingElement( "joystick" );
@@ -454,66 +336,7 @@ void LoadControls( const std::string& FilePath )
             Message.c_str()
         );
         
-        SetDefaultControls();
-    }
-}
-
-// -----------------------------------------------------------------------------
-
-void AssignInputDevices()
-{
-    set< SDL_JoystickID > MappedInstanceIDs;
-    bool IsKeyboardUsed = false;
-    
-    // update mappings for gamepads
-    for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
-    {
-        DeviceInfo* GamepadDevice = &MappedGamepads[ Gamepad ];
-        
-        // preemptively disconnect the gamepad
-        Console.SetGamepadConnection( Gamepad, false );
-        
-        // process non-joystick devices
-        if( GamepadDevice->Type == DeviceTypes::NoDevice )
-          continue;
-        
-        if( GamepadDevice->Type == DeviceTypes::Keyboard )
-        {
-            // allow only for 1 gamepad to use the keyboard
-            if( IsKeyboardUsed )
-              GamepadDevice->Type = DeviceTypes::NoDevice;
-              
-            else
-            {
-                IsKeyboardUsed = true;
-                Console.SetGamepadConnection( Gamepad, true );
-            }
-            
-            continue;
-        }
-        
-        // preemptively set an unused instance ID in case errors happen
-        GamepadDevice->InstanceID = -1;
-        
-        // test every connected joystick
-        for( auto Pair = ConnectedJoysticks.begin(); Pair != ConnectedJoysticks.end(); Pair++ )
-        {
-            SDL_JoystickID JoystickInstanceID = Pair->first;
-            SDL_JoystickGUID JoystickGUID = Pair->second;
-            
-            if( GamepadDevice->GUID != JoystickGUID )
-              continue;
-            
-            // for multiple identical joysticks, make sure
-            // we are only using 1 for each separate gamepad
-            if( MappedInstanceIDs.find( JoystickInstanceID ) == MappedInstanceIDs.end() )
-            {
-                MappedInstanceIDs.insert( JoystickInstanceID );
-                GamepadDevice->InstanceID = JoystickInstanceID;
-                Console.SetGamepadConnection( Gamepad, true );
-                break;
-            }
-        }
+        Gamepads.SetDefaultProfiles();
     }
 }
 
@@ -544,13 +367,13 @@ void SetDefaultSettings()
     
     // set keyboard for first gamepad
     Console.SetGamepadConnection( 0, true );
-    MappedGamepads[ 0 ].Type = DeviceTypes::Keyboard;
+    Gamepads.MappedGamepads[ 0 ].Type = DeviceTypes::Keyboard;
     
     // set no device for the rest of gamepads
     for( int i = 1; i < Constants::GamepadPorts; i++ )
     {
         Console.SetGamepadConnection( i, false );
-        MappedGamepads[ i ].Type = DeviceTypes::NoDevice;
+        Gamepads.MappedGamepads[ i ].Type = DeviceTypes::NoDevice;
     }
     
     // set default load folders
@@ -656,7 +479,7 @@ void LoadSettings( const string& FilePath )
             // preemptively leave the gamepad unmapped and disconnected
             // unless a valid profile is found for it later
             Console.SetGamepadConnection( Gamepad, false );
-            MappedGamepads[ Gamepad ].Type = DeviceTypes::NoDevice;
+            Gamepads.MappedGamepads[ Gamepad ].Type = DeviceTypes::NoDevice;
             
             // read profile name
             string ProfileName = GetRequiredStringAttribute( GamepadRoot, "profile" );
@@ -664,33 +487,30 @@ void LoadSettings( const string& FilePath )
             // CASE A: no profile; the gamepad is disconnected
             if( ToLowerCase( ProfileName ) == "none" )
             {
-                MappedGamepads[ Gamepad ].Type = DeviceTypes::NoDevice;
+                Gamepads.MappedGamepads[ Gamepad ].Type = DeviceTypes::NoDevice;
                 continue;
             }
             
             // CASE B: the keyboard profile
             if( ToLowerCase( ProfileName ) == "keyboard" )
             {
-                MappedGamepads[ Gamepad ].Type = DeviceTypes::Keyboard;
+                Gamepads.MappedGamepads[ Gamepad ].Type = DeviceTypes::Keyboard;
                 Console.SetGamepadConnection( Gamepad, true );
                 continue;
             }
             
             // CASE C: other names are considered joystick profiles
-            for( auto Position = JoystickProfiles.begin(); Position != JoystickProfiles.end(); Position++ )
+            JoystickMapping* JoystickProfile = Gamepads.GetJoystickProfile( ProfileName );
+            
+            if( JoystickProfile )
             {
-                // search 
-                if( Position->second->ProfileName == ProfileName )
-                {
-                    MappedGamepads[ Gamepad ].Type = DeviceTypes::Joystick;
-                    MappedGamepads[ Gamepad ].GUID = Position->first;
-                    Console.SetGamepadConnection( Gamepad, true );
-                    continue;
-                }
+                Gamepads.MappedGamepads[ Gamepad ].Type = DeviceTypes::Joystick;
+                Gamepads.MappedGamepads[ Gamepad ].GUID = JoystickProfile->GUID;
+                Console.SetGamepadConnection( Gamepad, true );
             }
             
             // warn when a profile name is not found
-            if( MappedGamepads[ Gamepad ].Type != DeviceTypes::Joystick )
+            if( Gamepads.MappedGamepads[ Gamepad ].Type != DeviceTypes::Joystick )
             {
                 string Message = Texts( TextIDs::Errors_InvalidDevice_CannotFind ) + string("\"") + ProfileName + "\".\n";
                 Message += Texts( TextIDs::Errors_InvalidDevice_Gamepad ) + to_string( Gamepad+1 );
@@ -707,7 +527,7 @@ void LoadSettings( const string& FilePath )
         
         // now that profiles have been associated to gamepad ports,
         // we need to detect joysticks and assign them to gamepads
-        AssignInputDevices();
+        Gamepads.AssignInputDevices();
         
         // read load folders
         XMLElement* LoadFoldersRoot = GetRequiredElement( SettingsRoot, "load-folders" );
@@ -817,7 +637,7 @@ void SaveSettings( const string& FilePath )
         for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
         {
             // determine profile name
-            DeviceInfo MappedDevice = MappedGamepads[ Gamepad ];
+            DeviceInfo MappedDevice = Gamepads.MappedGamepads[ Gamepad ];
             string ProfileName;
             
             if( MappedDevice.Type == DeviceTypes::NoDevice )
@@ -829,13 +649,8 @@ void SaveSettings( const string& FilePath )
             else  // it is a joystick
             {
                 // obtain the applicable joystick profile
-                auto Position = JoystickProfiles.find( MappedDevice.GUID );
-                
-                if( Position == JoystickProfiles.end() )
-                  ProfileName = "none";
-                
-                JoystickMapping* JoystickProfile = Position->second;
-                ProfileName = JoystickProfile->ProfileName;
+                JoystickMapping* JoystickProfile = Gamepads.GetJoystickProfile( MappedDevice.GUID );
+                ProfileName = (JoystickProfile? JoystickProfile->ProfileName : "none");
             }
             
             // now save it

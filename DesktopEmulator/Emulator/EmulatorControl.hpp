@@ -39,9 +39,6 @@ class EmulatorControl
         bool IsPowerOn();
         void Reset();
         void RunNextFrame();
-
-        //void Emulator_Update( float DeltaTime );
-        void ProcessEvent( SDL_Event Event );
 };
 
 

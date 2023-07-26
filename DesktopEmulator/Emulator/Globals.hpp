@@ -13,10 +13,11 @@
     
     // forward declarations for all needed classes
     namespace V32{ class V32Console; }
+    class EmulatorControl;
+    class GamepadsInput;
     class VideoOutput;
     class AudioOutput;
     class Texture;
-    class EmulatorControl;
 // *****************************************************************************
 
 
@@ -50,6 +51,7 @@ extern V32::V32Console Console;
 extern EmulatorControl Emulator;
 extern VideoOutput Video;
 extern AudioOutput Audio;
+extern GamepadsInput Gamepads;
 
 // video resources
 extern Texture NoSignalTexture;

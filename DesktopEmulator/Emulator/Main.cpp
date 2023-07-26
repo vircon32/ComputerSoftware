@@ -8,6 +8,7 @@
     
     // include project headers
     #include "EmulatorControl.hpp"
+    #include "GamepadsInput.hpp"
     #include "VideoOutput.hpp"
     #include "AudioOutput.hpp"
     #include "GUI.hpp"
@@ -152,21 +153,8 @@ int main( int NumberOfArguments, char* Arguments[] )
         // enable SDL joystick events
         SDL_JoystickEventState( SDL_ENABLE );
         
-        // open all connected joysticks
-        int NumberOfJoysticks = SDL_NumJoysticks();
-        LOG( "Active joysticks: " + to_string( NumberOfJoysticks ) );
-        
-        for( int JoystickIndex = 0; JoystickIndex < NumberOfJoysticks; JoystickIndex++ )
-        {
-            SDL_Joystick* NewJoystick = SDL_JoystickOpen( JoystickIndex );
-            
-            if( NewJoystick )
-            {
-                SDL_JoystickGUID NewGUID = SDL_JoystickGetGUID( NewJoystick );
-                Sint32 AddedInstanceID = SDL_JoystickInstanceID( NewJoystick );
-                ConnectedJoysticks[ AddedInstanceID ] = NewGUID;
-            }
-        }
+        // begin connection to SDL joysticks
+        Gamepads.OpenAllJoysticks();
         
         // we need to create a window for SDL to receive any events
         Video.CreateOpenGLWindow();
@@ -459,11 +447,11 @@ int main( int NumberOfArguments, char* Arguments[] )
                 }
                 
                 // - - - - - - - - - - - - - - - - - - - - - - - - - -
-                // NOW, LET MACHINE REACT TO THIS MESSAGE
+                // NOW, LET EMULATION REACT TO THIS MESSAGE
                 // (but while window is inactive, events will get ignored)
                 
                 if( WindowActive )
-                  Emulator.ProcessEvent( Event );
+                  Gamepads.ProcessEvent( Event );
             }
             
             // update frame only when needed
@@ -520,16 +508,8 @@ int main( int NumberOfArguments, char* Arguments[] )
         LOG( "    Performing terminations" );
         LOG( "---------------------------------------------------------------------" );
         
-        // delete all joystick profiles
-        for( auto Pair: JoystickProfiles )
-          delete Pair.second;
-        
-        // close all connected joysticks
-        for( auto Pair: ConnectedJoysticks )
-        {
-            SDL_Joystick* ClosedJoystick = SDL_JoystickFromInstanceID( Pair.first );
-            SDL_JoystickClose( ClosedJoystick );
-        }
+        // end connection to SDL joysticks
+        Gamepads.CloseAllJoysticks();
         
         // shut down ALUT
         LOG( "Terminating audio" );
