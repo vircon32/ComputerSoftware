@@ -2,9 +2,6 @@
     // include project headers
     #include "V32Buses.hpp"
     #include "V32CPU.hpp"
-    
-    // declare used namespaces
-    using namespace std;
 // *****************************************************************************
 
 

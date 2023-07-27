@@ -6,6 +6,9 @@
     // include project headers
     #include "V32Buses.hpp"
     #include "ExternalInterfaces.hpp"
+    
+    // include C/C++ headers
+    #include <vector>           // [ C++ STL ] Vectors
 // *****************************************************************************
 
 

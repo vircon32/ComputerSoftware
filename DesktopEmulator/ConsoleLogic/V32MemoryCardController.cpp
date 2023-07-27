@@ -1,9 +1,6 @@
 // *****************************************************************************
     // include project headers
     #include "V32MemoryCardController.hpp"
-    
-    // declare used namespaces
-    using namespace std;
 // *****************************************************************************
 
 

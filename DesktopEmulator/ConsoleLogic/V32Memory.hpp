@@ -7,7 +7,7 @@
     #include "V32Buses.hpp"
     
     // include C/C++ headers
-    #include <string>       // [ C++ STL ] Strings
+    #include <vector>           // [ C++ STL ] Vectors
 // *****************************************************************************
 
 

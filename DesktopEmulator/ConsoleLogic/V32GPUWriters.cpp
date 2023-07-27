@@ -7,7 +7,6 @@
     
     // include project headers
     #include "V32GPU.hpp"
-    #include "Globals.hpp"
     
     // include C/C++ headers
     #include <cmath>            // [ ANSI C ] Mathematics

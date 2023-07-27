@@ -6,9 +6,6 @@
     // include common Vircon headers
     #include "../../VirconDefinitions/Constants.hpp"
     #include "../../VirconDefinitions/DataStructures.hpp"
-    
-    // include C/C++ headers
-    #include <vector>       // [ C++ STL ] Vectors
 // *****************************************************************************
 
 
@@ -98,4 +95,3 @@ namespace V32
     // end include guard
     #endif
 // *****************************************************************************
-

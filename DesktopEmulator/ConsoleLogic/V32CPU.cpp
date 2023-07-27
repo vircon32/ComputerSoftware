@@ -1,7 +1,7 @@
 // *****************************************************************************
     // include common Vircon headers
     #include "../../VirconDefinitions/Constants.hpp"
-    #include "../../VirconDefinitions/Enumerations.hpp"    // (for debug only)
+    #include "../../VirconDefinitions/Enumerations.hpp"
     
     // include project headers
     #include "V32CPU.hpp"

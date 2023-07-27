@@ -3,10 +3,7 @@
     #include "V32RNG.hpp"
     
     // include C/C++ headers
-    #include <stdlib.h>     // [ ANSI C ] Standard library
-    
-    // declare used namespaces
-    using namespace std;
+    #include <stdlib.h>         // [ ANSI C ] Standard library
 // *****************************************************************************
 
 
