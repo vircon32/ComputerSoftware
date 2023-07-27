@@ -66,6 +66,24 @@ namespace V32
         GPUPoint VertexTexCoords[ 4 ];
     }
     GPUQuad;
+    
+    
+    // =============================================================================
+    //      SETTERS FOR CALLBACK FUNCTIONS
+    // =============================================================================
+    
+    
+    namespace Callbacks
+    {
+        // external interfaces: video function callbacks
+        extern void( *ClearScreen )( V32::GPUColor );
+        extern void( *DrawQuad )( V32::GPUQuad& );
+        extern void( *SetMultiplyColor )( V32::GPUColor );
+        extern void( *SetBlendingMode )( int );
+        extern void( *SelectTexture )( int );
+        extern void( *LoadTexture )( int, void* );
+        extern void( *UnloadCartridgeTextures )();
+    }
 }
 
 

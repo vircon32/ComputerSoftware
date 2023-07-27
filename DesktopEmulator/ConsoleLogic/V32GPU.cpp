@@ -8,7 +8,6 @@
     
     // include project headers
     #include "V32GPU.hpp"
-    #include "Globals.hpp"
     
     // include C/C++ headers
     #include <cmath>            // [ ANSI C ] Mathematics
@@ -63,15 +62,6 @@ namespace V32
         // no entities were pointed yet
         PointedTexture = nullptr;
         PointedRegion = nullptr;
-        
-        // no callbacks were received yet
-        Callback_ClearScreen = nullptr;
-        Callback_DrawQuad = nullptr;
-        Callback_SetMultiplyColor = nullptr;
-        Callback_SetBlendingMode = nullptr;
-        Callback_SelectTexture = nullptr;
-        Callback_LoadTexture = nullptr;
-        Callback_UnloadCartridgeTextures = nullptr;
     }
     
     // -----------------------------------------------------------------------------
@@ -107,7 +97,7 @@ namespace V32
           return;
         
         CartridgeTextures.clear();
-        Callback_UnloadCartridgeTextures();
+        Callbacks::UnloadCartridgeTextures();
     }
     
     
@@ -191,9 +181,9 @@ namespace V32
         SelectedRegion = 0;
         
         // notify video library of parameter changes
-        Callback_SelectTexture( SelectedTexture );
-        Callback_SetMultiplyColor( MultiplyColor );
-        Callback_SetBlendingMode( ActiveBlending );
+        Callbacks::SelectTexture( SelectedTexture );
+        Callbacks::SetMultiplyColor( MultiplyColor );
+        Callbacks::SetBlendingMode( ActiveBlending );
         
         // reset pointed entities
         PointedTexture = &BiosTexture;
@@ -224,7 +214,7 @@ namespace V32
         }
         
         // initial screen clear to black
-        Callback_ClearScreen( ClearColor );
+        Callbacks::ClearScreen( ClearColor );
     }
     
     
@@ -253,7 +243,7 @@ namespace V32
         }
         
         // clear the screen
-        Callback_ClearScreen( ClearColor );
+        Callbacks::ClearScreen( ClearColor );
     }
     
     // -----------------------------------------------------------------------------
@@ -432,7 +422,7 @@ namespace V32
         }
         
         // draw rectangle defined as a quad (4-vertex polygon)
-        Callback_SelectTexture( SelectedTexture );
-        Callback_DrawQuad( RegionQuad );
+        Callbacks::SelectTexture( SelectedTexture );
+        Callbacks::DrawQuad( RegionQuad );
     }
 }

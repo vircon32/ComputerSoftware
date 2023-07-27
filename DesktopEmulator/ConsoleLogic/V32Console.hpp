@@ -110,19 +110,6 @@ namespace V32
             
             // sound output management
             void GetFrameSoundOutput( SPUOutputBuffer& OutputBuffer );
-            
-            // - - - - - - - - - - - - - - - - - - - - - - - -
-            //   EXTERNAL INTERFACES: CALLBACK FUNCTIONS
-            // - - - - - - - - - - - - - - - - - - - - - - - -
-            
-            // setting video callback functions
-            void SetCallbackClearScreen( void( *FunctionClearScreen )( GPUColor ) );
-            void SetCallbackDrawQuad( void( *FunctionDrawQuad )( GPUQuad& ) );
-            void SetCallbackSetMultiplyColor( void( *FunctionSetMultiplyColor )( GPUColor ) );
-            void SetCallbackSetBlendingMode( void( *FunctionSetBlendingMode )( int ) );
-            void SetCallbackSelectTexture( void( *FunctionSelectTexture )( int ) );
-            void SetCallbackLoadTexture( void( *FunctionLoadTexture )( int, void* ) );
-            void SetCallbackUnloadCartridgeTextures( void( *FunctionUnloadCartridgeTextures )() );
     };
 }
 

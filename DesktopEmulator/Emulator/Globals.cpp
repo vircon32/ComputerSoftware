@@ -76,54 +76,57 @@ void InitializeGlobalVariables()
 
 
 // =============================================================================
-//      PLAIN FUNCTION INTERFACES
+//      CALLBACK FUNCTIONS FOR CONSOLE LOGIC
 // =============================================================================
 
 
-void Function_ClearScreen( GPUColor ClearColor )
+namespace CallbackFunctions
 {
-    Video.ClearScreen( ClearColor );
-}
+    void ClearScreen( V32::GPUColor ClearColor )
+    {
+        Video.ClearScreen( ClearColor );
+    }
 
-// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
 
-void Function_DrawQuad( GPUQuad& DrawnQuad )
-{
-    Video.DrawTexturedQuad( DrawnQuad );
-}
+    void DrawQuad( V32::GPUQuad& DrawnQuad )
+    {
+        Video.DrawTexturedQuad( DrawnQuad );
+    }
 
-// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
 
-void Function_SetMultiplyColor( GPUColor MultiplyColor )
-{
-    Video.SetMultiplyColor( MultiplyColor );
-}
+    void SetMultiplyColor( V32::GPUColor MultiplyColor )
+    {
+        Video.SetMultiplyColor( MultiplyColor );
+    }
 
-// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
 
-void Function_SetBlendingMode( int NewBlendingMode )
-{
-    Video.SetBlendingMode( (IOPortValues)NewBlendingMode );
-}
+    void SetBlendingMode( int NewBlendingMode )
+    {
+        Video.SetBlendingMode( (IOPortValues)NewBlendingMode );
+    }
 
-// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
 
-void Function_SelectTexture( int GPUTextureID )
-{
-    Video.SelectTexture( GPUTextureID );
-}
+    void SelectTexture( int GPUTextureID )
+    {
+        Video.SelectTexture( GPUTextureID );
+    }
 
-// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
 
-void Function_LoadTexture( int GPUTextureID, void* Pixels )
-{
-    Video.LoadTexture( GPUTextureID, Pixels );
-}
+    void LoadTexture( int GPUTextureID, void* Pixels )
+    {
+        Video.LoadTexture( GPUTextureID, Pixels );
+    }
 
-// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
 
-void Function_UnloadCartridgeTextures()
-{
-    for( int i = 0; i < Constants::GPUMaximumCartridgeTextures; i++ )
-      Video.UnloadTexture( i );
+    void UnloadCartridgeTextures()
+    {
+        for( int i = 0; i < Constants::GPUMaximumCartridgeTextures; i++ )
+          Video.UnloadTexture( i );
+    }
 }

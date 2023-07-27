@@ -374,7 +374,7 @@ namespace V32
           InputFile.read( (char*)(LoadedTexture[ y ]), TextureHeader.TextureWidth * 4 );
         
         // send bios texture to the video library
-        GPU.Callback_LoadTexture( -1, LoadedTexture );
+        Callbacks::LoadTexture( -1, LoadedTexture );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 5: Load audio rom
@@ -569,7 +569,7 @@ namespace V32
               InputFile.read( (char*)(LoadedTexture[ y ]), TextureHeader.TextureWidth * 4 );
             
             // send this texture to the video library
-            GPU.Callback_LoadTexture( i, LoadedTexture );
+            Callbacks::LoadTexture( i, LoadedTexture );
         }
         
         // now update GPU with the inserted textures
@@ -904,57 +904,5 @@ namespace V32
         // for safety, make a copy of the sound buffer
         // instead of providing access to the original
         memcpy( &OutputBuffer, &SPU.OutputBuffer, sizeof(SPU.OutputBuffer) );
-    }
-    
-    
-    // =============================================================================
-    //      V32 CONSOLE: SETTING VIDEO CALLBACK FUNCTIONS
-    // =============================================================================
-    
-    
-    void V32Console::SetCallbackClearScreen( void( *FunctionClearScreen )( GPUColor ) )
-    {
-        GPU.Callback_ClearScreen = FunctionClearScreen;
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    void V32Console::SetCallbackDrawQuad( void( *FunctionDrawQuad )( GPUQuad& ) )
-    {
-        GPU.Callback_DrawQuad = FunctionDrawQuad;
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    void V32Console::SetCallbackSetMultiplyColor( void( *FunctionSetMultiplyColor )( GPUColor ) )
-    {
-        GPU.Callback_SetMultiplyColor = FunctionSetMultiplyColor;
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    void V32Console::SetCallbackSetBlendingMode( void( *FunctionSetBlendingMode )( int ) )
-    {
-        GPU.Callback_SetBlendingMode = FunctionSetBlendingMode;
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    void V32Console::SetCallbackSelectTexture( void( *FunctionSelectTexture )( int ) )
-    {
-        GPU.Callback_SelectTexture = FunctionSelectTexture;
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    void V32Console::SetCallbackLoadTexture( void( *FunctionLoadTexture )( int, void* ) )
-    {
-        GPU.Callback_LoadTexture = FunctionLoadTexture;
-    }
-    
-    
-    void V32Console::SetCallbackUnloadCartridgeTextures( void( *FunctionUnloadCartridgeTextures )() )
-    {
-        GPU.Callback_UnloadCartridgeTextures = FunctionUnloadCartridgeTextures;
     }
 }

@@ -66,17 +66,20 @@ void InitializeGlobalVariables();
 
 
 // =============================================================================
-//      PLAIN FUNCTION INTERFACES
+//      CALLBACK FUNCTIONS FOR CONSOLE LOGIC
 // =============================================================================
 
 
-void Function_ClearScreen( V32::GPUColor ClearColor );
-void Function_DrawQuad( V32::GPUQuad& DrawnQuad );
-void Function_SetMultiplyColor( V32::GPUColor MultiplyColor );
-void Function_SetBlendingMode( int NewBlendingMode );
-void Function_SelectTexture( int GPUTextureID );
-void Function_LoadTexture( int GPUTextureID, void* Pixels );
-void Function_UnloadCartridgeTextures();
+namespace CallbackFunctions
+{
+    void ClearScreen( V32::GPUColor ClearColor );
+    void DrawQuad( V32::GPUQuad& DrawnQuad );
+    void SetMultiplyColor( V32::GPUColor MultiplyColor );
+    void SetBlendingMode( int NewBlendingMode );
+    void SelectTexture( int GPUTextureID );
+    void LoadTexture( int GPUTextureID, void* Pixels );
+    void UnloadCartridgeTextures();
+}
 
 
 // *****************************************************************************

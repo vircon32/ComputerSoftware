@@ -84,7 +84,7 @@ namespace V32
         GPU.MultiplyColor = Value.AsColor;
         
         // notify the video library
-        GPU.Callback_SetMultiplyColor( Value.AsColor );
+        Callbacks::SetMultiplyColor( Value.AsColor );
         return true;
     }
     
@@ -118,7 +118,7 @@ namespace V32
         }
         
         // for valid modes, notify the video library
-        GPU.Callback_SetBlendingMode( Value.AsInteger );
+        Callbacks::SetBlendingMode( Value.AsInteger );
         return true;
     }
     
@@ -134,7 +134,7 @@ namespace V32
         GPU.SelectedTexture = Value.AsInteger;
         
         // notify the video library
-        GPU.Callback_SelectTexture( Value.AsInteger );
+        Callbacks::SelectTexture( Value.AsInteger );
         
         // now update the pointed entities
         if( Value.AsInteger == -1 )

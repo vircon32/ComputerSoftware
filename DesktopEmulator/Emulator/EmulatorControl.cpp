@@ -44,13 +44,14 @@ void EmulatorControl::Initialize()
 {
     Audio.Initialize();
     
-    Console.SetCallbackClearScreen( Function_ClearScreen );
-    Console.SetCallbackDrawQuad( Function_DrawQuad );
-    Console.SetCallbackSetMultiplyColor( Function_SetMultiplyColor );
-    Console.SetCallbackSetBlendingMode( Function_SetBlendingMode );
-    Console.SetCallbackSelectTexture( Function_SelectTexture );
-    Console.SetCallbackLoadTexture( Function_LoadTexture );
-    Console.SetCallbackUnloadCartridgeTextures( Function_UnloadCartridgeTextures );
+    // set video callbacks
+    V32::Callbacks::ClearScreen = CallbackFunctions::ClearScreen;
+    V32::Callbacks::DrawQuad = CallbackFunctions::DrawQuad;
+    V32::Callbacks::SetMultiplyColor = CallbackFunctions::SetMultiplyColor;
+    V32::Callbacks::SetBlendingMode = CallbackFunctions::SetBlendingMode;
+    V32::Callbacks::SelectTexture = CallbackFunctions::SelectTexture;
+    V32::Callbacks::LoadTexture = CallbackFunctions::LoadTexture;
+    V32::Callbacks::UnloadCartridgeTextures = CallbackFunctions::UnloadCartridgeTextures;
 }
 
 // -----------------------------------------------------------------------------
