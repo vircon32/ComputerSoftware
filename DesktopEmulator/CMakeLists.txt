@@ -223,13 +223,17 @@ endif()
 #   LINKED LIBRARIES FILES
 # -----------------------------------------------------
 
-# ADD EXTERNAL LIBRARIES
+# Add external libraries
 add_subdirectory(${LIBRARIES_DIR})
+
+# Add project's own libraries
+add_subdirectory(${CONSOLELOGIC_DIR})
 
 # Libraries to link with the emulator
 set(EMULATOR_LIBS
     osdialog
     imgui
+    V32ConsoleLogic
     ${TINYXML2_LIBRARY}
     ${PNG_LIBRARY}
     ${OPENGL_LIBRARIES}
@@ -271,23 +275,6 @@ set(EMULATOR_SRC
     ${EMULATOR_DIR}/StopWatch.cpp
     ${EMULATOR_DIR}/Texture.cpp
     ${EMULATOR_DIR}/VideoOutput.cpp
-    ${CONSOLELOGIC_DIR}/AuxiliaryFunctions.cpp
-    ${CONSOLELOGIC_DIR}/ExternalInterfaces.cpp
-    ${CONSOLELOGIC_DIR}/V32Buses.cpp
-    ${CONSOLELOGIC_DIR}/V32CartridgeController.cpp
-    ${CONSOLELOGIC_DIR}/V32CPU.cpp
-    ${CONSOLELOGIC_DIR}/V32CPUProcessors.cpp
-    ${CONSOLELOGIC_DIR}/V32Console.cpp
-    ${CONSOLELOGIC_DIR}/V32GamepadController.cpp
-    ${CONSOLELOGIC_DIR}/V32GPU.cpp
-    ${CONSOLELOGIC_DIR}/V32GPUWriters.cpp
-    ${CONSOLELOGIC_DIR}/V32Memory.cpp
-    ${CONSOLELOGIC_DIR}/V32MemoryCardController.cpp
-    ${CONSOLELOGIC_DIR}/V32NullController.cpp
-    ${CONSOLELOGIC_DIR}/V32RNG.cpp
-    ${CONSOLELOGIC_DIR}/V32SPU.cpp
-    ${CONSOLELOGIC_DIR}/V32SPUWriters.cpp
-    ${CONSOLELOGIC_DIR}/V32Timer.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
     ${INFRASTRUCTURE_DIR}/Logger.cpp
     ${INFRASTRUCTURE_DIR}/StringFunctions.cpp)
