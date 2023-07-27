@@ -3,13 +3,10 @@
     #include "../../VirconDefinitions/Constants.hpp"
     #include "../../VirconDefinitions/FileFormats.hpp"
     
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/NumericFunctions.hpp"
-    #include "../DesktopInfrastructure/FilePaths.hpp"
-    
     // include project headers
     #include "V32Console.hpp"
     #include "ExternalInterfaces.hpp"
+    #include "AuxiliaryFunctions.hpp"
     
     // include C/C++ headers
     #include <cstring>          // [ ANSI C ] Strings
@@ -23,28 +20,6 @@ namespace V32
 {
     // buffer used to transmit textures from loaded ROM files to the video library
     static GPUColor LoadedTexture[ Constants::GPUTextureSize ][ Constants::GPUTextureSize ];
-    
-    
-    // =============================================================================
-    //      FUNCTIONS TO WORK WITH SIGNATURES
-    // =============================================================================
-    
-    
-    void WriteSignature( ostream& OutputFile, const char* Value )
-    {
-        OutputFile.write( Value, 8 );
-    }
-    
-    // -----------------------------------------------------------------------------
-    
-    bool CheckSignature( char* Signature, const char* Expected )
-    {
-        for( int i = 0; i < 8; i++ )
-          if( Signature[ i ] != Expected[ i ] )
-            return false;
-        
-        return true;
-    }
     
     
     // =============================================================================

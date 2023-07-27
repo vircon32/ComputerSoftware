@@ -1,9 +1,7 @@
 // *****************************************************************************
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/NumericFunctions.hpp"
-    
     // include project headers
     #include "V32GamepadController.hpp"
+    #include "AuxiliaryFunctions.hpp"
     
     // include C/C++ headers
     #include <cstring>          // [ ANSI C ] Strings

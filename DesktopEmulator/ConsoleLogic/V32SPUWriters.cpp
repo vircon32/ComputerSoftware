@@ -1,9 +1,7 @@
 // *****************************************************************************
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/NumericFunctions.hpp"
-    
     // include project headers
     #include "V32SPU.hpp"
+    #include "AuxiliaryFunctions.hpp"
     
     // include C/C++ headers
     #include <cmath>            // [ ANSI C ] Math

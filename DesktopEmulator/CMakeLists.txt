@@ -271,6 +271,7 @@ set(EMULATOR_SRC
     ${EMULATOR_DIR}/StopWatch.cpp
     ${EMULATOR_DIR}/Texture.cpp
     ${EMULATOR_DIR}/VideoOutput.cpp
+    ${CONSOLELOGIC_DIR}/AuxiliaryFunctions.cpp
     ${CONSOLELOGIC_DIR}/ExternalInterfaces.cpp
     ${CONSOLELOGIC_DIR}/V32Buses.cpp
     ${CONSOLELOGIC_DIR}/V32CartridgeController.cpp

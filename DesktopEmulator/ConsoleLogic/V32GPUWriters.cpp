@@ -2,11 +2,9 @@
     // include common Vircon headers
     #include "../../VirconDefinitions/Enumerations.hpp"
     
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/NumericFunctions.hpp"
-    
     // include project headers
     #include "V32GPU.hpp"
+    #include "AuxiliaryFunctions.hpp"
     
     // include C/C++ headers
     #include <cmath>            // [ ANSI C ] Mathematics
