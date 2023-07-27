@@ -7,15 +7,16 @@
 // *****************************************************************************
 
 
-// =============================================================================
-//      SETTING VIDEO CALLBACK FUNCTIONS
-// =============================================================================
-
-
 namespace V32
 {
+    // =============================================================================
+    //      CALLBACKS FOR EXTERNAL FUNCTIONS
+    // =============================================================================
+    
+    
     namespace Callbacks
     {
+        // callbacks to the video library
         void( *ClearScreen )( V32::GPUColor ) = nullptr;
         void( *DrawQuad )( V32::GPUQuad& ) = nullptr;
         void( *SetMultiplyColor )( V32::GPUColor ) = nullptr;
@@ -23,5 +24,9 @@ namespace V32
         void( *SelectTexture )( int ) = nullptr;
         void( *LoadTexture )( int, void* ) = nullptr;
         void( *UnloadCartridgeTextures )() = nullptr;
+        
+        // callbacks to the log library
+        void( *LogLine )( const string& ) = nullptr;
+        void( *ThrowException )( const string& ) = nullptr;
     }
 }

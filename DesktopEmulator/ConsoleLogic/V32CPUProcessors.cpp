@@ -2,15 +2,12 @@
     // include common Vircon headers
     #include "../../VirconDefinitions/Enumerations.hpp"
     
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/Logger.hpp"
-    
     // include project headers
     #include "V32CPU.hpp"
+    #include "ExternalInterfaces.hpp"
     
     // include C/C++ headers
     #include <cmath>            // [ ANSI C ] Mathematics
-    #include <iostream>         // [ C++ STL ] I/O Streams
     
     // declare used namespaces
     using namespace std;
@@ -71,7 +68,7 @@ namespace V32
     void ProcessHLT( V32CPU& CPU, CPUInstruction Instruction )
     {
         CPU.Halted = true;
-        LOG( "CPU halted" );
+        Callbacks::LogLine( "CPU halted" );
     }
     
     // -----------------------------------------------------------------------------

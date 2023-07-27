@@ -1,12 +1,4 @@
 // *****************************************************************************
-    // include common Vircon headers
-    #include "../../VirconDefinitions/Constants.hpp"
-    #include "../../VirconDefinitions/FileFormats.hpp"
-    
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/FilePaths.hpp"
-    #include "../DesktopInfrastructure/Logger.hpp"
-    
     // include project headers
     #include "V32MemoryCardController.hpp"
     

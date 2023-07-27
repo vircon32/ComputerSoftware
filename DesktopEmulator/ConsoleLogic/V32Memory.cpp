@@ -1,7 +1,4 @@
 // *****************************************************************************
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/Logger.hpp"
-    
     // include project headers
     #include "V32Memory.hpp"
     

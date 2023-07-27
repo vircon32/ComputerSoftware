@@ -70,7 +70,7 @@ bool Logger::OpenFile( const string& File, const string& Title )
     
     // write the title at the beginning
     OutputFile.seekp( 0, ios::beg );
-    WriteString( "WriteString Title: \"" );
+    WriteString( "Log title: \"" );
     WriteString( Title );
     WriteString( "\", started on: " );
     
@@ -105,7 +105,7 @@ void Logger::CloseFile()
     
     // write date and time at the end
     OutputFile.seekp( 0, ios::end );
-    WriteString( "WriteString finished on: " );
+    WriteString( "Log finished on: " );
     WriteDate();
     WriteTime();
     AddLine();

@@ -6,6 +6,9 @@
     // include common vircon headers
     #include "../../VirconDefinitions/Constants.hpp"
     #include "../../VirconDefinitions/DataStructures.hpp"
+    
+    // include C/C++ headers
+    #include <string>         // [ C++ STL ] Strings
 // *****************************************************************************
 
 
@@ -69,13 +72,15 @@ namespace V32
     
     
     // =============================================================================
-    //      SETTERS FOR CALLBACK FUNCTIONS
+    //      CALLBACKS FOR EXTERNAL FUNCTIONS
     // =============================================================================
     
     
+    // note that providing all these callbacks is required:
+    // the console will invoke them without any checks
     namespace Callbacks
     {
-        // external interfaces: video function callbacks
+        // callbacks to the video library
         extern void( *ClearScreen )( V32::GPUColor );
         extern void( *DrawQuad )( V32::GPUQuad& );
         extern void( *SetMultiplyColor )( V32::GPUColor );
@@ -83,6 +88,10 @@ namespace V32
         extern void( *SelectTexture )( int );
         extern void( *LoadTexture )( int, void* );
         extern void( *UnloadCartridgeTextures )();
+        
+        // callbacks to the log library
+        extern void( *LogLine )( const std::string& );
+        extern void( *ThrowException )( const std::string& );
     }
 }
 

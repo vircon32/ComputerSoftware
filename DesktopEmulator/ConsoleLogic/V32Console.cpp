@@ -6,10 +6,10 @@
     // include infrastructure headers
     #include "../DesktopInfrastructure/NumericFunctions.hpp"
     #include "../DesktopInfrastructure/FilePaths.hpp"
-    #include "../DesktopInfrastructure/Logger.hpp"
     
     // include project headers
     #include "V32Console.hpp"
+    #include "ExternalInterfaces.hpp"
     
     // include C/C++ headers
     #include <cstring>          // [ ANSI C ] Strings
@@ -116,14 +116,14 @@ namespace V32
         // to take care of initializations
         if( On )
         {
-            LOG( "Console power ON" );
+            Callbacks::LogLine( "Console power ON" );
             Reset();
         }
         
         // at power off, stop all sound
         else
         {
-            LOG( "Console power OFF" );
+            Callbacks::LogLine( "Console power OFF" );
             SPU.StopAllChannels();
         }
     }
@@ -132,7 +132,7 @@ namespace V32
     
     void V32Console::Reset()
     {
-        LOG( "Console reset" );
+        Callbacks::LogLine( "Console reset" );
         
         // first: transmit the message to all components that need it
         Timer.Reset();
@@ -239,14 +239,14 @@ namespace V32
     void V32Console::LoadBios( const std::string& FilePath )
     {
         // open bios file
-        LOG( "Loading bios" );
-        LOG( "File path: \"" + FilePath + "\"" );
+        Callbacks::LogLine( "Loading bios" );
+        Callbacks::LogLine( "File path: \"" + FilePath + "\"" );
     
         ifstream InputFile;
         InputFile.open( FilePath, ios_base::binary | ios_base::ate );
         
         if( InputFile.fail() )
-          THROW( "Cannot open BIOS file" );
+          Callbacks::ThrowException( "Cannot open BIOS file" );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 1: Load global information
@@ -257,11 +257,11 @@ namespace V32
         unsigned FileBytes = InputFile.tellg();
         
         if( (FileBytes % 4) != 0 )
-          THROW( "Incorrect V32 file format (file size must be a multiple of 4)" );
+          Callbacks::ThrowException( "Incorrect V32 file format (file size must be a multiple of 4)" );
         
         // ensure that we can at least load the file header
         if( FileBytes < sizeof(ROMFileFormat::Header) )
-          THROW( "Incorrect V32 file format (file is too small)" );
+          Callbacks::ThrowException( "Incorrect V32 file format (file is too small)" );
         
         // now we can safely read the global header
         InputFile.seekg( 0, ios_base::beg );
@@ -270,20 +270,20 @@ namespace V32
         
         // check if the ROM is actually a cartridge
         if( CheckSignature( ROMHeader.Signature, ROMFileFormat::CartridgeSignature ) )
-          THROW( "Input V32 ROM cannot be loaded as a BIOS (is it a cartridge instead)" );
+          Callbacks::ThrowException( "Input V32 ROM cannot be loaded as a BIOS (is it a cartridge instead)" );
         
         // now check the actual BIOS signature
         if( !CheckSignature( ROMHeader.Signature, ROMFileFormat::BiosSignature ) )
-          THROW( "Incorrect V32 file format (file does not have a valid signature)" );
+          Callbacks::ThrowException( "Incorrect V32 file format (file does not have a valid signature)" );
         
         // check current Vircon version
         if( ROMHeader.VirconVersion  > (unsigned)Constants::VirconVersion
         ||  ROMHeader.VirconRevision > (unsigned)Constants::VirconRevision )
-          THROW( "This BIOS was made for a more recent version of Vircon32. Please use an updated emulator" );
+          Callbacks::ThrowException( "This BIOS was made for a more recent version of Vircon32. Please use an updated emulator" );
         
         // report the title
         ROMHeader.Title[ 63 ] = 0;
-        LOG( string("BIOS title: \"") + ROMHeader.Title + "\"" );
+        Callbacks::LogLine( string("BIOS title: \"") + ROMHeader.Title + "\"" );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 2: Check the declared rom contents
@@ -291,33 +291,33 @@ namespace V32
         
         // ensure that there is exactly 1 texture
         if( ROMHeader.NumberOfTextures != 1 )
-          THROW( "A BIOS video rom should have exactly 1 texture" );
+          Callbacks::ThrowException( "A BIOS video rom should have exactly 1 texture" );
         
         // ensure that there is exactly 1 sound
         if( ROMHeader.NumberOfSounds != 1 )
-          THROW( "A BIOS audio rom should have exactly 1 sound" );
+          Callbacks::ThrowException( "A BIOS audio rom should have exactly 1 sound" );
         
         // check for correct program rom location
         if( ROMHeader.ProgramROMLocation.StartOffset != sizeof(ROMFileFormat::Header) )
-          THROW( "Incorrect V32 file format (program ROM is not located after file header)" );
+          Callbacks::ThrowException( "Incorrect V32 file format (program ROM is not located after file header)" );
         
         // check for correct video rom location
         uint32_t SizeAfterProgramROM = ROMHeader.ProgramROMLocation.StartOffset + ROMHeader.ProgramROMLocation.Length;
         
         if( ROMHeader.VideoROMLocation.StartOffset != SizeAfterProgramROM )
-          THROW( "Incorrect V32 file format (video ROM is not located after program ROM)" );
+          Callbacks::ThrowException( "Incorrect V32 file format (video ROM is not located after program ROM)" );
         
         // check for correct audio rom location
         uint32_t SizeAfterVideoROM = ROMHeader.VideoROMLocation.StartOffset + ROMHeader.VideoROMLocation.Length;
         
         if( ROMHeader.AudioROMLocation.StartOffset != SizeAfterVideoROM )
-          THROW( "Incorrect V32 file format (audio ROM is not located after video ROM)" );
+          Callbacks::ThrowException( "Incorrect V32 file format (audio ROM is not located after video ROM)" );
         
         // check for correct file size
         uint32_t SizeAfterAudioROM = ROMHeader.AudioROMLocation.StartOffset + ROMHeader.AudioROMLocation.Length;
         
         if( FileBytes != SizeAfterAudioROM )
-          THROW( "Incorrect V32 file format (file size does not match indicated ROM contents)" );
+          Callbacks::ThrowException( "Incorrect V32 file format (file size does not match indicated ROM contents)" );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 3: Load program rom
@@ -329,11 +329,11 @@ namespace V32
         
         // check signature for embedded binary
         if( !CheckSignature( BinaryHeader.Signature, BinaryFileFormat::Signature ) )
-          THROW( "BIOS binary does not have a valid signature" );
+          Callbacks::ThrowException( "BIOS binary does not have a valid signature" );
         
         // checking program rom size limitations
         if( !IsBetween( BinaryHeader.NumberOfWords, 1, Constants::MaximumBiosProgramROM ) )
-          THROW( "BIOS binary does not have a correct size (from 1 word up to 1M words)" );
+          Callbacks::ThrowException( "BIOS binary does not have a correct size (from 1 word up to 1M words)" );
         
         // load the binary contents
         vector< V32Word > LoadedBinary;
@@ -354,16 +354,16 @@ namespace V32
         
         // check signature for embedded texture
         if( !CheckSignature( TextureHeader.Signature, TextureFileFormat::Signature ) )
-          THROW( "BIOS texture does not have a valid signature" );
+          Callbacks::ThrowException( "BIOS texture does not have a valid signature" );
         
         // report texture size
-        LOG( "BIOS texture is " + to_string( TextureHeader.TextureWidth )
+        Callbacks::LogLine( "BIOS texture is " + to_string( TextureHeader.TextureWidth )
            + "x" + to_string( TextureHeader.TextureHeight ) );
         
         // check texture size limitations
         if( !IsBetween( TextureHeader.TextureWidth , 0, 1024 )
         ||  !IsBetween( TextureHeader.TextureHeight, 0, 1024 ) )
-          THROW( "BIOS texture does not have correct dimensions (from 1x1 up to 1024x1024 pixels)" );
+          Callbacks::ThrowException( "BIOS texture does not have correct dimensions (from 1x1 up to 1024x1024 pixels)" );
         
         // clear all texture pixels
         memset( LoadedTexture, 0, sizeof(LoadedTexture) );
@@ -386,14 +386,14 @@ namespace V32
         
         // check signature for embedded sound
         if( !CheckSignature( SoundHeader.Signature, SoundFileFormat::Signature ) )
-          THROW( "BIOS sound does not have a valid signature" );
+          Callbacks::ThrowException( "BIOS sound does not have a valid signature" );
         
         // report sound length
-        LOG( "BIOS sound is " + to_string( SoundHeader.SoundSamples ) + " samples" );
+        Callbacks::LogLine( "BIOS sound is " + to_string( SoundHeader.SoundSamples ) + " samples" );
         
         // check sound length limitations
         if( !IsBetween( SoundHeader.SoundSamples, 1, Constants::SPUMaximumBiosSamples ) )
-          THROW( "BIOS sound does not have a correct length (from 1 up to 1M samples)" );
+          Callbacks::ThrowException( "BIOS sound does not have a correct length (from 1 up to 1M samples)" );
         
         // load the sound samples
         vector< SPUSample > LoadedSound;
@@ -406,7 +406,7 @@ namespace V32
         
         // close the file
         InputFile.close();
-        LOG( "Finished loading BIOS" );
+        Callbacks::LogLine( "Finished loading BIOS" );
     }
     
     
@@ -417,8 +417,8 @@ namespace V32
     
     void V32Console::LoadCartridge( const std::string& FilePath )
     {
-        LOG( "Loading cartridge" );
-        LOG( "File path: \"" + FilePath + "\"" );
+        Callbacks::LogLine( "Loading cartridge" );
+        Callbacks::LogLine( "File path: \"" + FilePath + "\"" );
     
         // unload any previous cartridge
         UnloadCartridge();
@@ -428,7 +428,7 @@ namespace V32
         InputFile.open( FilePath, ios_base::binary | ios_base::ate );
         
         if( InputFile.fail() )
-          THROW( "Cannot open cartridge file" );
+          Callbacks::ThrowException( "Cannot open cartridge file" );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 1: Load global information
@@ -439,11 +439,11 @@ namespace V32
         unsigned FileBytes = InputFile.tellg();
         
         if( (FileBytes % 4) != 0 )
-          THROW( "Incorrect V32 file format (file size must be a multiple of 4)" );
+          Callbacks::ThrowException( "Incorrect V32 file format (file size must be a multiple of 4)" );
         
         // ensure that we can at least load the file header
         if( FileBytes < sizeof(ROMFileFormat::Header) )
-          THROW( "Incorrect V32 file format (file is too small)" );
+          Callbacks::ThrowException( "Incorrect V32 file format (file is too small)" );
         
         // now we can safely read the global header
         InputFile.seekg( 0, ios_base::beg );
@@ -452,64 +452,64 @@ namespace V32
         
         // check if the ROM is actually a BIOS
         if( CheckSignature( ROMHeader.Signature, ROMFileFormat::BiosSignature ) )
-          THROW( "Input V32 ROM cannot be loaded as a cartridge (is it a BIOS instead)" );
+          Callbacks::ThrowException( "Input V32 ROM cannot be loaded as a cartridge (is it a BIOS instead)" );
         
         // now check the actual cartridge signature
         if( !CheckSignature( ROMHeader.Signature, ROMFileFormat::CartridgeSignature ) )
-          THROW( "Incorrect V32 file format (file does not have a valid signature)" );
+          Callbacks::ThrowException( "Incorrect V32 file format (file does not have a valid signature)" );
         
         // check current Vircon version
         if( ROMHeader.VirconVersion  > (unsigned)Constants::VirconVersion
         ||  ROMHeader.VirconRevision > (unsigned)Constants::VirconRevision )
-          THROW( "This cartridge was made for a more recent version of Vircon32. Please use an updated emulator" );
+          Callbacks::ThrowException( "This cartridge was made for a more recent version of Vircon32. Please use an updated emulator" );
         
         // report the title
         ROMHeader.Title[ 63 ] = 0;
-        LOG( string("Cartridge title: \"") + ROMHeader.Title + "\"" );
+        Callbacks::LogLine( string("Cartridge title: \"") + ROMHeader.Title + "\"" );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 2: Check the declared rom contents
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
         // check that there are not too many textures
-        LOG( "Video ROM contains " + to_string( ROMHeader.NumberOfTextures ) + " textures" );
+        Callbacks::LogLine( "Video ROM contains " + to_string( ROMHeader.NumberOfTextures ) + " textures" );
         
         if( ROMHeader.NumberOfTextures > (uint32_t)Constants::GPUMaximumCartridgeTextures )
-          THROW( "Video ROM contains too many textures (Vircon GPU only allows up to 256)" );
+          Callbacks::ThrowException( "Video ROM contains too many textures (Vircon GPU only allows up to 256)" );
         
         // check that there are not too many sounds
-        LOG( "Audio ROM contains " + to_string( ROMHeader.NumberOfSounds ) + " sounds" );
+        Callbacks::LogLine( "Audio ROM contains " + to_string( ROMHeader.NumberOfSounds ) + " sounds" );
         
         if( ROMHeader.NumberOfSounds > (uint32_t)Constants::SPUMaximumCartridgeSounds )
-          THROW( "Audio ROM contains too many sounds (Vircon SPU only allows up to 1024)" );
+          Callbacks::ThrowException( "Audio ROM contains too many sounds (Vircon SPU only allows up to 1024)" );
         
         // check for correct program rom location
         if( ROMHeader.ProgramROMLocation.StartOffset != sizeof(ROMFileFormat::Header) )
-          THROW( "Incorrect V32 file format (program ROM is not located after file header)" );
+          Callbacks::ThrowException( "Incorrect V32 file format (program ROM is not located after file header)" );
         
         // check for correct video rom location
         uint32_t SizeAfterProgramROM = ROMHeader.ProgramROMLocation.StartOffset + ROMHeader.ProgramROMLocation.Length;
         
         if( ROMHeader.VideoROMLocation.StartOffset != SizeAfterProgramROM )
-          THROW( "Incorrect V32 file format (video ROM is not located after program ROM)" );
+          Callbacks::ThrowException( "Incorrect V32 file format (video ROM is not located after program ROM)" );
         
         // check for correct audio rom location
         uint32_t SizeAfterVideoROM = ROMHeader.VideoROMLocation.StartOffset + ROMHeader.VideoROMLocation.Length;
         
         if( ROMHeader.AudioROMLocation.StartOffset != SizeAfterVideoROM )
-          THROW( "Incorrect V32 file format (audio ROM is not located after video ROM)" );
+          Callbacks::ThrowException( "Incorrect V32 file format (audio ROM is not located after video ROM)" );
         
         // check for correct file size
         uint32_t SizeAfterAudioROM = ROMHeader.AudioROMLocation.StartOffset + ROMHeader.AudioROMLocation.Length;
         
         if( FileBytes != SizeAfterAudioROM )
-          THROW( "Incorrect V32 file format (file size does not match indicated ROM contents)" );
+          Callbacks::ThrowException( "Incorrect V32 file format (file size does not match indicated ROM contents)" );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 3: Load program rom
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
-        LOG( "Loading cartridge program ROM" );
+        Callbacks::LogLine( "Loading cartridge program ROM" );
         
         // load a binary file signature
         BinaryFileFormat::Header BinaryHeader;
@@ -517,13 +517,13 @@ namespace V32
         
         // check signature for embedded binary
         if( !CheckSignature( BinaryHeader.Signature, BinaryFileFormat::Signature ) )
-          THROW( "Cartridge binary does not have a valid signature" );
+          Callbacks::ThrowException( "Cartridge binary does not have a valid signature" );
         
-        LOG( "-> Program ROM is " + to_string( BinaryHeader.NumberOfWords ) + " words" );
+        Callbacks::LogLine( "-> Program ROM is " + to_string( BinaryHeader.NumberOfWords ) + " words" );
         
         // check program rom size limitations
         if( !IsBetween( BinaryHeader.NumberOfWords, 1, Constants::MaximumCartridgeProgramROM ) )
-          THROW( "Cartridge program ROM does not have a correct size (from 1 word up to 128M words)" );
+          Callbacks::ThrowException( "Cartridge program ROM does not have a correct size (from 1 word up to 128M words)" );
         
         // load the binary contents
         vector< V32Word > LoadedBinary;
@@ -538,7 +538,7 @@ namespace V32
         // STEP 4: Load video rom
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
-        LOG( "Loading cartridge video ROM" );
+        Callbacks::LogLine( "Loading cartridge video ROM" );
         
         // load all textures in sequence
         for( unsigned i = 0; i < ROMHeader.NumberOfTextures; i++ )
@@ -549,16 +549,16 @@ namespace V32
             
             // check signature for embedded texture
             if( !CheckSignature( TextureHeader.Signature, TextureFileFormat::Signature ) )
-              THROW( "Cartridge texture does not have a valid signature" );
+              Callbacks::ThrowException( "Cartridge texture does not have a valid signature" );
             
             // report texture size
-            LOG( "-> Texture " + to_string( i ) + ": " + to_string( TextureHeader.TextureWidth )
+            Callbacks::LogLine( "-> Texture " + to_string( i ) + ": " + to_string( TextureHeader.TextureWidth )
                + " x " + to_string( TextureHeader.TextureHeight ) + " pixels" );
             
             // check texture size limitations
             if( !IsBetween( TextureHeader.TextureWidth , 0, 1024 )
             ||  !IsBetween( TextureHeader.TextureHeight, 0, 1024 ) )
-              THROW( "Cartridge texture does not have correct dimensions (1x1 up to 1024x1024 pixels)" );
+              Callbacks::ThrowException( "Cartridge texture does not have correct dimensions (1x1 up to 1024x1024 pixels)" );
             
             // clear all texture pixels
             memset( LoadedTexture, 0, sizeof(LoadedTexture) );
@@ -579,7 +579,7 @@ namespace V32
         // STEP 5: Load audio rom
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
-        LOG( "Loading cartridge audio ROM" );
+        Callbacks::LogLine( "Loading cartridge audio ROM" );
         
         // keep count of the total sound samples
         uint32_t TotalSPUSamples = 0;
@@ -593,21 +593,21 @@ namespace V32
             
             // check signature for embedded sound
             if( !CheckSignature( SoundHeader.Signature, SoundFileFormat::Signature ) )
-              THROW( "Cartridge sound does not have a valid signature" );
+              Callbacks::ThrowException( "Cartridge sound does not have a valid signature" );
             
             // report sound length
-            LOG( "-> Sound " + to_string( i ) + ": " + to_string( SoundHeader.SoundSamples )
+            Callbacks::LogLine( "-> Sound " + to_string( i ) + ": " + to_string( SoundHeader.SoundSamples )
                + " samples (" + to_string( SoundHeader.SoundSamples/44100.0f ) + " seconds)" );
             
             // check length limitations for this sound
             if( !IsBetween( SoundHeader.SoundSamples, 1, Constants::SPUMaximumCartridgeSamples ) )
-              THROW( "Cartridge sound does not have correct length (1 up to 256M samples)" );
+              Callbacks::ThrowException( "Cartridge sound does not have correct length (1 up to 256M samples)" );
             
             // check length limitations for the whole SPU
             TotalSPUSamples += SoundHeader.SoundSamples;
             
             if( TotalSPUSamples > (uint32_t)Constants::SPUMaximumCartridgeSamples )
-              THROW( "Cartridge sounds contain too many total samples (Vircon SPU only allows up to 256M total samples)" );
+              Callbacks::ThrowException( "Cartridge sounds contain too many total samples (Vircon SPU only allows up to 256M total samples)" );
             
             // load the sound samples
             vector< SPUSample > LoadedSound;
@@ -641,7 +641,7 @@ namespace V32
         
         // save the file name
         CartridgeController.CartridgeFileName = GetPathFileName( FilePath );
-        LOG( "Finished loading cartridge" );
+        Callbacks::LogLine( "Finished loading cartridge" );
     }
     
     // -----------------------------------------------------------------------------
@@ -650,7 +650,7 @@ namespace V32
     {
         // do nothing if a cartridge is not loaded
         if( !HasCartridge() ) return;
-        LOG( "Unloading cartridge" );
+        Callbacks::LogLine( "Unloading cartridge" );
         
         // release cartridge program ROM
         CartridgeController.Disconnect();
@@ -698,15 +698,15 @@ namespace V32
     
     void V32Console::CreateMemoryCard( const std::string& FilePath )
     {
-        LOG( "Creating memory card" );
-        LOG( "File path: \"" + FilePath + "\"" );
+        Callbacks::LogLine( "Creating memory card" );
+        Callbacks::LogLine( "File path: \"" + FilePath + "\"" );
         
         // open the file
         ofstream OutputFile;
         OutputFile.open( FilePath, ios::binary | ios::trunc );
         
         if( OutputFile.fail() )
-          THROW( "Cannot create memory card file" );
+          Callbacks::ThrowException( "Cannot create memory card file" );
         
         // save the signature
         WriteSignature( OutputFile, MemoryCardFileFormat::Signature );
@@ -718,15 +718,15 @@ namespace V32
         
         // close the file
         OutputFile.close();
-        LOG( "Finished creating memory card" );
+        Callbacks::LogLine( "Finished creating memory card" );
     }
     
     // -----------------------------------------------------------------------------
     
     void V32Console::LoadMemoryCard( const std::string& FilePath )
     {
-        LOG( "Loading memory card" );
-        LOG( "File path: \"" + FilePath + "\"" );
+        Callbacks::LogLine( "Loading memory card" );
+        Callbacks::LogLine( "File path: \"" + FilePath + "\"" );
     
         // unload any previous card
         UnloadMemoryCard();
@@ -736,7 +736,7 @@ namespace V32
         InputFile.open( FilePath, ios_base::in | ios_base::out | ios::binary | ios::ate );
         
         if( InputFile.fail() )
-          THROW( "Cannot open memory card file" );
+          Callbacks::ThrowException( "Cannot open memory card file" );
         
         // check file size coherency
         int NumberOfBytes = InputFile.tellg();
@@ -745,7 +745,7 @@ namespace V32
         if( NumberOfBytes != ExpectedBytes )
         {
             InputFile.close();
-            THROW( "Invalid memory card: File does not match the size of a Vircon memory card" );
+            Callbacks::ThrowException( "Invalid memory card: File does not match the size of a Vircon memory card" );
         }
         
         // read and check signature
@@ -754,7 +754,7 @@ namespace V32
         InputFile.read( FileSignature, 8 );
         
         if( !CheckSignature( FileSignature, MemoryCardFileFormat::Signature ) )
-          THROW( "Memory card file does not have a valid signature" );
+          Callbacks::ThrowException( "Memory card file does not have a valid signature" );
         
         // connect the memory
         MemoryCardController.Connect( Constants::MemoryCardSize );
@@ -768,7 +768,7 @@ namespace V32
         
         // save the file name
         MemoryCardController.CardFileName = GetPathFileName( FilePath );
-        LOG( "Finished loading memory card" );
+        Callbacks::LogLine( "Finished loading memory card" );
     }
     
     // -----------------------------------------------------------------------------
@@ -777,7 +777,7 @@ namespace V32
     {
         // do nothing if a card is not loaded
         if( !HasMemoryCard() ) return;
-        LOG( "Unloading memory card" );
+        Callbacks::LogLine( "Unloading memory card" );
         
         // save the card if it was modified
         if( MemoryCardController.PendingSave )
@@ -788,7 +788,7 @@ namespace V32
         
         // close the open file
         MemoryCardController.LinkedFile.close();
-        LOG( "Finished unloading memory card" );
+        Callbacks::LogLine( "Finished unloading memory card" );
     }
     
     // -----------------------------------------------------------------------------
@@ -802,7 +802,7 @@ namespace V32
         fstream& OutputFile = MemoryCardController.LinkedFile;
         
         if( !OutputFile.is_open() || OutputFile.fail() )
-          THROW( "Cannot save memory card file" );
+          Callbacks::ThrowException( "Cannot save memory card file" );
         
         // save the signature
         OutputFile.seekp( ios_base::beg );

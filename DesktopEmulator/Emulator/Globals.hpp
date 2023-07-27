@@ -72,6 +72,7 @@ void InitializeGlobalVariables();
 
 namespace CallbackFunctions
 {
+    // video functions callable by the console
     void ClearScreen( V32::GPUColor ClearColor );
     void DrawQuad( V32::GPUQuad& DrawnQuad );
     void SetMultiplyColor( V32::GPUColor MultiplyColor );
@@ -79,6 +80,10 @@ namespace CallbackFunctions
     void SelectTexture( int GPUTextureID );
     void LoadTexture( int GPUTextureID, void* Pixels );
     void UnloadCartridgeTextures();
+    
+    // log functions callable by the console
+    void LogLine( const std::string& Message );
+    void ThrowException( const std::string& Message );
 }
 
 

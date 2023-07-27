@@ -129,4 +129,18 @@ namespace CallbackFunctions
         for( int i = 0; i < Constants::GPUMaximumCartridgeTextures; i++ )
           Video.UnloadTexture( i );
     }
+    
+    // -----------------------------------------------------------------------------
+
+    void LogLine( const string& Message )
+    {
+        LOG( Message );
+    }
+    
+    // -----------------------------------------------------------------------------
+
+    void ThrowException( const string& Message )
+    {
+        THROW( Message );
+    }
 }

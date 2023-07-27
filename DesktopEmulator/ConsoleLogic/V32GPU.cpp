@@ -3,11 +3,9 @@
     #include "../../VirconDefinitions/Constants.hpp"
     #include "../../VirconDefinitions/Enumerations.hpp"
     
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/Logger.hpp"
-    
     // include project headers
     #include "V32GPU.hpp"
+    #include "ExternalInterfaces.hpp"
     
     // include C/C++ headers
     #include <cmath>            // [ ANSI C ] Mathematics
@@ -81,7 +79,7 @@ namespace V32
     void V32GPU::InsertCartridgeTextures( uint32_t NumberOfCartridgeTextures )
     {
         if( NumberOfCartridgeTextures > Constants::GPUMaximumCartridgeTextures )
-          THROW( "Attempting to insert too many cartridge textures" );
+          Callbacks::ThrowException( "Attempting to insert too many cartridge textures" );
         
         CartridgeTextures.clear();
         

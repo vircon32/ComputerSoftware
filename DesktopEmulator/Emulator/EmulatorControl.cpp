@@ -42,9 +42,10 @@ EmulatorControl::~EmulatorControl()
 
 void EmulatorControl::Initialize()
 {
+    // prepare audio system
     Audio.Initialize();
     
-    // set video callbacks
+    // set console's video callbacks
     V32::Callbacks::ClearScreen = CallbackFunctions::ClearScreen;
     V32::Callbacks::DrawQuad = CallbackFunctions::DrawQuad;
     V32::Callbacks::SetMultiplyColor = CallbackFunctions::SetMultiplyColor;
@@ -52,6 +53,10 @@ void EmulatorControl::Initialize()
     V32::Callbacks::SelectTexture = CallbackFunctions::SelectTexture;
     V32::Callbacks::LoadTexture = CallbackFunctions::LoadTexture;
     V32::Callbacks::UnloadCartridgeTextures = CallbackFunctions::UnloadCartridgeTextures;
+    
+    // set console's log callbacks
+    V32::Callbacks::LogLine = CallbackFunctions::LogLine;
+    V32::Callbacks::ThrowException = CallbackFunctions::ThrowException;
 }
 
 // -----------------------------------------------------------------------------
