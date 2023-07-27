@@ -4,8 +4,8 @@
     #define LOGGER_HPP
     
     // include C/C++ headers
-    #include <string>		      // [ C++ STL ] Strings
-    #include <fstream>            // [ C++ STL ] File Streams
+    #include <string>		    // [ C++ STL ] Strings
+    #include <fstream>          // [ C++ STL ] File Streams
 // *****************************************************************************
 
 

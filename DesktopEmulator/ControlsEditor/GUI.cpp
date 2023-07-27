@@ -1,8 +1,8 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/StringFunctions.hpp"
+    #include "DesktopInfrastructure/StringFunctions.hpp"
     
-    // include project headers
+    // include controls editor headers
     #include "OpenGL2DContext.hpp"
     #include "GUI.hpp"
     #include "Controls.hpp"
@@ -10,10 +10,10 @@
     #include "Languages.hpp"
     
     // include C/C++ headers
-    #include <set>              // [ C++ STL ] Sets
+    #include <set>                  // [ C++ STL ] Sets
     
     // include osdialog headers
-    #include <osdialog/osdialog.h>
+    #include <osdialog/osdialog.h>  // [ osdialog ] Main header
     
     // declare used namespaces
     using namespace std;

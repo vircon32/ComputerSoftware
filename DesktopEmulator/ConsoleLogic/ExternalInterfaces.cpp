@@ -1,5 +1,5 @@
 // *****************************************************************************
-    // include project headers
+    // include console logic headers
     #include "ExternalInterfaces.hpp"
     
     // declare used namespaces

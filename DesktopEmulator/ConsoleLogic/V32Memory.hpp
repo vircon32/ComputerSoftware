@@ -3,7 +3,7 @@
     #ifndef V32MEMORY_HPP
     #define V32MEMORY_HPP
     
-    // include project headers
+    // include console logic headers
     #include "V32Buses.hpp"
     
     // include C/C++ headers

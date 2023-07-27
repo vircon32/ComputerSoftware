@@ -1,12 +1,12 @@
 // *****************************************************************************
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/FilePaths.hpp"
-    #include "../DesktopInfrastructure/Logger.hpp"
-    
     // include console logic headers
-    #include "../ConsoleLogic/V32Console.hpp"
+    #include "ConsoleLogic/V32Console.hpp"
     
-    // include project headers
+    // include infrastructure headers
+    #include "DesktopInfrastructure/FilePaths.hpp"
+    #include "DesktopInfrastructure/Logger.hpp"
+    
+    // include emulator headers
     #include "GUI.hpp"
     #include "EmulatorControl.hpp"
     #include "GamepadsInput.hpp"
@@ -17,15 +17,20 @@
     #include "Settings.hpp"
     #include "Languages.hpp"
     
-    // include osdialog headers
-    #include <osdialog/osdialog.h>
-    
-    // include libpng headers
-    #include <png.h>
-    
     // include C/C++ headers
     #include <time.h>               // [ ANSI C ] Time and date
     #include <stdexcept>            // [ C++ STL ] Exceptions
+    
+    // include osdialog headers
+    #include <osdialog/osdialog.h>  // [ Dear ImGui ] Main header
+    
+    // include libpng headers
+    #include <png.h>                // [ libpng ] Main header
+    
+    // include imgui headers
+    #include <imgui/imgui.h>                // [ Dear ImGui ] Main header
+    #include <imgui/imgui_impl_sdl.h>       // [ Dear ImGui ] SDL2 backend header
+    #include <imgui/imgui_impl_opengl3.h>   // [ Dear ImGui ] OpenGL 3 backend header
     
     // declare used namespaces
     using namespace std;

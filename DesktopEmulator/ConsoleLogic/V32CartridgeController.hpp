@@ -3,7 +3,7 @@
     #ifndef V32CARTRIDGECONTROLLER_HPP
     #define V32CARTRIDGECONTROLLER_HPP
     
-    // include project headers
+    // include console logic headers
     #include "V32Buses.hpp"
     #include "V32Memory.hpp"
     

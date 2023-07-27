@@ -3,7 +3,7 @@
     #ifndef V32NULLCONTROLLER_HPP
     #define V32NULLCONTROLLER_HPP
     
-    // include project headers
+    // include console logic headers
     #include "V32Buses.hpp"
 // *****************************************************************************
 

@@ -3,9 +3,9 @@
     #ifndef EXTERNALINTERFACES_HPP
     #define EXTERNALINTERFACES_HPP
     
-    // include common vircon headers
-    #include "../../VirconDefinitions/Constants.hpp"
-    #include "../../VirconDefinitions/DataStructures.hpp"
+    // include common vircon32 headers
+    #include "../VirconDefinitions/Constants.hpp"
+    #include "../VirconDefinitions/DataStructures.hpp"
     
     // include C/C++ headers
     #include <string>         // [ C++ STL ] Strings

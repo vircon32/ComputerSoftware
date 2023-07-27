@@ -4,11 +4,11 @@
     #define VIDEOOUTPUT_HPP
     
     // include common Vircon headers
-    #include "../../VirconDefinitions/DataStructures.hpp"
-    #include "../../VirconDefinitions/Enumerations.hpp"
+    #include "../VirconDefinitions/DataStructures.hpp"
+    #include "../VirconDefinitions/Enumerations.hpp"
     
     // include console logic headers
-    #include "../ConsoleLogic/ExternalInterfaces.hpp"
+    #include "ConsoleLogic/ExternalInterfaces.hpp"
     
     // include SDL2 headers
     #define SDL_MAIN_HANDLED

@@ -3,7 +3,7 @@
     #ifndef V32GPU_HPP
     #define V32GPU_HPP
     
-    // include project headers
+    // include console logic headers
     #include "V32Buses.hpp"
     #include "ExternalInterfaces.hpp"
     

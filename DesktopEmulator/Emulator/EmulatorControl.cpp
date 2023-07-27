@@ -1,14 +1,16 @@
 // *****************************************************************************
     // include console logic headers
-    #include "../ConsoleLogic/V32Console.hpp"
+    #include "ConsoleLogic/V32Console.hpp"
     
-    // include project headers
+    // include infrastructure headers
+    #include "DesktopInfrastructure/Logger.hpp"
+    
+    // include emulator headers
     #include "EmulatorControl.hpp"
     #include "Globals.hpp"
     #include "Settings.hpp"
     #include "AudioOutput.hpp"
     #include "VideoOutput.hpp"
-    #include "Logger.hpp"
     
     // include C/C++ headers
     #include <stdexcept>        // [ C++ STL ] Exceptions

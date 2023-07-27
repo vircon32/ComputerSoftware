@@ -3,10 +3,10 @@
     #ifndef V32SPU_HPP
     #define V32SPU_HPP
     
-    // include common vircon headers
-    #include "../../VirconDefinitions/Enumerations.hpp"
+    // include common vircon32 headers
+    #include "../VirconDefinitions/Enumerations.hpp"
     
-    // include project headers
+    // include console logic headers
     #include "V32Buses.hpp"
     #include "ExternalInterfaces.hpp"
     

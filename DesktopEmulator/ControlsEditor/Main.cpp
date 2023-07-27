@@ -1,9 +1,9 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/FilePaths.hpp"
-    #include "../DesktopInfrastructure/Logger.hpp"
+    #include "DesktopInfrastructure/FilePaths.hpp"
+    #include "DesktopInfrastructure/Logger.hpp"
     
-    // include project headers
+    // include controls editor headers
     #include "OpenGL2DContext.hpp"
     #include "LoadTexture.hpp"
     #include "Controls.hpp"
@@ -11,19 +11,19 @@
     #include "GUI.hpp"
     #include "Languages.hpp"
     
-    // include SDL2 headers
-    #define SDL_MAIN_HANDLED
-    #include <SDL2/SDL.h>           // [ SDL2 ] Main header
-    #include <SDL2/SDL_opengl.h>    // [ SDL2 ] OpenGL interface
-    #include <SDL2/SDL_joystick.h>  // [ SDL2 ] Joystick functions
-    #include <SDL2/SDL_image.h>     // [ SDL2 ] SDL_Image
-    
     // include C/C++ headers
     #include <string>       // [ C++ STL ] Strings
     #include <iostream>     // [ C++ STL ] I/O Streams
     #include <stdexcept>    // [ C++ STL ] Exceptions
     #include <list>         // [ C++ STL ] Lists
     #include <map>          // [ C++ STL ] Maps
+    
+    // include SDL2 headers
+    #define SDL_MAIN_HANDLED
+    #include <SDL2/SDL.h>           // [ SDL2 ] Main header
+    #include <SDL2/SDL_opengl.h>    // [ SDL2 ] OpenGL interface
+    #include <SDL2/SDL_joystick.h>  // [ SDL2 ] Joystick functions
+    #include <SDL2/SDL_image.h>     // [ SDL2 ] SDL_Image
     
     // declare used namespaces
     using namespace std;

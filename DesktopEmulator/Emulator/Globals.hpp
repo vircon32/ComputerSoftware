@@ -4,7 +4,7 @@
     #define GLOBALS_HPP
     
     // include console logic headers
-    #include "../ConsoleLogic/ExternalInterfaces.hpp"
+    #include "ConsoleLogic/ExternalInterfaces.hpp"
     
     // include C/C++ headers
     #include <map>          // [ C++ STL ] Maps
@@ -12,6 +12,7 @@
     #include <string>       // [ C++ STL ] Strings
     
     // forward declarations for all needed classes
+    // (to avoid needing to include all headers here)
     namespace V32{ class V32Console; }
     class EmulatorControl;
     class GamepadsInput;

@@ -3,7 +3,7 @@
     #ifndef V32GAMEPADCONTROLLER_HPP
     #define V32GAMEPADCONTROLLER_HPP
     
-    // include project headers
+    // include console logic headers
     #include "ExternalInterfaces.hpp"
     #include "V32Buses.hpp"
 // *****************************************************************************

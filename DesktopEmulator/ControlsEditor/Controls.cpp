@@ -1,9 +1,9 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/Logger.hpp"
-    #include "../DesktopInfrastructure/StringFunctions.hpp"
+    #include "DesktopInfrastructure/Logger.hpp"
+    #include "DesktopInfrastructure/StringFunctions.hpp"
     
-    // include project headers
+    // include controls editor headers
     #include "Controls.hpp"
     #include "Globals.hpp"
     #include "Languages.hpp"

@@ -1,11 +1,11 @@
 // *****************************************************************************
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/Logger.hpp"
-    
     // include console logic headers
-    #include "../ConsoleLogic/V32Console.hpp"
+    #include "ConsoleLogic/V32Console.hpp"
     
-    // include project headers
+    // include infrastructure headers
+    #include "DesktopInfrastructure/Logger.hpp"
+    
+    // include emulator headers
     #include "EmulatorControl.hpp"
     #include "GamepadsInput.hpp"
     #include "VideoOutput.hpp"

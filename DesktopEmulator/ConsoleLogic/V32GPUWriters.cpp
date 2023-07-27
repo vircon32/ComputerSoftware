@@ -1,8 +1,8 @@
 // *****************************************************************************
-    // include common Vircon headers
-    #include "../../VirconDefinitions/Enumerations.hpp"
+    // include common vircon32 headers
+    #include "../VirconDefinitions/Enumerations.hpp"
     
-    // include project headers
+    // include console logic headers
     #include "V32GPU.hpp"
     #include "AuxiliaryFunctions.hpp"
     

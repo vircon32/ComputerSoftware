@@ -3,7 +3,7 @@
     #ifndef GLOBALS_HPP
     #define GLOBALS_HPP
     
-    // include project headers
+    // include controls editor headers
     #include "OpenGL2DContext.hpp"
     
     // include C/C++ headers

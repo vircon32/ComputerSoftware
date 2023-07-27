@@ -1,11 +1,13 @@
 // *****************************************************************************
     // include common Vircon headers
-    #include "../../VirconDefinitions/Constants.hpp"
+    #include "../VirconDefinitions/Constants.hpp"
     
-    // include project headers
+    // include infrastructure headers
+    #include "DesktopInfrastructure/NumericFunctions.hpp"
+    #include "DesktopInfrastructure/Logger.hpp"
+    
+    // include emulator headers
     #include "VideoOutput.hpp"
-    #include "NumericFunctions.hpp"
-    #include "Logger.hpp"
     
     // declare used namespaces
     using namespace std;

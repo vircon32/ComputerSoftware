@@ -3,9 +3,9 @@
     #ifndef V32BUSES_HPP
     #define V32BUSES_HPP
     
-    // include common Vircon headers
-    #include "../../VirconDefinitions/Constants.hpp"
-    #include "../../VirconDefinitions/DataStructures.hpp"
+    // include common Vircon32 headers
+    #include "../VirconDefinitions/Constants.hpp"
+    #include "../VirconDefinitions/DataStructures.hpp"
 // *****************************************************************************
 
 

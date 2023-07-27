@@ -1,5 +1,5 @@
 // *****************************************************************************
-    // include project headers
+    // include console logic headers
     #include "V32Timer.hpp"
     
     // include C/C++ headers

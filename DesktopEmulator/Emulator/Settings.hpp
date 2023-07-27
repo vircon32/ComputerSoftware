@@ -4,7 +4,7 @@
     #define SETTINGS_HPP
     
     // include common Vircon headers
-    #include "../../VirconDefinitions/Constants.hpp"
+    #include "../VirconDefinitions/Constants.hpp"
     
     // include C/C++ headers
     #include <string>               // [ C++ STL ] Strings

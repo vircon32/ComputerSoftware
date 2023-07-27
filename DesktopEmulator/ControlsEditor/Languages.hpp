@@ -3,7 +3,7 @@
     #ifndef LANGUAGES_HPP
     #define LANGUAGES_HPP
     
-    // include external headers
+    // include C/C++ headers
     #include <string>       // [ C++ STL ] Strings
     #include <map>          // [ C++ STL ] Maps
 // *****************************************************************************

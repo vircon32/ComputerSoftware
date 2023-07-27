@@ -1,11 +1,11 @@
 // *****************************************************************************
-    // include common Vircon headers
-    #include "../../VirconDefinitions/Constants.hpp"
+    // include common vircon32 headers
+    #include "../VirconDefinitions/Constants.hpp"
     
     // include infrastructure headers
-    #include "../DesktopInfrastructure/Logger.hpp"
+    #include "DesktopInfrastructure/Logger.hpp"
     
-    // include project headers
+    // include controls editor headers
     #include "OpenGL2DContext.hpp"
     
     // declare used namespaces

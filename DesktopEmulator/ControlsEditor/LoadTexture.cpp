@@ -1,9 +1,9 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/NumericFunctions.hpp"
-    #include "../DesktopInfrastructure/Logger.hpp"
+    #include "DesktopInfrastructure/NumericFunctions.hpp"
+    #include "DesktopInfrastructure/Logger.hpp"
     
-    // include project headers
+    // include controls editor headers
     #include "LoadTexture.hpp"
     
     // include SDL2 headers

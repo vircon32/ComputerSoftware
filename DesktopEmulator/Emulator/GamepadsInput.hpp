@@ -4,7 +4,7 @@
     #define GAMEPADSINPUT_HPP
     
     // include console logic headers
-    #include "../ConsoleLogic/ExternalInterfaces.hpp"
+    #include "ConsoleLogic/ExternalInterfaces.hpp"
     
     // include C/C++ headers
     #include <map>              // [ C++ STL ] Maps

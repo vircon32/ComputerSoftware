@@ -206,14 +206,10 @@ set(ALL_INCLUDE_DIRS
     ${SDL2_INCLUDE_DIR}
     ${OPENAL_INCLUDE_DIR}
     ${LIBRARIES_DIR}
-    ${LIBRARIES_DIR}/glad/include/
-    ${EMULATOR_DIR}
-    ${CONSOLELOGIC_DIR}
-    ${EDITCONTROLS_DIR}
-    ${INFRASTRUCTURE_DIR}
-    ${DEFINITIONS_DIR})
+    ${LIBRARIES_DIR}/glad/include/)
   
 include_directories(${ALL_INCLUDE_DIRS})
+include_directories(.)
 
 if(TARGET_OS STREQUAL "linux")
     include_directories (${GTK2_INCLUDE_DIRS})

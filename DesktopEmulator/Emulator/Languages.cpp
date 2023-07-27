@@ -1,8 +1,8 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/Logger.hpp"
+    #include "DesktopInfrastructure/Logger.hpp"
     
-    // include project headers
+    // include emulator headers
     #include "Languages.hpp"
     
     // declare used namespaces

@@ -3,13 +3,13 @@
     #ifndef GUI_HPP
     #define GUI_HPP
     
-    // include imgui headers
-    #include <imgui/imgui.h>
-    #include <imgui/imgui_impl_sdl.h>
-    #include <imgui/imgui_impl_opengl3.h>
-    
-    // include C++ headers
+    // include C/C++ headers
     #include <string>                  // [ C++ STL ] Strings
+    
+    // include imgui headers
+    #include <imgui/imgui.h>                // [ Dear ImGui ] Main header
+    #include <imgui/imgui_impl_sdl.h>       // [ Dear ImGui ] SDL2 backend header
+    #include <imgui/imgui_impl_opengl3.h>   // [ Dear ImGui ] OpenGL 3 backend header
 // *****************************************************************************
 
 

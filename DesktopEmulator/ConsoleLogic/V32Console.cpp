@@ -1,9 +1,9 @@
 // *****************************************************************************
-    // include common Vircon headers
-    #include "../../VirconDefinitions/Constants.hpp"
-    #include "../../VirconDefinitions/FileFormats.hpp"
+    // include common Vircon32 headers
+    #include "../VirconDefinitions/Constants.hpp"
+    #include "../VirconDefinitions/FileFormats.hpp"
     
-    // include project headers
+    // include console logic headers
     #include "V32Console.hpp"
     #include "ExternalInterfaces.hpp"
     #include "AuxiliaryFunctions.hpp"

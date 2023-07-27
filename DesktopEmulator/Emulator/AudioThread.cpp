@@ -1,7 +1,9 @@
 // *****************************************************************************
-    // include project headers
+    // include infrastructure headers
+    #include "DesktopInfrastructure/Logger.hpp"
+    
+    // include emulator headers
     #include "AudioOutput.hpp"
-    #include "Logger.hpp"
     
     // include C/C++ headers
     #include <stdexcept>        // [ C++ STL ] Exceptions

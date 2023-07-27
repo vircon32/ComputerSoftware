@@ -3,13 +3,9 @@
     #ifndef GUI_HPP
     #define GUI_HPP
     
-    // include imgui headers
-    #include <imgui/imgui.h>
-    #include <imgui/imgui_impl_sdl.h>
-    #include <imgui/imgui_impl_opengl3.h>
-    
     // include C/C++ headers
     #include <string>           // [ C++ STL ] Strings
+    #include <cstdint>          // [ ANSI C ] Standard integer types
 // *****************************************************************************
 
 

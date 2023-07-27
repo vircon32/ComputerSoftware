@@ -1,5 +1,5 @@
 // *****************************************************************************
-    // include project headers
+    // include infrastructure headers
     #include "FilePaths.hpp"
     
     // include C/C++ headers

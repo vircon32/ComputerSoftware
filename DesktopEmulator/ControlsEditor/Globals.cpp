@@ -1,8 +1,8 @@
 // *****************************************************************************
     // include infrastructure headers
-    #include "../DesktopInfrastructure/Logger.hpp"
+    #include "DesktopInfrastructure/Logger.hpp"
     
-    // include project headers
+    // include controls editor headers
     #include "Globals.hpp"
     
     // declare used namespaces

@@ -1,5 +1,5 @@
 // *****************************************************************************
-    // include project headers
+    // include console logic headers
     #include "V32RNG.hpp"
     
     // include C/C++ headers

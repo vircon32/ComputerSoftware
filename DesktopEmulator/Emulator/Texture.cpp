@@ -1,9 +1,11 @@
 // *****************************************************************************
-    // include project headers
+    // include infrastructure headers
+    #include "DesktopInfrastructure/NumericFunctions.hpp"
+    #include "DesktopInfrastructure/Logger.hpp"
+    
+    // include emulator headers
     #include "Texture.hpp"
     #include "VideoOutput.hpp"
-    #include "NumericFunctions.hpp"
-    #include "Logger.hpp"
     #include "Globals.hpp"
     
     // include SDL2 headers

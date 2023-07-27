@@ -3,7 +3,7 @@
     #ifndef V32RNG_HPP
     #define V32RNG_HPP
     
-    // include project headers
+    // include console logic headers
     #include "V32Buses.hpp"
 // *****************************************************************************
 

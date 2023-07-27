@@ -1,12 +1,12 @@
 // *****************************************************************************
-    // include infrastructure headers
-    #include "../DesktopInfrastructure/Logger.hpp"
-    #include "../DesktopInfrastructure/FilePaths.hpp"
-    
     // include console logic headers
-    #include "../ConsoleLogic/V32Console.hpp"
+    #include "ConsoleLogic/V32Console.hpp"
     
-    // include project headers
+    // include infrastructure headers
+    #include "DesktopInfrastructure/Logger.hpp"
+    #include "DesktopInfrastructure/FilePaths.hpp"
+    
+    // include emulator headers
     #include "EmulatorControl.hpp"
     #include "GamepadsInput.hpp"
     #include "VideoOutput.hpp"
@@ -19,24 +19,29 @@
     #include "Texture.hpp"
     
     // include C/C++ headers
-    #include <iostream>     // [ C++ STL ] I/O Streams
-    #include <cstddef>      // for offsetof
+    #include <iostream>         // [ C++ STL ] I/O Streams
+    #include <cstddef>          // [ ANSI C ] Standard definitions
     
     // include SDL2 headers
-    #include <SDL2/SDL_image.h>   // [ SDL2 ] SDL_Image
+    #include <SDL2/SDL_image.h>     // [ SDL2 ] SDL_Image
+    
+    // include imgui headers
+    #include <imgui/imgui.h>                // [ Dear ImGui ] Main header
+    #include <imgui/imgui_impl_sdl.h>       // [ Dear ImGui ] SDL2 backend header
+    #include <imgui/imgui_impl_opengl3.h>   // [ Dear ImGui ] OpenGL 3 backend header
     
     // include OpenAL headers
     #if defined(__APPLE__)
-      #include <OpenAL/al.h>      // [ OpenAL ] Main header
-      #include <AL/alut.h>        // [ OpenAL ] Utility Toolkit
+      #include <OpenAL/al.h>    // [ OpenAL ] Main header
+      #include <AL/alut.h>      // [ OpenAL ] Utility Toolkit
     #else
-      #include <AL/al.h>          // [ OpenAL ] Main header
-      #include <AL/alut.h>        // [ OpenAL ] Utility Toolkit
+      #include <AL/al.h>        // [ OpenAL ] Main header
+      #include <AL/alut.h>      // [ OpenAL ] Utility Toolkit
     #endif
     
     // on Linux, include GTK headers
     #if defined(__linux__)
-      #include <gtk/gtk.h>            // [ GTK ] Main header
+      #include <gtk/gtk.h>      // [ GTK ] Main header
     #endif
     
     // declare used namespaces

@@ -3,7 +3,7 @@
     #ifndef V32TIMER_HPP
     #define V32TIMER_HPP
     
-    // include project headers
+    // include console logic headers
     #include "V32Buses.hpp"
 // *****************************************************************************
 

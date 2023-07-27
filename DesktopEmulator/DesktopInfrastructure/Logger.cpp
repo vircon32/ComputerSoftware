@@ -1,5 +1,5 @@
 // *****************************************************************************
-    // include project headers
+    // include infrastructure headers
     #include "Logger.hpp"
     
     // include C/C++ headers
