@@ -580,7 +580,12 @@ void VideoOutput::CreateWhiteTexture()
 void VideoOutput::Destroy()
 {
     // release all textures
+    UnloadTexture( BiosTextureID );
+    UnloadTexture( WhiteTextureID );
     
+    for( int i = 0; i < Constants::GPUMaximumCartridgeTextures; i++ )
+      if( CartridgeTextureIDs[ i ] != 0 )
+        UnloadTexture( CartridgeTextureIDs[ i ] );
     
     // destroy in reverse order
     if( OpenGLContext )

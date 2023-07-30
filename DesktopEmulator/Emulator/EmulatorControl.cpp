@@ -16,6 +16,7 @@
     #include <stdexcept>        // [ C++ STL ] Exceptions
     #include <iostream>         // [ C++ STL ] I/O Streams
     #include <climits>          // [ ANSI C ] Numeric limits
+    #include <time.h>           // [ ANSI C ] Date and time
     
     // declare used namespaces
     using namespace std;
@@ -59,6 +60,16 @@ void EmulatorControl::Initialize()
     // set console's log callbacks
     V32::Callbacks::LogLine = CallbackFunctions::LogLine;
     V32::Callbacks::ThrowException = CallbackFunctions::ThrowException;
+    
+    // obtain current time
+    time_t CreationTime;
+    time( &CreationTime );
+    struct tm* CreationTimeInfo = localtime( &CreationTime );
+    
+    // set console date and time
+    // (Careful! C gives year counting from 1900)
+    Console.SetCurrentDate( CreationTimeInfo->tm_year + 1900, CreationTimeInfo->tm_yday );
+    Console.SetCurrentTime( CreationTimeInfo->tm_hour, CreationTimeInfo->tm_min, CreationTimeInfo->tm_sec );
 }
 
 // -----------------------------------------------------------------------------
