@@ -619,12 +619,13 @@ namespace V32
             InputFile.read( (char*)(&LoadedSound[ 0 ]), SoundHeader.SoundSamples * 4 );
             
             // create a new SPU sound and load data into it
-            SPU.CartridgeSounds.emplace_back();
-            SPU.LoadSound( SPU.CartridgeSounds.back(), &LoadedSound[ 0 ], SoundHeader.SoundSamples );
+            SPU.LoadSound( SPU.CartridgeSounds[ i ], &LoadedSound[ 0 ], SoundHeader.SoundSamples );
             
             // discard the temporary buffer
             LoadedSound.clear();
         }
+        
+        SPU.LoadedCartridgeSounds = ROMHeader.NumberOfSounds;
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 5: General Vircon setup
@@ -667,10 +668,10 @@ namespace V32
         GPU.RemoveCartridgeTextures();
         
         // tell SPU to release all cartridge sounds
-        for( SPUSound& S: SPU.CartridgeSounds )
-          SPU.UnloadSound( S );
+        for( int i = 0; i < Constants::SPUMaximumCartridgeSounds; i++ )
+          SPU.UnloadSound( SPU.CartridgeSounds[ i ] );
         
-        SPU.CartridgeSounds.clear();
+        SPU.LoadedCartridgeSounds = 0;
     }
     
     // -----------------------------------------------------------------------------

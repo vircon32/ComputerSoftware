@@ -83,7 +83,8 @@ namespace V32
             
             // textures loaded into GPU
             GPUTexture BiosTexture;
-            std::vector< GPUTexture > CartridgeTextures;
+            GPUTexture CartridgeTextures[ Constants::GPUMaximumCartridgeTextures ];
+            unsigned LoadedCartridgeTextures;
             
             // accessors to active entities
             GPUTexture* PointedTexture;

@@ -95,7 +95,8 @@ namespace V32
             
             // sounds loaded into SPU
             SPUSound BiosSound;
-            std::vector< SPUSound > CartridgeSounds;
+            SPUSound CartridgeSounds[ Constants::SPUMaximumCartridgeSounds ];
+            unsigned LoadedCartridgeSounds;
             
             // SPU registers
             int32_t Command;

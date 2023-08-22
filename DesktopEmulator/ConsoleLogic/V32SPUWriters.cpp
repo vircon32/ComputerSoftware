@@ -77,7 +77,7 @@ namespace V32
     bool WriteSPUSelectedSound( V32SPU& SPU, V32Word Value )
     {
         // prevent setting a non-existent sound
-        if( Value.AsInteger < -1 || Value.AsInteger >= (int32_t)SPU.CartridgeSounds.size() )
+        if( Value.AsInteger < -1 || Value.AsInteger >= (int32_t)SPU.LoadedCartridgeSounds )
           return true;
         
         // write the value
@@ -168,7 +168,7 @@ namespace V32
     bool WriteSPUChannelAssignedSound( V32SPU& SPU, V32Word Value )
     {
         // prevent setting a non-existent sound
-        if( Value.AsInteger < -1 || Value.AsInteger >= (int32_t)SPU.CartridgeSounds.size() )
+        if( Value.AsInteger < -1 || Value.AsInteger >= (int32_t)SPU.LoadedCartridgeSounds )
           return true;
         
         // sounds can only be assigned to a non playing channel

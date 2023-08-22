@@ -60,6 +60,9 @@ namespace V32
         // no entities were pointed yet
         PointedTexture = nullptr;
         PointedRegion = nullptr;
+        
+        // no cartridge loaded yet
+        LoadedCartridgeTextures = 0;
     }
     
     // -----------------------------------------------------------------------------
@@ -81,20 +84,14 @@ namespace V32
         if( NumberOfCartridgeTextures > Constants::GPUMaximumCartridgeTextures )
           Callbacks::ThrowException( "Attempting to insert too many cartridge textures" );
         
-        CartridgeTextures.clear();
-        
-        for( unsigned i = 0; i < NumberOfCartridgeTextures; i++ )
-          CartridgeTextures.emplace_back();
+        LoadedCartridgeTextures = NumberOfCartridgeTextures;
     }
     
     // -----------------------------------------------------------------------------
     
     void V32GPU::RemoveCartridgeTextures()
     {
-        if( CartridgeTextures.empty() )
-          return;
-        
-        CartridgeTextures.clear();
+        LoadedCartridgeTextures = 0;
         Callbacks::UnloadCartridgeTextures();
     }
     
@@ -189,26 +186,26 @@ namespace V32
         
         // reset all regions for every textures
         // (but keep all existent textures reloaded!)
-        for( GPUTexture& Texture: CartridgeTextures )
-        for( int i = 0; i < Constants::GPURegionsPerTexture; i++ )
+        for( int i = 0; i < Constants::GPUMaximumCartridgeTextures; i++ )
+        for( int j = 0; j < Constants::GPURegionsPerTexture; j++ )
         {
-            Texture.Regions[ i ].MinX     = 0;
-            Texture.Regions[ i ].MinX     = 0;
-            Texture.Regions[ i ].MaxX     = 0;
-            Texture.Regions[ i ].MaxY     = 0;
-            Texture.Regions[ i ].HotspotX = 0;
-            Texture.Regions[ i ].HotspotY = 0;
+            CartridgeTextures[ i ].Regions[ j ].MinX     = 0;
+            CartridgeTextures[ i ].Regions[ j ].MinX     = 0;
+            CartridgeTextures[ i ].Regions[ j ].MaxX     = 0;
+            CartridgeTextures[ i ].Regions[ j ].MaxY     = 0;
+            CartridgeTextures[ i ].Regions[ j ].HotspotX = 0;
+            CartridgeTextures[ i ].Regions[ j ].HotspotY = 0;
         }
         
         // same for BIOS texture
-        for( int i = 0; i < Constants::GPURegionsPerTexture; i++ )
+        for( int j = 0; j < Constants::GPURegionsPerTexture; j++ )
         {
-            BiosTexture.Regions[ i ].MinX     = 0;
-            BiosTexture.Regions[ i ].MinX     = 0;
-            BiosTexture.Regions[ i ].MaxX     = 0;
-            BiosTexture.Regions[ i ].MaxY     = 0;
-            BiosTexture.Regions[ i ].HotspotX = 0;
-            BiosTexture.Regions[ i ].HotspotY = 0;
+            BiosTexture.Regions[ j ].MinX     = 0;
+            BiosTexture.Regions[ j ].MinX     = 0;
+            BiosTexture.Regions[ j ].MaxX     = 0;
+            BiosTexture.Regions[ j ].MaxY     = 0;
+            BiosTexture.Regions[ j ].HotspotX = 0;
+            BiosTexture.Regions[ j ].HotspotY = 0;
         }
         
         // initial screen clear to black

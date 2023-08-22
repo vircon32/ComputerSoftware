@@ -47,8 +47,12 @@ namespace V32
     
     V32SPU::V32SPU()
     {
+        // no entities were pointed yet
         PointedChannel = nullptr;
         PointedSound = nullptr;
+        
+        // no cartridge loaded yet
+        LoadedCartridgeSounds = 0;
     }
     
     // -----------------------------------------------------------------------------
@@ -198,11 +202,11 @@ namespace V32
         BiosSound.LoopEnd = BiosSound.Length - 1;
         
         // reset state of all cartridge sounds
-        for( SPUSound& S: CartridgeSounds )
+        for( int i = 0; i < Constants::SPUMaximumCartridgeSounds; i++ )
         {
-            S.PlayWithLoop = false;
-            S.LoopStart = 0;
-            S.LoopEnd = S.Length - 1;
+            CartridgeSounds[ i ].PlayWithLoop = false;
+            CartridgeSounds[ i ].LoopStart = 0;
+            CartridgeSounds[ i ].LoopEnd = CartridgeSounds[ i ].Length - 1;
         }
     }
     

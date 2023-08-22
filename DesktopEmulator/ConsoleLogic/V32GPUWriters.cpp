@@ -124,7 +124,7 @@ namespace V32
     bool WriteGPUSelectedTexture( V32GPU& GPU, V32Word Value )
     {
         // prevent setting a non-existent texture
-        if( Value.AsInteger < -1 || Value.AsInteger >= (int32_t)GPU.CartridgeTextures.size() )
+        if( Value.AsInteger < -1 || Value.AsInteger >= (int32_t)GPU.LoadedCartridgeTextures )
           return true;
             
         // write the value
