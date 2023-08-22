@@ -81,6 +81,7 @@ namespace CallbackFunctions
     void SelectTexture( int GPUTextureID );
     void LoadTexture( int GPUTextureID, void* Pixels );
     void UnloadCartridgeTextures();
+    void UnloadBiosTexture();
     
     // log functions callable by the console
     void LogLine( const std::string& Message );

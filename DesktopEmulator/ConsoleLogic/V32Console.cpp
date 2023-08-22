@@ -73,6 +73,7 @@ namespace V32
         // unload any present media
         if( HasMemoryCard() )  UnloadMemoryCard();
         if( HasCartridge() )   UnloadCartridge();
+        if( HasBios() )        UnloadBios();
     }
     
     
@@ -213,10 +214,13 @@ namespace V32
     
     void V32Console::LoadBios( const std::string& FilePath )
     {
-        // open bios file
         Callbacks::LogLine( "Loading bios" );
         Callbacks::LogLine( "File path: \"" + FilePath + "\"" );
-    
+        
+        // unload any previous bios
+        UnloadBios();
+        
+        // open bios file
         ifstream InputFile;
         InputFile.open( FilePath, ios_base::binary | ios_base::ate );
         
@@ -382,6 +386,31 @@ namespace V32
         // close the file
         InputFile.close();
         Callbacks::LogLine( "Finished loading BIOS" );
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    void V32Console::UnloadBios()
+    {
+        // do nothing if a bios is not loaded
+        if( !HasBios() ) return;
+        Callbacks::LogLine( "Unloading bios" );
+        
+        // release bios program ROM
+        BiosProgramROM.Disconnect();
+        
+        // release the bios texture
+        Callbacks::UnloadBiosTexture();
+        
+        // tell SPU to release the bios sounds
+        SPU.UnloadSound( SPU.BiosSound );
+    }
+    
+    // -----------------------------------------------------------------------------
+    
+    bool V32Console::HasBios()
+    {
+        return (BiosProgramROM.MemorySize != 0);
     }
     
     

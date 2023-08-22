@@ -55,14 +55,8 @@ namespace V32
     
     V32SPU::~V32SPU()
     {
-        // release all cartridge sounds
-        for( SPUSound& S: CartridgeSounds )
-          UnloadSound( S );
-          
-        CartridgeSounds.clear();
-        
-        // release BIOS sound
-        UnloadSound( BiosSound );
+        // don't release any sounds
+        // (this is done at console destructor)
     }
     
     

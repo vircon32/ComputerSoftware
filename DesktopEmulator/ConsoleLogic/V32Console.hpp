@@ -79,8 +79,10 @@ namespace V32
             float GetGPULoad();
             
             // bios management
-            // (bios cannot be unloaded)
+            // (bios cannot be unloaded, but some implementations may need it)
             void LoadBios( const std::string& FilePath );
+            void UnloadBios();
+            bool HasBios();
             
             // cartridge management
             // (only accessible when power is off)

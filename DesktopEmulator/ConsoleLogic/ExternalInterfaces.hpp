@@ -88,6 +88,7 @@ namespace V32
         extern void( *SelectTexture )( int );
         extern void( *LoadTexture )( int, void* );
         extern void( *UnloadCartridgeTextures )();
+        extern void( *UnloadBiosTexture )();
         
         // callbacks to the log library
         extern void( *LogLine )( const std::string& );

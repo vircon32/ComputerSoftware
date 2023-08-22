@@ -56,6 +56,7 @@ void EmulatorControl::Initialize()
     V32::Callbacks::SelectTexture = CallbackFunctions::SelectTexture;
     V32::Callbacks::LoadTexture = CallbackFunctions::LoadTexture;
     V32::Callbacks::UnloadCartridgeTextures = CallbackFunctions::UnloadCartridgeTextures;
+    V32::Callbacks::UnloadBiosTexture = CallbackFunctions::UnloadBiosTexture;
     
     // set console's log callbacks
     V32::Callbacks::LogLine = CallbackFunctions::LogLine;

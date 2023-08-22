@@ -132,6 +132,13 @@ namespace CallbackFunctions
     
     // -----------------------------------------------------------------------------
 
+    void UnloadBiosTexture()
+    {
+        Video.UnloadTexture( -1 );
+    }
+    
+    // -----------------------------------------------------------------------------
+
     void LogLine( const string& Message )
     {
         LOG( Message );

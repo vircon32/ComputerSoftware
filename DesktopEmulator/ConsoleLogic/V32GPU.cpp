@@ -66,8 +66,8 @@ namespace V32
     
     V32GPU::~V32GPU()
     {
-        // release all cartridge textures
-        RemoveCartridgeTextures();
+        // don't release any textures
+        // (this is done at console destructor)
     }
     
     
