@@ -17,3 +17,6 @@ add_library(V32ConsoleLogic STATIC
     V32SPU.cpp
     V32SPUWriters.cpp
     V32Timer.cpp)
+
+# under Linux this may be needed for linkage later
+set_property(TARGET V32ConsoleLogic PROPERTY POSITION_INDEPENDENT_CODE ON)

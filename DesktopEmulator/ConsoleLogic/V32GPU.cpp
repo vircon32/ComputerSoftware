@@ -61,6 +61,9 @@ namespace V32
         PointedTexture = nullptr;
         PointedRegion = nullptr;
         
+        // size the array
+        CartridgeTextures.resize( Constants::GPUMaximumCartridgeTextures );
+        
         // no cartridge loaded yet
         LoadedCartridgeTextures = 0;
     }
