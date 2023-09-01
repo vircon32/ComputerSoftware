@@ -95,6 +95,10 @@ const string VertexShaderCode =
     "    // y is transformed from (0.0,360.0) to (+1.0,-1.0), so it undoes its inversion        \n"
     "    gl_Position.y = 1.0 - (Position.y / (360.0/2.0));                                      \n"
     "                                                                                           \n"
+    "    // even in 2D we may also need to set z and w                                          \n"
+    "    gl_Position.z = 0.0;                                                                   \n"
+    "    gl_Position.w = 1.0;                                                                   \n"
+    "                                                                                           \n"
     "    // (2) now texture coordinate is just provided as is to the fragment shader            \n"
     "    // (it is only needed here because fragment shaders cannot take inputs directly)       \n"
     "    TextureCoordinate = InputTextureCoordinate;                                            \n"
@@ -176,7 +180,6 @@ void VideoOutput::CreateOpenGLWindow()
       SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
       SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 0 );
     #endif
-    
     
     // request double buffering
     SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
