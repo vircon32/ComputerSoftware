@@ -18,5 +18,8 @@ add_library(V32ConsoleLogic STATIC
     V32SPUWriters.cpp
     V32Timer.cpp)
 
+# our C++ sources need C++11 to compile
+set_property(TARGET V32ConsoleLogic PROPERTY CXX_STANDARD 11)
+
 # under Linux this may be needed for linkage later
 set_property(TARGET V32ConsoleLogic PROPERTY POSITION_INDEPENDENT_CODE ON)
