@@ -6,7 +6,7 @@
     // include C/C++ headers
     #include <string>           // [ C++ STL ] Strings
     #include <vector>           // [ C++ STL ] Vectors
-    #include <cstdint>
+    #include <cstdint>          // [ ANSI C ] Standard integer types
 // *****************************************************************************
 
 
