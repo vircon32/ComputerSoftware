@@ -551,6 +551,7 @@ void VirconCPreprocessor::ProcessError( bool WarningOnly )
     
     LiteralStringToken* MessageToken = (LiteralStringToken*)(*TokenPosition);
     string Message = MessageToken->Value;
+    TokenPosition++;
     
     // expect an end of line
     if( TokenPosition != DirectiveLine.end() )
