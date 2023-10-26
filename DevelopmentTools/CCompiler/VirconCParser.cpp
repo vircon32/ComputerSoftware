@@ -1068,6 +1068,13 @@ InitializationListNode* VirconCParser::ParseInitializationList( CNode* Parent, C
         if( !InitializationList->AssignedValues.empty() )
           ExpectSpecialSymbol( TokenPosition, SpecialSymbolTypes::Comma );
         
+        // allow a last comma before the closing brace
+        if( TokenIsThisDelimiter( *TokenPosition, DelimiterTypes::CloseBrace ) )
+        {
+            TokenPosition++;
+            break;
+        }
+        
         // CASE 1: next value is a nested initialization list
         if( TokenIsThisDelimiter( *TokenPosition, DelimiterTypes::OpenBrace ) )
           InitializationList->AssignedValues.push_back( ParseInitializationList( InitializationList, TokenPosition ) );
@@ -1360,6 +1367,13 @@ EnumerationNode* VirconCParser::ParseEnumeration( CNode* Parent, CTokenIterator&
         // the first one, expect a comma as separation
         if( !NewEnumeration->Values.empty() )
           ExpectSpecialSymbol( TokenPosition, SpecialSymbolTypes::Comma );
+        
+        // allow a last comma before the closing brace
+        if( TokenIsThisDelimiter( *TokenPosition, DelimiterTypes::CloseBrace ) )
+        {
+            TokenPosition++;
+            break;
+        }
         
         // now actually parse the enumeration value
         ParseEnumValue( NewEnumeration, TokenPosition );
