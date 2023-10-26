@@ -130,6 +130,9 @@ CNode* VirconCParser::ParseStatement( CNode* Parent, CTokenIterator& TokenPositi
     if( TokenIsThisKeyword( NextToken, KeywordTypes::Embedded ) )
       RaiseFatalError( NextToken->Location, "embedded files can only be declared at the top level" );
     
+    if( TokenIsThisKeyword( NextToken, KeywordTypes::Extern ) )
+      RaiseFatalError( NextToken->Location, "extern variables can only be declared at the top level" );
+    
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // now choose from all valid cases
     
@@ -806,7 +809,7 @@ CNode* VirconCParser::ParseDeclaration( CNode* Parent, CTokenIterator& TokenPosi
     }
     
     // any other declaration is a variable
-    return ParseVariableList( InitialType, DeclarationName, Parent, TokenPosition );
+    return ParseVariableList( InitialType, DeclarationName, false, Parent, TokenPosition );
 }
 
 // -----------------------------------------------------------------------------
@@ -961,7 +964,7 @@ FunctionNode* VirconCParser::ParseFunction( DataType* ReturnType, const string& 
 
 // -----------------------------------------------------------------------------
 
-VariableListNode* VirconCParser::ParseVariableList( DataType* DeclaredType, const string& Name, CNode* Parent, CTokenIterator& TokenPosition )
+VariableListNode* VirconCParser::ParseVariableList( DataType* DeclaredType, const string& Name, bool UsesExtern, CNode* Parent, CTokenIterator& TokenPosition )
 {
     VariableListNode* VariableList = new VariableListNode( Parent );
     VariableList->DeclaredType = DeclaredType;     // no need to clone (first use)
@@ -972,6 +975,7 @@ VariableListNode* VirconCParser::ParseVariableList( DataType* DeclaredType, cons
     NewVariable->Location = (*TokenPosition)->Location;
     NewVariable->DeclaredType = DeclaredType->Clone();
     NewVariable->Name = Name;
+    NewVariable->IsExtern = UsesExtern;
     
     // special error report for standard C arrays
     if( TokenIsThisDelimiter( *TokenPosition, DelimiterTypes::OpenBracket ) )
@@ -980,6 +984,10 @@ VariableListNode* VirconCParser::ParseVariableList( DataType* DeclaredType, cons
     // optionally, an assignment can be made on declaration
     if( TokenIsThisOperator( *TokenPosition, OperatorTypes::Equal ) )
     {
+        // this is not allowed for extern variables
+        if( UsesExtern )
+          RaiseFatalError( (*TokenPosition)->Location, "extern variables cannot be initialized (do it at their full definition)" );
+        
         // consume equal sign
         TokenPosition++;
         
@@ -993,7 +1001,11 @@ VariableListNode* VirconCParser::ParseVariableList( DataType* DeclaredType, cons
     }
     
     // initial variable has been parsed
-    NewVariable->AllocateAsVariable();
+    NewVariable->AllocateName();
+    
+    if( !NewVariable->IsPartialDefinition() )
+      NewVariable->AllocatePlacement();
+    
     VariableList->Variables.push_back( NewVariable );
     
     // there can be multiple declarations of the
@@ -1011,6 +1023,7 @@ VariableListNode* VirconCParser::ParseVariableList( DataType* DeclaredType, cons
         AddedVariable->Location = (*TokenPosition)->Location;
         AddedVariable->DeclaredType = DeclaredType->Clone();
         AddedVariable->Name = ExpectIdentifier( TokenPosition );
+        AddedVariable->IsExtern = UsesExtern;
         
         // special error report for standard C arrays
         if( TokenIsThisDelimiter( *TokenPosition, DelimiterTypes::OpenBracket ) )
@@ -1019,6 +1032,10 @@ VariableListNode* VirconCParser::ParseVariableList( DataType* DeclaredType, cons
         // optionally, an assignment can be made on declaration
         if( TokenIsThisOperator( *TokenPosition, OperatorTypes::Equal ) )
         {
+            // this is not allowed for extern variables
+            if( UsesExtern )
+              RaiseFatalError( (*TokenPosition)->Location, "extern variables cannot be initialized (do it at their full definition)" );
+            
             // consume equal sign
             TokenPosition++;
             
@@ -1032,13 +1049,34 @@ VariableListNode* VirconCParser::ParseVariableList( DataType* DeclaredType, cons
         }
         
         // additional variable has been parsed
-        AddedVariable->AllocateAsVariable();
+        AddedVariable->AllocateName();
+        
+        if( !AddedVariable->IsPartialDefinition() )
+          AddedVariable->AllocatePlacement();
+        
         VariableList->Variables.push_back( AddedVariable );
     }
     
     // in any case, expect a semicolon as ending
     ExpectSpecialSymbol( TokenPosition, SpecialSymbolTypes::Semicolon );
     return VariableList;
+}
+
+// -----------------------------------------------------------------------------
+
+VariableListNode* VirconCParser::ParseExternVariableList( CNode* Parent, CTokenIterator& TokenPosition )
+{
+    // consume "extern" keyword
+    TokenPosition++;
+    
+    // parse the variable type
+    DataType* VariableType = ParseType( Parent, TokenPosition );
+    
+    // expect the variable name
+    string VariableName = ExpectIdentifier( TokenPosition );
+    
+    // parse variable list
+    return ParseVariableList( VariableType, VariableName, true, Parent, TokenPosition );
 }
 
 // -----------------------------------------------------------------------------
@@ -2077,6 +2115,14 @@ void VirconCParser::ParseTopLevel( CTokenList& Tokens_ )
         {
             EmbeddedFileNode* NewEmbeddedFile = ParseEmbeddedFile( ProgramAST, TokenPosition );
             ProgramAST->Statements.push_back( NewEmbeddedFile );
+            continue;
+        }
+        
+        // recognize extern variables
+        if( TokenIsThisKeyword( NextToken, KeywordTypes::Extern ) )
+        {
+            VariableListNode* NewVariableList = ParseExternVariableList( ProgramAST, TokenPosition );
+            ProgramAST->Statements.push_back( NewVariableList );
             continue;
         }
         

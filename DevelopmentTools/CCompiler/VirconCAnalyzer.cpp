@@ -191,7 +191,7 @@ void VirconCAnalyzer::AnalyzeVariable( VariableNode* Variable )
     }
     
     // watch for unused variables
-    if( !Variable->IsReferenced )
+    if( !Variable->IsExtern && !Variable->IsReferenced )
       RaiseWarning( Variable->Location, "variable \"" + Variable->Name + "\" is not used" );
 }
 
@@ -615,6 +615,28 @@ void VirconCAnalyzer::AnalyzeAssemblyBlock( AssemblyBlockNode* AssemblyBlock )
 // =============================================================================
 
 
+void VirconCAnalyzer::AnalyzeGlobalVariables()
+{
+    for( auto Pair: ProgramAST->DeclaredIdentifiers )
+    {
+        CNode* TopLevelDefinition = Pair.second;
+        
+        // discard non-variable definitions
+        if( TopLevelDefinition->Type() != CNodeTypes::Variable )
+          continue;
+        
+        VariableNode* Variable = (VariableNode*)TopLevelDefinition;
+        
+        // if a full definition was declared at some point,
+        // it will be the one that remains in the scope
+        // (previous partial ones will be replaced)
+        if( Variable->IsExtern )
+          RaiseError( Variable->Location, string("variable '") + Variable->Name + "' has been declared but not fully defined" );
+    }
+}
+
+// -----------------------------------------------------------------------------
+
 void VirconCAnalyzer::AnalyzeFunctions()
 {
     // all functions must be defined at top level scope
@@ -697,6 +719,9 @@ void VirconCAnalyzer::Analyze( TopLevelNode& ProgramAST_, bool IsBios )
     // recursively analyze all nodes in top level
     for( CNode* Statement: ProgramAST->Statements )
       AnalyzeCNode( Statement );
+    
+    // check that all global variables have been fully defined
+    AnalyzeGlobalVariables();
     
     // check that all functions have been fully defined
     AnalyzeFunctions();

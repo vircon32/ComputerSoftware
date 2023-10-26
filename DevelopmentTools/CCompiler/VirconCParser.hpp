@@ -63,7 +63,8 @@ class VirconCParser
         void ParseFunctionBody( FunctionNode* Function, CTokenIterator& TokenPosition );
         CNode* ParseDeclaration( CNode* Parent, CTokenIterator& TokenPosition, bool IsTopLevel );
         FunctionNode* ParseFunction( DataType* ReturnType, const std::string& Name, CNode* Parent, CTokenIterator& TokenPosition );
-        VariableListNode* ParseVariableList( DataType* DeclaredType, const std::string& Name, CNode* Parent, CTokenIterator& TokenPosition );
+        VariableListNode* ParseVariableList( DataType* DeclaredType, const std::string& Name, bool UsesExtern, CNode* Parent, CTokenIterator& TokenPosition );
+        VariableListNode* ParseExternVariableList( CNode* Parent, CTokenIterator& TokenPosition );
         InitializationListNode* ParseInitializationList( CNode* Parent, CTokenIterator& TokenPosition );
         MemberNode* ParseMember( UnionNode* OwnerUnion, CTokenIterator& TokenPosition );
         MemberListNode* ParseMemberList( StructureNode* OwnerStructure, CTokenIterator& TokenPosition );

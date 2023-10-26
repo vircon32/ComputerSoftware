@@ -459,6 +459,7 @@ VariableNode::VariableNode( CNode* Parent_ )
     OwnerScope = nullptr;
     
     IsReferenced = false;
+    IsExtern = false;
     IsArgument = true;
     
     OffsetInScope = 0;
@@ -476,7 +477,12 @@ VariableNode::~VariableNode()
 
 string VariableNode::ToXML()
 {
-    string Result = "<variable type=\"" + DeclaredType->ToString() + "\" name=\"" + Name + "\">";
+    string Result = "<variable type=\"" + DeclaredType->ToString() + "\" name=\"" + Name + "\"";
+    
+    if( IsExtern )
+      Result += " extern=\"true\"";
+    
+    Result += ">";
     
     if( InitialValue )
       Result += InitialValue->ToXML();
@@ -514,19 +520,24 @@ void VariableNode::AllocateAsArgument()
 
 // -----------------------------------------------------------------------------
 
-// Careful! Variables that take more than 1 word
-// must be placed so that the initial word is at
-// the lowest address. This works differently in
-// globals and in locals, since memory for locals
-// grows negatively from BP
-void VariableNode::AllocateAsVariable()
+void VariableNode::AllocateName()
 {
     // find its closest scope
     OwnerScope = FindClosestScope( false );
     
     // now attempt declaration of new variable
     OwnerScope->DeclareNewIdentifier( Name, this );
-    
+}
+
+// -----------------------------------------------------------------------------
+
+// Careful! Variables that take more than 1 word
+// must be placed so that the initial word is at
+// the lowest address. This works differently in
+// globals and in locals, since memory for locals
+// grows negatively from BP
+void VariableNode::AllocatePlacement()
+{
     // case 1: global variable
     if( OwnerScope->Type() == CNodeTypes::TopLevel )
     {

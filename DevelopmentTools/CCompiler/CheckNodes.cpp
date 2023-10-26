@@ -141,8 +141,14 @@ void CheckExpressionAtom( ExpressionAtomNode* Atom )
 {
     // check that any referenced variables have been resolved
     if( Atom->AtomType == AtomTypes::Variable )
-      if( !Atom->ResolvedVariable )
-        RaiseFatalError( Atom->Location, string("variable \"") + Atom->IdentifierName + "\" has not been resolved" );
+    {
+        if( !Atom->ResolvedVariable )
+          RaiseFatalError( Atom->Location, string("variable \"") + Atom->IdentifierName + "\" has not been resolved" );
+        
+        // update the resolved variable if it was not fully declared on parse
+        if( Atom->ResolvedVariable->IsExtern )
+          Atom->ResolveIdentifier();
+    }
     
     // check that any referenced enumeration values have been resolved
     if( Atom->AtomType == AtomTypes::EnumValue )

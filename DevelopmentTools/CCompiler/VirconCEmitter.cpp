@@ -353,6 +353,10 @@ void VirconCEmitter::EmitProgramStartSection()
         
         for( VariableNode* Variable: VariableList->Variables )
         {
+            // do not emit externs, they are partial definitions
+            if( Variable->IsExtern )
+              continue;
+            
             // emit variable name for easier reading
             ProgramLines.push_back( "define global_" + Variable->Name + " " + to_string(Variable->Placement.GlobalAddress) );
         }

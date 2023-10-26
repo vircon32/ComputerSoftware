@@ -42,7 +42,8 @@ const map< KeywordTypes, string > KeywordNames =
     { KeywordTypes::SizeOf,   "sizeof"   },
     { KeywordTypes::Typedef,  "typedef"  },
     { KeywordTypes::Asm,      "asm"      },
-    { KeywordTypes::Embedded, "embedded" }
+    { KeywordTypes::Embedded, "embedded" },
+    { KeywordTypes::Extern,   "extern"   }
 };
 
 // -----------------------------------------------------------------------------

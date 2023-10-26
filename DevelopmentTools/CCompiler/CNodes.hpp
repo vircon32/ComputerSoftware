@@ -342,6 +342,7 @@ class VariableNode: public CNode
         // external references
         ScopeNode* OwnerScope;
         bool IsReferenced;
+        bool IsExtern;
         
         // allocation data
         bool IsArgument;
@@ -356,13 +357,15 @@ class VariableNode: public CNode
         
         // node classification
         virtual CNodeTypes Type() { return CNodeTypes::Variable; };
+        virtual bool IsPartialDefinition() { return IsExtern; };
         
         // log & debug
         virtual std::string ToXML();
         
         // allocation as a resource
         void AllocateAsArgument();
-        void AllocateAsVariable();
+        void AllocateName();
+        void AllocatePlacement();
 };
 
 // -----------------------------------------------------------------------------

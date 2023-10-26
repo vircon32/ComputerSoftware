@@ -65,7 +65,8 @@ enum class KeywordTypes
     SizeOf,
     Typedef,
     Asm,
-    Embedded
+    Embedded,
+    Extern
 };
 
 // -----------------------------------------------------------------------------
