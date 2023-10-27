@@ -1,6 +1,6 @@
 ================================================
    PC development tools for Vircon32 console
-   (version 23.3.7). README written by Carra
+  (version 23.10.27). README written by Carra
 ================================================
 
 
@@ -52,12 +52,12 @@ Included programs
     
 ------------------------------------------------------------
 
-What's new in version 23.3.7?
+What's new in version 23.10.27?
   
-  - Added support for explicit type conversions.
-  - Added dynamic memory functions (malloc, calloc, realloc
-    and free) to misc.h.
-  - Minor fixes for type system and type checks.
+  - Fixed error in directives #error and #warning
+  - Added support for extern variables.
+  - Allow a final comma in enumerations
+  - Allow a final comma in initialization lists
 
 ------------------------------------------------------------
 
