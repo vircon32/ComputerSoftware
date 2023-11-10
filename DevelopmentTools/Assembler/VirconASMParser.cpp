@@ -521,10 +521,23 @@ VariableNode* VirconASMParser::ParseVariable( TokenIterator& TokenPosition )
     // expect another token in the same line
     TokenPosition++;
     ExpectSameLine( DefineToken, *TokenPosition );
-    
-    // only some redefinitions are allowed
     Token* ValueToken = *TokenPosition;
     
+    // negative numbers are composed of 2 tokens,
+    // so they need special processing here
+    bool HasMinus = false;
+    
+    if( ValueToken->Type() == TokenTypes::Minus )
+    {
+        HasMinus = true;
+        
+        // expect another token in the same line
+        TokenPosition++;
+        ExpectSameLine( DefineToken, *TokenPosition );
+        ValueToken = *TokenPosition;
+    }
+    
+    // only some redefinitions are allowed
     if( !IsValidVariableValue( ValueToken )  )
       EmitError( DefineToken->LineInSource, "definition value is not valid" );
     
@@ -537,7 +550,22 @@ VariableNode* VirconASMParser::ParseVariable( TokenIterator& TokenPosition )
     
     // in case of negative numbers, add the sign to the value
     // (needed because variable replacements only work with single tokens)
-    // (PENDING)
+    if( HasMinus )
+    {
+        if( NewNode->VariableValue->Type() == TokenTypes::LiteralInteger )
+        {
+            LiteralIntegerToken* Integer = (LiteralIntegerToken*)NewNode->VariableValue;
+            Integer->Value = -Integer->Value;
+        }
+        
+        else if( NewNode->VariableValue->Type() == TokenTypes::LiteralFloat )
+        {
+            LiteralFloatToken* Float = (LiteralFloatToken*)NewNode->VariableValue;
+            Float->Value = -Float->Value;
+        }
+        
+        else EmitError( DefineToken->LineInSource, "definition value is not valid" );
+    }
     
     // variables need to be applied immediately!
     // (cannot be processed after the parsing stage)
