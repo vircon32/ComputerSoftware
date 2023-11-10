@@ -61,6 +61,7 @@ class VirconASMLexer
         
         // basic lexer functions
         char UnescapeCharacter( char Escaped );
+        char UnescapeHexNumber();
         LiteralIntegerToken* ReadHexInteger();
         Token* ReadNumber();
         std::string ReadName();

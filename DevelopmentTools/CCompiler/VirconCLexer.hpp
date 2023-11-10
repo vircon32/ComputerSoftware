@@ -65,6 +65,7 @@ class VirconCLexer
         
         // basic lexer functions
         char UnescapeCharacter( char Escaped );
+        char UnescapeHexNumber();
         LiteralValueToken* ReadHexInteger();
         LiteralValueToken* ReadNumber();
         LiteralValueToken* ReadCharacter();

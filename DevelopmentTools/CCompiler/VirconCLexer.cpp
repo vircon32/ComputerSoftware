@@ -309,6 +309,32 @@ char VirconCLexer::UnescapeCharacter( char Escaped )
 
 // -----------------------------------------------------------------------------
 
+char VirconCLexer::UnescapeHexNumber()
+{
+    // expect exactly 2 digits, and add a null string terminator
+    char Digits[ 3 ] = { 0, 0, 0 };
+    
+    for( int i = 0; i < 2; i++ )
+    {
+        if( InputHasEnded() )
+          RaiseFatalError( ReadLocation, "Unexpected end of file" );
+        
+        Digits[ i ] = GetChar();
+        
+        if( !isxdigit( Digits[ i ] ) )
+        {
+            RaiseError( ReadLocation, "bad hexadecimal character (expected 2 hex digits)" );
+            return 0;
+        }
+    }
+    
+    // compose the hex character value
+    char DecodedChar = (unsigned char)strtol( Digits, nullptr, 16 );
+    return DecodedChar;
+}
+
+// -----------------------------------------------------------------------------
+
 LiteralValueToken* VirconCLexer::ReadHexInteger()
 {
     // capture start location
@@ -447,7 +473,11 @@ LiteralValueToken* VirconCLexer::ReadCharacter()
     if( c == '\\' )
     {
         char c2 = GetChar();
-        Value = (unsigned char)UnescapeCharacter( c2 );
+        
+        if( c2 == 'x' )
+          Value = (unsigned char)UnescapeHexNumber();
+        else
+          Value = (unsigned char)UnescapeCharacter( c2 );
     }
     
     // process regular characters
@@ -483,7 +513,12 @@ LiteralStringToken* VirconCLexer::ReadString()
         if( c == '\\' )
         {
             char c2 = GetChar();
-            Value += UnescapeCharacter( c2 );
+            
+            if( c2 == 'x' )
+              Value += (unsigned char)UnescapeHexNumber();
+            else
+              Value += (unsigned char)UnescapeCharacter( c2 );
+            
             continue;
         }
         
