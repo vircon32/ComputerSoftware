@@ -58,6 +58,7 @@ class VirconASMParser
         IntegerDataNode* ParseIntegerData( TokenIterator& TokenPosition );
         FloatDataNode* ParseFloatData( TokenIterator& TokenPosition );
         StringDataNode* ParseStringData( TokenIterator& TokenPosition );
+        PointerDataNode* ParsePointerData( TokenIterator& TokenPosition );
         VariableNode* ParseVariable( TokenIterator& TokenPosition );
         LabelNode* ParseLabel( TokenIterator& TokenPosition );
         DataFileNode* ParseDataFile( TokenIterator& TokenPosition );

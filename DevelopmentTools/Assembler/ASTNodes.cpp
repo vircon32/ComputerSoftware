@@ -164,6 +164,19 @@ string StringDataNode::ToString()
     return Result;
 }
 
+// -----------------------------------------------------------------------------
+
+string PointerDataNode::ToString()
+{
+    string Result = "Pointer data:";
+    
+    for( std::string LabelName : LabelNames )
+      Result += " " + LabelName;
+      
+    return Result;
+}
+
+
 
 // =============================================================================
 //      LABEL NODE

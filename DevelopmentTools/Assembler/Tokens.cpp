@@ -77,7 +77,7 @@ string InstructionOpCodeToken::ToString()
 
 string CPURegisterToken::ToString()
 {
-    return string("Hardware: ") + RegisterToString( Which );
+    return string("Register: ") + RegisterToString( Which );
 }
 
 // -----------------------------------------------------------------------------
@@ -120,6 +120,13 @@ string FloatKeywordToken::ToString()
 string StringKeywordToken::ToString()
 {
     return "String keyword";
+}
+
+// -----------------------------------------------------------------------------
+
+string PointerKeywordToken::ToString()
+{
+    return "Pointer keyword";
 }
 
 // -----------------------------------------------------------------------------
@@ -282,6 +289,13 @@ Token* FloatKeywordToken::Clone()
 Token* StringKeywordToken::Clone()
 {
     return NewStringKeywordToken( LineInSource );
+}
+
+// -----------------------------------------------------------------------------
+
+Token* PointerKeywordToken::Clone()
+{
+    return NewPointerKeywordToken( LineInSource );
 }
 
 // -----------------------------------------------------------------------------
@@ -457,6 +471,15 @@ FloatKeywordToken* NewFloatKeywordToken( int LineNumber )
 StringKeywordToken* NewStringKeywordToken( int LineNumber )
 {
     StringKeywordToken* NewToken = new StringKeywordToken;
+    NewToken->LineInSource = LineNumber;
+    return NewToken;
+}
+
+// -----------------------------------------------------------------------------
+
+PointerKeywordToken* NewPointerKeywordToken( int LineNumber )
+{
+    PointerKeywordToken* NewToken = new PointerKeywordToken;
     NewToken->LineInSource = LineNumber;
     return NewToken;
 }

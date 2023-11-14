@@ -600,15 +600,19 @@ void VirconASMLexer::ReadTokens( ifstream& Input_ )
         else if( NameUpper == "STRING" )
           Tokens.push_back( NewStringKeywordToken( CurrentReadLine ) );
         
-        // CASE 9: name is the define keyword
+        // CASE 9: name is the pointer keyword
+        else if( NameUpper == "POINTER" )
+          Tokens.push_back( NewPointerKeywordToken( CurrentReadLine ) );
+        
+        // CASE 10: name is the define keyword
         else if( NameUpper == "DEFINE" )
           Tokens.push_back( NewDefineKeywordToken( CurrentReadLine ) );
         
-        // CASE 10: names is the datafile keyword
+        // CASE 11: names is the datafile keyword
         else if( NameUpper == "DATAFILE" )
           Tokens.push_back( NewDataFileKeywordToken( CurrentReadLine ) );
         
-        // CASE 11: other identifiers are taken as variable names
+        // CASE 12: other identifiers are taken as variable names
         else
           Tokens.push_back( NewVariableToken( CurrentReadLine, Name ) );
     }

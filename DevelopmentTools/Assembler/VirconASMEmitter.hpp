@@ -43,7 +43,7 @@ class VirconASMEmitter
         int32_t GetLabelAddress( ASTNode& ReferringNode, std::string LabelName );
         void ReadDataFile( DataFileNode& Node );
         
-        int32_t         GetValueAsAddress  ( InstructionNode& Node, BasicValue& Value );
+        int32_t      GetValueAsAddress  ( InstructionNode& Node, BasicValue& Value );
         V32::V32Word GetValueAsImmediate( InstructionNode& Node, BasicValue& Value );
         
         // emit function for an instruction node

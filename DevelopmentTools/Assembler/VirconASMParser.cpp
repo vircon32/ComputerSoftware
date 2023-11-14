@@ -499,6 +499,52 @@ StringDataNode* VirconASMParser::ParseStringData( TokenIterator& TokenPosition )
 
 // -----------------------------------------------------------------------------
 
+PointerDataNode* VirconASMParser::ParsePointerData( TokenIterator& TokenPosition )
+{
+    // consume the definition keyword
+    Token* KeywordToken = *TokenPosition;
+    TokenPosition++;
+    
+    // create a node
+    PointerDataNode* NewNode = new PointerDataNode;
+    NewNode->LineInSource = KeywordToken->LineInSource;
+    
+    // read all values in the same line
+    while( AreInSameLine( KeywordToken, *TokenPosition ) )
+    {
+        // (1) parse a value
+        BasicValue Value = ParseBasicValue( TokenPosition );
+        
+        // (2) expect it to be a label
+        if( Value.Type != BasicValueTypes::Label )
+          EmitError( KeywordToken->LineInSource, "expected a label" );
+          
+        else
+          NewNode->LabelNames.push_back( Value.LabelField );
+        
+        // (3) expect either a comma or a new line
+        Token* CommaToken = *TokenPosition;
+        
+        if( !AreInSameLine(CommaToken, KeywordToken) )
+          break;
+        
+        if( CommaToken->Type() != TokenTypes::Comma )
+          EmitError( KeywordToken->LineInSource, "expected comma separating labels" );
+        
+        // consume the comma
+        TokenPosition++;
+    }
+    
+    // ensure that there is at least 1 value
+    if( NewNode->LabelNames.size() == 0 )
+      EmitError( KeywordToken->LineInSource, "no pointers to labels were declared" );
+    
+    // add the new node to the tree
+    return NewNode;
+}
+
+// -----------------------------------------------------------------------------
+
 VariableNode* VirconASMParser::ParseVariable( TokenIterator& TokenPosition )
 {
     // consume the definition keyword
@@ -718,7 +764,15 @@ void VirconASMParser::ParseTopLevel( TokenList& Tokens_ )
             continue;
         }
         
-        // CASE 6: Variable definition
+        // CASE 6: Pointer data
+        if( NextToken->Type() == TokenTypes::PointerKeyword )
+        {
+            PointerDataNode* ParsedData = ParsePointerData( TokenPosition );
+            ProgramAST.push_back( ParsedData );
+            continue;
+        }
+        
+        // CASE 7: Variable definition
         if( NextToken->Type() == TokenTypes::DefineKeyword )
         {
             VariableNode* ParsedDefinition = ParseVariable( TokenPosition );
@@ -726,7 +780,7 @@ void VirconASMParser::ParseTopLevel( TokenList& Tokens_ )
             continue;
         }
         
-        // CASE 7: Data file
+        // CASE 8: Data file
         if( NextToken->Type() == TokenTypes::DataFileKeyword )
         {
             DataFileNode* ParsedData = ParseDataFile( TokenPosition );

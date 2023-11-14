@@ -30,9 +30,10 @@ enum class TokenTypes
     IOPort,             // all I/O ports: GPU, Gamepads, ...
     IOPortValue,        // all predefined I/O port values: GPU/SPU commands, etc
     Variable,           // variables declared to be replaced with a value
-    IntegerKeyword,     // statement to define non-executable data integers
-    FloatKeyword,       // statement to define non-executable data floats
-    StringKeyword,      // statement to define a non-executable data string
+    IntegerKeyword,     // statement to define non-executable data integers as literals
+    FloatKeyword,       // statement to define non-executable data floats as literals
+    StringKeyword,      // statement to define a non-executable data string as a literal
+    PointerKeyword,     // statement to define a non-executable data pointers as labels
     DefineKeyword,      // statement to define a variable
     DataFileKeyword,    // statement to insert data from another file
     Comma,              // to separate operands
@@ -244,6 +245,17 @@ class StringKeywordToken: public Token
 
 // -----------------------------------------------------------------------------
 
+class PointerKeywordToken: public Token
+{
+    public:
+        
+        virtual TokenTypes Type() { return TokenTypes::PointerKeyword; }
+        virtual std::string ToString();
+        virtual Token* Clone();
+};
+
+// -----------------------------------------------------------------------------
+
 class DefineKeywordToken: public Token
 {
     public:
@@ -350,6 +362,7 @@ VariableToken* NewVariableToken( int LineNumber, std::string& Name );
 IntegerKeywordToken* NewIntegerKeywordToken( int LineNumber );
 FloatKeywordToken* NewFloatKeywordToken( int LineNumber );
 StringKeywordToken* NewStringKeywordToken( int LineNumber );
+PointerKeywordToken* NewPointerKeywordToken( int LineNumber );
 DefineKeywordToken* NewDefineKeywordToken( int LineNumber );
 DataFileKeywordToken* NewDataFileKeywordToken( int LineNumber );
 CommaToken* NewCommaToken( int LineNumber );

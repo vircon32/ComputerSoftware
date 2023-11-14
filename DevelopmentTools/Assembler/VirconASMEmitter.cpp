@@ -291,6 +291,9 @@ void VirconASMEmitter::Emit( NodeList& ProgramAST_ )
         else if( Node->Type() == ASTNodeTypes::StringData )
           ROMAddress += ((StringDataNode*)Node)->Value.size() + 1;  // strings are zero-terminated!
         
+        else if( Node->Type() == ASTNodeTypes::PointerData )
+          ROMAddress += ((PointerDataNode*)Node)->LabelNames.size();
+        
         else if( Node->Type() == ASTNodeTypes::Label )
         {
             string LabelName = ((LabelNode*)Node)->Name;
@@ -372,7 +375,19 @@ void VirconASMEmitter::Emit( NodeList& ProgramAST_ )
             ROM.back().AsBinary = 0;
         }
         
-        // CASE 4: Data Files -> Add all its contents to ROM
+        // CASE 4: Pointers -> Add each label address to the ROM
+        else if( Node->Type() == ASTNodeTypes::PointerData )
+        {
+            PointerDataNode* PDN = (PointerDataNode*)Node;
+            
+            for( std::string LabelName: PDN->LabelNames )
+            {
+                ROM.emplace_back();
+                ROM.back().AsInteger = GetLabelAddress( *Node, LabelName );
+            }
+        }
+        
+        // CASE 5: Data Files -> Add all its contents to ROM
         else if( Node->Type() == ASTNodeTypes::DataFile )
         {
             DataFileNode* DFN = (DataFileNode*)Node;
@@ -384,4 +399,3 @@ void VirconASMEmitter::Emit( NodeList& ProgramAST_ )
         // (define nodes are ignored)
     }
 }
-
