@@ -286,10 +286,9 @@ int main( int NumberOfArguments, char* Arguments[] )
         if( NumberOfArguments == 2 )
         {
             string CartridgePath = Arguments[ 1 ];
-            Console.LoadCartridge( CartridgePath );
             
-            // in this case, turn on the console too
-            Emulator.SetPower( true );
+            // this will also turn on the console
+            GUI_LoadCartridge( CartridgePath );
         }
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
