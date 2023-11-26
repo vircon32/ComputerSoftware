@@ -25,6 +25,25 @@
     char PathSeparator = '/';
 #endif
 
+// -----------------------------------------------------------------------------
+
+// auxiliary function to unify forward and back slashes
+string NormalizePathSeparators( const string& FilePath )
+{
+    string NormalizedPath = FilePath;
+    
+    for( auto& c: NormalizedPath )
+    {
+        #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+            if( c == '/' ) c = '\\';
+        #else
+            if( c == '\\' ) c = '/';
+        #endif
+    }
+    
+    return NormalizedPath;
+}
+
 
 // =============================================================================
 //      STRING MANIPULATION FUNCTIONS
@@ -67,29 +86,31 @@ string ReplaceFileExtension( const string& FilePath, const string& NewExtension 
 
 string GetPathDirectory( const string& FilePath )
 {
-    size_t SlashPosition = FilePath.rfind( PathSeparator );
+    string NormalizedPath = NormalizePathSeparators( FilePath );
+    size_t SlashPosition = NormalizedPath.rfind( PathSeparator );
     
     // careful, if the path is empty (i.e. current folder)
     // we need to return a dot or else paths will be wrong
     if( SlashPosition == string::npos )
       return string(".") + PathSeparator;
     
-    return FilePath.substr( 0, SlashPosition+1 );
+    return NormalizedPath.substr( 0, SlashPosition+1 );
 }
 
 // -----------------------------------------------------------------------------
 
 string GetPathFileName( const string& FilePath )
 {
-    size_t SlashPosition = FilePath.rfind( PathSeparator );
+    string NormalizedPath = NormalizePathSeparators( FilePath );
+    size_t SlashPosition = NormalizedPath.rfind( PathSeparator );
     
     if( SlashPosition == string::npos )
       return "";
     
-    if( FilePath.size() < (SlashPosition+2) )
+    if( NormalizedPath.size() < (SlashPosition+2) )
       return "";
     
-    return FilePath.substr( SlashPosition+1, FilePath.size()-1 );
+    return NormalizedPath.substr( SlashPosition+1, NormalizedPath.size()-1 );
 }
 
 
