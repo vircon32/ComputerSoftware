@@ -138,6 +138,13 @@ string DefineKeywordToken::ToString()
 
 // -----------------------------------------------------------------------------
 
+string IncludeKeywordToken::ToString()
+{
+    return "Include keyword";
+}
+
+// -----------------------------------------------------------------------------
+
 string DataFileKeywordToken::ToString()
 {
     return "DataFile keyword";
@@ -194,7 +201,7 @@ string CloseBracketToken::ToString()
 Token* StartOfFileToken::Clone()
 {
     StartOfFileToken* Cloned = new StartOfFileToken;
-    Cloned->LineInSource = LineInSource;
+    Cloned->Location = Location;
     return Cloned;
 }
 
@@ -203,7 +210,7 @@ Token* StartOfFileToken::Clone()
 Token* EndOfFileToken::Clone()
 {
     EndOfFileToken* Cloned = new EndOfFileToken;
-    Cloned->LineInSource = LineInSource;
+    Cloned->Location = Location;
     return Cloned;
 }
 
@@ -211,147 +218,154 @@ Token* EndOfFileToken::Clone()
 
 Token* LiteralIntegerToken::Clone()
 {
-    return NewIntegerToken( LineInSource, Value );
+    return NewIntegerToken( Location, Value );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* LiteralFloatToken::Clone()
 {
-    return NewFloatToken( LineInSource, Value );
+    return NewFloatToken( Location, Value );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* LiteralStringToken::Clone()
 {
-    return NewStringToken( LineInSource, Value );
+    return NewStringToken( Location, Value );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* LabelToken::Clone()
 {
-    return NewLabelToken( LineInSource, Name );
+    return NewLabelToken( Location, Name );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* InstructionOpCodeToken::Clone()
 {
-    return NewOpCodeToken( LineInSource, Which );
+    return NewOpCodeToken( Location, Which );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* CPURegisterToken::Clone()
 {
-    return NewRegisterToken( LineInSource, Which );
+    return NewRegisterToken( Location, Which );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* IOPortToken::Clone()
 {
-    return NewPortToken( LineInSource, Which );
+    return NewPortToken( Location, Which );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* IOPortValueToken::Clone()
 {
-    return NewPortValueToken( LineInSource, Which );
+    return NewPortValueToken( Location, Which );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* VariableToken::Clone()
 {
-    return NewVariableToken( LineInSource, Name );
+    return NewVariableToken( Location, Name );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* IntegerKeywordToken::Clone()
 {
-    return NewIntegerKeywordToken( LineInSource );
+    return NewIntegerKeywordToken( Location );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* FloatKeywordToken::Clone()
 {
-    return NewFloatKeywordToken( LineInSource );
+    return NewFloatKeywordToken( Location );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* StringKeywordToken::Clone()
 {
-    return NewStringKeywordToken( LineInSource );
+    return NewStringKeywordToken( Location );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* PointerKeywordToken::Clone()
 {
-    return NewPointerKeywordToken( LineInSource );
+    return NewPointerKeywordToken( Location );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* DefineKeywordToken::Clone()
 {
-    return NewDefineKeywordToken( LineInSource );
+    return NewDefineKeywordToken( Location );
+}
+
+// -----------------------------------------------------------------------------
+
+Token* IncludeKeywordToken::Clone()
+{
+    return NewIncludeKeywordToken( Location );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* DataFileKeywordToken::Clone()
 {
-    return NewDataFileKeywordToken( LineInSource );
+    return NewDataFileKeywordToken( Location );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* CommaToken::Clone()
 {
-    return NewCommaToken( LineInSource );
+    return NewCommaToken( Location );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* ColonToken::Clone()
 {
-    return NewColonToken( LineInSource );
+    return NewColonToken( Location );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* PlusToken::Clone()
 {
-    return NewPlusToken( LineInSource );
+    return NewPlusToken( Location );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* MinusToken::Clone()
 {
-    return NewMinusToken( LineInSource );
+    return NewMinusToken( Location );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* OpenBracketToken::Clone()
 {
-    return NewOpenBracketToken( LineInSource );
+    return NewOpenBracketToken( Location );
 }
 
 // -----------------------------------------------------------------------------
 
 Token* CloseBracketToken::Clone()
 {
-    return NewCloseBracketToken( LineInSource );
+    return NewCloseBracketToken( Location );
 }
 
 
@@ -360,199 +374,208 @@ Token* CloseBracketToken::Clone()
 // =============================================================================
 
 
-LiteralIntegerToken* NewIntegerToken( int LineNumber, int32_t Value )
+LiteralIntegerToken* NewIntegerToken( SourceLocation Location, int32_t Value )
 {
     LiteralIntegerToken* NewToken = new LiteralIntegerToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     NewToken->Value = Value;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-LiteralFloatToken* NewFloatToken( int LineNumber, float Value )
+LiteralFloatToken* NewFloatToken( SourceLocation Location, float Value )
 {
     LiteralFloatToken* NewToken = new LiteralFloatToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     NewToken->Value = Value;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-LiteralStringToken* NewStringToken( int LineNumber, std::string Value )
+LiteralStringToken* NewStringToken( SourceLocation Location, std::string Value )
 {
     LiteralStringToken* NewToken = new LiteralStringToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     NewToken->Value = Value;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-CPURegisterToken* NewRegisterToken( int LineNumber, CPURegisters Which )
+CPURegisterToken* NewRegisterToken( SourceLocation Location, CPURegisters Which )
 {
     CPURegisterToken* NewToken = new CPURegisterToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     NewToken->Which = Which;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-InstructionOpCodeToken* NewOpCodeToken( int LineNumber, InstructionOpCodes Which )
+InstructionOpCodeToken* NewOpCodeToken( SourceLocation Location, InstructionOpCodes Which )
 {
     InstructionOpCodeToken* NewToken = new InstructionOpCodeToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     NewToken->Which = Which;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-IOPortToken* NewPortToken( int LineNumber, IOPorts Which )
+IOPortToken* NewPortToken( SourceLocation Location, IOPorts Which )
 {
     IOPortToken* NewToken = new IOPortToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     NewToken->Which = Which;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-IOPortValueToken* NewPortValueToken( int LineNumber, IOPortValues Which )
+IOPortValueToken* NewPortValueToken( SourceLocation Location, IOPortValues Which )
 {
     IOPortValueToken* NewToken = new IOPortValueToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     NewToken->Which = Which;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-LabelToken* NewLabelToken( int LineNumber, string& Name )
+LabelToken* NewLabelToken( SourceLocation Location, string& Name )
 {
     LabelToken* NewToken = new LabelToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     NewToken->Name = Name;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-VariableToken* NewVariableToken( int LineNumber, std::string& Name )
+VariableToken* NewVariableToken( SourceLocation Location, std::string& Name )
 {
     VariableToken* NewToken = new VariableToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     NewToken->Name = Name;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-IntegerKeywordToken* NewIntegerKeywordToken( int LineNumber )
+IntegerKeywordToken* NewIntegerKeywordToken( SourceLocation Location )
 {
     IntegerKeywordToken* NewToken = new IntegerKeywordToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-FloatKeywordToken* NewFloatKeywordToken( int LineNumber )
+FloatKeywordToken* NewFloatKeywordToken( SourceLocation Location )
 {
     FloatKeywordToken* NewToken = new FloatKeywordToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-StringKeywordToken* NewStringKeywordToken( int LineNumber )
+StringKeywordToken* NewStringKeywordToken( SourceLocation Location )
 {
     StringKeywordToken* NewToken = new StringKeywordToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-PointerKeywordToken* NewPointerKeywordToken( int LineNumber )
+PointerKeywordToken* NewPointerKeywordToken( SourceLocation Location )
 {
     PointerKeywordToken* NewToken = new PointerKeywordToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-DefineKeywordToken* NewDefineKeywordToken( int LineNumber )
+DefineKeywordToken* NewDefineKeywordToken( SourceLocation Location )
 {
     DefineKeywordToken* NewToken = new DefineKeywordToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-DataFileKeywordToken* NewDataFileKeywordToken( int LineNumber )
+IncludeKeywordToken* NewIncludeKeywordToken( SourceLocation Location )
+{
+    IncludeKeywordToken* NewToken = new IncludeKeywordToken;
+    NewToken->Location = Location;
+    return NewToken;
+}
+
+// -----------------------------------------------------------------------------
+
+DataFileKeywordToken* NewDataFileKeywordToken( SourceLocation Location )
 {
     DataFileKeywordToken* NewToken = new DataFileKeywordToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-CommaToken* NewCommaToken( int LineNumber )
+CommaToken* NewCommaToken( SourceLocation Location )
 {
     CommaToken* NewToken = new CommaToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-ColonToken* NewColonToken( int LineNumber )
+ColonToken* NewColonToken( SourceLocation Location )
 {
     ColonToken* NewToken = new ColonToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-PlusToken* NewPlusToken( int LineNumber )
+PlusToken* NewPlusToken( SourceLocation Location )
 {
     PlusToken* NewToken = new PlusToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-MinusToken* NewMinusToken( int LineNumber )
+MinusToken* NewMinusToken( SourceLocation Location )
 {
     MinusToken* NewToken = new MinusToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-OpenBracketToken* NewOpenBracketToken( int LineNumber )
+OpenBracketToken* NewOpenBracketToken( SourceLocation Location )
 {
     OpenBracketToken* NewToken = new OpenBracketToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-CloseBracketToken* NewCloseBracketToken( int LineNumber )
+CloseBracketToken* NewCloseBracketToken( SourceLocation Location )
 {
     CloseBracketToken* NewToken = new CloseBracketToken;
-    NewToken->LineInSource = LineNumber;
+    NewToken->Location = Location;
     return NewToken;
 }
 
@@ -569,7 +592,7 @@ bool IsFirstToken( Token* T )
 
 // -----------------------------------------------------------------------------
 
-bool IsFirstToken( TokenIterator& TokenPosition )
+bool IsFirstToken( const TokenIterator& TokenPosition )
 {
     Token* CurrentToken = *TokenPosition;
     return (CurrentToken->Type() == TokenTypes::StartOfFile);
@@ -584,7 +607,7 @@ bool IsLastToken( Token* T )
 
 // -----------------------------------------------------------------------------
 
-bool IsLastToken( TokenIterator& TokenPosition )
+bool IsLastToken( const TokenIterator& TokenPosition )
 {
     Token* CurrentToken = *TokenPosition;
     return (CurrentToken->Type() == TokenTypes::EndOfFile);

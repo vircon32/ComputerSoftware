@@ -45,7 +45,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "assemble v23.1.16" << endl;
+    cout << "assemble v23.11.29" << endl;
     cout << "Vircon32 assembler by Javier Carracedo" << endl;
 }
 
@@ -147,14 +147,6 @@ int main( int NumberOfArguments, char* Arguments[] )
         if( sizeof( float ) != 4 )
           throw runtime_error( "ABI is incorrect: floating point numbers must be 4 bytes in size" );
         
-        // open the file as text
-        ifstream InputFile;
-        InputFile.open( InputPath, ios_base::in );
-        InputFile.seekg( 0, ios::beg );
-        
-        if( InputFile.fail() )
-          throw runtime_error( "cannot open input file \"" + InputPath + "\"" );
-          
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STAGE 1: Run lexer
         // (Text --> List of tokens)
@@ -162,16 +154,13 @@ int main( int NumberOfArguments, char* Arguments[] )
           cout << "stage 1: running lexer" << endl;
         
         VirconASMLexer Lexer;
-        Lexer.ReadTokens( InputFile );
-        
-        // we are finished with the input file
-        InputFile.close();
+        Lexer.ReadTokens( InputPath );
         
         // DEBUG: log all tokens, with their line numbers
         if( Debug )
           for( auto T : Lexer.Tokens )
           {
-               cout << "[" + to_string( T->LineInSource ) + "] ";
+               cout << "[" + to_string( T->Location.Line ) + "] ";
                cout << T->ToString() << endl;
           }
         

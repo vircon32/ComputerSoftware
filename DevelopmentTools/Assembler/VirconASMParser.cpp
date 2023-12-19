@@ -45,7 +45,7 @@ bool AreInSameLine( Token* T1, Token*T2 )
     if( IsFirstToken(T2) || IsLastToken(T2) ) return false;
     
     // now we can just compare
-    return (T1->LineInSource == T2->LineInSource);
+    return AreInSameLine( T1->Location, T2->Location );
 }
 
 
@@ -83,10 +83,10 @@ VirconASMParser::~VirconASMParser()
 // =============================================================================
 
 
-void VirconASMParser::EmitError( int LineInSource, const string& Description, bool Abort )
+void VirconASMParser::EmitError( SourceLocation Location, const string& Description, bool Abort )
 {
-    cerr << "line " << LineInSource << ": ";
-    cerr << "parser error: " << Description << endl;
+    cerr << Location.FilePath << ':' << Location.Line;
+    cerr << ": parser error: " << Description << endl;
     
     if( Abort )
       throw runtime_error( "assembly terminated" );
@@ -94,10 +94,10 @@ void VirconASMParser::EmitError( int LineInSource, const string& Description, bo
 
 // -----------------------------------------------------------------------------
 
-void VirconASMParser::EmitWarning( int LineInSource, const string& Description )
+void VirconASMParser::EmitWarning( SourceLocation Location, const string& Description )
 {
-    cerr << "line " << LineInSource << ": " << endl;
-    cerr << "parser warning: " << Description << endl;
+    cerr << Location.FilePath << ':' << Location.Line;
+    cerr << ": parser warning: " << Description << endl;
 }
 
 
@@ -109,7 +109,7 @@ void VirconASMParser::EmitWarning( int LineInSource, const string& Description )
 void VirconASMParser::ExpectSameLine( Token* Start, Token* Current )
 {
     if( !AreInSameLine( Start, Current ) )
-      EmitError( Start->LineInSource, "unexpected end of line" );
+      EmitError( Start->Location, "unexpected end of line" );
 }
 
 // -----------------------------------------------------------------------------
@@ -117,7 +117,7 @@ void VirconASMParser::ExpectSameLine( Token* Start, Token* Current )
 void VirconASMParser::ExpectEndOfLine( Token* Start, Token* Current )
 {
     if( AreInSameLine( Start, Current ) )
-      EmitError( Start->LineInSource, "expected end of line" );
+      EmitError( Start->Location, "expected end of line" );
 }
 
 // -----------------------------------------------------------------------------
@@ -141,7 +141,7 @@ void VirconASMParser::ReplaceVariable( VariableNode* Variable, TokenIterator Sta
             // the line number can be adjusted!!
             // otherwise parsing will be incorrect
             Token* ClonedValue = Variable->VariableValue->Clone();
-            ClonedValue->LineInSource = T->LineInSource;
+            ClonedValue->Location = T->Location;
             
             *Position = ClonedValue;
         }
@@ -190,7 +190,7 @@ BasicValue VirconASMParser::ParseBasicValue( TokenIterator& TokenPosition )
             return Value;
         }
         
-        else EmitError( StartToken->LineInSource, "expected number literal after sign" );
+        else EmitError( StartToken->Location, "expected number literal after sign" );
     }
     
     
@@ -243,7 +243,7 @@ BasicValue VirconASMParser::ParseBasicValue( TokenIterator& TokenPosition )
     }
     
     // OTHERS
-    EmitError( StartToken->LineInSource, "expected basic value" );
+    EmitError( StartToken->Location, "expected basic value" );
     
     // this prevents a compiler warning
     return Value;
@@ -276,7 +276,7 @@ InstructionOperand VirconASMParser::ParseOperand( TokenIterator& TokenPosition )
         Token* AfterBaseToken = *TokenPosition;
         
         if( !AreInSameLine( StartToken, AfterBaseToken ) )
-          EmitError( StartToken->LineInSource, "expected closing bracket" );
+          EmitError( StartToken->Location, "expected closing bracket" );
         
         if( AfterBaseToken->Type() == TokenTypes::Plus || AfterBaseToken->Type() == TokenTypes::Minus )
         {
@@ -285,7 +285,7 @@ InstructionOperand VirconASMParser::ParseOperand( TokenIterator& TokenPosition )
         }
         
         else if( AfterBaseToken->Type() != TokenTypes::CloseBracket )
-          EmitError( StartToken->LineInSource, "incorrect memory address" );
+          EmitError( StartToken->Location, "incorrect memory address" );
         
         // expect a closing bracket in the same line
         Token* ClosingToken = *TokenPosition;
@@ -293,7 +293,7 @@ InstructionOperand VirconASMParser::ParseOperand( TokenIterator& TokenPosition )
         if( (*TokenPosition)->Type() != TokenTypes::CloseBracket
             || !AreInSameLine( StartToken, ClosingToken )
           )
-          EmitError( StartToken->LineInSource, "expected closing bracket" );
+          EmitError( StartToken->Location, "expected closing bracket" );
         
         TokenPosition++;
     }
@@ -306,7 +306,7 @@ InstructionOperand VirconASMParser::ParseOperand( TokenIterator& TokenPosition )
     {
         if( Operand.Base.Type != BasicValueTypes::CPURegister
         ||  Operand.Offset.Type != BasicValueTypes::LiteralInteger )
-          EmitError( StartToken->LineInSource, "memory addresses with offset must be in the form [register +/- integer]" );
+          EmitError( StartToken->Location, "memory addresses with offset must be in the form [register +/- integer]" );
     }
     
     // addresses without offsets must be either register, integer or label
@@ -315,7 +315,7 @@ InstructionOperand VirconASMParser::ParseOperand( TokenIterator& TokenPosition )
         if( Operand.Base.Type != BasicValueTypes::CPURegister
         &&  Operand.Base.Type != BasicValueTypes::LiteralInteger
         &&  Operand.Base.Type != BasicValueTypes::Label )
-          EmitError( StartToken->LineInSource, "invalid memory address (must be register, integer or label)" );
+          EmitError( StartToken->Location, "invalid memory address (must be register, integer or label)" );
     }
     
     // interpret an offset of zero as no offset
@@ -337,7 +337,7 @@ InstructionNode* VirconASMParser::ParseInstruction( TokenIterator& TokenPosition
     TokenPosition++;
     
     InstructionNode* NewNode = new InstructionNode;
-    NewNode->LineInSource = OpCodeToken->LineInSource;
+    NewNode->Location = OpCodeToken->Location;
     NewNode->OpCode = ((InstructionOpCodeToken*)OpCodeToken)->Which;
     
     // read all parameters in the same line
@@ -353,7 +353,7 @@ InstructionNode* VirconASMParser::ParseInstruction( TokenIterator& TokenPosition
           break;
         
         if( CommaToken->Type() != TokenTypes::Comma )
-          EmitError( OpCodeToken->LineInSource, "expected comma separating instruction operands" );
+          EmitError( OpCodeToken->Location, "expected comma separating instruction operands" );
         
         // consume the comma
         TokenPosition++;
@@ -362,7 +362,7 @@ InstructionNode* VirconASMParser::ParseInstruction( TokenIterator& TokenPosition
         Token* NextOperandToken = *TokenPosition;
         
         if( NextOperandToken->Type() == TokenTypes::EndOfFile )
-          EmitError( OpCodeToken->LineInSource, "unexpected end of file" );
+          EmitError( OpCodeToken->Location, "unexpected end of file" );
         
         // the next operand must be in the same line
         ExpectSameLine( OpCodeToken, NextOperandToken );
@@ -381,7 +381,7 @@ IntegerDataNode* VirconASMParser::ParseIntegerData( TokenIterator& TokenPosition
     
     // create a node
     IntegerDataNode* NewNode = new IntegerDataNode;
-    NewNode->LineInSource = KeywordToken->LineInSource;
+    NewNode->Location = KeywordToken->Location;
     
     // read all values in the same line
     while( AreInSameLine( KeywordToken, *TokenPosition ) )
@@ -391,7 +391,7 @@ IntegerDataNode* VirconASMParser::ParseIntegerData( TokenIterator& TokenPosition
         
         // (2) expect it to be a literal integer
         if( Value.Type != BasicValueTypes::LiteralInteger )
-          EmitError( KeywordToken->LineInSource, "expected a number literal" );
+          EmitError( KeywordToken->Location, "expected a number literal" );
           
         else
           NewNode->Values.push_back( Value.IntegerField );
@@ -403,7 +403,7 @@ IntegerDataNode* VirconASMParser::ParseIntegerData( TokenIterator& TokenPosition
           break;
         
         if( CommaToken->Type() != TokenTypes::Comma )
-          EmitError( KeywordToken->LineInSource, "expected comma separating integer values" );
+          EmitError( KeywordToken->Location, "expected comma separating integer values" );
         
         // consume the comma
         TokenPosition++;
@@ -411,7 +411,7 @@ IntegerDataNode* VirconASMParser::ParseIntegerData( TokenIterator& TokenPosition
     
     // ensure that there is at least 1 value
     if( NewNode->Values.size() == 0 )
-      EmitError( KeywordToken->LineInSource, "no integer literals were declared" );
+      EmitError( KeywordToken->Location, "no integer literals were declared" );
     
     // add the new node to the tree
     return NewNode;
@@ -427,7 +427,7 @@ FloatDataNode* VirconASMParser::ParseFloatData( TokenIterator& TokenPosition )
     
     // create a node
     FloatDataNode* NewNode = new FloatDataNode;
-    NewNode->LineInSource = KeywordToken->LineInSource;
+    NewNode->Location = KeywordToken->Location;
     
     // read all values in the same line
     while( AreInSameLine( KeywordToken, *TokenPosition ) )
@@ -443,7 +443,7 @@ FloatDataNode* VirconASMParser::ParseFloatData( TokenIterator& TokenPosition )
           NewNode->Values.push_back( Value.IntegerField );
         
         else
-          EmitError( KeywordToken->LineInSource, "expected a number literal" );
+          EmitError( KeywordToken->Location, "expected a number literal" );
         
         // (3) expect either a comma or a new line
         Token* CommaToken = *TokenPosition;
@@ -452,7 +452,7 @@ FloatDataNode* VirconASMParser::ParseFloatData( TokenIterator& TokenPosition )
           break;
         
         if( CommaToken->Type() != TokenTypes::Comma )
-          EmitError( KeywordToken->LineInSource, "expected comma separating float values" );
+          EmitError( KeywordToken->Location, "expected comma separating float values" );
         
         // consume the comma
         TokenPosition++;
@@ -460,7 +460,7 @@ FloatDataNode* VirconASMParser::ParseFloatData( TokenIterator& TokenPosition )
     
     // ensure that there is at least 1 value
     if( NewNode->Values.size() == 0 )
-      EmitError( KeywordToken->LineInSource, "no float literals were declared" );
+      EmitError( KeywordToken->Location, "no float literals were declared" );
     
     // add the new node to the tree
     return NewNode;
@@ -476,14 +476,14 @@ StringDataNode* VirconASMParser::ParseStringData( TokenIterator& TokenPosition )
     
     // create a node
     StringDataNode* NewNode = new StringDataNode;
-    NewNode->LineInSource = KeywordToken->LineInSource;
+    NewNode->Location = KeywordToken->Location;
     
     // expect a string in the same line
     ExpectSameLine( KeywordToken, *TokenPosition );
     Token* ValueToken = *TokenPosition;
     
     if( ValueToken->Type() != TokenTypes::LiteralString )
-      EmitError( KeywordToken->LineInSource, "expected a string literal" );
+      EmitError( KeywordToken->Location, "expected a string literal" );
       
     // now we can assign the value
     // (it is no problem if the string is empty)
@@ -507,7 +507,7 @@ PointerDataNode* VirconASMParser::ParsePointerData( TokenIterator& TokenPosition
     
     // create a node
     PointerDataNode* NewNode = new PointerDataNode;
-    NewNode->LineInSource = KeywordToken->LineInSource;
+    NewNode->Location = KeywordToken->Location;
     
     // read all values in the same line
     while( AreInSameLine( KeywordToken, *TokenPosition ) )
@@ -517,7 +517,7 @@ PointerDataNode* VirconASMParser::ParsePointerData( TokenIterator& TokenPosition
         
         // (2) expect it to be a label
         if( Value.Type != BasicValueTypes::Label )
-          EmitError( KeywordToken->LineInSource, "expected a label" );
+          EmitError( KeywordToken->Location, "expected a label" );
           
         else
           NewNode->LabelNames.push_back( Value.LabelField );
@@ -529,7 +529,7 @@ PointerDataNode* VirconASMParser::ParsePointerData( TokenIterator& TokenPosition
           break;
         
         if( CommaToken->Type() != TokenTypes::Comma )
-          EmitError( KeywordToken->LineInSource, "expected comma separating labels" );
+          EmitError( KeywordToken->Location, "expected comma separating labels" );
         
         // consume the comma
         TokenPosition++;
@@ -537,7 +537,7 @@ PointerDataNode* VirconASMParser::ParsePointerData( TokenIterator& TokenPosition
     
     // ensure that there is at least 1 value
     if( NewNode->LabelNames.size() == 0 )
-      EmitError( KeywordToken->LineInSource, "no pointers to labels were declared" );
+      EmitError( KeywordToken->Location, "no pointers to labels were declared" );
     
     // add the new node to the tree
     return NewNode;
@@ -553,13 +553,13 @@ VariableNode* VirconASMParser::ParseVariable( TokenIterator& TokenPosition )
     
     // create a node
     VariableNode* NewNode = new VariableNode;
-    NewNode->LineInSource = DefineToken->LineInSource;
+    NewNode->Location = DefineToken->Location;
     
     // expect a variable name in the same line
     ExpectSameLine( DefineToken, *TokenPosition );
     
     if( (*TokenPosition)->Type() != TokenTypes::Variable )
-      EmitError( DefineToken->LineInSource, "expected variable name" );
+      EmitError( DefineToken->Location, "expected variable name" );
     
     VariableToken* NameToken = (VariableToken*)(*TokenPosition);
     NewNode->VariableName = NameToken->Name;
@@ -585,7 +585,7 @@ VariableNode* VirconASMParser::ParseVariable( TokenIterator& TokenPosition )
     
     // only some redefinitions are allowed
     if( !IsValidVariableValue( ValueToken )  )
-      EmitError( DefineToken->LineInSource, "definition value is not valid" );
+      EmitError( DefineToken->Location, "definition value is not valid" );
     
     // now we can assign the value
     NewNode->VariableValue = ValueToken;
@@ -610,7 +610,7 @@ VariableNode* VirconASMParser::ParseVariable( TokenIterator& TokenPosition )
             Float->Value = -Float->Value;
         }
         
-        else EmitError( DefineToken->LineInSource, "definition value is not valid" );
+        else EmitError( DefineToken->Location, "definition value is not valid" );
     }
     
     // variables need to be applied immediately!
@@ -631,14 +631,14 @@ LabelNode* VirconASMParser::ParseLabel( TokenIterator& TokenPosition )
     TokenPosition++;
     
     LabelNode* NewNode = new LabelNode;
-    NewNode->LineInSource = NameToken->LineInSource;
+    NewNode->Location = NameToken->Location;
     NewNode->Name = ((LabelToken*)NameToken)->Name;
     
     // expect a colon in the same line
     ExpectSameLine( NameToken, *TokenPosition );
     
     if( (*TokenPosition)->Type() != TokenTypes::Colon )
-      EmitError( NameToken->LineInSource, "expected colon after label declaration" );
+      EmitError( NameToken->Location, "expected colon after label declaration" );
     
     // expect an end of line
     TokenPosition++;
@@ -657,21 +657,21 @@ DataFileNode* VirconASMParser::ParseDataFile( TokenIterator& TokenPosition )
     
     // create a node
     DataFileNode* NewNode = new DataFileNode;
-    NewNode->LineInSource = KeywordToken->LineInSource;
+    NewNode->Location = KeywordToken->Location;
     
     // expect a string in the same line
     ExpectSameLine( KeywordToken, *TokenPosition );
     Token* ValueToken = *TokenPosition;
     
     if( ValueToken->Type() != TokenTypes::LiteralString )
-      EmitError( KeywordToken->LineInSource, "expected a string literal" );
+      EmitError( KeywordToken->Location, "expected a string literal" );
       
     // now we can assign the value
     NewNode->FilePath = ((LiteralStringToken*)ValueToken)->Value;
     
     // ensure that the string has at least 1 character
     if( NewNode->FilePath.size() == 0 )
-      EmitError( KeywordToken->LineInSource, "file path is empty" );
+      EmitError( KeywordToken->Location, "file path is empty" );
     
     // expect an end of line
     TokenPosition++;
@@ -789,6 +789,6 @@ void VirconASMParser::ParseTopLevel( TokenList& Tokens_ )
         }
         
         // other (not valid)
-        EmitError( NextToken->LineInSource, "invalid start of sentence: " + NextToken->ToString() );
+        EmitError( NextToken->Location, "invalid start of sentence: " + NextToken->ToString() );
     }
 }

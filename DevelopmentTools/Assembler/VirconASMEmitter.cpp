@@ -111,10 +111,10 @@ VirconASMEmitter::VirconASMEmitter()
 // =============================================================================
 
 
-void VirconASMEmitter::EmitError( int LineInSource, const string& Description, bool Abort )
+void VirconASMEmitter::EmitError( SourceLocation Location, const string& Description, bool Abort )
 {
-    cerr << "line " << LineInSource << ": ";
-    cerr << "emitter error: " << Description << endl;
+    cerr << Location.FilePath << ':' << Location.Line;
+    cerr << ": emitter error: " << Description << endl;
     
     if( Abort )
       throw runtime_error( "assembly terminated" );
@@ -122,10 +122,10 @@ void VirconASMEmitter::EmitError( int LineInSource, const string& Description, b
 
 // -----------------------------------------------------------------------------
 
-void VirconASMEmitter::EmitWarning( int LineInSource, const string& Description )
+void VirconASMEmitter::EmitWarning( SourceLocation Location, const string& Description )
 {
-    cerr << "line " << LineInSource << ": " << endl;
-    cerr << "emitter warning: " << Description << endl;
+    cerr << Location.FilePath << ':' << Location.Line;
+    cerr << ": emitter warning: " << Description << endl;
 }
 
 
@@ -141,13 +141,13 @@ void VirconASMEmitter::CheckOperands( InstructionNode& Node, int NumberOfOperand
     
     if( ExistingOperands < NumberOfOperands )
     {
-        EmitError( Node.LineInSource, string("too few operands for instruction ")+ OpCode );
+        EmitError( Node.Location, string("too few operands for instruction ")+ OpCode );
         throw runtime_error( "Aborted" );
     }
     
     else if( ExistingOperands > NumberOfOperands )
     {
-        EmitError( Node.LineInSource, string("too many operands for instruction ")+ OpCode );
+        EmitError( Node.Location, string("too many operands for instruction ")+ OpCode );
         throw runtime_error( "Aborted" );
     }
 }
@@ -161,7 +161,7 @@ int32_t VirconASMEmitter::GetLabelAddress( ASTNode& ReferringNode, string LabelN
     
     if( AddressPair == LabelAddresses.end() )
     {
-        EmitError( ReferringNode.LineInSource, string("label \"") + LabelName + "\" was not declared" );
+        EmitError( ReferringNode.Location, string("label \"") + LabelName + "\" was not declared" );
         throw runtime_error( "Aborted" );
     }
     
@@ -181,7 +181,7 @@ void VirconASMEmitter::ReadDataFile( DataFileNode& Node )
     unsigned FileSize = InputFile.tellg();
     
     if( (FileSize % 4) != 0 )
-      EmitError( Node.LineInSource, "data file size must be a multiple of 4 to be inserted in a rom" );
+      EmitError( Node.Location, "data file size must be a multiple of 4 to be inserted in a rom" );
     
     // read it into the vector
     Node.FileContents.resize( FileSize / 4 );
@@ -209,7 +209,7 @@ int32_t VirconASMEmitter::GetValueAsAddress( InstructionNode& Node, BasicValue& 
         return GetLabelAddress( Node, LabelName );
     }
     
-    EmitError( Node.LineInSource, OpCodeName + " expected a memory address (integer or label)" );
+    EmitError( Node.Location, OpCodeName + " expected a memory address (integer or label)" );
     
     // stop the warning
     return 0;
@@ -239,7 +239,7 @@ V32Word VirconASMEmitter::GetValueAsImmediate( InstructionNode& Node, BasicValue
     
     // other cases
     else
-      EmitError( Node.LineInSource, OpCodeName + " expected a numeric value (integer, float or label)" );
+      EmitError( Node.Location, OpCodeName + " expected a numeric value (integer, float or label)" );
 
     return Result;
 }
@@ -300,7 +300,7 @@ void VirconASMEmitter::Emit( NodeList& ProgramAST_ )
             
             // check for double declaration!
             if( LabelAddresses.find( LabelName ) !=  LabelAddresses.end() )
-              EmitError( Node->LineInSource, "label \"" + LabelName + "\" has already been declared" );
+              EmitError( Node->Location, "label \"" + LabelName + "\" has already been declared" );
             
             LabelAddresses[ LabelName ] = ROMAddress;
         }

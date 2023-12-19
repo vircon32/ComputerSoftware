@@ -35,8 +35,8 @@ class VirconASMEmitter
     public:
         
         // error handling
-        void EmitError( int LineInSource, const std::string& Description, bool Abort = true );
-        void EmitWarning( int LineInSource, const std::string& Description );
+        void EmitError( SourceLocation Location, const std::string& Description, bool Abort = true );
+        void EmitWarning( SourceLocation Location, const std::string& Description );
         
         // helpers for emit functions
         void CheckOperands( InstructionNode& Node, int NumberOfOperands );

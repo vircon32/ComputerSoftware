@@ -48,7 +48,7 @@ class ASTNode
 {
     public:
         
-        int LineInSource;
+        SourceLocation Location;
         int AddressInROM;
         
     public:

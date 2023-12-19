@@ -35,9 +35,12 @@ class VirconASMLexer
 {
     protected:
         
-        // link to source data
-        std::ifstream* Input;
-        int CurrentReadLine;
+        // source input file
+        std::ifstream Input;
+        std::string InputDirectory;
+        
+        // lexing state
+        SourceLocation ReadLocation;
         char PreviousChar;
         
     public:
@@ -74,7 +77,7 @@ class VirconASMLexer
        ~VirconASMLexer();
        
         // main lexer function
-        void ReadTokens( std::ifstream& Input_ );
+        void ReadTokens( const std::string& FilePath );
 };
 
 

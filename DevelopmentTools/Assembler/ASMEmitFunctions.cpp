@@ -45,7 +45,7 @@ void EmitJumpInstruction( VirconASMEmitter &Emitter, InstructionNode& Node )
     
     // operand cannot be a memory address
     if( Operand.IsMemoryAddress )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " address cannot be obtained from memory" );
+      Emitter.EmitError( Node.Location, OpCodeName + " address cannot be obtained from memory" );
     
     // CASE 1: Address from a register
     if( Operand.Base.Type == BasicValueTypes::CPURegister )
@@ -78,11 +78,11 @@ void EmitConditionalJumpInstruction( VirconASMEmitter &Emitter, InstructionNode&
     
     // operand 1 must be a register
     if( Operand1.IsMemoryAddress || Operand1.Base.Type != BasicValueTypes::CPURegister )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " first operand must be a register" );
+      Emitter.EmitError( Node.Location, OpCodeName + " first operand must be a register" );
         
     // operand 2 cannot be a memory address
     if( Operand2.IsMemoryAddress )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " address cannot be obtained from memory" );
+      Emitter.EmitError( Node.Location, OpCodeName + " address cannot be obtained from memory" );
     
     // CASE 1: Address from a register
     if( Operand2.Base.Type == BasicValueTypes::CPURegister )
@@ -115,7 +115,7 @@ void EmitInstructionWith1Register( VirconASMEmitter &Emitter, InstructionNode& N
     
     // operand must be a register
     if( Operand.IsMemoryAddress || Operand.Base.Type != BasicValueTypes::CPURegister )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " operand must be a register" );
+      Emitter.EmitError( Node.Location, OpCodeName + " operand must be a register" );
     
     // emit the instruction
     InstructionWord.AsInstruction.Register1 = (int)Operand.Base.RegisterField;
@@ -137,10 +137,10 @@ void EmitInstructionWith2Registers( VirconASMEmitter &Emitter, InstructionNode& 
     
     // both operands must be registers
     if( Operand1.IsMemoryAddress || Operand1.Base.Type != BasicValueTypes::CPURegister )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " operands must both be registers" );
+      Emitter.EmitError( Node.Location, OpCodeName + " operands must both be registers" );
     
     if( Operand2.IsMemoryAddress || Operand2.Base.Type != BasicValueTypes::CPURegister )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " operands must both be registers" );
+      Emitter.EmitError( Node.Location, OpCodeName + " operands must both be registers" );
     
     // emit the instruction
     InstructionWord.AsInstruction.Register1 = (int)Operand1.Base.RegisterField;
@@ -164,11 +164,11 @@ void EmitInstructionWithRegAndInteger( VirconASMEmitter &Emitter, InstructionNod
     
     // operand 1 must be a register
     if( Operand1.IsMemoryAddress || Operand1.Base.Type != BasicValueTypes::CPURegister )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " first operand must be a register" );
+      Emitter.EmitError( Node.Location, OpCodeName + " first operand must be a register" );
     
     // operand 2 cannot be a memory address
     if( Operand2.IsMemoryAddress )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " second operand cannot be from memory" );
+      Emitter.EmitError( Node.Location, OpCodeName + " second operand cannot be from memory" );
     
     // CASE 1: operand 2 is a literal integer
     if( Operand2.Base.Type == BasicValueTypes::LiteralInteger )
@@ -189,7 +189,7 @@ void EmitInstructionWithRegAndInteger( VirconASMEmitter &Emitter, InstructionNod
     }
     
     else
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " second operand must be a register or an integer" );
+      Emitter.EmitError( Node.Location, OpCodeName + " second operand must be a register or an integer" );
 }
 
 // -----------------------------------------------------------------------------
@@ -208,11 +208,11 @@ void EmitInstructionWithRegAndFloat( VirconASMEmitter &Emitter, InstructionNode&
     
     // operand 1 must be a register
     if( Operand1.IsMemoryAddress || Operand1.Base.Type != BasicValueTypes::CPURegister )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " first operand must be a register" );
+      Emitter.EmitError( Node.Location, OpCodeName + " first operand must be a register" );
     
     // operand 2 cannot be a memory address
     if( Operand2.IsMemoryAddress )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " second operand cannot be from memory" );
+      Emitter.EmitError( Node.Location, OpCodeName + " second operand cannot be from memory" );
     
     // CASE 1: operand 2 is a literal float
     if( Operand2.Base.Type == BasicValueTypes::LiteralFloat )
@@ -244,7 +244,7 @@ void EmitInstructionWithRegAndFloat( VirconASMEmitter &Emitter, InstructionNode&
     }
     
     else
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " second operand must be a register or a float" );
+      Emitter.EmitError( Node.Location, OpCodeName + " second operand must be a register or a float" );
 }
 
 
@@ -404,18 +404,18 @@ void EmitMOV( VirconASMEmitter &Emitter, InstructionNode& Node )
     
     // both operands cannot be memory addresses
     if( Operand1.IsMemoryAddress && Operand2.IsMemoryAddress )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " operands cannot both be from memory" );
+      Emitter.EmitError( Node.Location, OpCodeName + " operands cannot both be from memory" );
     
     // at least 1 operand must be a register
     bool Op1IsRegister = (!Operand1.IsMemoryAddress && Operand1.Base.Type == BasicValueTypes::CPURegister);
     bool Op2IsRegister = (!Operand2.IsMemoryAddress && Operand2.Base.Type == BasicValueTypes::CPURegister);
     
     if( !Op1IsRegister && !Op2IsRegister )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " must have at least 1 register as operand" );
+      Emitter.EmitError( Node.Location, OpCodeName + " must have at least 1 register as operand" );
     
     // operand 1 must be a valid destination
     if( !Op1IsRegister && !Operand1.IsMemoryAddress )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " first operand must be either a register or a memory address" );
+      Emitter.EmitError( Node.Location, OpCodeName + " first operand must be either a register or a memory address" );
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // CASE 1: Register <-- Register
@@ -551,16 +551,16 @@ void EmitLEA( VirconASMEmitter &Emitter, InstructionNode& Node )
     bool Op1IsRegister = (!Operand1.IsMemoryAddress && Operand1.Base.Type == BasicValueTypes::CPURegister);
     
     if( !Op1IsRegister )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " first operand must be a register" );
+      Emitter.EmitError( Node.Location, OpCodeName + " first operand must be a register" );
     
     // operand 2 must be a memory address
     if( !Operand2.IsMemoryAddress )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " second operand must be a memory address" );
+      Emitter.EmitError( Node.Location, OpCodeName + " second operand must be a memory address" );
     
     // operand 2 must use a register
     // (it can be [R] or [R+imm], but not [imm])
     if( Operand2.Base.Type != BasicValueTypes::CPURegister )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " second operand must use a register as base address" );
+      Emitter.EmitError( Node.Location, OpCodeName + " second operand must use a register as base address" );
     
     // fill common fields in the instruction
     InstructionWord.AsInstruction.OpCode = (int)Node.OpCode;
@@ -615,11 +615,11 @@ void EmitIN( VirconASMEmitter &Emitter, InstructionNode& Node )
     
     // operand 1 must be a register
     if( Operand1.IsMemoryAddress || Operand1.Base.Type != BasicValueTypes::CPURegister )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " first operand cannot be from memory" );
+      Emitter.EmitError( Node.Location, OpCodeName + " first operand cannot be from memory" );
     
     // operand 2 must be an I/O port
     if( Operand2.IsMemoryAddress || Operand2.Base.Type != BasicValueTypes::IOPort )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " second operand must be an I/O port" );
+      Emitter.EmitError( Node.Location, OpCodeName + " second operand must be an I/O port" );
     
     // emit the instruction
     InstructionWord.AsInstruction.Register1 = (int)Operand1.Base.RegisterField;
@@ -643,11 +643,11 @@ void EmitOUT( VirconASMEmitter &Emitter, InstructionNode& Node )
     
     // operand 1 must be an I/O port
     if( Operand1.IsMemoryAddress || Operand1.Base.Type != BasicValueTypes::IOPort )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " first operand must be an I/O port" );
+      Emitter.EmitError( Node.Location, OpCodeName + " first operand must be an I/O port" );
     
     // operand 2 cannot be a memory address
     if( Operand2.IsMemoryAddress )
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " second operand cannot be from memory" );
+      Emitter.EmitError( Node.Location, OpCodeName + " second operand cannot be from memory" );
     
     // CASE 1: operand 2 is a literal integer
     if( Operand2.Base.Type == BasicValueTypes::LiteralInteger )
@@ -688,7 +688,7 @@ void EmitOUT( VirconASMEmitter &Emitter, InstructionNode& Node )
     }
     
     else
-      Emitter.EmitError( Node.LineInSource, OpCodeName + " second operand must be a register or a literal (port value/integer/float)" );
+      Emitter.EmitError( Node.Location, OpCodeName + " second operand must be a register or a literal (port value/integer/float)" );
 }
 
 // -----------------------------------------------------------------------------

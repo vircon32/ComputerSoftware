@@ -43,8 +43,8 @@ class VirconASMParser
     protected:
         
         // error handling
-        void EmitError( int LineInSource, const std::string& Description, bool Abort = true );
-        void EmitWarning( int LineInSource, const std::string& Description );
+        void EmitError( SourceLocation Location, const std::string& Description, bool Abort = true );
+        void EmitWarning( SourceLocation Location, const std::string& Description );
         
         // miscellaneous functions
         void ExpectSameLine( Token* Start, Token* Current );

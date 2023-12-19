@@ -6,6 +6,9 @@
     // include common Vircon headers
     #include "../../VirconDefinitions/Enumerations.hpp"
     
+    // include project headers
+    #include "SourceLocation.hpp"
+    
     // include C/C++ headers
     #include <string>       // [ C++ STL ] Strings
     #include <list>         // [ C++ STL ] Lists
@@ -35,6 +38,7 @@ enum class TokenTypes
     StringKeyword,      // statement to define a non-executable data string as a literal
     PointerKeyword,     // statement to define a non-executable data pointers as labels
     DefineKeyword,      // statement to define a variable
+    IncludeKeyword,     // statement to include another file
     DataFileKeyword,    // statement to insert data from another file
     Comma,              // to separate operands
     Colon,              // to delimit labels
@@ -53,8 +57,11 @@ enum class TokenTypes
 class Token
 {
     public:
+    
+        SourceLocation Location;
         
-        int LineInSource;
+    public:
+        
         virtual ~Token() {};   // needed for base classes to be destructed
         virtual TokenTypes Type() = 0;
         virtual std::string ToString() = 0;
@@ -267,6 +274,17 @@ class DefineKeywordToken: public Token
 
 // -----------------------------------------------------------------------------
 
+class IncludeKeywordToken: public Token
+{
+    public:
+        
+        virtual TokenTypes Type() { return TokenTypes::IncludeKeyword; }
+        virtual std::string ToString();
+        virtual Token* Clone();
+};
+
+// -----------------------------------------------------------------------------
+
 class DataFileKeywordToken: public Token
 {
     public:
@@ -350,27 +368,28 @@ class CloseBracketToken: public Token
 
 // these would really only needed for tokens that use parameters
 // but we want it for all of them to init their source location
-LiteralIntegerToken* NewIntegerToken( int LineNumber, int32_t Value );
-LiteralFloatToken* NewFloatToken( int LineNumber, float Value );
-LiteralStringToken* NewStringToken( int LineNumber, std::string Value );
-LabelToken* NewLabelToken( int LineNumber, std::string& Name );
-InstructionOpCodeToken* NewOpCodeToken( int LineNumber, V32::InstructionOpCodes Which );
-CPURegisterToken* NewRegisterToken( int LineNumber, V32::CPURegisters Which );
-IOPortToken* NewPortToken( int LineNumber, V32::IOPorts Which );
-IOPortValueToken* NewPortValueToken( int LineNumber, V32::IOPortValues Which );
-VariableToken* NewVariableToken( int LineNumber, std::string& Name );
-IntegerKeywordToken* NewIntegerKeywordToken( int LineNumber );
-FloatKeywordToken* NewFloatKeywordToken( int LineNumber );
-StringKeywordToken* NewStringKeywordToken( int LineNumber );
-PointerKeywordToken* NewPointerKeywordToken( int LineNumber );
-DefineKeywordToken* NewDefineKeywordToken( int LineNumber );
-DataFileKeywordToken* NewDataFileKeywordToken( int LineNumber );
-CommaToken* NewCommaToken( int LineNumber );
-ColonToken* NewColonToken( int LineNumber );
-PlusToken* NewPlusToken( int LineNumber );
-MinusToken* NewMinusToken( int LineNumber );
-OpenBracketToken* NewOpenBracketToken( int LineNumber );
-CloseBracketToken* NewCloseBracketToken( int LineNumber );
+LiteralIntegerToken* NewIntegerToken( SourceLocation Location, int32_t Value );
+LiteralFloatToken* NewFloatToken( SourceLocation Location, float Value );
+LiteralStringToken* NewStringToken( SourceLocation Location, std::string Value );
+LabelToken* NewLabelToken( SourceLocation Location, std::string& Name );
+InstructionOpCodeToken* NewOpCodeToken( SourceLocation Location, V32::InstructionOpCodes Which );
+CPURegisterToken* NewRegisterToken( SourceLocation Location, V32::CPURegisters Which );
+IOPortToken* NewPortToken( SourceLocation Location, V32::IOPorts Which );
+IOPortValueToken* NewPortValueToken( SourceLocation Location, V32::IOPortValues Which );
+VariableToken* NewVariableToken( SourceLocation Location, std::string& Name );
+IntegerKeywordToken* NewIntegerKeywordToken( SourceLocation Location );
+FloatKeywordToken* NewFloatKeywordToken( SourceLocation Location );
+StringKeywordToken* NewStringKeywordToken( SourceLocation Location );
+PointerKeywordToken* NewPointerKeywordToken( SourceLocation Location );
+DefineKeywordToken* NewDefineKeywordToken( SourceLocation Location );
+IncludeKeywordToken* NewIncludeKeywordToken( SourceLocation Location );
+DataFileKeywordToken* NewDataFileKeywordToken( SourceLocation Location );
+CommaToken* NewCommaToken( SourceLocation Location );
+ColonToken* NewColonToken( SourceLocation Location );
+PlusToken* NewPlusToken( SourceLocation Location );
+MinusToken* NewMinusToken( SourceLocation Location );
+OpenBracketToken* NewOpenBracketToken( SourceLocation Location );
+CloseBracketToken* NewCloseBracketToken( SourceLocation Location );
 
 
 // =============================================================================
@@ -379,10 +398,10 @@ CloseBracketToken* NewCloseBracketToken( int LineNumber );
 
 
 bool IsLastToken( Token* T );
-bool IsLastToken( TokenIterator& TokenPosition );
+bool IsLastToken( const TokenIterator& TokenPosition );
 
 bool IsFirstToken( Token* T );
-bool IsFirstToken( TokenIterator& TokenPosition );
+bool IsFirstToken( const TokenIterator& TokenPosition );
 
 
 // *****************************************************************************

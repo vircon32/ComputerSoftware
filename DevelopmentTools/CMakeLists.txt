@@ -276,6 +276,7 @@ set(ASSEMBLER_SRC
     ${ASSEMBLER_DIR}/ASTNodes.cpp
     ${ASSEMBLER_DIR}/Globals.cpp
     ${ASSEMBLER_DIR}/Main.cpp
+    ${ASSEMBLER_DIR}/SourceLocation.cpp
     ${ASSEMBLER_DIR}/Tokens.cpp
     ${ASSEMBLER_DIR}/VirconASMEmitter.cpp
     ${ASSEMBLER_DIR}/VirconASMLexer.cpp
