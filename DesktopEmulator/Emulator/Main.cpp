@@ -194,6 +194,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         
         // ImGui needs to use a custom font to render non-default characters
         string FontPath = EmulatorFolder + "GuiFont.ttf";
+        if( !FileExists( FontPath ) ) THROW( "Cannot find GUI font file \"GuiFont.ttf\"" );
         ImGui::GetIO().Fonts->AddFontFromFileTTF( FontPath.c_str(), 16, NULL, GlyphRanges.Data );
         ImGui::GetIO().Fonts->Build();
         
@@ -536,11 +537,12 @@ int main( int NumberOfArguments, char* Arguments[] )
         LOG( "ERROR: " + string(e.what()) );
         string Message = Texts( TextIDs::Errors_TopLevel_Label ) + string(e.what());
         
-        DelayedMessageBox
+        SDL_ShowSimpleMessageBox
         (
             SDL_MESSAGEBOX_ERROR,
             Texts( TextIDs::Errors_TopLevel_Title ),
-            Message.c_str()
+            Message.c_str(),
+            nullptr
         );
     }
     

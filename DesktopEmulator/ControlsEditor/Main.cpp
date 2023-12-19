@@ -329,6 +329,7 @@ int main()
         
         // ImGui needs to use a custom font to render non-default characters
         string FontPath = ProgramFolder + "GuiFont.ttf";
+        if( !FileExists( FontPath ) ) THROW( "Cannot find GUI font file \"GuiFont.ttf\"" );
         ImGui::GetIO().Fonts->AddFontFromFileTTF( FontPath.c_str(), 15, NULL, GlyphRanges.Data );
         ImGui::GetIO().Fonts->Build();
         
