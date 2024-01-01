@@ -5,7 +5,7 @@
     
     // include SDL2 headers
     #define SDL_MAIN_HANDLED
-    #include <SDL2/SDL.h>       // [ SDL2 ] Main header
+    #include "SDL.h"            // [ SDL2 ] Main header
     
     // this is needed by OpenGL headers under Windows
     #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)

@@ -23,7 +23,7 @@
     #include <cstddef>          // [ ANSI C ] Standard definitions
     
     // include SDL2 headers
-    #include <SDL2/SDL_image.h>     // [ SDL2 ] SDL_Image
+    #include "SDL_image.h"      // [ SDL2 ] SDL_Image
     
     // include imgui headers
     #include <imgui/imgui.h>                // [ Dear ImGui ] Main header

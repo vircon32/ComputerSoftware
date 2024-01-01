@@ -7,12 +7,12 @@
     #include "../VirconDefinitions/Constants.hpp"
     
     // include C/C++ headers
-    #include <string>               // [ C++ STL ] Strings
-    #include <map>                  // [ C++ STL ] Maps
+    #include <string>           // [ C++ STL ] Strings
+    #include <map>              // [ C++ STL ] Maps
     
     // include SDL2 headers
     #define SDL_MAIN_HANDLED
-    #include <SDL2/SDL.h>           // [ SDL2 ] Main header
+    #include "SDL.h"            // [ SDL2 ] Main header
 // *****************************************************************************
 
 

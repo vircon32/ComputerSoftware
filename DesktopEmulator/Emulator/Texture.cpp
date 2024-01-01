@@ -10,8 +10,8 @@
     
     // include SDL2 headers
     #define SDL_MAIN_HANDLED
-    #include <SDL2/SDL.h>           // [ SDL2 ] Main header
-    #include <SDL2/SDL_image.h>     // [ SDL2 ] SDL_Image
+    #include "SDL.h"            // [ SDL2 ] Main header
+    #include "SDL_image.h"      // [ SDL2 ] SDL_Image
     
     // declare used namespaces
     using namespace std;
