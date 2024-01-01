@@ -16,14 +16,14 @@
     #include "Globals.hpp"
     
     // include C/C++ headers
-    #include <string>       // [ C++ STL ] Strings
-    #include <fstream>      // [ C++ STL ] File streams
-    #include <iostream>     // [ C++ STL ] I/O Streams
-    #include <stdexcept>    // [ C++ STL ] Exceptions
+    #include <string>           // [ C++ STL ] Strings
+    #include <fstream>          // [ C++ STL ] File streams
+    #include <iostream>         // [ C++ STL ] I/O Streams
+    #include <stdexcept>        // [ C++ STL ] Exceptions
     
     // include SDL headers
     #define SDL_MAIN_HANDLED
-    #include <SDL2/SDL.h>
+    #include "SDL.h"            // [ SDL2 ] Main header
     
     // declare used namespaces
     using namespace std;

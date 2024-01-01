@@ -13,7 +13,7 @@
     
     // include SDL2 headers
     #define SDL_MAIN_HANDLED
-    #include <SDL2/SDL.h>       // [ SDL2 ] Main header
+    #include "SDL.h"            // [ SDL2 ] Main header
     
     // declare used namespaces
     using namespace std;
