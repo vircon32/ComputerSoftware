@@ -33,7 +33,6 @@ enum class ASTNodeTypes
     FloatData,
     StringData,
     PointerData,
-    VariableDefinition,
     Label,
     DataFile
 };
@@ -198,21 +197,6 @@ class PointerDataNode: public ASTNode
     public:
         
         virtual ASTNodeTypes Type() { return ASTNodeTypes::PointerData; };
-        virtual std::string ToString();
-};
-
-// -----------------------------------------------------------------------------
-
-class VariableNode: public ASTNode
-{
-    public:
-        
-        std::string VariableName;
-        Token* VariableValue;       // just a copied pointer
-        
-    public:
-        
-        virtual ASTNodeTypes Type() { return ASTNodeTypes::VariableDefinition; };
         virtual std::string ToString();
 };
 

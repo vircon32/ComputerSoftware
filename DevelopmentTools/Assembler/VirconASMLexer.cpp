@@ -70,7 +70,7 @@ bool IsValidNameContinuation( char c )
 
 bool IsSeparator( char c )
 {
-    static const char OtherSeparators[] = ":,[]+-;";
+    static const char OtherSeparators[] = ":,[]+-%;";
     
     if( IsWhitespace( c ) ) return true;
     return( strchr( OtherSeparators, c ) != nullptr );
@@ -133,7 +133,6 @@ char VirconASMLexer::GetChar()
 }
 
 // -----------------------------------------------------------------------------
-
 
 // use this instead of just Input.peek()
 // to reliably detect the end of file
@@ -524,46 +523,13 @@ void VirconASMLexer::ReadTokens( const std::string& FilePath )
             continue;
         }
         
-        // recognize punctuation characters
-        if( c == ',' )
-        {
-            GetChar();
-            Tokens.push_back( NewCommaToken( ReadLocation ) );
-            continue;
-        }
+        // recognize symbols
+        char SymbolString[ 2 ] = { c, 0 };
         
-        if( c == ':' )
+        if( IsSymbol( SymbolString ) )
         {
             GetChar();
-            Tokens.push_back( NewColonToken( ReadLocation ) );
-            continue;
-        }
-        
-        if( c == '[' )
-        {
-            GetChar();
-            Tokens.push_back( NewOpenBracketToken( ReadLocation ) );
-            continue;
-        }
-        
-        if( c == ']' )
-        {
-            GetChar();
-            Tokens.push_back( NewCloseBracketToken( ReadLocation ) );
-            continue;
-        }
-        
-        if( c == '+' )
-        {
-            GetChar();
-            Tokens.push_back( NewPlusToken( ReadLocation ) );
-            continue;
-        }
-        
-        if( c == '-' )
-        {
-            GetChar();
-            Tokens.push_back( NewMinusToken( ReadLocation ) );
+            Tokens.push_back( NewSymbolToken( ReadLocation, WhichSymbol( SymbolString ) ) );
             continue;
         }
         
@@ -577,57 +543,42 @@ void VirconASMLexer::ReadTokens( const std::string& FilePath )
         
         // any other cases will be taken as idenfitiers
         string Name = ReadName();
-        
         string NameUpper = Name;
         for( char& c : NameUpper ) c = toupper( c );
         
-        // CASE 1: name is a hardware name
-        if( IsRegisterName( Name ) )
+        // CASE 1: name is a label idenfitier
+        if( Name[ 0 ] == '_' )
+          Tokens.push_back( NewLabelToken( ReadLocation, Name ) );
+        
+        // CASE 2: name is a boolean value
+        else if( NameUpper == "TRUE" )
+          Tokens.push_back( NewIntegerToken( ReadLocation, 1 ) );
+        else if( NameUpper == "FALSE" )
+          Tokens.push_back( NewIntegerToken( ReadLocation, 0 ) );
+        
+        // CASE 3: name is a hardware name
+        else if( IsRegisterName( Name ) )
           Tokens.push_back( NewRegisterToken( ReadLocation, StringToRegister(Name) ) );
         
-        // CASE 2: name is an I/O port name
+        // CASE 4: name is an I/O port name
         else if( IsPortName( Name ) )
           Tokens.push_back( NewPortToken( ReadLocation, StringToPort(Name) ) );
         
-        // CASE 3: name is an I/O port value name
+        // CASE 5: name is an I/O port value name
         else if( IsPortValueName( Name ) )
           Tokens.push_back( NewPortValueToken( ReadLocation, StringToPortValue(Name) ) );
         
-        // CASE 4: name is an instruction name
+        // CASE 6: name is an instruction name
         else if( IsOpCodeName( Name ) )
           Tokens.push_back( NewOpCodeToken( ReadLocation, StringToOpCode(Name) ) );
         
-        // CASE 5: name is an label idenfitier
-        else if( Name[0] == '_' )
-          Tokens.push_back( NewLabelToken( ReadLocation, Name ) );
+        // CASE 7: name is a keyword
+        else if( IsKeyword( Name ) )
+          Tokens.push_back( NewKeywordToken( ReadLocation, WhichKeyword(Name) ) );
         
-        // CASE 6: name is the integer keyword
-        else if( NameUpper == "INTEGER" )
-          Tokens.push_back( NewIntegerKeywordToken( ReadLocation ) );
-        
-        // CASE 7: name is the float keyword
-        else if( NameUpper == "FLOAT" )
-          Tokens.push_back( NewFloatKeywordToken( ReadLocation ) );
-        
-        // CASE 8: name is the string keyword
-        else if( NameUpper == "STRING" )
-          Tokens.push_back( NewStringKeywordToken( ReadLocation ) );
-        
-        // CASE 9: name is the pointer keyword
-        else if( NameUpper == "POINTER" )
-          Tokens.push_back( NewPointerKeywordToken( ReadLocation ) );
-        
-        // CASE 10: name is the define keyword
-        else if( NameUpper == "DEFINE" )
-          Tokens.push_back( NewDefineKeywordToken( ReadLocation ) );
-        
-        // CASE 11: names is the datafile keyword
-        else if( NameUpper == "DATAFILE" )
-          Tokens.push_back( NewDataFileKeywordToken( ReadLocation ) );
-        
-        // CASE 12: other identifiers are taken as variable names
+        // CASE 8: other names are taken as just plain identifiers
         else
-          Tokens.push_back( NewVariableToken( ReadLocation, Name ) );
+          Tokens.push_back( NewIdentifierToken( ReadLocation, Name ) );
     }
     
     // we are finished with the input file

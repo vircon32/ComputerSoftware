@@ -49,7 +49,6 @@ class VirconASMParser
         // miscellaneous functions
         void ExpectSameLine( Token* Start, Token* Current );
         void ExpectEndOfLine( Token* Start, Token* Current );
-        void ReplaceVariable( VariableNode* Variable, TokenIterator StartingPosition );  // NOT a reference!
         
         // contextual parsing functions
         BasicValue ParseBasicValue( TokenIterator& TokenPosition );
@@ -59,7 +58,6 @@ class VirconASMParser
         FloatDataNode* ParseFloatData( TokenIterator& TokenPosition );
         StringDataNode* ParseStringData( TokenIterator& TokenPosition );
         PointerDataNode* ParsePointerData( TokenIterator& TokenPosition );
-        VariableNode* ParseVariable( TokenIterator& TokenPosition );
         LabelNode* ParseLabel( TokenIterator& TokenPosition );
         DataFileNode* ParseDataFile( TokenIterator& TokenPosition );
         

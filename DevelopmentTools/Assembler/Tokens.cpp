@@ -22,6 +22,122 @@
 
 
 // =============================================================================
+//      TOKEN TYPES --> STRING MAPS
+// =============================================================================
+
+
+const map< KeywordTypes, string > KeywordNames =
+{
+    { KeywordTypes::Integer,  "integer"  },
+    { KeywordTypes::Float,    "float"    },
+    { KeywordTypes::String,   "string"   },
+    { KeywordTypes::Pointer,  "else"     },
+    { KeywordTypes::DataFile, "datafile" }
+};
+
+// -----------------------------------------------------------------------------
+
+const map< SymbolTypes, string > SymbolNames =
+{
+    { SymbolTypes::Comma,        "," },
+    { SymbolTypes::Colon,        ":" },
+    { SymbolTypes::Plus,         "+" },
+    { SymbolTypes::Minus,        "-" },
+    { SymbolTypes::Percent,      "%" },
+    { SymbolTypes::OpenBracket,  "[" },
+    { SymbolTypes::CloseBracket, "]" }
+};
+
+
+// =============================================================================
+//      TOKEN TYPES: DETECTION FROM A STRING
+// =============================================================================
+
+
+bool IsKeyword( const std::string& Word )
+{
+    // search in the map
+    for( auto MapPair : KeywordNames )
+      if( MapPair.second == Word )
+        return true;
+    
+    return false;
+}
+
+// -----------------------------------------------------------------------------
+
+bool IsSymbol( const std::string& Word )
+{
+    // search in the map
+    for( auto MapPair : SymbolNames )
+      if( MapPair.second == Word )
+        return true;
+    
+    return false;    
+}
+
+
+// =============================================================================
+//      TOKEN TYPES: CONVERSION FROM STRING
+// =============================================================================
+
+
+KeywordTypes WhichKeyword( const string& Name )
+{
+    // search in the map
+    for( auto MapPair : KeywordNames )
+      if( MapPair.second == Name )
+        return MapPair.first;
+    
+    // not found
+    throw runtime_error( "string cannot be converted to a keyword" );
+}
+
+// -----------------------------------------------------------------------------
+
+SymbolTypes WhichSymbol( const string& Name )
+{
+    // search in the map
+    for( auto MapPair : SymbolNames )
+      if( MapPair.second == Name )
+        return MapPair.first;
+    
+    // not found
+    throw runtime_error( "string cannot be converted to a symbol" );
+}
+
+
+// =============================================================================
+//      TOKEN TYPES: CONVERSION TO STRING
+// =============================================================================
+
+
+string KeywordToString( KeywordTypes Which )
+{
+    // just search in the map
+    auto MapPair = KeywordNames.find( Which );
+    if( MapPair != KeywordNames.end() )
+      return MapPair->second;
+    
+    // not found
+    throw runtime_error( "keyword cannot be converted to a string" );
+}
+
+// -----------------------------------------------------------------------------
+
+string SymbolToString( SymbolTypes Which )
+{
+    // just search in the map
+    auto MapPair = SymbolNames.find( Which );
+    if( MapPair != SymbolNames.end() )
+      return MapPair->second;
+    
+    // not found
+    throw runtime_error( "symbol cannot be converted to a string" );
+}
+
+
+// =============================================================================
 //      TOKEN CLASSES: STRING CONVERSIONS
 // =============================================================================
 
@@ -68,6 +184,13 @@ string LabelToken::ToString()
 
 // -----------------------------------------------------------------------------
 
+string IdentifierToken::ToString()
+{
+    return string("Identifier: ") + Name;
+}
+
+// -----------------------------------------------------------------------------
+
 string InstructionOpCodeToken::ToString()
 {
     return string("Instruction: ") + OpCodeToString( Which );
@@ -96,100 +219,16 @@ string IOPortValueToken::ToString()
 
 // -----------------------------------------------------------------------------
 
-string VariableToken::ToString()
+string KeywordToken::ToString()
 {
-    return string("Variable: ") + Name;
+    return "Keyword " + KeywordToString( Which );
 }
 
 // -----------------------------------------------------------------------------
 
-string IntegerKeywordToken::ToString()
+string SymbolToken::ToString()
 {
-    return "Integer keyword";
-}
-
-// -----------------------------------------------------------------------------
-
-string FloatKeywordToken::ToString()
-{
-    return "Float keyword";
-}
-
-// -----------------------------------------------------------------------------
-
-string StringKeywordToken::ToString()
-{
-    return "String keyword";
-}
-
-// -----------------------------------------------------------------------------
-
-string PointerKeywordToken::ToString()
-{
-    return "Pointer keyword";
-}
-
-// -----------------------------------------------------------------------------
-
-string DefineKeywordToken::ToString()
-{
-    return "Define keyword";
-}
-
-// -----------------------------------------------------------------------------
-
-string IncludeKeywordToken::ToString()
-{
-    return "Include keyword";
-}
-
-// -----------------------------------------------------------------------------
-
-string DataFileKeywordToken::ToString()
-{
-    return "DataFile keyword";
-}
-
-// -----------------------------------------------------------------------------
-
-string CommaToken::ToString()
-{
-    return "Comma";
-}
-
-// -----------------------------------------------------------------------------
-
-string ColonToken::ToString()
-{
-    return "Colon";
-}
-
-// -----------------------------------------------------------------------------
-
-string PlusToken::ToString()
-{
-    return "Plus";
-}
-
-// -----------------------------------------------------------------------------
-
-string MinusToken::ToString()
-{
-    return "Minus";
-}
-
-// -----------------------------------------------------------------------------
-
-string OpenBracketToken::ToString()
-{
-    return "Open Bracket";
-}
-
-// -----------------------------------------------------------------------------
-
-string CloseBracketToken::ToString()
-{
-    return "Close Bracket";
+    return "Symbol " + SymbolToString( Which );
 }
 
 
@@ -244,6 +283,13 @@ Token* LabelToken::Clone()
 
 // -----------------------------------------------------------------------------
 
+Token* IdentifierToken::Clone()
+{
+    return NewIdentifierToken( Location, Name );
+}
+
+// -----------------------------------------------------------------------------
+
 Token* InstructionOpCodeToken::Clone()
 {
     return NewOpCodeToken( Location, Which );
@@ -272,100 +318,16 @@ Token* IOPortValueToken::Clone()
 
 // -----------------------------------------------------------------------------
 
-Token* VariableToken::Clone()
+Token* KeywordToken::Clone()
 {
-    return NewVariableToken( Location, Name );
+    return NewKeywordToken( Location, Which );
 }
 
 // -----------------------------------------------------------------------------
 
-Token* IntegerKeywordToken::Clone()
+Token* SymbolToken::Clone()
 {
-    return NewIntegerKeywordToken( Location );
-}
-
-// -----------------------------------------------------------------------------
-
-Token* FloatKeywordToken::Clone()
-{
-    return NewFloatKeywordToken( Location );
-}
-
-// -----------------------------------------------------------------------------
-
-Token* StringKeywordToken::Clone()
-{
-    return NewStringKeywordToken( Location );
-}
-
-// -----------------------------------------------------------------------------
-
-Token* PointerKeywordToken::Clone()
-{
-    return NewPointerKeywordToken( Location );
-}
-
-// -----------------------------------------------------------------------------
-
-Token* DefineKeywordToken::Clone()
-{
-    return NewDefineKeywordToken( Location );
-}
-
-// -----------------------------------------------------------------------------
-
-Token* IncludeKeywordToken::Clone()
-{
-    return NewIncludeKeywordToken( Location );
-}
-
-// -----------------------------------------------------------------------------
-
-Token* DataFileKeywordToken::Clone()
-{
-    return NewDataFileKeywordToken( Location );
-}
-
-// -----------------------------------------------------------------------------
-
-Token* CommaToken::Clone()
-{
-    return NewCommaToken( Location );
-}
-
-// -----------------------------------------------------------------------------
-
-Token* ColonToken::Clone()
-{
-    return NewColonToken( Location );
-}
-
-// -----------------------------------------------------------------------------
-
-Token* PlusToken::Clone()
-{
-    return NewPlusToken( Location );
-}
-
-// -----------------------------------------------------------------------------
-
-Token* MinusToken::Clone()
-{
-    return NewMinusToken( Location );
-}
-
-// -----------------------------------------------------------------------------
-
-Token* OpenBracketToken::Clone()
-{
-    return NewOpenBracketToken( Location );
-}
-
-// -----------------------------------------------------------------------------
-
-Token* CloseBracketToken::Clone()
-{
-    return NewCloseBracketToken( Location );
+    return NewSymbolToken( Location, Which );
 }
 
 
@@ -399,6 +361,26 @@ LiteralStringToken* NewStringToken( SourceLocation Location, std::string Value )
     LiteralStringToken* NewToken = new LiteralStringToken;
     NewToken->Location = Location;
     NewToken->Value = Value;
+    return NewToken;
+}
+
+// -----------------------------------------------------------------------------
+
+LabelToken* NewLabelToken( SourceLocation Location, string& Name )
+{
+    LabelToken* NewToken = new LabelToken;
+    NewToken->Location = Location;
+    NewToken->Name = Name;
+    return NewToken;
+}
+
+// -----------------------------------------------------------------------------
+
+IdentifierToken* NewIdentifierToken( SourceLocation Location, string& Name )
+{
+    IdentifierToken* NewToken = new IdentifierToken;
+    NewToken->Location = Location;
+    NewToken->Name = Name;
     return NewToken;
 }
 
@@ -444,138 +426,21 @@ IOPortValueToken* NewPortValueToken( SourceLocation Location, IOPortValues Which
 
 // -----------------------------------------------------------------------------
 
-LabelToken* NewLabelToken( SourceLocation Location, string& Name )
+KeywordToken* NewKeywordToken( SourceLocation Location, KeywordTypes Which )
 {
-    LabelToken* NewToken = new LabelToken;
+    KeywordToken* NewToken = new KeywordToken;
     NewToken->Location = Location;
-    NewToken->Name = Name;
+    NewToken->Which = Which;
     return NewToken;
 }
 
 // -----------------------------------------------------------------------------
 
-VariableToken* NewVariableToken( SourceLocation Location, std::string& Name )
+SymbolToken* NewSymbolToken( SourceLocation Location, SymbolTypes Which )
 {
-    VariableToken* NewToken = new VariableToken;
+    SymbolToken* NewToken = new SymbolToken;
     NewToken->Location = Location;
-    NewToken->Name = Name;
-    return NewToken;
-}
-
-// -----------------------------------------------------------------------------
-
-IntegerKeywordToken* NewIntegerKeywordToken( SourceLocation Location )
-{
-    IntegerKeywordToken* NewToken = new IntegerKeywordToken;
-    NewToken->Location = Location;
-    return NewToken;
-}
-
-// -----------------------------------------------------------------------------
-
-FloatKeywordToken* NewFloatKeywordToken( SourceLocation Location )
-{
-    FloatKeywordToken* NewToken = new FloatKeywordToken;
-    NewToken->Location = Location;
-    return NewToken;
-}
-
-// -----------------------------------------------------------------------------
-
-StringKeywordToken* NewStringKeywordToken( SourceLocation Location )
-{
-    StringKeywordToken* NewToken = new StringKeywordToken;
-    NewToken->Location = Location;
-    return NewToken;
-}
-
-// -----------------------------------------------------------------------------
-
-PointerKeywordToken* NewPointerKeywordToken( SourceLocation Location )
-{
-    PointerKeywordToken* NewToken = new PointerKeywordToken;
-    NewToken->Location = Location;
-    return NewToken;
-}
-
-// -----------------------------------------------------------------------------
-
-DefineKeywordToken* NewDefineKeywordToken( SourceLocation Location )
-{
-    DefineKeywordToken* NewToken = new DefineKeywordToken;
-    NewToken->Location = Location;
-    return NewToken;
-}
-
-// -----------------------------------------------------------------------------
-
-IncludeKeywordToken* NewIncludeKeywordToken( SourceLocation Location )
-{
-    IncludeKeywordToken* NewToken = new IncludeKeywordToken;
-    NewToken->Location = Location;
-    return NewToken;
-}
-
-// -----------------------------------------------------------------------------
-
-DataFileKeywordToken* NewDataFileKeywordToken( SourceLocation Location )
-{
-    DataFileKeywordToken* NewToken = new DataFileKeywordToken;
-    NewToken->Location = Location;
-    return NewToken;
-}
-
-// -----------------------------------------------------------------------------
-
-CommaToken* NewCommaToken( SourceLocation Location )
-{
-    CommaToken* NewToken = new CommaToken;
-    NewToken->Location = Location;
-    return NewToken;
-}
-
-// -----------------------------------------------------------------------------
-
-ColonToken* NewColonToken( SourceLocation Location )
-{
-    ColonToken* NewToken = new ColonToken;
-    NewToken->Location = Location;
-    return NewToken;
-}
-
-// -----------------------------------------------------------------------------
-
-PlusToken* NewPlusToken( SourceLocation Location )
-{
-    PlusToken* NewToken = new PlusToken;
-    NewToken->Location = Location;
-    return NewToken;
-}
-
-// -----------------------------------------------------------------------------
-
-MinusToken* NewMinusToken( SourceLocation Location )
-{
-    MinusToken* NewToken = new MinusToken;
-    NewToken->Location = Location;
-    return NewToken;
-}
-
-// -----------------------------------------------------------------------------
-
-OpenBracketToken* NewOpenBracketToken( SourceLocation Location )
-{
-    OpenBracketToken* NewToken = new OpenBracketToken;
-    NewToken->Location = Location;
-    return NewToken;
-}
-
-// -----------------------------------------------------------------------------
-
-CloseBracketToken* NewCloseBracketToken( SourceLocation Location )
-{
-    CloseBracketToken* NewToken = new CloseBracketToken;
-    NewToken->Location = Location;
+    NewToken->Which = Which;
     return NewToken;
 }
 
@@ -613,3 +478,22 @@ bool IsLastToken( const TokenIterator& TokenPosition )
     return (CurrentToken->Type() == TokenTypes::EndOfFile);
 }
 
+// -----------------------------------------------------------------------------
+
+bool TokenIsThisKeyword( Token* T, KeywordTypes Which )
+{
+    if( T->Type() != TokenTypes::Keyword )
+      return false;
+    
+    return ( ((KeywordToken*)T)->Which == Which );
+}
+
+// -----------------------------------------------------------------------------
+
+bool TokenIsThisSymbol( Token* T, SymbolTypes Which )
+{
+    if( T->Type() != TokenTypes::Symbol )
+      return false;
+    
+    return ( ((SymbolToken*)T)->Which == Which );
+}

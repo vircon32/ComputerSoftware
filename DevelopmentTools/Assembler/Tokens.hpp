@@ -28,25 +28,56 @@ enum class TokenTypes
     LiteralFloat,       // can be in scientific notation
     LiteralString,      // can contain escaped characters
     Label,              // named addresses
+    Identifier,         // general identifier, to be recognized as a more specific token
     InstructionOpCode,  // mnemonics for all instructions
     CPURegister,        // all CPU elements: registers, etc
     IOPort,             // all I/O ports: GPU, Gamepads, ...
     IOPortValue,        // all predefined I/O port values: GPU/SPU commands, etc
-    Variable,           // variables declared to be replaced with a value
-    IntegerKeyword,     // statement to define non-executable data integers as literals
-    FloatKeyword,       // statement to define non-executable data floats as literals
-    StringKeyword,      // statement to define a non-executable data string as a literal
-    PointerKeyword,     // statement to define a non-executable data pointers as labels
-    DefineKeyword,      // statement to define a variable
-    IncludeKeyword,     // statement to include another file
-    DataFileKeyword,    // statement to insert data from another file
+    Keyword,            // all language-reserved keywords for statements, etc
+    Symbol              // all delimiters and special symbols
+};
+
+// -----------------------------------------------------------------------------
+
+enum class KeywordTypes
+{
+    Integer,     // statement to define non-executable data integers as literals
+    Float,       // statement to define non-executable data floats as literals
+    String,      // statement to define a non-executable data string as a literal
+    Pointer,     // statement to define a non-executable data pointers as labels
+    DataFile     // statement to insert data from another file
+};
+
+// -----------------------------------------------------------------------------
+
+enum class SymbolTypes
+{
     Comma,              // to separate operands
     Colon,              // to delimit labels
     Plus,               // to denote memory offsets
     Minus,              // to form negative numbers, or to denote memory offsets
+    Percent,            // to form preprocessor directives
     OpenBracket,        // to enclose memory addresses
     CloseBracket        // to enclose memory addresses
 };
+
+
+// =============================================================================
+//      CONVERSIONS: TOKEN TYPES <-> STRING
+// =============================================================================
+
+
+// detection from a string
+bool IsKeyword( const std::string& Word );
+bool IsSymbol( const std::string& Word );
+
+// string --> token types
+KeywordTypes WhichKeyword( const std::string& Name );
+SymbolTypes WhichSymbol( const std::string& Name );
+
+// token types --> string
+std::string KeywordToString( KeywordTypes Which );
+std::string SymbolToString( SymbolTypes Which );
 
 
 // =============================================================================
@@ -154,6 +185,19 @@ class LabelToken: public Token
 
 // -----------------------------------------------------------------------------
 
+class IdentifierToken: public Token
+{
+    public:
+        
+        std::string Name;
+        
+        virtual TokenTypes Type() { return TokenTypes::Identifier; }
+        virtual std::string ToString();
+        virtual Token* Clone();
+};
+
+// -----------------------------------------------------------------------------
+
 class InstructionOpCodeToken: public Token
 {
     public:
@@ -206,156 +250,26 @@ class IOPortValueToken: public Token
 
 // -----------------------------------------------------------------------------
 
-class VariableToken: public Token
+class KeywordToken: public Token
 {
     public:
         
-        std::string Name;
+        KeywordTypes Which;
         
-        virtual TokenTypes Type() { return TokenTypes::Variable; }
+        virtual TokenTypes Type() { return TokenTypes::Keyword; }
         virtual std::string ToString();
         virtual Token* Clone();
 };
 
 // -----------------------------------------------------------------------------
 
-class IntegerKeywordToken: public Token
+class SymbolToken: public Token
 {
     public:
         
-        virtual TokenTypes Type() { return TokenTypes::IntegerKeyword; }
-        virtual std::string ToString();
-        virtual Token* Clone();
-};
-
-// -----------------------------------------------------------------------------
-
-class FloatKeywordToken: public Token
-{
-    public:
+        SymbolTypes Which;
         
-        virtual TokenTypes Type() { return TokenTypes::FloatKeyword; }
-        virtual std::string ToString();
-        virtual Token* Clone();
-};
-
-// -----------------------------------------------------------------------------
-
-class StringKeywordToken: public Token
-{
-    public:
-        
-        virtual TokenTypes Type() { return TokenTypes::StringKeyword; }
-        virtual std::string ToString();
-        virtual Token* Clone();
-};
-
-// -----------------------------------------------------------------------------
-
-class PointerKeywordToken: public Token
-{
-    public:
-        
-        virtual TokenTypes Type() { return TokenTypes::PointerKeyword; }
-        virtual std::string ToString();
-        virtual Token* Clone();
-};
-
-// -----------------------------------------------------------------------------
-
-class DefineKeywordToken: public Token
-{
-    public:
-        
-        virtual TokenTypes Type() { return TokenTypes::DefineKeyword; }
-        virtual std::string ToString();
-        virtual Token* Clone();
-};
-
-// -----------------------------------------------------------------------------
-
-class IncludeKeywordToken: public Token
-{
-    public:
-        
-        virtual TokenTypes Type() { return TokenTypes::IncludeKeyword; }
-        virtual std::string ToString();
-        virtual Token* Clone();
-};
-
-// -----------------------------------------------------------------------------
-
-class DataFileKeywordToken: public Token
-{
-    public:
-        
-        virtual TokenTypes Type() { return TokenTypes::DataFileKeyword; }
-        virtual std::string ToString();
-        virtual Token* Clone();
-};
-
-// -----------------------------------------------------------------------------
-
-class CommaToken: public Token
-{
-    public:
-        
-        virtual TokenTypes Type() { return TokenTypes::Comma; }
-        virtual std::string ToString();
-        virtual Token* Clone();
-};
-
-// -----------------------------------------------------------------------------
-
-class ColonToken: public Token
-{
-    public:
-        
-        virtual TokenTypes Type() { return TokenTypes::Colon; }
-        virtual std::string ToString();
-        virtual Token* Clone();
-};
-
-// -----------------------------------------------------------------------------
-
-class PlusToken: public Token
-{
-    public:
-        
-        virtual TokenTypes Type() { return TokenTypes::Plus; }
-        virtual std::string ToString();
-        virtual Token* Clone();
-};
-
-// -----------------------------------------------------------------------------
-
-class MinusToken: public Token
-{
-    public:
-        
-        virtual TokenTypes Type() { return TokenTypes::Minus; }
-        virtual std::string ToString();
-        virtual Token* Clone();
-};
-
-// -----------------------------------------------------------------------------
-
-class OpenBracketToken: public Token
-{
-    public:
-        
-        virtual TokenTypes Type() { return TokenTypes::OpenBracket; }
-        virtual std::string ToString();
-        virtual Token* Clone();
-};
-
-// -----------------------------------------------------------------------------
-
-class CloseBracketToken: public Token
-{
-    public:
-        
-        virtual TokenTypes Type() { return TokenTypes::CloseBracket; }
+        virtual TokenTypes Type() { return TokenTypes::Symbol; }
         virtual std::string ToString();
         virtual Token* Clone();
 };
@@ -372,24 +286,13 @@ LiteralIntegerToken* NewIntegerToken( SourceLocation Location, int32_t Value );
 LiteralFloatToken* NewFloatToken( SourceLocation Location, float Value );
 LiteralStringToken* NewStringToken( SourceLocation Location, std::string Value );
 LabelToken* NewLabelToken( SourceLocation Location, std::string& Name );
+IdentifierToken* NewIdentifierToken( SourceLocation Location, std::string& Name );
 InstructionOpCodeToken* NewOpCodeToken( SourceLocation Location, V32::InstructionOpCodes Which );
 CPURegisterToken* NewRegisterToken( SourceLocation Location, V32::CPURegisters Which );
 IOPortToken* NewPortToken( SourceLocation Location, V32::IOPorts Which );
 IOPortValueToken* NewPortValueToken( SourceLocation Location, V32::IOPortValues Which );
-VariableToken* NewVariableToken( SourceLocation Location, std::string& Name );
-IntegerKeywordToken* NewIntegerKeywordToken( SourceLocation Location );
-FloatKeywordToken* NewFloatKeywordToken( SourceLocation Location );
-StringKeywordToken* NewStringKeywordToken( SourceLocation Location );
-PointerKeywordToken* NewPointerKeywordToken( SourceLocation Location );
-DefineKeywordToken* NewDefineKeywordToken( SourceLocation Location );
-IncludeKeywordToken* NewIncludeKeywordToken( SourceLocation Location );
-DataFileKeywordToken* NewDataFileKeywordToken( SourceLocation Location );
-CommaToken* NewCommaToken( SourceLocation Location );
-ColonToken* NewColonToken( SourceLocation Location );
-PlusToken* NewPlusToken( SourceLocation Location );
-MinusToken* NewMinusToken( SourceLocation Location );
-OpenBracketToken* NewOpenBracketToken( SourceLocation Location );
-CloseBracketToken* NewCloseBracketToken( SourceLocation Location );
+KeywordToken* NewKeywordToken( SourceLocation Location, KeywordTypes Which );
+SymbolToken* NewSymbolToken( SourceLocation Location, SymbolTypes Which );
 
 
 // =============================================================================
@@ -402,6 +305,9 @@ bool IsLastToken( const TokenIterator& TokenPosition );
 
 bool IsFirstToken( Token* T );
 bool IsFirstToken( const TokenIterator& TokenPosition );
+
+bool TokenIsThisKeyword( Token* T, KeywordTypes Which );
+bool TokenIsThisSymbol( Token* T, SymbolTypes Which );
 
 
 // *****************************************************************************
