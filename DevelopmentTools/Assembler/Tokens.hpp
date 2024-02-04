@@ -310,6 +310,16 @@ bool TokenIsThisKeyword( Token* T, KeywordTypes Which );
 bool TokenIsThisSymbol( Token* T, SymbolTypes Which );
 
 
+// =============================================================================
+//      TRAVERSING OF TOKEN LISTS
+// =============================================================================
+
+
+TokenIterator Previous( const TokenIterator& TokenPosition );
+TokenIterator Next( const TokenIterator& TokenPosition );
+bool AreInSameLine( Token* T1, Token*T2 );
+
+
 // *****************************************************************************
     // end include guard
     #endif

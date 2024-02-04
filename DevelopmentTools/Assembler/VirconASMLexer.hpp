@@ -9,6 +9,7 @@
     // include C/C++ headers
     #include <iostream>     // [ C++ STL ] I/O Streams
     #include <fstream>      // [ C++ STL ] File streams
+    #include <vector>       // [ C++ STL ] Vectors
 // *****************************************************************************
 
 
@@ -33,7 +34,7 @@ bool IsSeparator( char c );
 
 class VirconASMLexer
 {
-    protected:
+    public:
         
         // source input file
         std::ifstream Input;
@@ -45,14 +46,20 @@ class VirconASMLexer
         
     public:
         
-        // results
-        TokenList Tokens;
+        // lexer results are line-based instead of
+        // a whole-file list (for easier preprocessing)
+        std::vector< TokenList > TokenLines;
         
     protected:
+        
+        // input file handling
+        void OpenFile( const std::string& FilePath );
+        void CloseFile();
         
         // reading from input
         char GetChar();
         char PeekChar();
+        bool InputHasEnded();
         
         // error handling
         void EmitError( const std::string& Description, bool Abort = true );
@@ -61,6 +68,7 @@ class VirconASMLexer
         // skipping functions
         void SkipWhitespace();
         void SkipLineComment();
+        void SkipUntilNextToken();
         
         // basic lexer functions
         char UnescapeCharacter( char Escaped );
@@ -70,14 +78,18 @@ class VirconASMLexer
         std::string ReadName();
         std::string ReadString();
         
+        // partial lexing functions
+        Token* ReadNextToken();        
+        TokenList TokenizeNextLine();
+        
     public:
         
         // instance handling
         VirconASMLexer();
        ~VirconASMLexer();
-       
-        // main lexer function
-        void ReadTokens( const std::string& FilePath );
+        
+        // full lexing function
+        void TokenizeFile( const std::string& FilePath );
 };
 
 

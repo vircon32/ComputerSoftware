@@ -52,6 +52,10 @@ class VirconCLexer
         
     public:
         
+        // input file handling
+        void OpenFile( const std::string& FilePath );
+        void CloseFile();
+        
         // reading from input
         char GetChar();
         char PeekChar();
@@ -62,6 +66,7 @@ class VirconCLexer
         void SkipLineComment();
         void SkipBlockComment();
         void SkipLineAfterStray();
+        void SkipUntilNextToken();
         
         // basic lexer functions
         char UnescapeCharacter( char Escaped );
@@ -73,19 +78,15 @@ class VirconCLexer
         OperatorToken* ReadOperator();
         std::string ReadName();        
         
-        void SkipUntilNextToken();
+        // partial lexing functions
         CToken* ReadNextToken();        
+        CTokenList TokenizeNextLine();
         
     public:
         
         // instance handling
         VirconCLexer();
        ~VirconCLexer();
-        
-        // partial lexing functions
-        void OpenFile( const std::string& FilePath );
-        void CloseFile();
-        CTokenList TokenizeNextLine();
         
         // full lexing function
         void TokenizeFile( const std::string& FilePath );

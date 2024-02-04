@@ -92,8 +92,77 @@ VirconASMLexer::VirconASMLexer()
 
 VirconASMLexer::~VirconASMLexer()
 {
-    for( Token* T : Tokens )
-      delete T;
+    for( TokenList Line: TokenLines )
+    {
+        for( Token* T : Line )
+          delete T;
+        
+        Line.clear();
+    }
+    
+    TokenLines.clear();
+}
+
+
+// =============================================================================
+//      VIRCON ASM LEXER: INPUT FILE HANDLING
+// =============================================================================
+
+
+void VirconASMLexer::OpenFile( const string& FilePath )
+{
+    // reset any previous state
+    Input.close();
+    Input.clear();
+    
+    // open the file as binary, not as text!
+    // (otherwise there can be bugs using tellg/seekg and unget)
+    Input.open( FilePath, ios_base::in | ios_base::binary );
+    Input.seekg( 0, ios::beg );
+    
+    if( Input.fail() )
+      throw runtime_error( "cannot open input file \"" + FilePath + "\"" );
+    
+    // capture the input file directory
+    InputDirectory = GetPathDirectory( FilePath );
+    
+    // reset any previous reads
+    ReadLocation.FilePath = FilePath;
+    ReadLocation.Line = 1;
+    PreviousChar = ' ';
+    
+    // reset any previous results
+    for( TokenList Line: TokenLines )
+    {
+        for( Token* T : Line )
+          delete T;
+        
+        Line.clear();
+    }
+    
+    TokenLines.clear();
+    
+    // start the list with an start-of-file indicator
+    StartOfFileToken* FirstToken = new StartOfFileToken;
+    FirstToken->Location = ReadLocation;
+    
+    TokenLines.emplace_back();
+    TokenLines.back().push_back( FirstToken );    
+}
+
+// -----------------------------------------------------------------------------
+
+void VirconASMLexer::CloseFile()
+{
+    // we are finished with the input file
+    Input.close();
+    
+    // complete the list with an end-of-file indicator
+    EndOfFileToken* LastToken = new EndOfFileToken;
+    LastToken->Location = ReadLocation;
+    
+    TokenLines.emplace_back();
+    TokenLines.back().push_back( LastToken );
 }
 
 
@@ -146,6 +215,16 @@ char VirconASMLexer::PeekChar()
     return (char)c;
 }
 
+// -----------------------------------------------------------------------------
+
+// use this for reliability!
+// (input will not set eof() until a read past the end has been attempted)
+bool VirconASMLexer::InputHasEnded()
+{
+    PeekChar();
+    return Input.eof();
+}
+
 
 // =============================================================================
 //      VIRCON ASM LEXER: ERROR HANDLING
@@ -183,7 +262,7 @@ void VirconASMLexer::SkipWhitespace()
     {
         GetChar();
         
-        if( Input.eof() )
+        if( InputHasEnded() )
           return;
     }
 }
@@ -194,7 +273,7 @@ void VirconASMLexer::SkipLineComment()
 {
     int StartLine = ReadLocation.Line;
     
-    while( !Input.eof() )
+    while( !InputHasEnded() )
     {
         GetChar();
         
@@ -232,7 +311,7 @@ char VirconASMLexer::UnescapeHexNumber()
     
     for( int i = 0; i < 2; i++ )
     {
-        if( Input.eof() )
+        if( InputHasEnded() )
         {
             EmitError( "Unexpected end of file" );
             throw runtime_error( "Aborted" );
@@ -262,7 +341,7 @@ LiteralIntegerToken* VirconASMLexer::ReadHexInteger()
     // accumulate the number as text
     string CurrentDigits;
     
-    while( !Input.eof() )
+    while( !InputHasEnded() )
     {
         char c = PeekChar();
         
@@ -312,13 +391,13 @@ Token* VirconASMLexer::ReadNumber()
         DigitsBeforeDot = "0";
         GetChar();
         
-        if( !Input.eof() )
+        if( !InputHasEnded() )
           if( (char)PeekChar() == 'x' )
             return ReadHexInteger();
     }
     
     // otherwise read as decimal
-    while( !Input.eof() )
+    while( !InputHasEnded() )
     {
         char c = PeekChar();
         
@@ -390,7 +469,7 @@ string VirconASMLexer::ReadName()
     {
         c = PeekChar();
         
-        if( Input.eof() )
+        if( InputHasEnded() )
           break;
         
         if( IsValidNameContinuation( c ) )
@@ -420,7 +499,7 @@ string VirconASMLexer::ReadString()
     // first, consume the start delimiter
     GetChar();
     
-    while( !Input.eof() )
+    while( !InputHasEnded() )
     {
         char c = GetChar();
         
@@ -457,135 +536,132 @@ string VirconASMLexer::ReadString()
 
 
 // =============================================================================
-//      VIRCON ASM LEXER: MAIN LEXER FUNCTION
+//      VIRCON ASM LEXER: MAIN LEXER FUNCTIONS
 // =============================================================================
 
 
-void VirconASMLexer::ReadTokens( const std::string& FilePath )
+void VirconASMLexer::SkipUntilNextToken()
 {
-    // reset any previous state
-    Input.close();
-    Input.clear();
+    if( InputHasEnded() )
+      return;
     
-    // open the file as binary, not as text!
-    // (otherwise there can be bugs using tellg/seekg and unget)
-    Input.open( FilePath, ios_base::in | ios_base::binary );
-    Input.seekg( 0, ios::beg );
+    char c = PeekChar();
     
-    if( Input.fail() )
-      throw runtime_error( "cannot open input file \"" + FilePath + "\"" );
-    
-    // capture the input file directory
-    InputDirectory = GetPathDirectory( FilePath );
-    
-    // reset any previous reads
-    ReadLocation.FilePath = FilePath;
-    ReadLocation.Line = 1;
-    PreviousChar = ' ';
-    
-    // reset any previous results
-    for( Token* T : Tokens )
-      delete T;
-    
-    Tokens.clear();
-    
-    // start the list with an start-of-file indicator
-    StartOfFileToken* FirstToken = new StartOfFileToken;
-    FirstToken->Location = ReadLocation;
-    Tokens.push_back( FirstToken );
-    
-    // recognize all file text as tokens
-    while( !Input.eof() )
+    // whitespace is generally ignored, and serves only
+    // as separator between tokens (required in some contexts)
+    if( IsWhitespace( c ) )
     {
-        char c = PeekChar();
-        
-        // whitespace is generally ignored, and serves only
-        // as separator between tokens (required in some contexts)
-        if( IsWhitespace( c ) )
-        {
-            SkipWhitespace();
-            continue;
-        }
-        
-        // character ';' is the start of a line comment
-        if( c == ';' )
-        {
-            GetChar();
-            SkipLineComment();
-            continue;
-        }
-        
-        // recognize the beginning of a string
-        if( c == '\"' )
-        {
-            string StringValue = ReadString();
-            Tokens.push_back( NewStringToken( ReadLocation, StringValue ) );
-            continue;
-        }
-        
-        // recognize symbols
-        char SymbolString[ 2 ] = { c, 0 };
-        
-        if( IsSymbol( SymbolString ) )
-        {
-            GetChar();
-            Tokens.push_back( NewSymbolToken( ReadLocation, WhichSymbol( SymbolString ) ) );
-            continue;
-        }
-        
-        // anything starting with a digit will be taken as a number
-        if( isdigit( c ) )
-        {
-            // this function will decide if it is an int, float of hex
-            Tokens.push_back( ReadNumber() );
-            continue;
-        }
-        
-        // any other cases will be taken as idenfitiers
-        string Name = ReadName();
-        string NameUpper = Name;
-        for( char& c : NameUpper ) c = toupper( c );
-        
-        // CASE 1: name is a label idenfitier
-        if( Name[ 0 ] == '_' )
-          Tokens.push_back( NewLabelToken( ReadLocation, Name ) );
-        
-        // CASE 2: name is a boolean value
-        else if( NameUpper == "TRUE" )
-          Tokens.push_back( NewIntegerToken( ReadLocation, 1 ) );
-        else if( NameUpper == "FALSE" )
-          Tokens.push_back( NewIntegerToken( ReadLocation, 0 ) );
-        
-        // CASE 3: name is a hardware name
-        else if( IsRegisterName( Name ) )
-          Tokens.push_back( NewRegisterToken( ReadLocation, StringToRegister(Name) ) );
-        
-        // CASE 4: name is an I/O port name
-        else if( IsPortName( Name ) )
-          Tokens.push_back( NewPortToken( ReadLocation, StringToPort(Name) ) );
-        
-        // CASE 5: name is an I/O port value name
-        else if( IsPortValueName( Name ) )
-          Tokens.push_back( NewPortValueToken( ReadLocation, StringToPortValue(Name) ) );
-        
-        // CASE 6: name is an instruction name
-        else if( IsOpCodeName( Name ) )
-          Tokens.push_back( NewOpCodeToken( ReadLocation, StringToOpCode(Name) ) );
-        
-        // CASE 7: name is a keyword
-        else if( IsKeyword( Name ) )
-          Tokens.push_back( NewKeywordToken( ReadLocation, WhichKeyword(Name) ) );
-        
-        // CASE 8: other names are taken as just plain identifiers
-        else
-          Tokens.push_back( NewIdentifierToken( ReadLocation, Name ) );
+        SkipWhitespace();
+        SkipUntilNextToken();
+        return;
     }
     
-    // we are finished with the input file
-    Input.close();
+    // character ';' will be the start of comments
+    if( c == ';' )
+    {
+        GetChar();
+        SkipLineComment();
+        SkipUntilNextToken();
+        return;
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+Token* VirconASMLexer::ReadNextToken()
+{
+    // peek the first useful character
+    SkipUntilNextToken();
+    char c = PeekChar();
     
-    // complete the list with an end-of-file indicator
-    EndOfFileToken* LastToken = new EndOfFileToken;
-    LastToken->Location = ReadLocation;
-    Tokens.push_back( LastToken );
+    // recognize the beginning of a string
+    if( c == '\"' )
+      return NewStringToken( ReadLocation, ReadString() );
+    
+    // recognize symbols
+    char SymbolString[ 2 ] = { c, 0 };
+    
+    if( IsSymbol( SymbolString ) )
+    {
+        GetChar();
+        return NewSymbolToken( ReadLocation, WhichSymbol( SymbolString ) );
+    }
+    
+    // anything starting with a digit will be taken as a number
+    if( isdigit( c ) )
+      return ReadNumber();
+    
+    // any other cases will be taken as idenfitiers
+    string Name = ReadName();
+    
+    // ASM matches identifies regardless of case,
+    // so for comparisons unify them into uppercase
+    string NameUpper = Name;
+    for( char& c : NameUpper ) c = toupper( c );
+    
+    // CASE 1: name is a label idenfitier
+    if( Name[ 0 ] == '_' )
+      return NewLabelToken( ReadLocation, Name );
+    
+    // CASE 2: name is a boolean value
+    if( NameUpper == "TRUE" )
+      return NewIntegerToken( ReadLocation, 1 );
+    if( NameUpper == "FALSE" )
+      return  NewIntegerToken( ReadLocation, 0 );
+    
+    // CASE 3: name is a hardware name
+    if( IsRegisterName( Name ) )
+      return NewRegisterToken( ReadLocation, StringToRegister(Name) );
+    
+    // CASE 4: name is an I/O port name
+    if( IsPortName( Name ) )
+      return NewPortToken( ReadLocation, StringToPort(Name) );
+    
+    // CASE 5: name is an I/O port value name
+    if( IsPortValueName( Name ) )
+      return NewPortValueToken( ReadLocation, StringToPortValue(Name) );
+    
+    // CASE 6: name is an instruction name
+    if( IsOpCodeName( Name ) )
+      return NewOpCodeToken( ReadLocation, StringToOpCode(Name) );
+    
+    // CASE 7: name is a keyword
+    if( IsKeyword( Name ) )
+      return NewKeywordToken( ReadLocation, WhichKeyword(Name) );
+    
+    // CASE 8: other names are taken as just plain identifiers
+    return NewIdentifierToken( ReadLocation, Name );
+}
+
+// -----------------------------------------------------------------------------
+
+TokenList VirconASMLexer::TokenizeNextLine()
+{
+    // first, find the actual start of the line
+    SkipUntilNextToken();
+    
+    // then keep reading until a new line is found
+    int InitialLine = ReadLocation.Line;
+    TokenList TokenLine;
+    
+    while( !InputHasEnded() && ReadLocation.Line == InitialLine )
+    {
+        TokenLine.push_back( ReadNextToken() );
+        SkipUntilNextToken();
+    }
+    
+    return TokenLine;
+}
+
+// -----------------------------------------------------------------------------
+
+void VirconASMLexer::TokenizeFile( const std::string& FilePath )
+{
+    OpenFile( FilePath );
+    
+    // recognize all file text as tokens
+    while( !InputHasEnded() )
+      TokenLines.push_back( TokenizeNextLine() );
+    
+    CloseFile();
 }

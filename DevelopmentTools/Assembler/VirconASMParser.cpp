@@ -11,45 +11,6 @@
 
 
 // =============================================================================
-//      TRAVERSING OF TOKEN LISTS
-// =============================================================================
-
-
-TokenIterator Previous( const TokenIterator& TokenPosition )
-{
-    auto PreviousPosition = TokenPosition;
-    PreviousPosition--;
-    
-    return PreviousPosition;
-}
-
-// -----------------------------------------------------------------------------
-
-TokenIterator Next( const TokenIterator& TokenPosition )
-{
-    auto NextPosition = TokenPosition;
-    NextPosition++;
-    
-    return NextPosition;
-}
-
-// -----------------------------------------------------------------------------
-
-bool AreInSameLine( Token* T1, Token*T2 )
-{
-    // play safe
-    if( !T1 || !T2 ) return false;
-    
-    // we will consider file limits as line changes too
-    if( IsFirstToken(T1) || IsLastToken(T1) ) return false;
-    if( IsFirstToken(T2) || IsLastToken(T2) ) return false;
-    
-    // now we can just compare
-    return AreInSameLine( T1->Location, T2->Location );
-}
-
-
-// =============================================================================
 //      VIRCON ASM PARSER: INSTANCE HANDLING
 // =============================================================================
 

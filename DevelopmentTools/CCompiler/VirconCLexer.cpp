@@ -107,6 +107,71 @@ VirconCLexer::~VirconCLexer()
 
 
 // =============================================================================
+//      VIRCON C LEXER: INPUT FILE HANDLING
+// =============================================================================
+
+
+void VirconCLexer::OpenFile( const string& FilePath )
+{
+    // reset any previous state
+    Input.close();
+    Input.clear();
+    
+    // open the file as binary, not as text!
+    // (otherwise there can be bugs using tellg/seekg and unget)
+    Input.open( FilePath, ios_base::in | ios_base::binary );
+    Input.seekg( 0, ios::beg );
+    
+    if( Input.fail() )
+      throw runtime_error( "cannot open input file \"" + FilePath + "\"" );
+    
+    // capture the input file directory
+    InputDirectory = GetPathDirectory( FilePath );
+    
+    // reset any previous reads
+    ReadLocation.FilePath = FilePath;
+    ReadLocation.Line = 1;
+    ReadLocation.LogicalLine = 1;
+    ReadLocation.Column = 1;
+    PreviousChar = ' ';
+    LineIsContinued = false;
+    
+    // reset any previous results
+    for( CTokenList Line: TokenLines )
+    {
+        for( CToken* T : Line )
+          delete T;
+        
+        Line.clear();
+    }
+    
+    TokenLines.clear();
+    
+    // start the list with an start-of-file indicator
+    StartOfFileToken* FirstToken = new StartOfFileToken;
+    FirstToken->Location = ReadLocation;
+    
+    TokenLines.emplace_back();
+    TokenLines.back().push_back( FirstToken );
+}
+
+// -----------------------------------------------------------------------------
+
+void VirconCLexer::CloseFile()
+{
+    // we are finished with the input file
+    Input.close();
+    
+    // complete the list with an end-of-file indicator
+    EndOfFileToken* LastToken = new EndOfFileToken;
+    LastToken->Location = ReadLocation;
+    
+    TokenLines.emplace_back();
+    TokenLines.back().push_back( LastToken );
+}
+
+
+// =============================================================================
 //      VIRCON C LEXER: READING FROM INPUT
 // =============================================================================
 
@@ -235,7 +300,6 @@ void VirconCLexer::SkipLineComment()
     }
 }
 
-
 // -----------------------------------------------------------------------------
 
 void VirconCLexer::SkipBlockComment()
@@ -286,6 +350,67 @@ void VirconCLexer::SkipLineAfterStray()
     // finally, warn if needed
     if( ThereWasWhitespace )
       RaiseWarning( StartLocation, "whitespace after backslash" );
+}
+
+// -----------------------------------------------------------------------------
+
+void VirconCLexer::SkipUntilNextToken()
+{
+    if( InputHasEnded() )
+      return;
+    
+    char c = PeekChar();
+    
+    // whitespace is generally ignored, and serves only
+    // as separator between tokens (required in some contexts)
+    if( IsWhitespace( c ) )
+    {
+        SkipWhitespace();
+        SkipUntilNextToken();
+        return;
+    }
+    
+    // process line continuation at the lexer level
+    if( c == '\\' )
+    {
+        GetChar();
+        SkipLineAfterStray();
+        SkipUntilNextToken();
+        return;
+    }
+    
+    // character '/' may be the start of comments
+    if( c == '/' )
+    {
+        SourceLocation LastLocation = ReadLocation;
+        char LastPreviousChar = PreviousChar;
+        
+        GetChar();
+        char c2 = PeekChar();
+        
+        if( c2 == '/' )
+        {
+            GetChar();
+            SkipLineComment();
+            SkipUntilNextToken();
+            return;
+        }
+        
+        if( c2 == '*' )
+        {
+            GetChar();
+            SkipBlockComment();
+            SkipUntilNextToken();
+            return;
+        }
+        
+        // otherwise, go back 1 character
+        // and let it be processed as an operator
+        Input.unget();
+        ReadLocation = LastLocation;
+        PreviousChar = LastPreviousChar;
+        return;
+    }
 }
 
 
@@ -606,67 +731,6 @@ string VirconCLexer::ReadName()
 // =============================================================================
 
 
-void VirconCLexer::SkipUntilNextToken()
-{
-    if( InputHasEnded() )
-      return;
-    
-    char c = PeekChar();
-    
-    // whitespace is generally ignored, and serves only
-    // as separator between tokens (required in some contexts)
-    if( IsWhitespace( c ) )
-    {
-        SkipWhitespace();
-        SkipUntilNextToken();
-        return;
-    }
-    
-    // process line continuation at the lexer level
-    if( c == '\\' )
-    {
-        GetChar();
-        SkipLineAfterStray();
-        SkipUntilNextToken();
-        return;
-    }
-    
-    // character '/' may be the start of comments
-    if( c == '/' )
-    {
-        SourceLocation LastLocation = ReadLocation;
-        char LastPreviousChar = PreviousChar;
-        
-        GetChar();
-        char c2 = PeekChar();
-        
-        if( c2 == '/' )
-        {
-            GetChar();
-            SkipLineComment();
-            SkipUntilNextToken();
-            return;
-        }
-        
-        if( c2 == '*' )
-        {
-            GetChar();
-            SkipBlockComment();
-            SkipUntilNextToken();
-            return;
-        }
-        
-        // otherwise, go back 1 character
-        // and let it be processed as an operator
-        Input.unget();
-        ReadLocation = LastLocation;
-        PreviousChar = LastPreviousChar;
-        return;
-    }
-}
-
-// -----------------------------------------------------------------------------
-
 // Note that no keywords are recognized here!!
 // Until preprocessing is done, they are taken as identifiers
 CToken* VirconCLexer::ReadNextToken()
@@ -724,67 +788,6 @@ CToken* VirconCLexer::ReadNextToken()
     // CASE 2: name is an actual idenfitier
     else
       return NewIdentifierToken( StartLocation, Name );
-}
-
-// -----------------------------------------------------------------------------
-
-void VirconCLexer::OpenFile( const string& FilePath )
-{
-    // reset any previous state
-    Input.close();
-    Input.clear();
-    
-    // open the file as binary, not as text!
-    // (otherwise there can be bugs using tellg/seekg and unget)
-    Input.open( FilePath, ios_base::in | ios_base::binary );
-    Input.seekg( 0, ios::beg );
-    
-    if( Input.fail() )
-      throw runtime_error( "cannot open input file \"" + FilePath + "\"" );
-    
-    // capture the input file directory
-    InputDirectory = GetPathDirectory( FilePath );
-    
-    // reset any previous reads
-    ReadLocation.FilePath = FilePath;
-    ReadLocation.Line = 1;
-    ReadLocation.LogicalLine = 1;
-    ReadLocation.Column = 1;
-    PreviousChar = ' ';
-    LineIsContinued = false;
-    
-    // reset any previous results
-    for( CTokenList Line: TokenLines )
-    {
-        for( CToken* T : Line )
-          delete T;
-        
-        Line.clear();
-    }
-    
-    TokenLines.clear();
-    
-    // start the list with an start-of-file indicator
-    StartOfFileToken* FirstToken = new StartOfFileToken;
-    FirstToken->Location = ReadLocation;
-    
-    TokenLines.emplace_back();
-    TokenLines.back().push_back( FirstToken );
-}
-
-// -----------------------------------------------------------------------------
-
-void VirconCLexer::CloseFile()
-{
-    // we are finished with the input file
-    Input.close();
-    
-    // complete the list with an end-of-file indicator
-    EndOfFileToken* LastToken = new EndOfFileToken;
-    LastToken->Location = ReadLocation;
-    
-    TokenLines.emplace_back();
-    TokenLines.back().push_back( LastToken );
 }
 
 // -----------------------------------------------------------------------------

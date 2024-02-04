@@ -358,7 +358,7 @@ void VirconCEmitter::EmitProgramStartSection()
               continue;
             
             // emit variable name for easier reading
-            ProgramLines.push_back( "define global_" + Variable->Name + " " + to_string(Variable->Placement.GlobalAddress) );
+            ProgramLines.push_back( "%define global_" + Variable->Name + " " + to_string(Variable->Placement.GlobalAddress) );
         }
     }
     

@@ -9,6 +9,7 @@
     
     // include project headers
     #include "VirconASMLexer.hpp"
+    #include "VirconASMPreprocessor.hpp"
     #include "VirconASMParser.hpp"
     #include "VirconASMEmitter.hpp"
     #include "Globals.hpp"
@@ -16,6 +17,10 @@
     // include C/C++ headers
     #include <fstream>      // [ C++ STL ] File streams
     #include <cstring>      // [ ANSI C ] Strings
+    
+    // include SDL headers
+    #define SDL_MAIN_HANDLED
+    #include "SDL.h"            // [ SDL2 ] Main header
     
     // declare used namespaces
     using namespace std;
@@ -49,6 +54,24 @@ void PrintVersion()
     cout << "Vircon32 assembler by Javier Carracedo" << endl;
 }
 
+// -----------------------------------------------------------------------------
+
+// use this funcion to get the executable path
+// in a portable way (can't be done without libraries)
+string GetProgramFolder()
+{
+    if( SDL_Init( 0 ) )
+      throw runtime_error( "cannot initialize SDL" );
+    
+    char* SDLString = SDL_GetBasePath();
+    string Result = SDLString;
+    
+    SDL_free( SDLString );
+    SDL_Quit();
+    
+    return Result;
+}
+
 
 // =============================================================================
 //      MAIN FUNCTION
@@ -61,6 +84,13 @@ int main( int NumberOfArguments, char* Arguments[] )
     {
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // Process command line arguments
+        
+        // capture assembler folder
+        AssemblerFolder = GetProgramFolder();
+        
+        // if it is empty, we need at least a dot
+        if( AssemblerFolder == "" || AssemblerFolder == string(1,PathSeparator) )
+          AssemblerFolder = string(".") + PathSeparator;
         
         // variables to capture input parameters
         string InputPath, OutputPath;
@@ -154,24 +184,49 @@ int main( int NumberOfArguments, char* Arguments[] )
           cout << "stage 1: running lexer" << endl;
         
         VirconASMLexer Lexer;
-        Lexer.ReadTokens( InputPath );
+        Lexer.TokenizeFile( InputPath );
+        
+        // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        // STAGE 2: Run preprocessor
+        // (Token sequence --> Token sequence)
+        if( VerboseMode )
+          cout << "stage 2: running preprocessor" << endl;
+          
+        VirconASMPreprocessor Preprocessor;
+        Preprocessor.Preprocess( Lexer );
         
         // DEBUG: log all tokens, with their line numbers
         if( Debug )
-          for( auto T : Lexer.Tokens )
-          {
-               cout << "[" + to_string( T->Location.Line ) + "] ";
-               cout << T->ToString() << endl;
-          }
+        {
+            // log to text file
+            ofstream TextFile;
+            TextFile.open( AssemblerFolder + "assemble-lexerlog.txt" );
+            
+            string PathContext = "";
+            
+            for( auto T : Preprocessor.ProcessedTokens )
+            {
+                if( T->Location.FilePath != PathContext )
+                {
+                    TextFile << endl << "File " + T->Location.FilePath + ":" << endl << endl;
+                    PathContext = T->Location.FilePath;
+                }
+                
+                TextFile << "[" + to_string( T->Location.Line ) + "] ";
+                TextFile << T->ToString() << endl;
+            }
+            
+            TextFile.close();
+        }
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        // STAGE 2: Run parser
+        // STAGE 3: Run parser
         // (Token sequence --> List of AST statement nodes)
         if( VerboseMode )
-          cout << "stage 2: running parser" << endl;
+          cout << "stage 3: running parser" << endl;
           
         VirconASMParser Parser;
-        Parser.ParseTopLevel( Lexer.Tokens );
+        Parser.ParseTopLevel( Preprocessor.ProcessedTokens );
         
         // DEBUG: log full AST
         if( Debug )
@@ -179,10 +234,10 @@ int main( int NumberOfArguments, char* Arguments[] )
             cout << Node->ToString() << endl;
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        // STAGE 3: Run assembler
+        // STAGE 4: Run emitter
         // (AST nodes --> binary ROM)
         if( VerboseMode )
-          cout << "stage 3: running emitter" << endl;
+          cout << "stage 4: running emitter" << endl;
         
         VirconASMEmitter Emitter;
         Emitter.Emit( Parser.ProgramAST );
@@ -228,7 +283,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         // close output
         OutputFile.close();
         
-        // finally, check size of the produced ROM
+        // finally, report size of the produced ROM
         if( VerboseMode )
           cout << "output file created, size: " << ROMSizeInWords << " dwords = " << ROMSizeInBytes << " bytes" << endl;
     }
@@ -239,6 +294,9 @@ int main( int NumberOfArguments, char* Arguments[] )
         return 1;
     }
     
+    // report success
+    if( VerboseMode )
+      cout << "assembly successful" << endl;
+    
     return 0;
 }
-

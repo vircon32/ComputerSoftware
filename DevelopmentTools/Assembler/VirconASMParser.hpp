@@ -13,17 +13,7 @@
 
 
 // =============================================================================
-//      TRAVERSING OF TOKEN LISTS
-// =============================================================================
-
-
-TokenIterator Previous( const TokenIterator& TokenPosition );
-TokenIterator Next( const TokenIterator& TokenPosition );
-bool AreInSameLine( Token* T1, Token*T2 );
-
-
-// =============================================================================
-//      CHIP-8 PARSER
+//      VIRCON ASM PARSER
 // =============================================================================
 
 

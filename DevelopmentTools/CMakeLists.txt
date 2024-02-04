@@ -281,6 +281,7 @@ set(ASSEMBLER_SRC
     ${ASSEMBLER_DIR}/VirconASMEmitter.cpp
     ${ASSEMBLER_DIR}/VirconASMLexer.cpp
     ${ASSEMBLER_DIR}/VirconASMParser.cpp
+    ${ASSEMBLER_DIR}/VirconASMPreprocessor.cpp
     ${INFRASTRUCTURE_DIR}/Definitions.cpp
     ${INFRASTRUCTURE_DIR}/EnumStringConversions.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp
