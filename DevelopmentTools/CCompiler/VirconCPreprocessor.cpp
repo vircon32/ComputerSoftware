@@ -564,7 +564,7 @@ void VirconCPreprocessor::ProcessError( bool WarningOnly )
 
 
 // =============================================================================
-//      VIRCON C PREPROCESSOR: XXX
+//      VIRCON C PREPROCESSOR: PROCESSING IDENTIFIERS
 // =============================================================================
 
 

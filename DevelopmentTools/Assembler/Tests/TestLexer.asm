@@ -7,8 +7,8 @@ _literals_b:
     float  7.0, -0.9, 1.1
 
 ; some test definition
-define reg_0 R0
-define reg_1 R1
+%define reg_0 R0
+%define reg_1 R1
 
 _sum:
     ; enter

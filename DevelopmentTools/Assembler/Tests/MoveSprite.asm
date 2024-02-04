@@ -1,8 +1,8 @@
-  define GPUCommandClearScreen 1
-  define GPUCommandDrawRegion  2
+  %define GPUCommandClearScreen 1
+  %define GPUCommandDrawRegion  2
   
-  define SpriteX 0x1
-  define SpriteY 0x2
+  %define SpriteX 0x1
+  %define SpriteY 0x2
   
   jmp _main
   ; ------------------------

@@ -52,12 +52,20 @@ Included programs
     
 ------------------------------------------------------------
 
-What's new in version 23.10.27?
+What's new in version 24.02.24?
   
-  - Fixed error in directives #error and #warning
-  - Added support for extern variables.
-  - Allow a final comma in enumerations
-  - Allow a final comma in initialization lists
+  - Assembler: removed old define statement, and added a full
+    preprocessor supporting several directives.
+  - Assembler: added pointer statement to define a list of
+    label values.
+  - Assembler: added support for true and false as built-in
+    integer constants with value 1 and 0 respectively.
+  - Compiler: globals are now generated with %define instead
+    of define, as the new assembler version expects.
+  - Compiler and assembler: added support to escape characters
+    with hex values in strings (e.g.: "\x41" == "A").
+  - Compiler: Fixed bug with nested includes not looking in
+    the right folder for the file.
 
 ------------------------------------------------------------
 
@@ -67,7 +75,7 @@ License
     under the 3-Clause BSD License, which full text is the
     following:
     
-    Copyright 2021-2023 Carra.
+    Copyright 2021-2024 Carra.
     All rights reserved.
     
     Redistribution and use in source and binary forms, with or

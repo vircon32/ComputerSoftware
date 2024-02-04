@@ -61,7 +61,7 @@ TokenList& ProcessingContext::GetCurrentLine()
 
 bool ProcessingContext::AreAllIfConditionsMet()
 {
-    // check if some #if condition is
+    // check if some %if condition is
     // not met at the current line
     for( auto Context: IfStack )
     {
@@ -463,9 +463,9 @@ void VirconASMPreprocessor::ProcessDefine()
           if( ((IdentifierToken*)NextToken)->Name == DefinitionName )
             EmitError( NextToken->Location, "a definition cannot contain itself (circular reference)" );
         
-        // definitions cannot contain the hash symbol (not supported)
+        // definitions cannot contain the percent symbol (not supported)
         if( TokenIsThisSymbol( NextToken, SymbolTypes::Percent ))
-          EmitError( NextToken->Location, "definitions cannot contain the hash symbol (#)" );
+          EmitError( NextToken->Location, "definitions cannot contain the percent symbol (%)" );
         
         // now we can safely copy the token to the definition
         DefinitionValueTokens.push_back( NextToken->Clone() );
@@ -549,13 +549,13 @@ void VirconASMPreprocessor::ProcessElse()
     if( TokenPosition != DirectiveLine.end() )
       EmitError( (*TokenPosition)->Location, "expected end of line" );
       
-    // there needs to be some active #if
+    // there needs to be some active %if
     if( ContextStack.back().IfStack.empty() )
-      EmitError( (*DirectiveLine.begin())->Location, "#else with no previous #if" );
+      EmitError( (*DirectiveLine.begin())->Location, "%else with no previous %if" );
     
-    // there cannot be more than 1 #else
+    // there cannot be more than 1 %else
     if( ContextStack.back().IfStack.back().ElseWasFound )
-      EmitError( (*DirectiveLine.begin())->Location, "#else can only be used once per #if" );
+      EmitError( (*DirectiveLine.begin())->Location, "%else can only be used once per %if" );
     
     // apply the directive
     ContextStack.back().IfStack.back().ElseWasFound = true;

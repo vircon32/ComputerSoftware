@@ -429,7 +429,7 @@ void EmitMOV( VirconASMEmitter &Emitter, InstructionNode& Node )
     }
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // CASE 2: Register <-- XXX
+    // CASE 2: Register <-- Non-Register
     else if( Op1IsRegister )
     {
         InstructionWord.AsInstruction.Register1 = (int)Operand1.Base.RegisterField;
@@ -486,7 +486,7 @@ void EmitMOV( VirconASMEmitter &Emitter, InstructionNode& Node )
     }
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // CASE 3: XXX <-- Register
+    // CASE 3: Non-Register <-- Register
     else
     {
         InstructionWord.AsInstruction.Register2 = (int)Operand2.Base.RegisterField;

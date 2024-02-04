@@ -50,7 +50,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "assemble v23.11.29" << endl;
+    cout << "assemble v24.02.04" << endl;
     cout << "Vircon32 assembler by Javier Carracedo" << endl;
 }
 
