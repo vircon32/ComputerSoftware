@@ -1,6 +1,6 @@
 ================================================
    PC development tools for Vircon32 console
-  (version 23.10.27). README written by Carra
+  (version 24.2.4). README written by Carra
 ================================================
 
 
@@ -52,7 +52,7 @@ Included programs
     
 ------------------------------------------------------------
 
-What's new in version 24.02.24?
+What's new in version 24.2.24?
   
   - Assembler: removed old define statement, and added a full
     preprocessor supporting several directives.
