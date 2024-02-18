@@ -1025,7 +1025,7 @@ void ProcessLabelCPU()
     else
     {
         int CPULoad = Console.GetCPULoad();
-        int GPULoad = Console.GetCPULoad();
+        int GPULoad = Console.GetGPULoad();
         ImGui::Text( "CPU %d%%, GPU %d%%", CPULoad, GPULoad );
     }
     
