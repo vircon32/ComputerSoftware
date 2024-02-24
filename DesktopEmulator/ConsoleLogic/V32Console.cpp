@@ -149,16 +149,24 @@ namespace V32
         GamepadController.ChangeFrame();
         
         // STEP 2: Run a frame's worth of cycles
-        for( int i = 0; i < Constants::CyclesPerFrame; i++ )
+        try
         {
-            // only these components need to
-            // be notified of each CPU cycle
-            Timer.RunNextCycle();
-            CPU.RunNextCycle();
-            
-            // end loop early when CPU is set to wait
-            if( CPU.Waiting || CPU.Halted )
-              break;
+            for( int i = 0; i < Constants::CyclesPerFrame; i++ )
+            {
+                // end loop early when CPU is set to wait
+                if( CPU.Waiting || CPU.Halted )
+                  break;
+                
+                // only these components need to
+                // be notified of each CPU cycle
+                Timer.RunNextCycle();
+                CPU.RunNextCycle();
+            }
+        }
+        catch( CPUException& CPUex )
+        {
+            // do nothing: the only purpose of these exceptions
+            // is to stop the loop without checking in every step
         }
         
         // after runnning the frame, update load info

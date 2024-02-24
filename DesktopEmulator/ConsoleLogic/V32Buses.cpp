@@ -22,7 +22,7 @@ namespace V32
     
     // -----------------------------------------------------------------------------
     
-    bool V32MemoryBus::ReadAddress( int32_t GlobalAddress, V32Word& Result )
+    void V32MemoryBus::ReadAddress( int32_t GlobalAddress, V32Word& Result )
     {
         // separate device ID and local address
         int32_t DeviceID = (GlobalAddress >> 28) & 3;
@@ -34,13 +34,11 @@ namespace V32
         // raise a CPU error when it failed
         if( !Success )
           Master->RaiseHardwareError( CPUErrorCodes::InvalidMemoryRead );
-        
-        return Success;
     }
     
     // -----------------------------------------------------------------------------
     
-    bool V32MemoryBus::WriteAddress( int32_t GlobalAddress, V32Word Value )
+    void V32MemoryBus::WriteAddress( int32_t GlobalAddress, V32Word Value )
     {
         // separate device ID and local address
         int32_t DeviceID = (GlobalAddress >> 28) & 3;
@@ -52,8 +50,6 @@ namespace V32
         // raise a CPU error when it failed
         if( !Success )
           Master->RaiseHardwareError( CPUErrorCodes::InvalidMemoryWrite );
-        
-        return Success;
     }
     
     

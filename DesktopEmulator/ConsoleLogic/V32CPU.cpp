@@ -5,9 +5,11 @@
     
     // include console logic headers
     #include "V32CPU.hpp"
+    #include "ExternalInterfaces.hpp"
     
     // include C/C++ headers
     #include <cstring>          // [ ANSI C ] Strings
+    #include <stdexcept>        // [ C++ STL ] Exceptions
     
     // declare used namespaces
     using namespace std;
@@ -155,17 +157,12 @@ namespace V32
     
     void V32CPU::RunNextCycle()
     {
-        // do nothing when stopped for some reason
-        if( Halted || Waiting ) return;
-        
         // fetch next instruction
-        if( !MemoryBus->ReadAddress( InstructionPointer.AsInteger++, (V32Word&)Instruction ) )
-          return;
+        MemoryBus->ReadAddress( InstructionPointer.AsInteger++, (V32Word&)Instruction );
         
         // fetch its immediate value, if needed
         if( Instruction.UsesImmediate )
-          if( !MemoryBus->ReadAddress( InstructionPointer.AsInteger++, ImmediateValue ) )
-            return;
+          MemoryBus->ReadAddress( InstructionPointer.AsInteger++, ImmediateValue );
         
         // run the instruction
         // (redirect to the needed specific processor)
@@ -195,5 +192,8 @@ namespace V32
         
         // jump to BIOS handler routine
         InstructionPointer.AsInteger = Constants::BiosProgramROMFirstAddress;
+        
+        // abort any normal instruction processing
+        throw CPUException();
     }
 }

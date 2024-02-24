@@ -48,8 +48,8 @@ namespace V32
             V32MemoryBus();
             
             // R/W methods
-            bool ReadAddress( int32_t GlobalAddress, V32Word& Result );
-            bool WriteAddress( int32_t GlobalAddress, V32Word Value );
+            void ReadAddress( int32_t GlobalAddress, V32Word& Result );
+            void WriteAddress( int32_t GlobalAddress, V32Word Value );
     };
     
     

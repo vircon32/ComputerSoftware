@@ -44,19 +44,14 @@ namespace V32
     {
         // first read the value
         int32_t* SP = &CPU.StackPointer.AsInteger;
-        
-        if( !CPU.MemoryBus->ReadAddress( *SP, Register ) )
-          return;
+        CPU.MemoryBus->ReadAddress( *SP, Register );
         
         // and then increment
         (*SP)++;
         
         // check for stack underflow
         if( *SP >= (Constants::RAMFirstAddress + Constants::RAMSize) )
-        {
-            CPU.RaiseHardwareError( CPUErrorCodes::StackUnderflow );
-            return;
-        }
+          CPU.RaiseHardwareError( CPUErrorCodes::StackUnderflow );
     }
     
     
@@ -383,11 +378,8 @@ namespace V32
         // move 1 word as in a supposed MOV [DR], [SR]
         V32Word Value;
         
-        if( !CPU.MemoryBus->ReadAddress( CPU.SourceRegister.AsInteger, Value ) )
-          return;
-        
-        if( !CPU.MemoryBus->WriteAddress( CPU.DestinationRegister.AsInteger, Value ) )
-          return;
+        CPU.MemoryBus->ReadAddress( CPU.SourceRegister.AsInteger, Value );
+        CPU.MemoryBus->WriteAddress( CPU.DestinationRegister.AsInteger, Value );
         
         // increase DR and SR by 1
         CPU.SourceRegister.AsInteger++;
@@ -409,8 +401,7 @@ namespace V32
     void ProcessSETS( V32CPU& CPU, CPUInstruction Instruction )
     {
         // set 1 word as in a MOV [DR], SR
-        if( !CPU.MemoryBus->WriteAddress( CPU.DestinationRegister.AsInteger, CPU.SourceRegister ) )
-          return;
+        CPU.MemoryBus->WriteAddress( CPU.DestinationRegister.AsInteger, CPU.SourceRegister );
         
         // increase DR by 1
         CPU.DestinationRegister.AsInteger++;
@@ -439,12 +430,8 @@ namespace V32
         // subtract 1 word as in a supposed ResultRegister = [DR] - [SR]
         V32Word SRValue;
         
-        if( !CPU.MemoryBus->ReadAddress( CPU.DestinationRegister.AsInteger, *ResultRegister ) )
-          return;
-        
-        if( !CPU.MemoryBus->ReadAddress( CPU.SourceRegister.AsInteger, SRValue ) )
-          return;
-        
+        CPU.MemoryBus->ReadAddress( CPU.DestinationRegister.AsInteger, *ResultRegister );
+        CPU.MemoryBus->ReadAddress( CPU.SourceRegister.AsInteger, SRValue );
         ResultRegister->AsInteger -= SRValue.AsInteger;
         
         // if non-zero, comparison has ended

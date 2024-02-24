@@ -9,6 +9,7 @@
     
     // include C/C++ headers
     #include <string>         // [ C++ STL ] Strings
+    #include <stdexcept>      // [ C++ STL ] Exceptions
 // *****************************************************************************
 
 
@@ -94,6 +95,22 @@ namespace V32
         extern void( *LogLine )( const std::string& );
         extern void( *ThrowException )( const std::string& );
     }
+    
+    
+    // =============================================================================
+    //      SPECIFIC CPU EXCEPTIONS
+    // =============================================================================
+    
+    
+    // these will be thrown when a CPU hardware error
+    // is raised, to stop any other pending execution
+    class CPUException: public std::exception
+    {
+        public:
+            
+            CPUException() {};
+            virtual ~CPUException() noexcept {};
+    };
 }
 
 
