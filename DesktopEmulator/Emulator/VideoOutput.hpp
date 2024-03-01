@@ -44,8 +44,7 @@ class VideoOutput
         bool FullScreen;
         
         // arrays to hold buffer info
-        GLfloat QuadPositionCoords[ 8 ];
-        GLfloat QuadTextureCoords[ 8 ];
+        GLfloat QuadVerticesInfo[ 16 ];
         
         // current color modifiers
         V32::GPUColor MultiplyColor;
@@ -66,13 +65,11 @@ class VideoOutput
         
         // additional GL objects
         GLuint VAO;
-        GLuint VBOPositions;
-        GLuint VBOTexCoords;
+        GLuint VBOVertexInfo;
         GLuint ShaderProgramID;
         
         // positions of shader parameters
-        GLuint PositionsLocation;
-        GLuint TexCoordsLocation;
+        GLuint VertexInfoLocation;
         GLuint TextureUnitLocation;
         GLuint MultiplyColorLocation;
         

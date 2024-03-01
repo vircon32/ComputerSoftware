@@ -355,24 +355,24 @@ namespace V32
         int RelativeMaxY = RelativeMinY + RegionHeight;
         
         // initialize quad vertex positions (in render coordinates)
-        RegionQuad.VertexPositions[ 0 ].x = RelativeMinX;
-        RegionQuad.VertexPositions[ 0 ].y = RelativeMinY;
-        RegionQuad.VertexPositions[ 1 ].x = RelativeMaxX;
-        RegionQuad.VertexPositions[ 1 ].y = RelativeMinY;
-        RegionQuad.VertexPositions[ 2 ].x = RelativeMinX;
-        RegionQuad.VertexPositions[ 2 ].y = RelativeMaxY;
-        RegionQuad.VertexPositions[ 3 ].x = RelativeMaxX;
-        RegionQuad.VertexPositions[ 3 ].y = RelativeMaxY;
+        RegionQuad.Vertices[ 0 ].x = RelativeMinX;
+        RegionQuad.Vertices[ 0 ].y = RelativeMinY;
+        RegionQuad.Vertices[ 1 ].x = RelativeMaxX;
+        RegionQuad.Vertices[ 1 ].y = RelativeMinY;
+        RegionQuad.Vertices[ 2 ].x = RelativeMinX;
+        RegionQuad.Vertices[ 2 ].y = RelativeMaxY;
+        RegionQuad.Vertices[ 3 ].x = RelativeMaxX;
+        RegionQuad.Vertices[ 3 ].y = RelativeMaxY;
         
         // initialize quad texture coordinates (relative to texture: [0-1])
-        RegionQuad.VertexTexCoords[ 0 ].x = TextureMinX;
-        RegionQuad.VertexTexCoords[ 0 ].y = TextureMinY;
-        RegionQuad.VertexTexCoords[ 1 ].x = TextureMaxX;
-        RegionQuad.VertexTexCoords[ 1 ].y = TextureMinY;
-        RegionQuad.VertexTexCoords[ 2 ].x = TextureMinX;
-        RegionQuad.VertexTexCoords[ 2 ].y = TextureMaxY;
-        RegionQuad.VertexTexCoords[ 3 ].x = TextureMaxX;
-        RegionQuad.VertexTexCoords[ 3 ].y = TextureMaxY;
+        RegionQuad.Vertices[ 0 ].texture_x = TextureMinX;
+        RegionQuad.Vertices[ 0 ].texture_y = TextureMinY;
+        RegionQuad.Vertices[ 1 ].texture_x = TextureMaxX;
+        RegionQuad.Vertices[ 1 ].texture_y = TextureMinY;
+        RegionQuad.Vertices[ 2 ].texture_x = TextureMinX;
+        RegionQuad.Vertices[ 2 ].texture_y = TextureMaxY;
+        RegionQuad.Vertices[ 3 ].texture_x = TextureMaxX;
+        RegionQuad.Vertices[ 3 ].texture_y = TextureMaxY;
         
         // precalculate angle properties when needed
         float AngleCos, AngleSin;
@@ -386,8 +386,8 @@ namespace V32
         // apply 2D transforms to the quad
         for( int i = 0; i < 4; i++ )
         {
-            float* VertexX = &RegionQuad.VertexPositions[ i ].x;
-            float* VertexY = &RegionQuad.VertexPositions[ i ].y;
+            float* VertexX = &RegionQuad.Vertices[ i ].x;
+            float* VertexY = &RegionQuad.Vertices[ i ].y;
             
             // transform 1: apply scaling
             if( ScalingEnabled )

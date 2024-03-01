@@ -209,20 +209,12 @@ void Texture::Draw( int RenderXMin, int RenderYMin, int RenderXMax, int RenderYM
     // build a quad to draw the texture
     GPUQuad DrawnQuad =
     {
-        // vertex positions
         {
-            { (float)RenderXMin, (float)RenderYMin },
-            { (float)RenderXMax, (float)RenderYMin },
-            { (float)RenderXMin, (float)RenderYMax },
-            { (float)RenderXMax, (float)RenderYMax }
-        },
-        
-        // texture coordinates
-        {
-            {     0.0,     0.0 },
-            { XFactor,     0.0 },
-            {     0.0, YFactor },
-            { XFactor, YFactor }
+            // 4x (vertex position + texture coordinates)
+            { (float)RenderXMin, (float)RenderYMin,     0.0,     0.0 },
+            { (float)RenderXMax, (float)RenderYMin, XFactor,     0.0 },
+            { (float)RenderXMin, (float)RenderYMax,     0.0, YFactor },
+            { (float)RenderXMax, (float)RenderYMax, XFactor, YFactor }
         }
     };
     

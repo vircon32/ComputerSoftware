@@ -58,7 +58,7 @@ namespace V32
     
     typedef struct
     {
-        float x, y;
+        float x, y, texture_x, texture_y;
     }
     GPUPoint;
     
@@ -66,8 +66,7 @@ namespace V32
     
     typedef struct
     {
-        GPUPoint VertexPositions[ 4 ];
-        GPUPoint VertexTexCoords[ 4 ];
+        GPUPoint Vertices[ 4 ];
     }
     GPUQuad;
     

@@ -81,8 +81,7 @@ void LogOpenGLResult( const string& EntryText )
 const string VertexShaderCode =
     "#version 100                                                                               \n"
     "                                                                                           \n"
-    "attribute vec2 Position;                                                                   \n"
-    "attribute vec2 InputTextureCoordinate;                                                     \n"
+    "attribute vec4 VertexInfo;                                                                 \n"
     "varying highp vec2 TextureCoordinate;                                                      \n"
     "                                                                                           \n"
     "void main()                                                                                \n"
@@ -90,10 +89,10 @@ const string VertexShaderCode =
     "    // (1) first convert coordinates to the standard OpenGL screen space                   \n"
     "                                                                                           \n"
     "    // x is transformed from (0.0,640.0) to (-1.0,+1.0)                                    \n"
-    "    gl_Position.x = (Position.x / (640.0/2.0)) - 1.0;                                      \n"
+    "    gl_Position.x = (VertexInfo.x / (640.0/2.0)) - 1.0;                                    \n"
     "                                                                                           \n"
     "    // y is transformed from (0.0,360.0) to (+1.0,-1.0), so it undoes its inversion        \n"
-    "    gl_Position.y = 1.0 - (Position.y / (360.0/2.0));                                      \n"
+    "    gl_Position.y = 1.0 - (VertexInfo.y / (360.0/2.0));                                    \n"
     "                                                                                           \n"
     "    // even in 2D we may also need to set z and w                                          \n"
     "    gl_Position.z = 0.0;                                                                   \n"
@@ -101,7 +100,7 @@ const string VertexShaderCode =
     "                                                                                           \n"
     "    // (2) now texture coordinate is just provided as is to the fragment shader            \n"
     "    // (it is only needed here because fragment shaders cannot take inputs directly)       \n"
-    "    TextureCoordinate = InputTextureCoordinate;                                            \n"
+    "    TextureCoordinate = VertexInfo.zw;                                                     \n"
     "}                                                                                          \n";
 
 const string FragmentShaderCode =
@@ -460,8 +459,7 @@ void VideoOutput::InitRendering()
     glUseProgram( ShaderProgramID );
     
     // find the position for all our input variables within the shader program
-    PositionsLocation = glGetAttribLocation( ShaderProgramID, "Position" );
-    TexCoordsLocation = glGetAttribLocation( ShaderProgramID, "InputTextureCoordinate" );
+    VertexInfoLocation = glGetAttribLocation( ShaderProgramID, "VertexInfo" );
     
     // find the position for all our input uniforms within the shader program
     TextureUnitLocation = glGetUniformLocation( ShaderProgramID, "TextureUnit" );
@@ -475,8 +473,7 @@ void VideoOutput::InitRendering()
     // we will also need this for a core OpenGL
     // profile. For an OpenGL ES profile, instead,
     // it is enough to just use VAO without VBO
-    glGenBuffers( 1, &VBOPositions );
-    glGenBuffers( 1, &VBOTexCoords );
+    glGenBuffers( 1, &VBOVertexInfo );
     
     // bind our textures to GPU's texture unit 0
     glActiveTexture( GL_TEXTURE0 );
@@ -489,54 +486,29 @@ void VideoOutput::InitRendering()
     // create a white texture to draw solid color
     CreateWhiteTexture();
     
-    // allocate memory for vertex positions in the GPU
-    glBindBuffer( GL_ARRAY_BUFFER, VBOPositions );
+    // allocate memory for vertex info in the GPU
+    glBindBuffer( GL_ARRAY_BUFFER, VBOVertexInfo );
     
     glBufferData
     (
         GL_ARRAY_BUFFER,
-        8 * sizeof( GLfloat ),
-        QuadPositionCoords,
-        GL_DYNAMIC_DRAW
+        sizeof( QuadVerticesInfo ),
+        QuadVerticesInfo,
+        GL_STREAM_DRAW
     );
     
-    // define format for vertex positions
+    // define format for vertex info
     glVertexAttribPointer
     (
-        PositionsLocation,  // location (0-based index) within the shader program
-        2,                  // 2 components per vertex (x,y)
+        VertexInfoLocation, // location (0-based index) within the shader program
+        4,                  // 4 components per vertex (x,y,tex_x,tex_y)
         GL_FLOAT,           // each component is of type GLfloat
         GL_FALSE,           // do not normalize values (convert directly to fixed-point)
         0,                  // no gap between values (adjacent in memory)
-        nullptr             // pointer to the array
+        (void*)0            // starts at offset 0
     );
     
-    glEnableVertexAttribArray( PositionsLocation );
-    
-    // allocate memory for texture coordinates in the GPU
-    glBindBuffer( GL_ARRAY_BUFFER, VBOTexCoords );
-    
-    glBufferData
-    (
-        GL_ARRAY_BUFFER,
-        8 * sizeof( GLfloat ),
-        QuadTextureCoords,
-        GL_DYNAMIC_DRAW
-    );
-    
-    // define format for texture coordinates
-    glVertexAttribPointer
-    (
-        TexCoordsLocation,  // location (0-based index) within the shader program
-        2,                  // 2 components per vertex (u,v)
-        GL_FLOAT,           // each component is of type GLFloat
-        GL_FALSE,           // do not normalize values (convert directly to fixed-point)
-        0,                  // no gap between values (adjacent in memory)
-        nullptr             // pointer to the array
-    );
-    
-    glEnableVertexAttribArray( TexCoordsLocation );
-    
+    glEnableVertexAttribArray( VertexInfoLocation );
     LOG( "Finished initializing rendering" );
 }
 
@@ -793,8 +765,8 @@ IOPortValues VideoOutput::GetBlendingMode()
 void VideoOutput::DrawTexturedQuad( const GPUQuad& Quad )
 {
     // copy information from the received GPU quad
-    memcpy( QuadPositionCoords, Quad.VertexPositions, 8 * sizeof( float ) );
-    memcpy( QuadTextureCoords, Quad.VertexTexCoords, 8 * sizeof( float ) );
+    const int SizePerQuad = 16 * sizeof( float );
+    memcpy( QuadVerticesInfo, &Quad.Vertices, SizePerQuad );
     
     // PART 1: Update uniforms (i.e. shader globals)
     // - - - - - - - - - - - - - - - - - - - - - - - -
@@ -815,53 +787,29 @@ void VideoOutput::DrawTexturedQuad( const GPUQuad& Quad )
     // PART 2: Send attributes (i.e. shader input variables)
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
-    glBindBuffer( GL_ARRAY_BUFFER, VBOPositions );
+    glBindBuffer( GL_ARRAY_BUFFER, VBOVertexInfo );
 
-    // send updated vertex positions to the GPU
+    // send updated vertex info to the GPU
     glBufferSubData
     (
         GL_ARRAY_BUFFER,
         0,
-        8 * sizeof( GLfloat ),
-        QuadPositionCoords
+        16 * sizeof( GLfloat ),
+        QuadVerticesInfo
     );
     
-    // define storage and format for vertex positions
+    // define storage and format for vertex info
     glVertexAttribPointer
     (
-        PositionsLocation,  // location (0-based index) within the shader program
-        2,                  // 2 components per vertex (x,y)
+        VertexInfoLocation, // location (0-based index) within the shader program
+        4,                  // 4 components per vertex (x,y,tex_x,tex_y)
         GL_FLOAT,           // each component is of type GLfloat
         GL_FALSE,           // do not normalize values (convert directly to fixed-point)
         0,                  // no gap between values (adjacent in memory)
-        nullptr             // pointer to the array
+        (void*)0            // starts at offset 0
     );
     
-    glEnableVertexAttribArray( PositionsLocation );
-    
-    // send updated vertex texture coordinates to the GPU
-    glBindBuffer( GL_ARRAY_BUFFER, VBOTexCoords );
-    
-    glBufferSubData
-    (
-        GL_ARRAY_BUFFER,
-        0,
-        8 * sizeof( GLfloat ),
-        QuadTextureCoords
-    );
-    
-    // define storage and format for texture coordinates
-    glVertexAttribPointer
-    (
-        TexCoordsLocation,  // location (0-based index) within the shader program
-        2,                  // 2 components per vertex (u,v)
-        GL_FLOAT,           // each component is of type GLFloat
-        GL_FALSE,           // do not normalize values (convert directly to fixed-point)
-        0,                  // no gap between values (adjacent in memory)
-        nullptr             // pointer to the array
-    );
-    
-    glEnableVertexAttribArray( TexCoordsLocation );
+    glEnableVertexAttribArray( VertexInfoLocation );
     
     // PART 3: Draw geometry
     // - - - - - - - - - - - - -
@@ -889,20 +837,12 @@ void VideoOutput::ClearScreen( GPUColor ClearColor )
     // set a full-screen quad with the same texture pixel
     const GPUQuad ScreenQuad =
     {
-        // vertex positions
         {
-            { 0, 0 },
-            { Constants::ScreenWidth, 0 },
-            { 0, Constants::ScreenHeight },
-            { Constants::ScreenWidth, Constants::ScreenHeight }
-        },
-        
-        // texture coordinates
-        {
-            { 0.5, 0.5 },
-            { 0.5, 0.5 },
-            { 0.5, 0.5 },
-            { 0.5, 0.5 }
+            // 4x (vertex position + texture coordinates)
+            { 0, 0, 0.5, 0.5 },
+            { Constants::ScreenWidth, 0, 0.5, 0.5 },
+            { 0, Constants::ScreenHeight, 0.5, 0.5 },
+            { Constants::ScreenWidth, Constants::ScreenHeight, 0.5, 0.5 }
         }
     };
     
