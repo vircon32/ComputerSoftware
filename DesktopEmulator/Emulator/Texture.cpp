@@ -199,6 +199,10 @@ void Texture::Draw( int RenderXMin, int RenderYMin, int RenderXMax, int RenderYM
     if( !TextureID )
       return;
     
+    // we must render any pending quads before
+    // applying any new render configurations
+    Video.RenderQuadQueue();
+    
     // select current texture
     glBindTexture( GL_TEXTURE_2D, TextureID );
     
@@ -218,8 +222,10 @@ void Texture::Draw( int RenderXMin, int RenderYMin, int RenderXMax, int RenderYM
         }
     };
     
-    // draw rectangle defined as a quad
-    Video.DrawTexturedQuad( DrawnQuad );
+    // draw rectangle defined as a separate quad,
+    // since we use different render configuration
+    Video.AddQuadToQueue( DrawnQuad );
+    Video.RenderQuadQueue();
     
     // deselect texture
     glBindTexture( GL_TEXTURE_2D, 0 );

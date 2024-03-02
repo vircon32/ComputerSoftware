@@ -148,6 +148,9 @@ void EmulatorControl::RunNextFrame()
     Console.RunNextFrame();
     Audio.ChangeFrame();
     
+    // ensure that all queued quads are rendered
+    Video.RenderQuadQueue();
+    
     // after running, ensure that all GPU
     // commands run in the current frame are drawn
     glFlush();   

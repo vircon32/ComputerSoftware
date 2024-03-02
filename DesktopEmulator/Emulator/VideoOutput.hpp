@@ -24,6 +24,12 @@
 // *****************************************************************************
 
 
+// we will render our quads in groups using a
+// fixed size queue; this parameter sets the
+// queue size and acts as group size limit
+#define QUAD_QUEUE_SIZE 20
+
+
 // =============================================================================
 //      2D-SPECIALIZED OPENGL CONTEXT
 // =============================================================================
@@ -44,7 +50,8 @@ class VideoOutput
         bool FullScreen;
         
         // arrays to hold buffer info
-        GLfloat QuadVerticesInfo[ 16 ];
+        GLfloat QuadVerticesInfo[ 16 * QUAD_QUEUE_SIZE ];
+        GLushort VertexIndices[ 6 * QUAD_QUEUE_SIZE ];
         
         // current color modifiers
         V32::GPUColor MultiplyColor;
@@ -69,6 +76,9 @@ class VideoOutput
         GLuint VBOVertexInfo;
         GLuint VBOIndices;
         GLuint ShaderProgramID;
+        
+        // rendering control for quad groups
+        int QueuedQuads;
         
         // positions of shader parameters
         GLuint VertexInfoLocation;
@@ -116,8 +126,9 @@ class VideoOutput
         V32::IOPortValues GetBlendingMode();
         
         // render functions
-        void DrawTexturedQuad( const V32::GPUQuad& Quad );
         void ClearScreen( V32::GPUColor ClearColor );
+        void AddQuadToQueue( const V32::GPUQuad& Quad );
+        void RenderQuadQueue();
         
         // texture handling
         void SelectTexture( int GPUTextureID );

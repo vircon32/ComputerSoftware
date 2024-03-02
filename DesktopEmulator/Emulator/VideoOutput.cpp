@@ -141,6 +141,7 @@ VideoOutput::VideoOutput()
     
     // default values
     SelectedTexture = -1;
+    QueuedQuads = 0;
     
     // all texture IDs are initially 0
     BiosTextureID = 0;
@@ -148,6 +149,19 @@ VideoOutput::VideoOutput()
     
     for( int i = 0; i < Constants::GPUMaximumCartridgeTextures; i++ )
       CartridgeTextureIDs[ i ] = 0;
+    
+    // initialize vertex indices; they are organized
+    // assuming each quad will be given as 4 vertices,
+    // as in a GL_TRIANGLE_STRIP
+    for( int i = 0; i < QUAD_QUEUE_SIZE; i++ )
+    {
+        VertexIndices[ 6*i + 0 ] = 4*i + 0;
+        VertexIndices[ 6*i + 1 ] = 4*i + 1;
+        VertexIndices[ 6*i + 2 ] = 4*i + 2;
+        VertexIndices[ 6*i + 3 ] = 4*i + 1;
+        VertexIndices[ 6*i + 4 ] = 4*i + 2;
+        VertexIndices[ 6*i + 5 ] = 4*i + 3;
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -521,13 +535,12 @@ void VideoOutput::InitRendering()
     // allocate memory for vertex indices in the GPU
     // (vertices are given as triangle strip pairs)
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, VBOIndices );
-    GLuint Indices[ 6 ] = { 0, 1, 2, 1, 2, 3 };
     
     glBufferData
     (
         GL_ELEMENT_ARRAY_BUFFER,
-        6 * sizeof( GLuint ),
-        Indices,
+        QUAD_QUEUE_SIZE * 6 * sizeof( GLuint ),
+        VertexIndices,
         GL_STATIC_DRAW
     );
     
@@ -758,6 +771,10 @@ void VideoOutput::BeginFrame()
 
 void VideoOutput::SetMultiplyColor( GPUColor NewMultiplyColor )
 {
+    // we must render any pending quads before
+    // applying any new render configurations
+    RenderQuadQueue();
+    
     MultiplyColor = NewMultiplyColor;
     
     // send our multiply color to the GPU
@@ -782,6 +799,10 @@ GPUColor VideoOutput::GetMultiplyColor()
 
 void VideoOutput::SetBlendingMode( IOPortValues NewBlendingMode )
 {
+    // we must render any pending quads before
+    // applying any new render configurations
+    RenderQuadQueue();
+    
     switch( NewBlendingMode )
     {
         case IOPortValues::GPUBlendingMode_Alpha:
@@ -820,32 +841,53 @@ IOPortValues VideoOutput::GetBlendingMode()
 // =============================================================================
 
 
-void VideoOutput::DrawTexturedQuad( const GPUQuad& Quad )
+void VideoOutput::AddQuadToQueue( const GPUQuad& Quad )
 {
     // copy information from the received GPU quad
     const int SizePerQuad = 16 * sizeof( float );
-    memcpy( QuadVerticesInfo, &Quad.Vertices, SizePerQuad );
+    memcpy( &QuadVerticesInfo[ QueuedQuads * 16 ], &Quad.Vertices, SizePerQuad );
+    
+    // update the queue
+    QueuedQuads++;
+    
+    // force queue draw if it becomes full
+    if( QueuedQuads >= QUAD_QUEUE_SIZE )
+      RenderQuadQueue();
+}
+
+// -----------------------------------------------------------------------------
+
+void VideoOutput::RenderQuadQueue()
+{
+    if( QueuedQuads == 0 ) return;
     
     // send attributes (i.e. shader input variables)
     glBindBuffer( GL_ARRAY_BUFFER, VBOVertexInfo );
 
-    // send updated vertex info to the GPU
+    // send updated vertex info to the GPU; note that
+    // we would normally not update the whole buffer
+    // every time, but some mobile GPUs have a bug
+    // which causes very low performance on partial
+    // GPU buffer updates
     glBufferSubData
     (
         GL_ARRAY_BUFFER,
         0,
-        16 * sizeof( GLfloat ),
+        sizeof( QuadVerticesInfo ),
         QuadVerticesInfo
     );
     
     // draw the quad as 2 triangles
     glDrawElements
     (
-        GL_TRIANGLES,
-        6,                  // number of indices
-        GL_UNSIGNED_INT,    // format of indices
-        (void*)0            // element array buffer offset
+        GL_TRIANGLES,         // independent triangles
+        QueuedQuads * 6,      // number of indices
+        GL_UNSIGNED_SHORT,    // format of indices
+        (void*)0              // starts at offset 0
     );
+    
+    // reset the queue
+    QueuedQuads = 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -871,8 +913,10 @@ void VideoOutput::ClearScreen( GPUColor ClearColor )
         }
     };
     
-    // draw quad as "textured"
-    DrawTexturedQuad( ScreenQuad );
+    // draw this quad separately, since we are
+    // using different render configurations
+    AddQuadToQueue( ScreenQuad );
+    RenderQuadQueue();
     
     // restore previous multiply color and texture
     SetMultiplyColor( PreviousMultiplyColor );
@@ -947,6 +991,10 @@ void VideoOutput::UnloadTexture( int GPUTextureID )
 
 void VideoOutput::SelectTexture( int GPUTextureID )
 {
+    // we must render any pending quads before
+    // applying any new render configurations
+    RenderQuadQueue();
+    
     SelectedTexture = GPUTextureID;
     GLuint* OpenGLTextureID = &BiosTextureID;
     
