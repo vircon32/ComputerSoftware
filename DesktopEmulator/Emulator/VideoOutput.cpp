@@ -487,6 +487,10 @@ void VideoOutput::InitRendering()
     // initialize our multiply color to neutral
     SetMultiplyColor( GPUColor{ 255, 255, 255, 255 } );
     
+    // initialize blending
+    glEnable( GL_BLEND );
+    SetBlendingMode( IOPortValues::GPUBlendingMode_Alpha );
+    
     // create a white texture to draw solid color
     CreateWhiteTexture();
     
@@ -728,6 +732,22 @@ void VideoOutput::BeginFrame()
     SelectTexture( SelectedTexture );
     SetBlendingMode( BlendingMode );
     SetMultiplyColor( MultiplyColor );
+    
+    // tell the GPU which of its texture processors to use
+    glUniform1i( TextureUnitLocation, 0 );  // texture unit 0 is for decal textures
+    
+    // define storage and format for vertex info
+    glVertexAttribPointer
+    (
+        VertexInfoLocation, // location (0-based index) within the shader program
+        4,                  // 4 components per vertex (x,y,tex_x,tex_y)
+        GL_FLOAT,           // each component is of type GLfloat
+        GL_FALSE,           // do not normalize values (convert directly to fixed-point)
+        0,                  // no gap between values (adjacent in memory)
+        (void*)0            // starts at offset 0
+    );
+    
+    glEnableVertexAttribArray( VertexInfoLocation );
 }
 
 
@@ -739,6 +759,16 @@ void VideoOutput::BeginFrame()
 void VideoOutput::SetMultiplyColor( GPUColor NewMultiplyColor )
 {
     MultiplyColor = NewMultiplyColor;
+    
+    // send our multiply color to the GPU
+    glUniform4f
+    (
+        MultiplyColorLocation,      // location (0-based index) within the shader program
+        MultiplyColor.R / 255.0,    // the 4 color components (RGBA) in range [0.0-1.0]
+        MultiplyColor.G / 255.0,
+        MultiplyColor.B / 255.0,
+        MultiplyColor.A / 255.0
+    );
 }
 
 // -----------------------------------------------------------------------------
@@ -796,25 +826,7 @@ void VideoOutput::DrawTexturedQuad( const GPUQuad& Quad )
     const int SizePerQuad = 16 * sizeof( float );
     memcpy( QuadVerticesInfo, &Quad.Vertices, SizePerQuad );
     
-    // PART 1: Update uniforms (i.e. shader globals)
-    // - - - - - - - - - - - - - - - - - - - - - - - -
-    
-    // tell the GPU which of its texture processors to use
-    glUniform1i( TextureUnitLocation, 0 );  // texture unit 0 is for decal textures
-    
-    // send our multiply color to the GPU
-    glUniform4f
-    (
-        MultiplyColorLocation,      // location (0-based index) within the shader program
-        MultiplyColor.R / 255.0,    // the 4 color components (RGBA) in range [0.0-1.0]
-        MultiplyColor.G / 255.0,
-        MultiplyColor.B / 255.0,
-        MultiplyColor.A / 255.0
-    );
-    
-    // PART 2: Send attributes (i.e. shader input variables)
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    
+    // send attributes (i.e. shader input variables)
     glBindBuffer( GL_ARRAY_BUFFER, VBOVertexInfo );
 
     // send updated vertex info to the GPU
@@ -825,22 +837,6 @@ void VideoOutput::DrawTexturedQuad( const GPUQuad& Quad )
         16 * sizeof( GLfloat ),
         QuadVerticesInfo
     );
-    
-    // define storage and format for vertex info
-    glVertexAttribPointer
-    (
-        VertexInfoLocation, // location (0-based index) within the shader program
-        4,                  // 4 components per vertex (x,y,tex_x,tex_y)
-        GL_FLOAT,           // each component is of type GLfloat
-        GL_FALSE,           // do not normalize values (convert directly to fixed-point)
-        0,                  // no gap between values (adjacent in memory)
-        (void*)0            // starts at offset 0
-    );
-    
-    glEnableVertexAttribArray( VertexInfoLocation );
-    
-    // PART 3: Draw geometry
-    // - - - - - - - - - - - - -
     
     // draw the quad as 2 triangles
     glDrawElements
@@ -858,7 +854,7 @@ void VideoOutput::ClearScreen( GPUColor ClearColor )
 {
     // temporarily replace multiply color with clear color
     GPUColor PreviousMultiplyColor = MultiplyColor;
-    MultiplyColor = ClearColor;
+    SetMultiplyColor( ClearColor );
     
     // bind white texture
     glBindTexture( GL_TEXTURE_2D, WhiteTextureID );
@@ -879,7 +875,7 @@ void VideoOutput::ClearScreen( GPUColor ClearColor )
     DrawTexturedQuad( ScreenQuad );
     
     // restore previous multiply color and texture
-    MultiplyColor = PreviousMultiplyColor;
+    SetMultiplyColor( PreviousMultiplyColor );
     SelectTexture( SelectedTexture );
 }
 
