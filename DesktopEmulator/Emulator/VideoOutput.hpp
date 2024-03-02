@@ -53,6 +53,7 @@ class VideoOutput
         // OpenGL IDs of loaded textures
         GLuint BiosTextureID;
         GLuint CartridgeTextureIDs[ V32::Constants::GPUMaximumCartridgeTextures ];
+        int32_t SelectedTexture;
         
         // white texture used to draw solid colors
         GLuint WhiteTextureID;
@@ -105,6 +106,7 @@ class VideoOutput
         void RenderToScreen();
         void RenderToFramebuffer();
         void DrawFramebufferOnScreen();
+        void BeginFrame();
         
         // color control functions
         void SetMultiplyColor( V32::GPUColor NewMultiplyColor );

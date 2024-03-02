@@ -420,7 +420,6 @@ namespace V32
         }
         
         // draw rectangle defined as a quad (4-vertex polygon)
-        Callbacks::SelectTexture( SelectedTexture );
         Callbacks::DrawQuad( RegionQuad );
     }
 }

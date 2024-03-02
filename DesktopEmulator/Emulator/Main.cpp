@@ -464,6 +464,7 @@ int main( int NumberOfArguments, char* Arguments[] )
             
             // redirect all rendering to emulator's display
             Video.RenderToFramebuffer();
+            Video.BeginFrame();
             
             // measure cycle time
             double TimeStep = Watch.GetStepTime();
