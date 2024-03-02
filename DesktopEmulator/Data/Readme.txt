@@ -1,6 +1,6 @@
 ============================================================
              README file for Vircon32 emulator
-            (version 23.6.4) written by Carra
+            (version 24.3.2) written by Carra
 ============================================================
 
 What is this?
@@ -112,11 +112,11 @@ How to use memory cards
 
 ------------------------------------------------------------
 
-What's new in version 23.6.4?
+What's new in version 24.3.2?
     
-  - Corrected bad display of texture regions with large scaling
-    factors. Pixels now have the correct size and the region is
-    placed correctly when mirror on X and/or Y is applied.
+  - Corrected wrong GPU use percentage shown in menu bar.
+  - Improved graphic performance with better OpenGL handling
+    and by grouping rectangles when drawing.
 
 ------------------------------------------------------------
 
@@ -125,7 +125,7 @@ License
     This program is free and open source. It is offered under
     the 3-Clause BSD License, which full text is the following:
     
-    Copyright 2021-2023 Carra.
+    Copyright 2021-2024 Carra.
     All rights reserved.
     
     Redistribution and use in source and binary forms, with or

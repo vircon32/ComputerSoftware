@@ -1,6 +1,6 @@
 ﻿============================================================
         Archivo README para el emulador de Vircon32
-            (versión 23.6.4) escrito por Carra
+            (versión 24.3.2) escrito por Carra
 ============================================================
 
 ¿Qué es esto?
@@ -114,12 +114,12 @@ Cómo usar tarjetas de memoria
 
 ------------------------------------------------------------
 
-Novedades en la versión 23.6.4
+Novedades en la versión 24.3.2
     
-  - Corregido el dibujado de regiones de textura cuando se
-    aplican factores de escalado grandes. Ahora los pixels son
-    del tamaño correcto y la región se coloca bien cuando se
-    aplica efecto espejo en X y/o en Y.
+  - Corregido el porcentaje erróneo de uso de GPU que se estaba
+    mostrando en la barra de menú.
+  - Se ha mejorado el rendimiento gráfico gracias a un mejor
+    manejo de OpenGL y la agrupación de rectángulos al dibujar.
 
 ------------------------------------------------------------
 
@@ -129,7 +129,7 @@ Licencia
     la licencia BSD de 3 cláusulas, cuyo texto completo es el
     siguiente:
     
-    Copyright 2021-2023 Carra.
+    Copyright 2021-2024 Carra.
     Todos los derechos reservados.
     
     La redistribución y el uso en las formas de código fuente y
