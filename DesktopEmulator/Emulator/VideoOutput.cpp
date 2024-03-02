@@ -477,6 +477,7 @@ void VideoOutput::InitRendering()
     // profile. For an OpenGL ES profile, instead,
     // it is enough to just use VAO without VBO
     glGenBuffers( 1, &VBOVertexInfo );
+    glGenBuffers( 1, &VBOIndices );
     
     // bind our textures to GPU's texture unit 0
     glActiveTexture( GL_TEXTURE0 );
@@ -512,6 +513,20 @@ void VideoOutput::InitRendering()
     );
     
     glEnableVertexAttribArray( VertexInfoLocation );
+    
+    // allocate memory for vertex indices in the GPU
+    // (vertices are given as triangle strip pairs)
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, VBOIndices );
+    GLuint Indices[ 6 ] = { 0, 1, 2, 1, 2, 3 };
+    
+    glBufferData
+    (
+        GL_ELEMENT_ARRAY_BUFFER,
+        6 * sizeof( GLuint ),
+        Indices,
+        GL_STATIC_DRAW
+    );
+    
     LOG( "Finished initializing rendering" );
 }
 
@@ -827,12 +842,13 @@ void VideoOutput::DrawTexturedQuad( const GPUQuad& Quad )
     // PART 3: Draw geometry
     // - - - - - - - - - - - - -
     
-    // draw the quad as 2 connected triangles
-    glDrawArrays
+    // draw the quad as 2 triangles
+    glDrawElements
     (
-        GL_TRIANGLE_STRIP,  // determines order and interpretation of succesive vertices
-        0,                  // begin from the first index
-        4                   // use 4 consecutive indices
+        GL_TRIANGLES,
+        6,                  // number of indices
+        GL_UNSIGNED_INT,    // format of indices
+        (void*)0            // element array buffer offset
     );
 }
 

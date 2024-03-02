@@ -67,6 +67,7 @@ class VideoOutput
         // additional GL objects
         GLuint VAO;
         GLuint VBOVertexInfo;
+        GLuint VBOIndices;
         GLuint ShaderProgramID;
         
         // positions of shader parameters
