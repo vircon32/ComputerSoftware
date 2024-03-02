@@ -1004,3 +1004,10 @@ void VideoOutput::SelectTexture( int GPUTextureID )
     glBindTexture( GL_TEXTURE_2D, *OpenGLTextureID );
     glEnable( GL_TEXTURE_2D );
 }
+
+// -----------------------------------------------------------------------------
+
+int32_t VideoOutput::GetSelectedTexture()
+{
+    return SelectedTexture;
+}

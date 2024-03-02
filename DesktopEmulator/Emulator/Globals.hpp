@@ -76,7 +76,7 @@ namespace CallbackFunctions
     // video functions callable by the console
     void ClearScreen( V32::GPUColor ClearColor );
     void DrawQuad( V32::GPUQuad& DrawnQuad );
-    void SetMultiplyColor( V32::GPUColor MultiplyColor );
+    void SetMultiplyColor( V32::GPUColor NewMultiplyColor );
     void SetBlendingMode( int NewBlendingMode );
     void SelectTexture( int GPUTextureID );
     void LoadTexture( int GPUTextureID, void* Pixels );

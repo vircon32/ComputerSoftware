@@ -15,7 +15,6 @@
     
     // declare used namespaces
     using namespace std;
-    using namespace V32;
 // *****************************************************************************
 
 
@@ -43,7 +42,7 @@ string LastMemoryCardDirectory;
 
 
 // instance of the Vircon virtual machine
-V32Console Console;
+V32::V32Console Console;
 
 // wrappers for console I/O operation
 EmulatorControl Emulator;
@@ -96,23 +95,37 @@ namespace CallbackFunctions
 
     // -----------------------------------------------------------------------------
 
-    void SetMultiplyColor( V32::GPUColor MultiplyColor )
+    void SetMultiplyColor( V32::GPUColor NewMultiplyColor )
     {
-        Video.SetMultiplyColor( MultiplyColor );
+        // GPU colors are not directly comparable so use words
+        V32::V32Word New, Old;
+        New.AsColor = NewMultiplyColor;
+        Old.AsColor = Video.GetMultiplyColor();
+        
+        // set multiply color only when needed, so that
+        // quad groups are not broken without need
+        if( New.AsInteger != Old.AsInteger )
+          Video.SetMultiplyColor( NewMultiplyColor );
     }
 
     // -----------------------------------------------------------------------------
 
     void SetBlendingMode( int NewBlendingMode )
     {
-        Video.SetBlendingMode( (IOPortValues)NewBlendingMode );
+        // set blending mode only when needed, so that
+        // quad groups are not broken without need
+        if( NewBlendingMode != (int)Video.GetBlendingMode() )
+          Video.SetBlendingMode( (V32::IOPortValues)NewBlendingMode );
     }
 
     // -----------------------------------------------------------------------------
 
     void SelectTexture( int GPUTextureID )
     {
-        Video.SelectTexture( GPUTextureID );
+        // select texture only when needed, so that
+        // quad groups are not broken without need
+        if( GPUTextureID != Video.GetSelectedTexture() )
+          Video.SelectTexture( GPUTextureID );
     }
 
     // -----------------------------------------------------------------------------
@@ -126,7 +139,7 @@ namespace CallbackFunctions
 
     void UnloadCartridgeTextures()
     {
-        for( int i = 0; i < Constants::GPUMaximumCartridgeTextures; i++ )
+        for( int i = 0; i < V32::Constants::GPUMaximumCartridgeTextures; i++ )
           Video.UnloadTexture( i );
     }
     

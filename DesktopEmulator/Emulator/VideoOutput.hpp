@@ -131,9 +131,10 @@ class VideoOutput
         void RenderQuadQueue();
         
         // texture handling
-        void SelectTexture( int GPUTextureID );
         void LoadTexture( int GPUTextureID, void* Pixels );
         void UnloadTexture( int GPUTextureID );
+        void SelectTexture( int GPUTextureID );
+        int32_t GetSelectedTexture();
 };
 
 
