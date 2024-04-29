@@ -22,6 +22,15 @@ Most of these projects are written in C++ version 2011, and use portable librari
 
 If you are not familiar with Vircon32, a 32-bit virtual game console, you can visit its website [www.vircon32.com](http://www.vircon32.com "Vircon32 Homepage") for more information. There you will also find everything you may need to try out the console and to make games for it.
 
+----------------------------------
+### License
+
+There are several programs here, so any of them may have their own license. But unless otherwise specified, the global license is:
+- Software is provided under the [3-Clause BSD License](https://opensource.org/license/bsd-3-clause).
+- Assets are provided under [CC BY 4.0 License](https://creativecommons.org/licenses/by/4.0/)
+
+The intent of Vircon32 is to be open and free, that is why the chosen licenses are very permissive and should allow most uses.
+
 --------------------------------------------
 ### How to build these programs from source?
 
