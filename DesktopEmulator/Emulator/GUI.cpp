@@ -113,7 +113,8 @@ string GetSaveFilePath( const char* Filters, const std::string& Directory = Emul
 
 bool MessageBoxPending = false;
 Uint32 MessageBoxFlags;
-const char *MessageBoxTitle, *MessageBoxMessage;
+char MessageBoxTitle[ 128 ];
+char MessageBoxMessage[ 2048 ];
 
 // -----------------------------------------------------------------------------
 
@@ -121,8 +122,8 @@ void DelayedMessageBox( Uint32 Flags, const char *Title, const char *Message )
 {
     MessageBoxPending = true;
     MessageBoxFlags = Flags;
-    MessageBoxTitle = Title;
-    MessageBoxMessage = Message;
+    strncpy( MessageBoxTitle, Title, sizeof(MessageBoxTitle)-1 );
+    strncpy( MessageBoxMessage, Message, sizeof(MessageBoxMessage)-1 );
 }
 
 // -----------------------------------------------------------------------------
