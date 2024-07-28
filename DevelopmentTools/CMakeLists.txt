@@ -71,9 +71,9 @@ endif()
 project("Vircon32")
 
 # Define version
-set(PROJECT_VERSION_MAJOR 22)
-set(PROJECT_VERSION_MINOR 6)
-set(PROJECT_VERSION_PATCH 4)
+set(PROJECT_VERSION_MAJOR 24)
+set(PROJECT_VERSION_MINOR 7)
+set(PROJECT_VERSION_PATCH 29)
 
 # Set names for final executables
 set(C_COMPILER_BINARY_NAME "compile")
@@ -347,24 +347,46 @@ target_link_libraries(${TILED_CONVERTER_BINARY_NAME} ${TILED_CONVERTER_LIBS})
 #   DEFINE THE INSTALL PROCESS
 # -----------------------------------------------------
 
-# Install all binaries
-install(TARGETS
-    ${C_COMPILER_BINARY_NAME}
-    ${ASSEMBLER_BINARY_NAME}
-    ${ROM_PACKER_BINARY_NAME}
-    ${PNG_CONVERTER_BINARY_NAME}
-    ${WAV_CONVERTER_BINARY_NAME}
-    ${TILED_CONVERTER_BINARY_NAME}
-    RUNTIME
-    COMPONENT binaries
-    DESTINATION DevTools)
-
-# Copy the needed data files
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
-    DESTINATION DevTools)
-    
-# On Windows, copy the needed runtime files (DLLs)
 if(TARGET_OS STREQUAL "windows")
+    # Install all binaries
+    install(TARGETS
+        ${C_COMPILER_BINARY_NAME}
+        ${ASSEMBLER_BINARY_NAME}
+        ${ROM_PACKER_BINARY_NAME}
+        ${PNG_CONVERTER_BINARY_NAME}
+        ${WAV_CONVERTER_BINARY_NAME}
+        ${TILED_CONVERTER_BINARY_NAME}
+        RUNTIME
+        COMPONENT binaries
+        DESTINATION DevTools)
+    
+    # Copy the needed data files
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
+        DESTINATION DevTools)
+    
+    # On Windows, copy the needed runtime files (DLLs)
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${RUNTIME_DIR}/
         DESTINATION DevTools)
+else()
+    # Install all binaries
+    install(TARGETS
+        ${C_COMPILER_BINARY_NAME}
+        ${ASSEMBLER_BINARY_NAME}
+        ${ROM_PACKER_BINARY_NAME}
+        ${PNG_CONVERTER_BINARY_NAME}
+        ${WAV_CONVERTER_BINARY_NAME}
+        ${TILED_CONVERTER_BINARY_NAME}
+        RUNTIME
+        COMPONENT binaries
+        DESTINATION ${CMAKE_PROJECT_NAME}/DevTools)
+    
+    # Copy the needed data files
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
+        DESTINATION ${CMAKE_PROJECT_NAME}/DevTools)
+endif()
+
+# On Linux or Mac we will need to set install permissions
+if(TARGET_OS STREQUAL "linux" OR TARGET_OS STREQUAL "mac")
+    # Allow compiler and assembler to create logs
+    install(CODE "execute_process(COMMAND chmod 777 ${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_NAME}/DevTools)")
 endif()

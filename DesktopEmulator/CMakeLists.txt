@@ -27,8 +27,8 @@ project("Vircon32" LANGUAGES C CXX)
 
 # Define version
 set(PROJECT_VERSION_MAJOR 24)
-set(PROJECT_VERSION_MINOR 3)
-set(PROJECT_VERSION_PATCH 2)
+set(PROJECT_VERSION_MINOR 7)
+set(PROJECT_VERSION_PATCH 29)
 
 # Set names for final executables
 set(EMULATOR_BINARY_NAME "Vircon32")
@@ -118,15 +118,15 @@ set(CMAKE_C_FLAGS "${c_flags}"
 
 # Mark executables as debug (*_d) when debug build is selected
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" OR CMAKE_CFG_INTDIR STREQUAL "Debug" OR CMAKE_CFG_INTDIR STREQUAL "RelWithDebInfo")
-	set(IS_DEBUG TRUE)
-	set(CMAKE_DEBUG_POSTFIX "_d")
-	if(TARGET_OS STREQUAL "windows")
-		set(CMAKE_EXECUTABLE_SUFFIX "_d.exe")
-	else()
-		set(CMAKE_EXECUTABLE_SUFFIX "_d")
-	endif()
+    set(IS_DEBUG TRUE)
+    set(CMAKE_DEBUG_POSTFIX "_d")
+    if(TARGET_OS STREQUAL "windows")
+        set(CMAKE_EXECUTABLE_SUFFIX "_d.exe")
+    else()
+        set(CMAKE_EXECUTABLE_SUFFIX "_d")
+    endif()
 else()
-	set(IS_DEBUG FALSE)
+    set(IS_DEBUG FALSE)
 endif()
 
 # -----------------------------------------------------
@@ -357,24 +357,7 @@ endif()
 #   DEFINE THE INSTALL PROCESS
 # -----------------------------------------------------
 
-if(TARGET_OS STREQUAL "linux")
-    # Install both binaries
-    install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
-        RUNTIME
-        COMPONENT binaries
-        DESTINATION /opt/Vircon32/Emulator)
-
-    # Copy the needed data files
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
-        DESTINATION /opt/Vircon32/Emulator)
-    # Install desktop entry
-    install(FILES Resources/Linux/Vircon32.desktop DESTINATION /usr/share/applications )
-
-    # Install icon
-    install(FILES Resources/Linux/Vircon32.svg DESTINATION /usr/share/pixmaps )
-    install(FILES Resources/Linux/Vircon32.svg DESTINATION /usr/share/icons/hicolor/scalable/apps/ )
-	
-elseif(TARGET_OS STREQUAL "windows")
+if(TARGET_OS STREQUAL "windows")
     # Install both binaries
     install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
         RUNTIME
@@ -384,7 +367,7 @@ elseif(TARGET_OS STREQUAL "windows")
     # Copy the needed data files
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
         DESTINATION Emulator)
-	
+    
     # On Windows, copy the needed runtime files (DLLs)
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${RUNTIME_DIR}/
         DESTINATION Emulator)
@@ -393,9 +376,32 @@ else()
     install(TARGETS ${EMULATOR_BINARY_NAME} ${EDITCONTROLS_BINARY_NAME}
         RUNTIME
         COMPONENT binaries
-        DESTINATION Emulator)
+        DESTINATION ${CMAKE_PROJECT_NAME}/Emulator)
 
     # Copy the needed data files
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
-        DESTINATION Emulator)
+        DESTINATION ${CMAKE_PROJECT_NAME}/Emulator)
+endif()
+
+# Extra steps to configure the application on Linux
+if(TARGET_OS STREQUAL "linux")
+    # Install desktop entry
+    install(FILES Resources/Linux/Vircon32.desktop DESTINATION /usr/share/applications )
+
+    # Install icon
+    install(FILES Resources/Linux/Vircon32.svg DESTINATION /usr/share/pixmaps )
+    install(FILES Resources/Linux/Vircon32.svg DESTINATION /usr/share/icons/hicolor/scalable/apps/ )
+endif()
+    
+# On Linux or Mac we will need to set install permissions
+if(TARGET_OS STREQUAL "linux" OR TARGET_OS STREQUAL "mac")
+    # Allow emulator to create the debug log
+    install(CODE "execute_process(COMMAND chmod 777 ${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_NAME}/Emulator)")
+    
+    # Allow emulator and editcontrols to save settings
+    install(CODE "execute_process(COMMAND chmod 777 ${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_NAME}/Emulator/Config-Controls.xml)")
+    install(CODE "execute_process(COMMAND chmod 777 ${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_NAME}/Emulator/Config-Settings.xml)")
+    
+    # Allow emulator to create memory cards
+    install(CODE "execute_process(COMMAND chmod 777 ${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_NAME}/Emulator/Cards)")
 endif()

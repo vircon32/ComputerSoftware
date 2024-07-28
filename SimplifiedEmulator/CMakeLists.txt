@@ -21,9 +21,9 @@ endif()
 project("Vircon32" LANGUAGES C CXX)
 
 # Define version
-set(PROJECT_VERSION_MAJOR 23)
-set(PROJECT_VERSION_MINOR 6)
-set(PROJECT_VERSION_PATCH 4)
+set(PROJECT_VERSION_MAJOR 24)
+set(PROJECT_VERSION_MINOR 7)
+set(PROJECT_VERSION_PATCH 29)
 
 # Set names for final executables
 set(EMULATOR_BINARY_NAME "Vircon32Simple")
@@ -266,18 +266,7 @@ endif()
 #   DEFINE THE INSTALL PROCESS
 # -----------------------------------------------------
 
-if(TARGET_OS STREQUAL "linux")
-    # Install the binaries
-    install(TARGETS ${EMULATOR_BINARY_NAME}
-        RUNTIME
-        COMPONENT binaries
-        DESTINATION /opt/Vircon32/SimpleEmulator)
-
-    # Copy the needed data files
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
-        DESTINATION /opt/Vircon32/SimpleEmulator)
-	
-elseif(TARGET_OS STREQUAL "windows")
+if(TARGET_OS STREQUAL "windows")
     # Install the binaries
     install(TARGETS ${EMULATOR_BINARY_NAME}
         RUNTIME
@@ -296,9 +285,9 @@ else()
     install(TARGETS ${EMULATOR_BINARY_NAME}
         RUNTIME
         COMPONENT binaries
-        DESTINATION SimpleEmulator)
+        DESTINATION ${CMAKE_PROJECT_NAME}/SimpleEmulator)
 
     # Copy the needed data files
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
-        DESTINATION SimpleEmulator)
+        DESTINATION ${CMAKE_PROJECT_NAME}/SimpleEmulator)
 endif()
