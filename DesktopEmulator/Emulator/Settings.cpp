@@ -8,6 +8,7 @@
     #include "ConsoleLogic/V32Console.hpp"
     
     // include project headers
+    #include "EmulatorControl.hpp"
     #include "Settings.hpp"
     #include "GamepadsInput.hpp"
     #include "AudioOutput.hpp"
@@ -376,6 +377,9 @@ void SetDefaultSettings()
         Gamepads.MappedGamepads[ i ].Type = DeviceTypes::NoDevice;
     }
     
+    // set automatic memory card handling
+    Emulator.SetCardHandling( true );
+    
     // set default load folders
     LastCartridgeDirectory = EmulatorFolder;
     LastMemoryCardDirectory = EmulatorFolder;
@@ -409,8 +413,8 @@ void LoadSettings( const string& FilePath )
         // check document version number
         int Version = GetRequiredIntegerAttribute( SettingsRoot, "version" );
         
-        if( Version < 1 || Version > 4 )
-          THROW( "Document version number is" + to_string( Version ) + ", only versions 1 through 4 are supported" );
+        if( Version < 1 || Version > 5 )
+          THROW( "Document version number is" + to_string( Version ) + ", only versions 1 through 5 are supported" );
         
         // load language settings (optional)
         XMLElement* LanguageElement = SettingsRoot->FirstChildElement( "language" );
@@ -529,6 +533,15 @@ void LoadSettings( const string& FilePath )
         // we need to detect joysticks and assign them to gamepads
         Gamepads.AssignInputDevices();
         
+        // read memory card handling mode (optional)
+        XMLElement* MemCardElement = SettingsRoot->FirstChildElement( "memory-card" );
+        
+        if( MemCardElement )
+        {
+            bool AutoCards = GetRequiredYesNoAttribute( MemCardElement, "automatic" );
+            Emulator.SetCardHandling( AutoCards );
+        }
+        
         // read load folders
         XMLElement* LoadFoldersRoot = GetRequiredElement( SettingsRoot, "load-folders" );
         XMLElement* CartridgeFolder = GetRequiredElement( LoadFoldersRoot, "cartridges" );
@@ -602,7 +615,7 @@ void SaveSettings( const string& FilePath )
         // create a document and its root element
         XMLDocument CreatedDoc;
         XMLElement* SettingsRoot = CreatedDoc.NewElement( "settings" );
-        SettingsRoot->SetAttribute( "version", 4 );
+        SettingsRoot->SetAttribute( "version", 5 );
         CreatedDoc.LinkEndChild( SettingsRoot );
         
         // save language
@@ -659,6 +672,11 @@ void SaveSettings( const string& FilePath )
             GamepadElement->SetAttribute( "profile", ProfileName.c_str() );
             SettingsRoot->LinkEndChild( GamepadElement );
         }
+        
+        // save memory card handling mode
+        XMLElement* MemCardElement = CreatedDoc.NewElement( "memory-card" );
+        SettingsRoot->LinkEndChild( MemCardElement );
+        MemCardElement->SetAttribute( "automatic", Emulator.IsCardHandlingAuto()? "yes" : "no" );
         
         // save load folders
         XMLElement* FoldersRoot = CreatedDoc.NewElement( "load-folders" );

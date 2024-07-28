@@ -346,6 +346,24 @@ void CheckMemoryCardPaths()
       RecentMemoryCardPaths.pop_back();
 }
 
+// -----------------------------------------------------------------------------
+
+// determine the path of the memory card corresponding to a given,
+// game file, taking into account the emulator's card directory
+// (this is only used when memory card handling is set to automatic)
+string GetAutomaticMemoryCardPath( const string& CartridgePath )
+{
+    // step 1: determine the emulator's card folder
+    string CardsFolder = EmulatorFolder + "Cards";
+    
+    // step 2: isolate file name and replace extension
+    string CartridgeFileName = GetPathFileName( CartridgePath );
+    string CardFileName = ReplaceFileExtension( CartridgeFileName, "memc" );
+    
+    // step 3: replace or add the file extension
+    return CardsFolder + PathSeparator + CardFileName;
+}
+
 
 // =============================================================================
 //      ENCAPSULATED GUI FUNCTIONS
@@ -355,11 +373,12 @@ void CheckMemoryCardPaths()
 // in try/catch blocks and report errors
 
 
-void GUI_CreateMemoryCard()
+void GUI_CreateMemoryCard( string MemoryCardPath )
 {
     try
     {
-        string MemoryCardPath = GetSaveFilePath( "Vircon32 cards (*.memc):memc" );
+        if( MemoryCardPath.empty() )
+          MemoryCardPath = GetSaveFilePath( "Vircon32 cards (*.memc):memc" );
         
         if( !MemoryCardPath.empty() )
         {
@@ -370,7 +389,10 @@ void GUI_CreateMemoryCard()
             // create the card
             Console.CreateMemoryCard( MemoryCardPath );
             
-            // report
+            // report only if we requested this manually
+            if( Emulator.IsCardHandlingAuto() )
+              return;
+            
             DelayedMessageBox
             (
                 SDL_MESSAGEBOX_INFORMATION,
@@ -455,6 +477,41 @@ void GUI_ChangeMemoryCard( string MemoryCardPath )
 
 // -----------------------------------------------------------------------------
 
+void GUI_AutoUpdateMemoryCard()
+{
+    try
+    {
+        // unload any previous card
+        if( Console.HasMemoryCard() )
+          Console.UnloadMemoryCard();
+        
+        // if there is no game, just remove any loaded card
+        if( !Console.HasCartridge() )
+          return;
+        
+        // determine the corresponding card file for current game game
+        // otherwise load the corresponding card, if it exists
+        string CartridePath = Console.GetCartridgeFileName();
+        string MemoryCardPath = GetAutomaticMemoryCardPath( CartridePath );
+        
+        // ensure that the corresponding card file exists
+        if( !FileExists( MemoryCardPath ) )
+          GUI_CreateMemoryCard( MemoryCardPath );
+        
+        // load the card, but don't update latest cards list
+        // (leave that for manually used cards)
+        Console.LoadMemoryCard( MemoryCardPath );
+    }
+    
+    catch( const exception& e )
+    {
+        string Message = Texts( TextIDs::Errors_AutoUpdateCard_Label ) + string(e.what());
+        DelayedMessageBox( SDL_MESSAGEBOX_ERROR, "Error", Message.c_str() );
+    }
+}
+
+// -----------------------------------------------------------------------------
+
 void GUI_UnloadCartridge()
 {
     try
@@ -463,6 +520,10 @@ void GUI_UnloadCartridge()
         
         // set window title
         SDL_SetWindowTitle( Video.GetWindow(), "Vircon32: No cartridge" );
+        
+        // automatic card handling
+        if( Emulator.IsCardHandlingAuto() )
+          GUI_AutoUpdateMemoryCard();
     }
     
     catch( const exception& e )
@@ -498,6 +559,10 @@ void GUI_LoadCartridge( string CartridgePath )
             
             // update list of recent roms
             AddRecentCartridgePath( CartridgePath );
+            
+            // automatic card handling
+            if( Emulator.IsCardHandlingAuto() )
+              GUI_AutoUpdateMemoryCard();
         }
     }
     
@@ -535,6 +600,10 @@ void GUI_ChangeCartridge( string CartridgePath )
             
             // update list of recent roms
             AddRecentCartridgePath( CartridgePath );
+            
+            // automatic card handling
+            if( Emulator.IsCardHandlingAuto() )
+              GUI_AutoUpdateMemoryCard();
         }
     }
     
@@ -773,6 +842,16 @@ void ProcessMenuMemoryCard()
         ImGui::Separator();
     }
     
+    // hide actual options when memory card handling is set to automatic
+    if( Emulator.IsCardHandlingAuto() )
+    {
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+        ImGui::Text( Texts(TextIDs::Options_CardsAuto) );
+        ImGui::PopStyleVar();
+        ImGui::EndMenu();
+        return;
+    }
+    
     // now display the actual options
     if( ImGui::MenuItem( Texts(TextIDs::Card_Create) ) )
       PendingAction = DelayedFileActions::CreateMemoryCard;
@@ -946,6 +1025,20 @@ void ProcessMenuOptions()
           
         if( ImGui::MenuItem( Texts(TextIDs::Options_Spanish), nullptr, (CurrentLanguage == &LanguageSpanish[0]), true ) )
           SetLanguage( "Spanish" );
+        
+        ImGui::EndMenu();
+    }
+    
+    if( ImGui::BeginMenu( Texts(TextIDs::Options_MemoryCards) ) )
+    {
+        if( ImGui::MenuItem( Texts(TextIDs::Options_CardsAuto), nullptr, Emulator.IsCardHandlingAuto(), true ) )
+        {
+            Emulator.SetCardHandling( true );
+            GUI_AutoUpdateMemoryCard();
+        }
+          
+        if( ImGui::MenuItem( Texts(TextIDs::Options_CardsManual), nullptr, !Emulator.IsCardHandlingAuto(), true ) )
+          Emulator.SetCardHandling( false );
         
         ImGui::EndMenu();
     }

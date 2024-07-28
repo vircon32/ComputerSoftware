@@ -19,6 +19,7 @@ class EmulatorControl
     private:
         
         bool Paused;
+        bool AutoCardHandling;
     
     public:
         
@@ -35,6 +36,9 @@ class EmulatorControl
         void Resume();
         bool IsPaused();
 
+        void SetCardHandling( bool Auto );
+        bool IsCardHandlingAuto();
+        
         void SetPower( bool On );
         bool IsPowerOn();
         void Reset();

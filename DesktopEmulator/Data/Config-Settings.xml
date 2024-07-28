@@ -1,4 +1,4 @@
-<settings version="4">
+<settings version="5">
     <language>english</language>
     <bios file="StandardBios.v32"/>
     <video size="1" fullscreen="no" />
@@ -8,6 +8,7 @@
     <gamepad-2 profile="None" />
     <gamepad-3 profile="None" />
     <gamepad-4 profile="None" />
+    <memory-card automatic="yes" />
     <load-folders>
         <cartridges path="" />
         <memory-cards path="" />

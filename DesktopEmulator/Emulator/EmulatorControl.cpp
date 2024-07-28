@@ -32,6 +32,7 @@
 EmulatorControl::EmulatorControl()
 {
     Paused = false;
+    AutoCardHandling = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -110,6 +111,20 @@ void EmulatorControl::Resume()
 bool EmulatorControl::IsPaused()
 {
     return Paused;
+}
+
+// -----------------------------------------------------------------------------
+
+void EmulatorControl::SetCardHandling( bool Auto )
+{
+    AutoCardHandling = Auto;
+}
+
+// -----------------------------------------------------------------------------
+
+bool EmulatorControl::IsCardHandlingAuto()
+{
+    return AutoCardHandling;
 }
 
 // -----------------------------------------------------------------------------

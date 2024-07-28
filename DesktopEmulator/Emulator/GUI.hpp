@@ -39,6 +39,7 @@ void AddRecentCartridgePath( const std::string& CartridgePath );
 void AddRecentMemoryCardPath( const std::string& MemoryCardPath );
 void CheckCartridgePaths();
 void CheckMemoryCardPaths();
+std::string GetAutomaticMemoryCardPath( const std::string& CartridgePath );
 
 
 // =============================================================================
@@ -46,10 +47,11 @@ void CheckMemoryCardPaths();
 // =============================================================================
 
 
-void GUI_CreateMemoryCard();
+void GUI_CreateMemoryCard( std::string MemoryCardPath = "" );
 void GUI_UnloadMemoryCard();
 void GUI_LoadMemoryCard( std::string MemoryCardPath = "" );
 void GUI_ChangeMemoryCard( std::string MemoryCardPath = "" );
+void GUI_AutoUpdateMemoryCard();
 void GUI_UnloadCartridge();
 void GUI_LoadCartridge( std::string CartridgePath = "" );
 void GUI_ChangeCartridge( std::string CartridgePath = "" );
