@@ -1,6 +1,6 @@
 ============================================================
              README file for Vircon32 emulator
-            (version 24.3.2) written by Carra
+            (version 24.7.29) written by Carra
 ============================================================
 
 What is this?
@@ -100,23 +100,40 @@ How to use memory cards
     sessions, it will need a memory card to preserve any saved
     information.
 
-    If you don't have a memory card file to insert into the
-    console, first create a new empty card file using the option
-    in the Memory Card menu. Then you can load that file and the
-    console will be able to use the memory card.
-
-    Be careful to use the right memory card for each cartridge!
-    Each game should check that the data in the card does not
-    belong to other cartridges, but there is no guarantee that
-    it actually will.
+    There are 2 modes you can choose to manage memory cards. You
+    can choose which one to use from the options menu.
+    
+    Automatic (default option):
+    
+      The emulator automatically creates a new memory card for
+      each game we open. It saves them in subfolder "Cards"
+      within the emulador folder.
+      
+      This mode is the same one used by the Vircon32 core for
+      RetroArch. Many other emulators also work like this.
+    
+    Manual:
+    
+      The emulator will not create or use cards automatically.
+      Instead, from the memory card menu you can create new
+      cards and decide when to load and remove them.
+      
+      This mode mirrors the way you would use a physical
+      console, handling the cards and cartridges ourselves.
+    
+    If you use manual mode, be careful to use the right memory
+    card for each cartridge! Each game should check that the
+    data in the card does not belong to other cartridges, but
+    there is no guarantee that it actually will.
 
 ------------------------------------------------------------
 
-What's new in version 24.3.2?
+What's new in version 24.7.29?
     
-  - Corrected wrong GPU use percentage shown in menu bar.
-  - Improved graphic performance with better OpenGL handling
-    and by grouping rectangles when drawing.
+  - Added option (enabled by default) for automatic memory card
+    handling.
+  - The standard BIOS included with the emulator has been
+    updated to version 1.2.
 
 ------------------------------------------------------------
 

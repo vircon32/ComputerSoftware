@@ -1,6 +1,6 @@
 ﻿============================================================
         Archivo README para el emulador de Vircon32
-            (versión 24.3.2) escrito por Carra
+            (versión 24.7.29) escrito por Carra
 ============================================================
 
 ¿Qué es esto?
@@ -101,25 +101,45 @@ Cómo usar tarjetas de memoria
     Cuando algún cartucho de Vircon32 necesita guardar/cargar
     datos entre sesiones, necesitará una tarjeta de memoria para
     preservar la información guardada.
+    
+    Hay 2 modos de gestionar las tarjetas de memoria. Puedes
+    elegir cuál usar desde el menú de opciones.
+    
+    Automática (opción por defecto):
+    
+      El emulador crea automáticamente una tarjeta de memoria
+      nueva para cada juego que abramos. Las guarda en la
+      subcarpeta "Cards" del propio emulador.
+      
+      Este modo es el mismo que usa el núcleo Vircon32 en
+      RetroArch. También funcionan así muchos otros emuladores.
+    
+    Manual:
+    
+      El emulador no creará ni usará tarjetas automáticamente.
+      En vez de eso, desd el menú de tarjeta de memoria podrás
+      crear nuevas tarjetas y decidir cuándo ponerlas y quitarlas.
+      
+      Este modo refleja la manera en que usaríamos una consola
+      física, manejando las tarjetas y cartuchos nosotros mismos.
+      
+    vez que un juego escriba en ella, esa tarjeta sólo la
+    reconocerá ese mismo juego, así que necesitarás una tarjeta
+    para cada juego en donde quieras guardar partida.
 
-    Si no tienes un archivo de tarjeta de memoria, primero crea
-    uno nuevo vacío usando la opción del menú de tarjeta de
-    memoria. Entonces ya podrás cargar ese archivo y la consola
-    podrá usar la tarjeta de memoria.
-
-    ¡Ten cuidado de usar la tarjeta de memoria correcta en cada
-    cartucho! Cada juego debería comprobar si los datos de la
-    tarjeta pertenecen a otros cartuchos, pero no hay garantías
-    de que realmente lo hagan.
+    Si usas el modo manual, ¡ten cuidado de usar la tarjeta de
+    memoria correcta en cada cartucho! Cada juego debería
+    comprobar si los datos de la tarjeta pertenecen a otros
+    cartuchos, pero no hay garantías de que realmente lo hagan.
 
 ------------------------------------------------------------
 
-Novedades en la versión 24.3.2
+Novedades en la versión 24.7.29
     
-  - Corregido el porcentaje erróneo de uso de GPU que se estaba
-    mostrando en la barra de menú.
-  - Se ha mejorado el rendimiento gráfico gracias a un mejor
-    manejo de OpenGL y la agrupación de rectángulos al dibujar.
+  - Añadida la opción (activada por defecto) para el manejo
+    automático de las tarjetas de memoria.
+  - La BIOS estándar incluida con el emulador se ha actualizado
+    a la versión 1.2.
 
 ------------------------------------------------------------
 
