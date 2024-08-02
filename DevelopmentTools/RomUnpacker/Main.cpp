@@ -39,8 +39,8 @@ bool VerboseMode = false;
 
 void PrintUsage()
 {
-    cout << "USAGE: packrom [options] file" << endl;
-    cout << "File: a rom definition in XML format" << endl;
+    cout << "USAGE: unpackrom [options] folder" << endl;
+    cout << "Folder: output to place XML rom definition and packed assets" << endl;
     cout << "Options:" << endl;
     cout << "  --help       Displays this information" << endl;
     cout << "  --version    Displays program version" << endl;
@@ -52,8 +52,8 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "packrom v24.8.2" << endl;
-    cout << "Vircon32 ROM packer by Javier Carracedo" << endl;
+    cout << "unpackrom v24.8.2" << endl;
+    cout << "Vircon32 ROM unpacker by Javier Carracedo" << endl;
 }
 
 // -----------------------------------------------------------------------------

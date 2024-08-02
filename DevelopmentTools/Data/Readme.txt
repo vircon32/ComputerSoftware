@@ -1,6 +1,6 @@
 ================================================
    PC development tools for Vircon32 console
-  (version 24.2.4). README written by Carra
+  (version 24.8.2). README written by Carra
 ================================================
 
 
@@ -8,6 +8,11 @@ What is this?
 
     This is a set of tools that allow you to create Vircon32
     programs from your PC, by writing C or assembly programs.
+    
+    There are now also some "reverse" tools that do the
+    opposite: unpack a Vircon32 rom and extract from it the
+    binaries, sounds and images it contains.
+    
     All the programs included here are command-line tools.
     
 ------------------------------------------------------------
@@ -26,8 +31,8 @@ Installing
     
 ------------------------------------------------------------
 
-Included programs 
-  
+Included programs (build tools)
+
   - "compile": a C compiler that allows you to compile your
     C programs for Vircon32 into assembly. It also includes
     the headers for its standard library.
@@ -52,20 +57,36 @@ Included programs
     
 ------------------------------------------------------------
 
-What's new in version 24.2.24?
+Included programs (reverse tools)
   
-  - Assembler: removed old define statement, and added a full
-    preprocessor supporting several directives.
-  - Assembler: added pointer statement to define a list of
-    label values.
-  - Assembler: added support for true and false as built-in
-    integer constants with value 1 and 0 respectively.
-  - Compiler: globals are now generated with %define instead
-    of define, as the new assembler version expects.
-  - Compiler and assembler: added support to escape characters
-    with hex values in strings (e.g.: "\x41" == "A").
-  - Compiler: Fixed bug with nested includes not looking in
-    the right folder for the file.
+  - "disassemble": a program that takes a Vircon32 machine
+    code binary and converts it back into an assembly
+    program. Note that, while a binary can join together a
+    program and several data, this tool focuses mainly on
+    the program itself.
+  
+  - "vircon2png": a program converts native textures used
+    by Vircon32 back into PNG images.
+  
+  - "vircon2wav": a program converts native sounds used
+    by Vircon32 back into WAV sounds.
+  
+  - "unpackrom": this program takes a Vircon32 rom and
+    extracts its content to a folder. It will create its
+    XML rom definition file, extract its program rom and
+    make subfolders to extract all present textures and
+    sounds.
+    
+------------------------------------------------------------
+
+What's new in version 24.8.2?
+  
+  - Reverse tools are now included in the dev tools.
+  - On Linux and Mac systems the default installation
+    directory for dev tools has been changed from
+    /opt/Vircon32/DevTools to /usr/local/Vircon32/DevTools.
+  - Along with this, file and folder permissions should
+    now allow the compiler to save logs.
 
 ------------------------------------------------------------
 

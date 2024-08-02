@@ -6,7 +6,6 @@
     #include "Globals.hpp"
     
     // declare used namespaces
-    using namespace std;
     using namespace V32;
 // *****************************************************************************
 
@@ -20,6 +19,5 @@
 bool Debug = false;
 bool VerboseMode = false;
 
-// assembler configuration
-string AssemblerFolder;
+// disassembler configuration
 int InitialROMAddress = Constants::CartridgeProgramROMFirstAddress;

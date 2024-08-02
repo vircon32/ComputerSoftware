@@ -220,7 +220,7 @@ int32_t VirconASMEmitter::GetValueAsAddress( InstructionNode& Node, BasicValue& 
 V32Word VirconASMEmitter::GetValueAsImmediate( InstructionNode& Node, BasicValue& Value )
 {
     string OpCodeName = OpCodeToString( Node.OpCode );
-    V32Word Result;
+    V32Word Result = { 0 };
     
     // case 1: literal integer
     if( Value.Type == BasicValueTypes::LiteralInteger )

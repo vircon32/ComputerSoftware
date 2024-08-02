@@ -34,6 +34,10 @@ set(WAV_CONVERTER_DIR "WAV2Vircon/"
     CACHE PATH "The path to the WAV converter sources.")
 set(TILED_CONVERTER_DIR "Tiled2Vircon/"
     CACHE PATH "The path to the Tiled converter sources.")
+set(DISASSEMBLER_DIR "Disassembler/"
+    CACHE PATH "The path to the disassembler sources.")
+set(ROM_UNPACKER_DIR "RomUnpacker/"
+    CACHE PATH "The path to the ROM unpacker sources.")
 set(INFRASTRUCTURE_DIR "DevToolsInfrastructure/"
     CACHE PATH "The path to desktop infrastructure sources.")
 set(DEFINITIONS_DIR "../VirconDefinitions/"
@@ -72,8 +76,8 @@ project("Vircon32")
 
 # Define version
 set(PROJECT_VERSION_MAJOR 24)
-set(PROJECT_VERSION_MINOR 7)
-set(PROJECT_VERSION_PATCH 29)
+set(PROJECT_VERSION_MINOR 8)
+set(PROJECT_VERSION_PATCH 2)
 
 # Set names for final executables
 set(C_COMPILER_BINARY_NAME "compile")
@@ -82,6 +86,13 @@ set(ROM_PACKER_BINARY_NAME "packrom")
 set(PNG_CONVERTER_BINARY_NAME "png2vircon")
 set(WAV_CONVERTER_BINARY_NAME "wav2vircon")
 set(TILED_CONVERTER_BINARY_NAME "tiled2vircon")
+
+# Set names for reverse tools executables
+set(DISASSEMBLER_BINARY_NAME "disassemble")
+set(ROM_UNPACKER_BINARY_NAME "unpackrom")
+set(PNG_EXTRACTOR_BINARY_NAME "vircon2png")
+set(WAV_EXTRACTOR_BINARY_NAME "vircon2wav")
+
 
 # -----------------------------------------------------
 #   IDENTIFY HOST ENVIRONMENT
@@ -198,13 +209,15 @@ set(ALL_INCLUDE_DIRS
     ${WAV_CONVERTER_DIR}
     ${TILED_CONVERTER_DIR}
     ${ROM_PACKER_DIR}
+    ${DISASSEMBLER_DIR}
+    ${ROM_UNPACKER_DIR}
     ${INFRASTRUCTURE_DIR}
     ${DEFINITIONS_DIR})
 
 include_directories(${ALL_INCLUDE_DIRS})
 
 # -----------------------------------------------------
-#   LINKED LIBRARIES FILES
+#   LINKED LIBRARIES FILES (BUILD TOOLS)
 # -----------------------------------------------------
 
 # Libraries to link with the C compiler
@@ -214,6 +227,7 @@ set(C_COMPILER_LIBS
 
 # Libraries to link with the assembler
 set(ASSEMBLER_LIBS
+    ${SDL2_LIBRARY}
     ${CMAKE_DL_LIBS})
 
 # Libraries to link with the ROM packer
@@ -237,7 +251,29 @@ set(TILED_CONVERTER_LIBS
     ${CMAKE_DL_LIBS})
 
 # -----------------------------------------------------
-#   SOURCE FILES
+#   LINKED LIBRARIES FILES (REVERSE TOOLS)
+# -----------------------------------------------------
+
+# Libraries to link with the disassembler
+set(DISASSEMBLER_LIBS
+    ${CMAKE_DL_LIBS})
+
+# Libraries to link with the ROM unpacker
+set(ROM_UNPACKER_LIBS
+    ${TINYXML2_LIBRARY}
+    ${CMAKE_DL_LIBS})
+
+# Libraries to link with the PNG extractor
+set(PNG_EXTRACTOR_LIBS
+    ${PNG_LIBRARY}
+    ${CMAKE_DL_LIBS})
+
+# Libraries to link with the WAV extractor
+set(WAV_EXTRACTOR_LIBS
+    ${CMAKE_DL_LIBS})
+
+# -----------------------------------------------------
+#   SOURCE FILES (BUILD TOOLS)
 # -----------------------------------------------------
 
 # Source files to compile for the C compiler
@@ -313,10 +349,50 @@ set(TILED_CONVERTER_SRC
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp)
 
 # -----------------------------------------------------
-#   EXECUTABLES
+#   SOURCE FILES (REVERSE TOOLS)
 # -----------------------------------------------------
 
-# Define all final executables
+# Source files to compile for the disassembler
+set(DISASSEMBLER_SRC
+    ${DISASSEMBLER_DIR}/Globals.cpp
+    ${DISASSEMBLER_DIR}/Main.cpp
+    ${DISASSEMBLER_DIR}/OperandWriters.cpp
+    ${DISASSEMBLER_DIR}/VirconDisassembler.cpp
+    ${INFRASTRUCTURE_DIR}/Definitions.cpp
+    ${INFRASTRUCTURE_DIR}/EnumStringConversions.cpp
+    ${INFRASTRUCTURE_DIR}/FilePaths.cpp
+    ${INFRASTRUCTURE_DIR}/FileSignatures.cpp
+    ${INFRASTRUCTURE_DIR}/StringFunctions.cpp)
+
+# Source files to compile for the ROM unpacker
+set(ROM_UNPACKER_SRC
+    ${ROM_UNPACKER_DIR}/Main.cpp
+    ${ROM_UNPACKER_DIR}/RomDefinition.cpp
+    ${INFRASTRUCTURE_DIR}/Definitions.cpp
+    ${INFRASTRUCTURE_DIR}/FilePaths.cpp
+    ${INFRASTRUCTURE_DIR}/FileSignatures.cpp
+    ${INFRASTRUCTURE_DIR}/StringFunctions.cpp)
+
+# Source files to compile for the PNG extractor
+set(PNG_EXTRACTOR_SRC
+    ${PNG_CONVERTER_DIR}/vircon2png.cpp
+    ${INFRASTRUCTURE_DIR}/Definitions.cpp
+    ${INFRASTRUCTURE_DIR}/FilePaths.cpp
+    ${INFRASTRUCTURE_DIR}/FileSignatures.cpp
+    ${INFRASTRUCTURE_DIR}/StringFunctions.cpp)
+
+# Source files to compile for the WAV extractor
+set(WAV_EXTRACTOR_SRC
+    ${WAV_CONVERTER_DIR}/vircon2wav.cpp
+    ${INFRASTRUCTURE_DIR}/Definitions.cpp
+    ${INFRASTRUCTURE_DIR}/FilePaths.cpp
+    ${INFRASTRUCTURE_DIR}/FileSignatures.cpp)
+
+# -----------------------------------------------------
+#   EXECUTABLES (BUILD TOOLS)
+# -----------------------------------------------------
+
+# Define all final executables for build tools
 add_executable(${C_COMPILER_BINARY_NAME} ${C_COMPILER_SRC})
 set_property(TARGET ${C_COMPILER_BINARY_NAME} PROPERTY CXX_STANDARD 11)
 
@@ -335,13 +411,36 @@ set_property(TARGET ${WAV_CONVERTER_BINARY_NAME} PROPERTY CXX_STANDARD 11)
 add_executable(${TILED_CONVERTER_BINARY_NAME} ${TILED_CONVERTER_SRC})
 set_property(TARGET ${TILED_CONVERTER_BINARY_NAME} PROPERTY CXX_STANDARD 11)
 
-# Libraries to link to the C compiler executable
+# Libraries to link to the C compiler executables
 target_link_libraries(${C_COMPILER_BINARY_NAME} ${C_COMPILER_LIBS})
-target_link_libraries(${ASSEMBLER_BINARY_NAME} ${C_COMPILER_LIBS})
+target_link_libraries(${ASSEMBLER_BINARY_NAME} ${ASSEMBLER_LIBS})
 target_link_libraries(${ROM_PACKER_BINARY_NAME} ${ROM_PACKER_LIBS})
 target_link_libraries(${PNG_CONVERTER_BINARY_NAME} ${PNG_CONVERTER_LIBS})
 target_link_libraries(${WAV_CONVERTER_BINARY_NAME} ${WAV_CONVERTER_LIBS})
 target_link_libraries(${TILED_CONVERTER_BINARY_NAME} ${TILED_CONVERTER_LIBS})
+
+# -----------------------------------------------------
+#   EXECUTABLES (REVERSE TOOLS)
+# -----------------------------------------------------
+
+# Define all final executables for reverse tools
+add_executable(${DISASSEMBLER_BINARY_NAME} ${DISASSEMBLER_SRC})
+set_property(TARGET ${DISASSEMBLER_BINARY_NAME} PROPERTY CXX_STANDARD 11)
+
+add_executable(${ROM_UNPACKER_BINARY_NAME} ${ROM_UNPACKER_SRC})
+set_property(TARGET ${ROM_UNPACKER_BINARY_NAME} PROPERTY CXX_STANDARD 11)
+
+add_executable(${PNG_EXTRACTOR_BINARY_NAME} ${PNG_EXTRACTOR_SRC})
+set_property(TARGET ${PNG_EXTRACTOR_BINARY_NAME} PROPERTY CXX_STANDARD 11)
+
+add_executable(${WAV_EXTRACTOR_BINARY_NAME} ${WAV_EXTRACTOR_SRC})
+set_property(TARGET ${WAV_EXTRACTOR_BINARY_NAME} PROPERTY CXX_STANDARD 11)
+
+# Libraries to link to the C compiler executables
+target_link_libraries(${DISASSEMBLER_BINARY_NAME} ${DISASSEMBLER_LIBS})
+target_link_libraries(${ROM_UNPACKER_BINARY_NAME} ${ROM_UNPACKER_LIBS})
+target_link_libraries(${PNG_EXTRACTOR_BINARY_NAME} ${PNG_EXTRACTOR_LIBS})
+target_link_libraries(${WAV_EXTRACTOR_BINARY_NAME} ${WAV_EXTRACTOR_LIBS})
 
 # -----------------------------------------------------
 #   DEFINE THE INSTALL PROCESS
@@ -360,6 +459,16 @@ if(TARGET_OS STREQUAL "windows")
         COMPONENT binaries
         DESTINATION DevTools)
     
+    # Install all binaries for reverse tools
+    install(TARGETS
+        ${DISASSEMBLER_BINARY_NAME}
+        ${ROM_UNPACKER_BINARY_NAME}
+        ${PNG_EXTRACTOR_BINARY_NAME}
+        ${WAV_EXTRACTOR_BINARY_NAME}
+        RUNTIME
+        COMPONENT binaries
+        DESTINATION DevTools)
+    
     # Copy the needed data files
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DATA_DIR}/
         DESTINATION DevTools)
@@ -368,7 +477,7 @@ if(TARGET_OS STREQUAL "windows")
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${RUNTIME_DIR}/
         DESTINATION DevTools)
 else()
-    # Install all binaries
+    # Install all binaries for build tools
     install(TARGETS
         ${C_COMPILER_BINARY_NAME}
         ${ASSEMBLER_BINARY_NAME}
@@ -376,6 +485,16 @@ else()
         ${PNG_CONVERTER_BINARY_NAME}
         ${WAV_CONVERTER_BINARY_NAME}
         ${TILED_CONVERTER_BINARY_NAME}
+        RUNTIME
+        COMPONENT binaries
+        DESTINATION ${CMAKE_PROJECT_NAME}/DevTools)
+    
+    # Install all binaries for reverse tools
+    install(TARGETS
+        ${DISASSEMBLER_BINARY_NAME}
+        ${ROM_UNPACKER_BINARY_NAME}
+        ${PNG_EXTRACTOR_BINARY_NAME}
+        ${WAV_EXTRACTOR_BINARY_NAME}
         RUNTIME
         COMPONENT binaries
         DESTINATION ${CMAKE_PROJECT_NAME}/DevTools)

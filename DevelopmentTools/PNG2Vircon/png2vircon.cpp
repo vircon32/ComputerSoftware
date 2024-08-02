@@ -25,7 +25,6 @@
 // =============================================================================
 
 
-bool Debug = false;
 bool VerboseMode = false;
 
 
@@ -168,7 +167,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "png2vircon v23.1.16" << endl;
+    cout << "png2vircon v24.8.2" << endl;
     cout << "Vircon32 PNG file importer by Javier Carracedo" << endl;
 }
 

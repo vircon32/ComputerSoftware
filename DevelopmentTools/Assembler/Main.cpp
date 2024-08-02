@@ -38,7 +38,7 @@ void PrintUsage()
     cout << "USAGE: assemble [options] file" << endl;
     cout << "Options:" << endl;
     cout << "  --help       Displays this information" << endl;
-    cout << "  --version    Displays compiler version" << endl;
+    cout << "  --version    Displays program version" << endl;
     cout << "  -o <file>    Output file, default name is the same as input" << endl;
     cout << "  -b           Assembles the code as a BIOS" << endl;
     cout << "  -v           Displays additional information (verbose)" << endl;
@@ -50,7 +50,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "assemble v24.02.04" << endl;
+    cout << "assemble v24.8.2" << endl;
     cout << "Vircon32 assembler by Javier Carracedo" << endl;
 }
 

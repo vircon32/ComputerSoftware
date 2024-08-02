@@ -1,19 +1,21 @@
 // *****************************************************************************
     // include common Vircon headers
+    #include "../../VirconDefinitions/Constants.hpp"
     #include "../../VirconDefinitions/FileFormats.hpp"
     
     // include infrastructure headers
+    #include "../DevToolsInfrastructure/Definitions.hpp"
     #include "../DevToolsInfrastructure/FilePaths.hpp"
+    #include "../DevToolsInfrastructure/FileSignatures.hpp"
+    
+    // include project headers
+    #include "WavFormat.hpp"
     
     // include C/C++ headers
     #include <iostream>         // [ C++ STL ] I/O Streams
     #include <string>           // [ C++ STL ] Strings
     #include <vector>           // [ C++ STL ] Vectors
     #include <stdexcept>        // [ C++ STL ] Exceptions
-    
-    // include SDL2 headers
-    #define SDL_MAIN_HANDLED
-    #include "SDL.h"            // [ SDL2 ] Main header
     
     // declare used namespaces
     using namespace std;
@@ -30,6 +32,18 @@ bool VerboseMode = false;
 
 
 // =============================================================================
+//      AUXILIARY FUNCTIONS
+// =============================================================================
+
+
+void WriteChunkID( void* ChunkLocation, const char* ID )
+{
+    // do not use strcpy or else a 5th null byte is copied
+    memcpy( ChunkLocation, ID, 4 );
+}
+
+
+// =============================================================================
 //      SOUND TREATMENT
 // =============================================================================
 
@@ -40,83 +54,110 @@ std::vector< uint32_t > RawSamples;
 
 // -----------------------------------------------------------------------------
 
-void LoadWAV( const char *WAVFilePath )
+void LoadVSND( const char *VSNDFilePath )
 {
-	SDL_AudioSpec SourceAudioFormat;
-	uint8_t *SourceSamples = nullptr;
-	uint32_t SourceBytes = 0;
-	
-	// first check if the file exists
-	if( !FileExists( WAVFilePath ) )
-      throw runtime_error( string("cannot open input file \"") + WAVFilePath + "\"" );
+    // open input file
+    FILE *VSNDFile = fopen( VSNDFilePath, "rb" );
     
-    // load audio from the input file
-    if( !SDL_LoadWAV( WAVFilePath, &SourceAudioFormat, &SourceSamples, &SourceBytes ) )
-      throw runtime_error( string("failed to load file \"") + WAVFilePath + "\" as a WAV file" );
+    if( !VSNDFile )
+      throw runtime_error( string("Cannot open intput file \"") + VSNDFilePath + "\"" );
     
-    // detect the number of samples
-    int BytesPerSample = SDL_AUDIO_BITSIZE( SourceAudioFormat.format ) * SourceAudioFormat.channels / 8;
-    NumberOfSamples = SourceBytes / BytesPerSample;
+    // get size and ensure it is a multiple of 4
+    // (otherwise file contents are wrong)
+    fseek( VSNDFile, 0, SEEK_END );
+    unsigned FileBytes = ftell( VSNDFile );
     
-    // start conversion phase
+    if( (FileBytes % 4) != 0 )
+      throw runtime_error( "Incorrect VSND file format (file size must be a multiple of 4)" );
+    
+    // ensure that we can at least load the file header
+    if( FileBytes < sizeof(SoundFileFormat::Header) )
+      throw runtime_error( "Incorrect VSND file format (file is too small)" );
+    
+    // load a sound file signature
+    SoundFileFormat::Header VSNDHeader;
+    fseek( VSNDFile, 0, SEEK_SET );
+    fread( &VSNDHeader, sizeof(SoundFileFormat::Header), 1, VSNDFile );
+    
+    // check that it is actually a sound file
+    if( !CheckSignature( VSNDHeader.Signature, SoundFileFormat::Signature ) )
+      throw runtime_error( "Incorrect VSND file format (file does not have a valid signature)" );
+    
+    // save sound length dimensions
+    NumberOfSamples = VSNDHeader.SoundSamples;
+    
+    // report sound length
     if( VerboseMode )
-      cout << "converting sound to Vircon format" << endl;
+      cout << "VSND sound length is " << NumberOfSamples << " samples" << endl;
     
-    // configure SDL for the audio format conversion
-	SDL_AudioCVT AudioConversionInfo;
-	
-    SDL_BuildAudioCVT
-    (
-        &AudioConversionInfo,           // output structure to be filled
-        SourceAudioFormat.format,       // source audio format
-        SourceAudioFormat.channels,     // source channels
-        SourceAudioFormat.freq,         // source frequency
-        AUDIO_S16LSB,                   // destination audio format
-        2,                              // destination channels
-        44100                           // destination frequency
-    );
+    // check sound size limitations
+    if( !IsBetween( NumberOfSamples , 1, Constants::MaximumCartridgeProgramROM ) )
+      throw runtime_error( "VSND sound does not have correct size (from 1 up to 268435456 samples)" );
     
-    // fill the structure's buffer with the source audio
-	AudioConversionInfo.len = SourceBytes;
-	AudioConversionInfo.buf = (uint8_t*)malloc( SourceBytes * AudioConversionInfo.len_mult );
-	memcpy( AudioConversionInfo.buf, SourceSamples, SourceBytes );
-	
-    // convert input to Vircon format
-    // (44100Hz, signed 16-bit samples, stereo)
-	SDL_ConvertAudio( &AudioConversionInfo );
-	
-	// we no longer need the source buffer
-	SDL_FreeWAV( SourceSamples );
+    // check that file size matches the reported sound
+    unsigned ExpectedBytes = sizeof(SoundFileFormat::Header) + 4 * NumberOfSamples;
     
-    // store the converted audio samples
+    if( FileBytes != ExpectedBytes )
+      throw runtime_error( "Incorrect VSND file format (file size does not match reported sound length)" );
+    
+    // now read every sample
     RawSamples.resize( NumberOfSamples );
-    memcpy( &RawSamples[0], AudioConversionInfo.buf, NumberOfSamples * 4 );
+    fread( &RawSamples[ 0 ], NumberOfSamples*4, 1, VSNDFile );
+    
+    // clean-up
+    fclose( VSNDFile );
 }
 
 // -----------------------------------------------------------------------------
 
-void SaveVSND( const char *VSNDFilePath )
+void SaveWAV( const char *WAVFilePath )
 {
     // open output file
-    FILE *VSNDFile = fopen( VSNDFilePath, "wb" );
+    FILE *WAVFile = fopen( WAVFilePath, "wb" );
     
-    if( !VSNDFile )
-      throw runtime_error( string("Cannot open output file \"") + VSNDFilePath + "\"" );
+    if( !WAVFile )
+      throw runtime_error( string("Cannot open output file \"") + WAVFilePath + "\"" );
     
-    // create the VSND file header
-    SoundFileFormat::Header VSNDHeader;
-    memcpy( VSNDHeader.Signature, SoundFileFormat::Signature, 8 );
-    VSNDHeader.SoundSamples = NumberOfSamples;
+    // populate the RIFF header
+    RIFFChunkHeader RIFFHeader;
+    WriteChunkID( RIFFHeader.ChunkID, "RIFF" );
+    WriteChunkID( RIFFHeader.Format, "WAVE" );
+    RIFFHeader.ChunkSize = 4 + sizeof(FormatSubchunkBody) + 2*sizeof(SubchunkHeader) + 4*NumberOfSamples;
     
-    // write the header in the file
-    fseek( VSNDFile, 0, SEEK_SET );
-    fwrite( &VSNDHeader, sizeof(SoundFileFormat::Header), 1, VSNDFile );
+    // write the RIFF header
+    fseek( WAVFile, 0, SEEK_SET );
+    fwrite( &RIFFHeader, sizeof(RIFFChunkHeader), 1, WAVFile );
     
-    // now write all samples
-    fwrite( &RawSamples[0], NumberOfSamples*4, 1, VSNDFile );
+    // populate format header and body
+    SubchunkHeader FormatHeader;
+    WriteChunkID( FormatHeader.SubchunkID, "fmt " );
+    FormatHeader.SubchunkSize = sizeof( FormatSubchunkBody );
+    
+    FormatSubchunkBody FormatBody;
+    FormatBody.AudioFormat = 1;           // 1 = PCM (uncompressed)
+    FormatBody.NumberOfChannels = 2;      // 2 = Stereo
+    FormatBody.SampleRate = 44100;
+    FormatBody.ByteRate = 44100 * 2 * 2;  // ByteRate = SampleRate * Channels * BitsPerSample/8
+    FormatBody.BlockAlign = 2 * 2;        // BlockAlign = Channels * BitsPerSample/8
+    FormatBody.BitsPerSample = 16;
+    
+    // write format header and body
+    fwrite( &FormatHeader, sizeof(SubchunkHeader), 1, WAVFile );
+    fwrite( &FormatBody, sizeof(FormatSubchunkBody), 1, WAVFile );
+    
+    // populate the data header
+    SubchunkHeader DataHeader;
+    WriteChunkID( DataHeader.SubchunkID, "data" );
+    DataHeader.SubchunkSize = 4 * NumberOfSamples;
+    
+    // write the data header
+    fwrite( &DataHeader, sizeof(SubchunkHeader), 1, WAVFile );
+    
+    // write the actual samples
+    fwrite( &RawSamples[ 0 ], 4 * NumberOfSamples, 1, WAVFile );
     
     // close our file
-    fclose( VSNDFile );
+    fclose( WAVFile );
 }
 
 
@@ -127,7 +168,7 @@ void SaveVSND( const char *VSNDFilePath )
 
 void PrintUsage()
 {
-    cout << "USAGE: wav2vircon [options] file" << endl;
+    cout << "USAGE: vircon2wav [options] file" << endl;
     cout << "Options:" << endl;
     cout << "  --help       Displays this information" << endl;
     cout << "  --version    Displays program version" << endl;
@@ -139,8 +180,8 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "wav2vircon v24.8.2" << endl;
-    cout << "Vircon32 WAV file importer by Javier Carracedo" << endl;
+    cout << "vircon2wav v24.8.2" << endl;
+    cout << "Vircon32 WAV file extractor by Javier Carracedo" << endl;
 }
 
 
@@ -216,7 +257,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         // replace the extension in the input
         if( OutputPath.empty() )
         {
-            OutputPath = ReplaceFileExtension( InputPath, "vsnd" );
+            OutputPath = ReplaceFileExtension( InputPath, "wav" );
             
             if( VerboseMode )
               cout << "using output path: \"" << OutputPath << "\"" << endl;
@@ -225,18 +266,11 @@ int main( int NumberOfArguments, char* Arguments[] )
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 1: Load the WAV sound
         
-        // initialize SDL
-        if( SDL_Init( SDL_INIT_AUDIO ) != 0 )
-          throw runtime_error( string("cannot initialize SDL: ") + SDL_GetError() );
-        
         // now we can actually load the wav file
         if( VerboseMode )
           cout << "loading input file \"" << InputPath << "\"" << endl;
         
-        LoadWAV( InputPath.c_str() );
-        
-        // we are done with SDL
-        SDL_Quit();
+        LoadVSND( InputPath.c_str() );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 2: Save the VSND file
@@ -244,12 +278,12 @@ int main( int NumberOfArguments, char* Arguments[] )
         if( VerboseMode )
           cout << "saving output file \"" << OutputPath << "\"" << endl;
         
-        SaveVSND( OutputPath.c_str() );
+        SaveWAV( OutputPath.c_str() );
     }
     
     catch( const exception& e )
     {
-        cerr << "wav2vircon: error: " << e.what() << endl;
+        cerr << "vircon2wav: error: " << e.what() << endl;
         return 1;
     }
     
