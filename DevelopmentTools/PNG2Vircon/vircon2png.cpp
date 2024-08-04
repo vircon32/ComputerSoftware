@@ -182,7 +182,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "vircon2png v24.8.2" << endl;
+    cout << "vircon2png v24.8.4" << endl;
     cout << "Vircon32 PNG file extractor by Javier Carracedo" << endl;
 }
 

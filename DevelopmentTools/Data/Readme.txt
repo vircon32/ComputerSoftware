@@ -1,6 +1,6 @@
 ================================================
    PC development tools for Vircon32 console
-  (version 24.8.2). README written by Carra
+  (version 24.8.4). README written by Carra
 ================================================
 
 
@@ -79,7 +79,7 @@ Included programs (reverse tools)
     
 ------------------------------------------------------------
 
-What's new in version 24.8.2?
+What's new in version 24.8.4?
   
   - Reverse tools are now included in the dev tools.
   - On Linux and Mac systems the default installation
