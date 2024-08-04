@@ -16,7 +16,6 @@
     #include <fstream>      // [ C++ STL ] File streams
     #include <iostream>     // [ C++ STL ] I/O Streams
     #include <stdexcept>    // [ C++ STL ] Exceptions
-    #include <sys/stat.h>   // [ ANSI C ] File status
     
     // declare used namespaces
     using namespace std;
@@ -168,9 +167,7 @@ int main( int NumberOfArguments, char* Arguments[] )
             if( VerboseMode )
               cout << "creating output folder: \"" << OutputPath << "\"" << endl;
             
-            int Status = mkdir( OutputPath.c_str() );
-            
-            if( Status < 0 )
+            if( !CreateDirectory( OutputPath ) )
               throw runtime_error( "Cannot create output folder" );
         }
         

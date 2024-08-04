@@ -155,3 +155,21 @@ bool DirectoryExists( const string& Path )
     
     return (Info.st_mode & S_IFDIR);
 }
+
+
+// =============================================================================
+//      CREATING DIRECTORIES
+// =============================================================================
+
+
+// returns true on success
+bool CreateDirectory( const std::string DirectoryPath )
+{
+    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+      int Status = mkdir( DirectoryPath.c_str() );
+    #else
+      int Status = mkdir( DirectoryPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+    #endif
+    
+    return (Status >= 0);
+}

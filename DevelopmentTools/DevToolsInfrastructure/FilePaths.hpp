@@ -30,6 +30,9 @@ bool IsFileNameValid( const std::string& FileName );
 bool FileExists( const std::string &FilePath );
 bool DirectoryExists( const std::string &Path );
 
+// creating directories
+bool CreateDirectory( const std::string DirectoryPath );
+
 
 // *****************************************************************************
     // end include guard

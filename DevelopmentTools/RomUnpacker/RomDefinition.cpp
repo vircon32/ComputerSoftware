@@ -12,7 +12,6 @@
     #include <iostream>         // [ C++ STL ] I/O Streams
     #include <fstream>          // [ C++ STL ] File streams
     #include <stdexcept>        // [ C++ STL ] Exceptions
-    #include <sys/stat.h>       // [ ANSI C ] File status
     
     // declare used namespaces
     using namespace std;
@@ -356,12 +355,8 @@ void RomDefinition::UnpackROM( const std::string& InputPath, const std::string& 
         string TexturesFolderPath = BaseFolder + PathSeparator + "textures";
         
         if( !DirectoryExists( TexturesFolderPath ) )
-        {
-            int Status = mkdir( TexturesFolderPath.c_str() );
-            
-            if( Status < 0 )
-              throw runtime_error( "Cannot create textures folder" );
-        }
+          if( !CreateDirectory( TexturesFolderPath ) )
+            throw runtime_error( "Cannot create textures folder" );
     }
     
     // keep extracting textures
@@ -403,12 +398,8 @@ void RomDefinition::UnpackROM( const std::string& InputPath, const std::string& 
         string SoundsFolderPath = BaseFolder + PathSeparator + "sounds";
         
         if( !DirectoryExists( SoundsFolderPath ) )
-        {
-            int Status = mkdir( SoundsFolderPath.c_str() );
-            
-            if( Status < 0 )
-              throw runtime_error( "Cannot create sounds folder" );
-        }
+          if( !CreateDirectory( SoundsFolderPath ) )
+            throw runtime_error( "Cannot create sounds folder" );
     }
     
     // keep extracting sounds
