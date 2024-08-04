@@ -16,6 +16,7 @@
     #include <string>           // [ C++ STL ] Strings
     #include <vector>           // [ C++ STL ] Vectors
     #include <stdexcept>        // [ C++ STL ] Exceptions
+    #include <string.h>         // [ ANSI C ] Strings
     
     // declare used namespaces
     using namespace std;
@@ -77,7 +78,10 @@ void LoadVSND( const char *VSNDFilePath )
     // load a sound file signature
     SoundFileFormat::Header VSNDHeader;
     fseek( VSNDFile, 0, SEEK_SET );
-    fread( &VSNDHeader, sizeof(SoundFileFormat::Header), 1, VSNDFile );
+    size_t ReadElements = fread( &VSNDHeader, sizeof(SoundFileFormat::Header), 1, VSNDFile );
+    
+    if( ReadElements != 1u )
+      throw runtime_error( "Failed to read file header from input file" );
     
     // check that it is actually a sound file
     if( !CheckSignature( VSNDHeader.Signature, SoundFileFormat::Signature ) )
@@ -102,7 +106,10 @@ void LoadVSND( const char *VSNDFilePath )
     
     // now read every sample
     RawSamples.resize( NumberOfSamples );
-    fread( &RawSamples[ 0 ], NumberOfSamples*4, 1, VSNDFile );
+    ReadElements = fread( &RawSamples[ 0 ], NumberOfSamples*4, 1, VSNDFile );
+    
+    if( ReadElements != 1u )
+      throw runtime_error( "Failed to read samples from input file" );
     
     // clean-up
     fclose( VSNDFile );

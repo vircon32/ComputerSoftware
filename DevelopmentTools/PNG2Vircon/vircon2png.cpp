@@ -64,7 +64,10 @@ void LoadVTEX( const char *VTEXFilePath )
     // load a texture file signature
     TextureFileFormat::Header VTEXHeader;
     fseek( VTEXFile, 0, SEEK_SET );
-    fread( &VTEXHeader, sizeof(TextureFileFormat::Header), 1, VTEXFile );
+    size_t ReadElements = fread( &VTEXHeader, sizeof(TextureFileFormat::Header), 1, VTEXFile );
+    
+    if( ReadElements != 1u )
+      throw runtime_error( "Failed to read file header from input file" );
     
     // check that it is actually a texture file
     if( !CheckSignature( VTEXHeader.Signature, TextureFileFormat::Signature ) )
@@ -95,7 +98,10 @@ void LoadVTEX( const char *VTEXFilePath )
     for( int y = 0; y < ImageHeight; y++ )
     {
         RowPointers[y] = (png_byte*)malloc( ImageWidth*4 );
-        fread( RowPointers[ y ], ImageWidth*4, 1, VTEXFile );
+        size_t ReadElements = fread( RowPointers[ y ], ImageWidth*4, 1, VTEXFile );
+        
+        if( ReadElements != 1u )
+          throw runtime_error( "Failed to read pixels from input file" );
     }
     
     // clean-up
