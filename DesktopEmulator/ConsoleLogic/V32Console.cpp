@@ -362,8 +362,8 @@ namespace V32
            + "x" + to_string( TextureHeader.TextureHeight ) );
         
         // check texture size limitations
-        if( !IsBetween( TextureHeader.TextureWidth , 0, 1024 )
-        ||  !IsBetween( TextureHeader.TextureHeight, 0, 1024 ) )
+        if( !IsBetween( TextureHeader.TextureWidth , 1, Constants::GPUTextureSize )
+        ||  !IsBetween( TextureHeader.TextureHeight, 1, Constants::GPUTextureSize ) )
           Callbacks::ThrowException( "BIOS texture does not have correct dimensions (from 1x1 up to 1024x1024 pixels)" );
         
         // clear all texture pixels
@@ -590,8 +590,8 @@ namespace V32
                + " x " + to_string( TextureHeader.TextureHeight ) + " pixels" );
             
             // check texture size limitations
-            if( !IsBetween( TextureHeader.TextureWidth , 0, 1024 )
-            ||  !IsBetween( TextureHeader.TextureHeight, 0, 1024 ) )
+            if( !IsBetween( TextureHeader.TextureWidth , 1, Constants::GPUTextureSize )
+            ||  !IsBetween( TextureHeader.TextureHeight, 1, Constants::GPUTextureSize ) )
               Callbacks::ThrowException( "Cartridge texture does not have correct dimensions (1x1 up to 1024x1024 pixels)" );
             
             // clear all texture pixels
