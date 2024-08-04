@@ -193,16 +193,17 @@ void RomDefinition::CreateMakeSH()
     // write initial section
     SHFile << "#!/bin/bash" << endl;
     SHFile << endl;
-    SHFile << "# create bin folders if non existing, since the" << endl;
-    SHFile << "# development tools will not create it themselves" << endl;
-    SHFile << "mkdir -p bin" << endl;
     SHFile << "# define an abort function to call on error" << endl;
     SHFile << "abort_build()" << endl;
-    SHFile << endl;
+    SHFile << "{" << endl;
     SHFile << "    echo" << endl;
     SHFile << "    echo BUILD FAILED" << endl;
     SHFile << "    exit 1" << endl;
     SHFile << "}" << endl;
+    SHFile << endl;
+    SHFile << "# create bin folders if non existing, since the" << endl;
+    SHFile << "# development tools will not create it themselves" << endl;
+    SHFile << "mkdir -p bin" << endl;
     SHFile << endl;
     
     // write packer section
