@@ -138,10 +138,12 @@ bool IsFileNameValid( const string& FileName )
 
 bool FileExists( const string& FilePath )
 {
-   ifstream TestedFile;
-   TestedFile.open( FilePath );
-   
-   return (bool)TestedFile;
+    struct stat Info;
+
+    if( stat( FilePath.c_str(), &Info ) != 0 )
+      return false;
+    
+    return !(Info.st_mode & S_IFDIR);
 }
 
 // -----------------------------------------------------------------------------
