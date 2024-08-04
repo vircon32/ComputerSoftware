@@ -16,6 +16,7 @@
     #include <fstream>      // [ C++ STL ] File streams
     #include <iostream>     // [ C++ STL ] I/O Streams
     #include <stdexcept>    // [ C++ STL ] Exceptions
+    #include <sys/stat.h>   // [ ANSI C ] File status
     
     // declare used namespaces
     using namespace std;
@@ -39,12 +40,13 @@ bool VerboseMode = false;
 
 void PrintUsage()
 {
-    cout << "USAGE: unpackrom [options] folder" << endl;
-    cout << "Folder: output to place XML rom definition and packed assets" << endl;
+    cout << "USAGE: unpackrom [options] inputfile outputfolder" << endl;
+    cout << "InputFile: path to the Vircon32 rom file to unpack" << endl;
+    cout << "OutputFolder: path to output folder to place rom definition and assets" << endl;
+    cout << "(the output folder is created if it did not exist" << endl;
     cout << "Options:" << endl;
     cout << "  --help       Displays this information" << endl;
     cout << "  --version    Displays program version" << endl;
-    cout << "  -o <file>    Output file, default name is the same as input" << endl;
     cout << "  -v           Displays additional information (verbose)" << endl;
 }
 
@@ -52,7 +54,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "unpackrom v24.8.2" << endl;
+    cout << "unpackrom v24.8.4" << endl;
     cout << "Vircon32 ROM unpacker by Javier Carracedo" << endl;
 }
 
@@ -136,66 +138,65 @@ int main( int NumberOfArguments, char* Arguments[] )
             if( Arguments[i][0] == '-' )
               throw runtime_error( string("unrecognized command line option '") + Arguments[i] + "'" );
             
-            // any non-option parameter is taken as the input file
+            // the first non-option parameter is taken as the input file
             if( InputPath.empty() )
-            {
-                InputPath = Arguments[i];
-            }
+              InputPath = Arguments[i];
             
-            // only a single input file is supported!
-            else
-              throw runtime_error( "too many input files, only 1 is supported" );
+            // the second non-option parameter is taken as the output folder
+            else if( OutputPath.empty() )
+              OutputPath = Arguments[i];
+            
+            // other parameters are not supported
+            else throw runtime_error( "too many non-option parameters" );
         }
         
         // check if an input path was given
         if( InputPath.empty() )
           throw runtime_error( "no input file" );
         
-        // if output path was not given, just
-        // replace the extension in the input
+        // check if an output path was given
         if( OutputPath.empty() )
+          throw runtime_error( "no output folder" );
+        
+        // check that output path is not a file
+        if( FileExists( OutputPath ) )
+          throw runtime_error( "output path is a file, but should be a folder" );
+        
+        // create output folder if it does not exist
+        if( !DirectoryExists( OutputPath ) )
         {
-            OutputPath = ReplaceFileExtension( InputPath, "v32" );
-            
             if( VerboseMode )
-              cout << "using output path: \"" << OutputPath << "\"" << endl;
+              cout << "creating output folder: \"" << OutputPath << "\"" << endl;
+            
+            int Status = mkdir( OutputPath.c_str() );
+            
+            if( Status < 0 )
+              throw runtime_error( "Cannot create output folder" );
         }
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        // STEP 1: Load input ROM definition as XML
+        // Unpack the input ROM
         
         // do this test before anything else
         PerformABIAssertions();
         
-        // determine folder of the input definition file
-        // (since all files will be relative to it)
+        // use our rom definition class to unpack
+        if( VerboseMode )
+          cout << "unpacking ROM contents into output folder" << endl;
+        
         RomDefinition Definition;
-        Definition.BaseFolder = GetPathDirectory( InputPath );
-        
-        // load the XML file into our rom definition class
-        if( VerboseMode )
-          cout << "loading ROM definition from input file" << endl;
-        
-        Definition.LoadXML( InputPath );
-        
-        // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        // STEP 2: Pack the output ROM
-        
-        if( VerboseMode )
-          cout << "packing ROM contents into output file" << endl;
-        
-        Definition.PackROM( OutputPath );
+        Definition.UnpackROM( InputPath, OutputPath );
     }
     
     catch( const exception& e )
     {
-        cerr << "packrom: error: " << e.what() << endl;
+        cerr << "unpackrom: error: " << e.what() << endl;
         return 1;
     }
     
     // report success
     if( VerboseMode )
-      cout << "packing successful" << endl;
+      cout << "unpacking successful" << endl;
     
     return 0;
 }

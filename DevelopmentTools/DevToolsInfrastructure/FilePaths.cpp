@@ -105,7 +105,7 @@ string GetPathFileName( const string& FilePath )
     size_t SlashPosition = NormalizedPath.rfind( PathSeparator );
     
     if( SlashPosition == string::npos )
-      return "";
+      return FilePath;
     
     if( NormalizedPath.size() < (SlashPosition+2) )
       return "";

@@ -77,7 +77,7 @@ project("Vircon32")
 # Define version
 set(PROJECT_VERSION_MAJOR 24)
 set(PROJECT_VERSION_MINOR 8)
-set(PROJECT_VERSION_PATCH 2)
+set(PROJECT_VERSION_PATCH 4)
 
 # Set names for final executables
 set(C_COMPILER_BINARY_NAME "compile")
@@ -260,7 +260,6 @@ set(DISASSEMBLER_LIBS
 
 # Libraries to link with the ROM unpacker
 set(ROM_UNPACKER_LIBS
-    ${TINYXML2_LIBRARY}
     ${CMAKE_DL_LIBS})
 
 # Libraries to link with the PNG extractor

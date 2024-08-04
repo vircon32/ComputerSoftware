@@ -1,8 +1,4 @@
 // *****************************************************************************
-    // include common Vircon headers
-    #include "../../VirconDefinitions/Constants.hpp"
-    #include "../../VirconDefinitions/FileFormats.hpp"
-    
     // include infrastructure headers
     #include "../DevToolsInfrastructure/Definitions.hpp"
     #include "../DevToolsInfrastructure/FilePaths.hpp"
@@ -16,114 +12,12 @@
     #include <iostream>         // [ C++ STL ] I/O Streams
     #include <fstream>          // [ C++ STL ] File streams
     #include <stdexcept>        // [ C++ STL ] Exceptions
-    
-    // include TinyXML2 headers
-    #include <tinyxml2.h>       // [ TinyXML2 ] Main header
+    #include <sys/stat.h>       // [ ANSI C ] File status
     
     // declare used namespaces
     using namespace std;
     using namespace V32;
-    using namespace tinyxml2;
 // *****************************************************************************
-
-
-// =============================================================================
-//      XML HELPER FUNCTIONS
-// =============================================================================
-
-
-// automation for child elements in XML
-XMLElement* GetRequiredElement( XMLElement* Parent, const string& ChildName )
-{
-    if( !Parent )
-      throw runtime_error( "Parent element NULL" );
-    
-    XMLElement* Child = Parent->FirstChildElement( ChildName.c_str() );
-    
-    if( !Child )
-      throw runtime_error( string("Cannot find element <") + ChildName + "> inside <" + Parent->Name() + ">" );
-    
-    return Child;
-}
-
-// -----------------------------------------------------------------------------
-
-// automation for string attributes in XML
-string GetRequiredStringAttribute( XMLElement* Element, const string& AtributeName )
-{
-    if( !Element )
-      throw runtime_error( "Parent element NULL" );
-    
-    const XMLAttribute* Attribute = Element->FindAttribute( AtributeName.c_str() );
-
-    if( !Attribute )
-      throw runtime_error( string("Cannot find attribute '") + AtributeName + "' inside <" + Element->Name() + ">" );
-    
-    return Attribute->Value();
-}
-
-// -----------------------------------------------------------------------------
-
-// automation for integer attributes in XML
-int GetRequiredIntegerAttribute( XMLElement* Element, const string& AtributeName )
-{
-    if( !Element )
-      throw runtime_error( "Parent element NULL" );
-    
-    const XMLAttribute* Attribute = Element->FindAttribute( AtributeName.c_str() );
-
-    if( !Attribute )
-      throw runtime_error( string("Cannot find attribute '") + AtributeName + "' inside <" + Element->Name() + ">" );
-    
-    // attempt integer conversion
-    int Number = 0;
-    XMLError ErrorCode = Element->QueryIntAttribute( AtributeName.c_str(), &Number );
-    
-    if( ErrorCode != XML_SUCCESS )
-      throw runtime_error( string("Attribute '") + AtributeName + "' inside <" + Element->Name() + "> must be an integer number" );
-    
-    return Number;
-}
-
-
-// =============================================================================
-//      ROM AUXILIARY FUNCTIONS
-// =============================================================================
-
-
-void CopySignature( char* Destination, const char* Value )
-{
-    for( int i = 0; i < 8; i++ )
-      Destination[i] = Value[i];
-}
-
-// -----------------------------------------------------------------------------
-
-void ParseVersionString( const string& VersionText, uint32_t& Version, uint32_t& Revision )
-{
-    // check that there are only digits and dots
-    for( char c: VersionText )
-      if( !isdigit(c) && (c != '.') )
-        throw runtime_error( "ROM version string contains invalid characters" );
-    
-    // locate the dot
-    size_t DotPosition = VersionText.find( '.' );
-    
-    if( DotPosition == string::npos )
-      throw runtime_error( "ROM version string should contain a dot as separator" );
-    
-    // there has to be at least 1 digit at each side of the dot
-    if( DotPosition == 0 || (VersionText.length()-DotPosition) < 2 )
-      throw runtime_error( "ROM version string should contain 2 numbers" );
-    
-    // parse each part as an integer
-    string FirstNumber = VersionText.substr( 0, DotPosition );
-    Version = stoul( FirstNumber );
-    
-    // parse second part as integer
-    string SecondNumber = VersionText.substr( DotPosition+1 );
-    Revision = stoul( SecondNumber );
-}
 
 
 // =============================================================================
@@ -131,168 +25,199 @@ void ParseVersionString( const string& VersionText, uint32_t& Version, uint32_t&
 // =============================================================================
 
 
-void RomDefinition::ProcessBinary( string& BinaryPath, vector< uint32_t >& ProgramROM )
+void RomDefinition::ExtractBinary( BinaryFileFormat::Header& BinaryHeader, vector< V32Word >& BinaryWords )
 {
-    // correction for path folder (only if relative)
-    if( BinaryPath.find(':') == string::npos )
-      BinaryPath = BaseFolder + PathSeparator + BinaryPath;
+    // determine file path
+    string BinaryFilePath = BaseFolder + PathSeparator + RomFileName + ".vbin";
     
-    // open the file
-    ifstream BinaryFile;
-    BinaryFile.open( BinaryPath, ios_base::binary | ios_base::ate );
+    // open output file as binary
+    ofstream BinaryFile;
+    BinaryFile.open( BinaryFilePath, ios_base::binary );
     
-    if( !BinaryFile.good() )
-      throw runtime_error( "cannot open binary file" );
-    
-    // get size and ensure it is a multiple of 4
-    // (otherwise file contents are wrong)
-    unsigned FileBytes = BinaryFile.tellg();
-    
-    if( (FileBytes % 4) != 0 )
-      throw runtime_error( "incorrect VBIN format (file size must be a multiple of 4)" );
-    
-    // file size should be at least 4 dwords
-    // (i.e. header + 1 instruction)
-    unsigned FileWords = FileBytes / 4;
-    
-    if( FileWords < 4 )
-      throw runtime_error( "incorrect VBIN format (file is too small)" );
-    
-    // read program header
-    BinaryFileFormat::Header BinaryHeader;
-    BinaryFile.seekg( 0, ios_base::beg );
-    BinaryFile.read( (char*)(&BinaryHeader), sizeof(BinaryFileFormat::Header) );
-    
-    // check signature
-    if( !CheckSignature( BinaryHeader.Signature, BinaryFileFormat::Signature ) )
-      throw runtime_error( "incorrect VBIN format (file size does contain a VBIN signature)" );
-    
-    // file size must match the indicated program size
-    if( FileWords != BinaryHeader.NumberOfWords + 3 )
-      throw runtime_error( "incorrect VBIN format (file size does not match indicated program size)" );
-    
-    // now we can just copy the whole file to program rom,
-    // since the header is also included in the final rom
-    ProgramROM.resize( FileWords );
-    BinaryFile.seekg( 0, ios_base::beg );
-    BinaryFile.read( (char*)(&ProgramROM[0]), FileBytes );
-    
-    // close the file
+    // write all data into the file
+    BinaryFile.write( (char*)(&BinaryHeader), sizeof( BinaryFileFormat::Header ) );
+    BinaryFile.write( (char*)(&BinaryWords[ 0 ]), 4 * BinaryWords.size() );
     BinaryFile.close();
 }
 
 // -----------------------------------------------------------------------------
 
-void RomDefinition::ProcessTexture( string& TexturePath, vector< uint32_t >& TextureROM )
+void RomDefinition::ExtractTexture( TextureFileFormat::Header& TextureHeader, vector< V32Word >& TexturePixels )
 {
-    // correction for path folder (only if relative)
-    if( TexturePath.find(':') == string::npos )
-      TexturePath = BaseFolder + PathSeparator + TexturePath;
+    // determine current file path
+    string TextureFilePath = BaseFolder + PathSeparator + "textures"
+    + PathSeparator + "texture" + to_string( ExtractedTextures ) + ".vtex";
     
-    // open the file
-    ifstream TextureFile;
-    TextureFile.open( TexturePath, ios_base::binary | ios_base::ate );
+    // open output file as binary
+    ofstream TextureFile;
+    TextureFile.open( TextureFilePath, ios_base::binary );
     
-    if( !TextureFile.good() )
-      throw runtime_error( "cannot open texture file" );
-    
-    // get size and ensure it is a multiple of 4
-    // (otherwise file contents are wrong)
-    unsigned FileBytes = TextureFile.tellg();
-    
-    if( (FileBytes % 4) != 0 )
-      throw runtime_error( "incorrect VTEX format (file size must be a multiple of 4)" );
-    
-    // file size should be at least 5 dwords
-    // (i.e. header + 1 pixel)
-    unsigned FileWords = FileBytes / 4;
-    
-    if( FileWords < 5 )
-      throw runtime_error( "incorrect VTEX format (file is too small)" );
-    
-    // read texture header
-    TextureFileFormat::Header TextureHeader;
-    TextureFile.seekg( 0, ios_base::beg );
-    TextureFile.read( (char*)(&TextureHeader), sizeof(TextureFileFormat::Header) );
-    
-    // check signature
-    if( !CheckSignature( TextureHeader.Signature, TextureFileFormat::Signature ) )
-      throw runtime_error( "incorrect VTEX format (file size does contain a VTEX signature)" );
-    
-    // file size must match the indicated dimensions
-    uint32_t TexturePixels = TextureHeader.TextureWidth * TextureHeader.TextureHeight;
-    
-    if( FileWords != TexturePixels + 4 )
-      throw runtime_error( "incorrect VTEX format (file size does not match image dimensions)" );
-    
-    // check texture dimension limits
-    if( TextureHeader.TextureWidth > 1024u || TextureHeader.TextureHeight > 1024u )
-      throw runtime_error( "texture size is larger than allowed by Vircon32 GPU" );
-    
-    // now we can just copy the whole file to texture rom,
-    // since the header is also included in the final rom
-    TextureROM.resize( FileWords );
-    TextureFile.seekg( 0, ios_base::beg );
-    TextureFile.read( (char*)(&TextureROM[0]), FileBytes );
-    
-    // close the file
+    // write all data into the file
+    TextureFile.write( (char*)(&TextureHeader), sizeof( TextureFileFormat::Header ) );
+    TextureFile.write( (char*)(&TexturePixels[ 0 ]), 4 * TexturePixels.size() );
     TextureFile.close();
+    
+    // count the textures
+    ExtractedTextures++;
 }
 
 // -----------------------------------------------------------------------------
 
-void RomDefinition::ProcessSound( string& SoundPath, vector< uint32_t >& SoundROM )
+void RomDefinition::ExtractSound( SoundFileFormat::Header& SoundHeader, vector< V32Word >& SoundSamples )
 {
-    // correction for path folder (only if relative)
-    if( SoundPath.find(':') == string::npos )
-      SoundPath = BaseFolder + PathSeparator + SoundPath;
+    // determine current file path
+    string SoundFilePath = BaseFolder + PathSeparator + "sounds"
+    + PathSeparator + "sound" + to_string( ExtractedSounds ) + ".vsnd";
     
-    // open the file
-    ifstream SoundFile;
-    SoundFile.open( SoundPath, ios_base::binary | ios_base::ate );
+    // open output file as binary
+    ofstream SoundFile;
+    SoundFile.open( SoundFilePath, ios_base::binary );
     
-    if( !SoundFile.good() )
-      throw runtime_error( "cannot open sound file" );
-    
-    // get size and ensure it is a multiple of 4
-    // (otherwise file contents are wrong)
-    unsigned FileBytes = SoundFile.tellg();
-    
-    if( (FileBytes % 4) != 0 )
-      throw runtime_error( "incorrect VSND format (file size must be a multiple of 4)" );
-    
-    // file size should be at least 4 dwords
-    // (i.e. header + 1 sample)
-    unsigned FileWords = FileBytes / 4;
-    
-    if( FileWords < 4 )
-      throw runtime_error( "incorrect VSND format (file is too small)" );
-      
-    // read sound header
-    SoundFileFormat::Header SoundHeader;
-    SoundFile.seekg( 0, ios_base::beg );
-    SoundFile.read( (char*)(&SoundHeader), sizeof(SoundFileFormat::Header) );
-    
-    // check signature
-    if( !CheckSignature( SoundHeader.Signature, SoundFileFormat::Signature ) )
-      throw runtime_error( "incorrect VSND format (file size does contain a VSND signature)" );
-    
-    // file size must match the indicated sound length
-    if( FileWords != SoundHeader.SoundSamples + 3 )
-      throw runtime_error( "incorrect VSND format (file size does not match indicated sound size)" );
-    
-    // check sound length limit
-    if( SoundHeader.SoundSamples > (int)Constants::SPUMaximumCartridgeSamples )
-      throw runtime_error( "sound size is larger than allowed by Vircon32 SPU" );
-    
-    // now we can just copy the whole file to sound rom,
-    // since the header is also included in the final rom
-    SoundROM.resize( FileWords );
-    SoundFile.seekg( 0, ios_base::beg );
-    SoundFile.read( (char*)(&SoundROM[0]), FileBytes );
-    
-    // close the file
+    // write all data into the file
+    SoundFile.write( (char*)(&SoundHeader), sizeof( SoundFileFormat::Header ) );
+    SoundFile.write( (char*)(&SoundSamples[ 0 ]), 4 * SoundSamples.size() );
     SoundFile.close();
+    
+    // count the sounds
+    ExtractedSounds++;
+}
+
+// -----------------------------------------------------------------------------
+
+void RomDefinition::CreateDefinitionXML()
+{
+    string XMLFilePath = BaseFolder + PathSeparator + RomFileName + ".xml";
+    
+    // open output file as text
+    ofstream XMLFile;
+    XMLFile.open( XMLFilePath );
+    
+    if( !XMLFile.good() )
+      throw runtime_error( "cannot create XML file" );
+    
+    // write XML start and Vircon32 version
+    XMLFile << "<rom-definition version=\"";
+    XMLFile << VirconVersion << "." << VirconRevision << "\">" << endl;
+    
+    // write basic ROM metadata
+    XMLFile << "    <rom type=\"" << (IsBios? "bios" : "cartridge");
+    XMLFile << "\" title=\"" << Title;
+    XMLFile << "\" version=\"" << ROMVersion << "." << ROMRevision << "\" />" << endl;
+
+    // write ROM binary
+    XMLFile << "    <binary path=\"" << RomFileName << ".vbin\" />" << endl;
+    
+    // write ROM textures
+    XMLFile << "    <textures>" << endl;
+    
+    for( int i = 0; i < ExtractedTextures; i++ )
+      XMLFile << "        <texture path=\"textures/texture" << i << ".vtex\" />" << endl;
+    
+    XMLFile << "    </textures>" << endl;
+    
+    // write ROM sounds
+    XMLFile << "    <sounds>" << endl;
+    
+    for( int i = 0; i < ExtractedSounds; i++ )
+      XMLFile << "        <sound path=\"sounds/sound" << i << ".vsnd\" />" << endl;
+    
+    XMLFile << "    </sounds>" << endl;
+    
+    // write XML end
+    XMLFile << "</rom-definition>" << endl;
+    XMLFile.close();
+}
+
+// -----------------------------------------------------------------------------
+
+void RomDefinition::CreateMakeBAT()
+{
+    string BATFilePath = BaseFolder + PathSeparator + "Make.bat";
+    
+    // open output file as text
+    ofstream BATFile;
+    BATFile.open( BATFilePath );
+    
+    if( !BATFile.good() )
+      throw runtime_error( "cannot create BAT file" );
+    
+    // write initial section
+    BATFile << "@echo off" << endl;
+    BATFile << endl;
+    BATFile << "REM prepare the script to be run from another directory" << endl;
+    BATFile << "pushd %~dp0" << endl;
+    BATFile << endl;
+    BATFile << "REM create bin folder if non exiting, since" << endl;
+    BATFile << "REM the development tools will not create it themselves" << endl;
+    BATFile << "if not exist bin mkdir bin" << endl;
+    BATFile << endl;
+    
+    // write packer section
+    BATFile << "echo." << endl;
+    BATFile << "echo Pack the ROM" << endl;
+    BATFile << "echo --------------------------" << endl;
+    BATFile << "packrom \"" << RomFileName << ".xml\" -o \"bin\\" << RomFileName << ".v32\" || goto :failed" << endl;
+    BATFile << "goto :succeeded" << endl;
+    BATFile << endl;
+    
+    // write final section
+    BATFile << ":failed" << endl;
+    BATFile << "popd" << endl;
+    BATFile << "echo." << endl;
+    BATFile << "echo BUILD FAILED" << endl;
+    BATFile << "exit /b %errorlevel%" << endl;
+    BATFile << endl;
+    BATFile << ":succeeded" << endl;
+    BATFile << "popd" << endl;
+    BATFile << "echo." << endl;
+    BATFile << "echo BUILD SUCCESSFUL" << endl;
+    BATFile << "exit /b" << endl;
+    BATFile << endl;
+    BATFile << "@echo on" << endl;
+    
+    BATFile.close();
+}
+
+// -----------------------------------------------------------------------------
+
+void RomDefinition::CreateMakeSH()
+{
+    string SHFilePath = BaseFolder + PathSeparator + "Make.sh";
+    
+    // open output file as text
+    ofstream SHFile;
+    SHFile.open( SHFilePath );
+    
+    if( !SHFile.good() )
+      throw runtime_error( "cannot create SH file" );
+    
+    // write initial section
+    SHFile << "#!/bin/bash" << endl;
+    SHFile << endl;
+    SHFile << "# create bin folders if non existing, since the" << endl;
+    SHFile << "# development tools will not create it themselves" << endl;
+    SHFile << "mkdir -p bin" << endl;
+    SHFile << "# define an abort function to call on error" << endl;
+    SHFile << "abort_build()" << endl;
+    SHFile << endl;
+    SHFile << "    echo" << endl;
+    SHFile << "    echo BUILD FAILED" << endl;
+    SHFile << "    exit 1" << endl;
+    SHFile << "}" << endl;
+    SHFile << endl;
+    
+    // write packer section
+    SHFile << "echo" << endl;
+    SHFile << "echo Pack the ROM" << endl;
+    SHFile << "echo --------------------------" << endl;
+    SHFile << "packrom \"" << RomFileName << ".xml\" -o \"bin/" << RomFileName << ".v32\" || abort_build" << endl;
+    SHFile << endl;
+    
+    // write final section
+    SHFile << "echo" << endl;
+    SHFile << "echo BUILD SUCCESSFUL" << endl;
+    
+    SHFile.close();
 }
 
 
@@ -301,238 +226,236 @@ void RomDefinition::ProcessSound( string& SoundPath, vector< uint32_t >& SoundRO
 // =============================================================================
 
 
-void RomDefinition::LoadXML( const string& InputPath )
+void RomDefinition::UnpackROM( const std::string& InputPath, const std::string& OutputPath )
 {
-    // first, check if the input file exists
-    if( !FileExists( InputPath ) )
-      throw runtime_error( string("cannot open input file \"") + InputPath + "\"" );
+    // store base folder path
+    RomFileName = GetPathFileName( InputPath );
+    RomFileName = GetFileWithoutExtension( RomFileName );
     
-    // load XML file
-    XMLDocument Loaded;
-    XMLError ErrorCode = Loaded.LoadFile( InputPath.c_str() );
+    BaseFolder = OutputPath;
     
-    if( ErrorCode != XML_SUCCESS )
-      throw runtime_error( "Cannot read XML from file path " + InputPath );
+    // open the ROM file
+    ifstream InputFile;
+    InputFile.open( InputPath, ios_base::binary | ios_base::ate );
     
-    // obtain XML root
-    XMLElement* Root = Loaded.FirstChildElement( "rom-definition" );
+    if( !InputFile.good() )
+      throw runtime_error( "cannot open input file" );
     
-    if( !Root )
-      throw runtime_error( "Cannot find <rom-definition> root element" );
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // STEP 1: Load global information
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
-    // read and convert vircon version and revision
-    string VirconVersionText = GetRequiredStringAttribute( Root, "version" );
-    uint32_t VirconVersion, VirconRevision;
-    ParseVersionString( VirconVersionText, VirconVersion, VirconRevision );
+    // get size and ensure it is a multiple of 4
+    // (otherwise file contents are wrong)
+    unsigned FileBytes = InputFile.tellg();
     
-    // check against current version
-    if( VirconVersion  > (unsigned)Constants::VirconVersion 
-    ||  VirconRevision > (unsigned)Constants::VirconRevision )
-      throw runtime_error( "this ROM definition was made for a more recent version of Vircon. Please use the corresponding updated tools" );
+    if( (FileBytes % 4) != 0 )
+      throw runtime_error( "incorrect V32 file format (file size must be a multiple of 4)" );
     
-    // before loading resources, verify that all main elements exist
-    XMLElement* Rom      = GetRequiredElement( Root, "rom"      );
-    XMLElement* Binary   = GetRequiredElement( Root, "binary"   );
-    XMLElement* Textures = GetRequiredElement( Root, "textures" );
-    XMLElement* Sounds   = GetRequiredElement( Root, "sounds"   );
+    // ensure that we can at least load the file header
+    if( FileBytes < sizeof(ROMFileFormat::Header) )
+      throw runtime_error( "incorrect V32 file format (file is too small)" );
     
-    // read rom title and check length
-    Title = GetRequiredStringAttribute( Rom, "title" );
+    // now we can safely read the global header
+    InputFile.seekg( 0, ios_base::beg );
+    ROMFileFormat::Header ROMHeader;
+    InputFile.read( (char*)(&ROMHeader), sizeof(ROMFileFormat::Header) );
     
-    if( Title.length() > 63 )
-      throw runtime_error( "ROM title is longer than the maximum of 63 characters" );
-    
-    // read rom type
-    string ROMType = GetRequiredStringAttribute( Rom, "type" );
-    
-    if( ToLowerCase( ROMType ) == "bios" )
-      IsBios = true;
-    
-    else if( ToLowerCase( ROMType ) == "cartridge" )
+    // check if the ROM is actually a BIOS
+    if( CheckSignature( ROMHeader.Signature, ROMFileFormat::CartridgeSignature ) )
       IsBios = false;
     
-    else
-      throw runtime_error( "ROM type is invalid (must be either 'cartridge' or 'bios')" );
+    else if( CheckSignature( ROMHeader.Signature, ROMFileFormat::BiosSignature ) )
+      IsBios = true;
     
-    // read and convert rom version and revision
-    string RomVersionText = GetRequiredStringAttribute( Rom, "version" );
-    ParseVersionString( RomVersionText, Version, Revision );
+    else throw runtime_error( "signature for input V32 ROM is not recognized as either cartridge or bios" );
     
-    // read path for program rom
-    BinaryPath = GetRequiredStringAttribute( Binary, "path" );
+    // now check the actual cartridge signature
+    if( !CheckSignature( ROMHeader.Signature, ROMFileFormat::CartridgeSignature ) )
+      throw runtime_error( "incorrect V32 file format (file does not have a valid signature)" );
     
-    // read all texture paths
-    // (optional: there could be none)
-    XMLElement* CurrentTexture = Textures->FirstChildElement( "texture" );
+    // check current Vircon version
+    if( ROMHeader.VirconVersion  > (unsigned)Constants::VirconVersion
+    ||  ROMHeader.VirconRevision > (unsigned)Constants::VirconRevision )
+      throw runtime_error( "this cartridge was made for a more recent version of Vircon32. Please use an updated emulator" );
     
-    while( CurrentTexture != nullptr )
+    // read the main header and store info
+    ROMHeader.Title[ 63 ] = 0;
+    Title = ROMHeader.Title;
+    VirconVersion = ROMHeader.VirconVersion;
+    VirconRevision = ROMHeader.VirconRevision;
+    ROMVersion = ROMHeader.ROMVersion;
+    ROMRevision = ROMHeader.ROMRevision;
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // STEP 2: Check the declared rom contents
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    
+    // check that there are not too many textures
+    if( ROMHeader.NumberOfTextures > (uint32_t)Constants::GPUMaximumCartridgeTextures )
+      throw runtime_error( "Video ROM contains too many textures (Vircon GPU only allows up to 256)" );
+    
+    // check that there are not too many sounds
+    if( ROMHeader.NumberOfSounds > (uint32_t)Constants::SPUMaximumCartridgeSounds )
+      throw runtime_error( "Audio ROM contains too many sounds (Vircon SPU only allows up to 1024)" );
+    
+    // check for correct program rom location
+    if( ROMHeader.ProgramROMLocation.StartOffset != sizeof(ROMFileFormat::Header) )
+      throw runtime_error( "Incorrect V32 file format (program ROM is not located after file header)" );
+    
+    // check for correct video rom location
+    uint32_t SizeAfterProgramROM = ROMHeader.ProgramROMLocation.StartOffset + ROMHeader.ProgramROMLocation.Length;
+    
+    if( ROMHeader.VideoROMLocation.StartOffset != SizeAfterProgramROM )
+      throw runtime_error( "Incorrect V32 file format (video ROM is not located after program ROM)" );
+    
+    // check for correct audio rom location
+    uint32_t SizeAfterVideoROM = ROMHeader.VideoROMLocation.StartOffset + ROMHeader.VideoROMLocation.Length;
+    
+    if( ROMHeader.AudioROMLocation.StartOffset != SizeAfterVideoROM )
+      throw runtime_error( "Incorrect V32 file format (audio ROM is not located after video ROM)" );
+    
+    // check for correct file size
+    uint32_t SizeAfterAudioROM = ROMHeader.AudioROMLocation.StartOffset + ROMHeader.AudioROMLocation.Length;
+    
+    if( FileBytes != SizeAfterAudioROM )
+      throw runtime_error( "Incorrect V32 file format (file size does not match indicated ROM contents)" );
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // STEP 3: Extract program binary
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    
+    // load a binary file signature
+    BinaryFileFormat::Header BinaryHeader;
+    InputFile.read( (char*)(&BinaryHeader), sizeof(BinaryFileFormat::Header) );
+    
+    // check signature for embedded binary
+    if( !CheckSignature( BinaryHeader.Signature, BinaryFileFormat::Signature ) )
+      throw runtime_error( "Cartridge binary does not have a valid signature" );
+    
+    // check program rom size limitations
+    if( !IsBetween( BinaryHeader.NumberOfWords, 1, Constants::MaximumCartridgeProgramROM ) )
+      throw runtime_error( "Cartridge program ROM does not have a correct size (from 1 word up to 128M words)" );
+    
+    // load the binary words
+    vector< V32Word > LoadedBinary;
+    LoadedBinary.resize( BinaryHeader.NumberOfWords );
+    InputFile.read( (char*)(&LoadedBinary[ 0 ]), BinaryHeader.NumberOfWords * 4 );
+    
+    // extract contents of program binary
+    ExtractBinary( BinaryHeader, LoadedBinary );
+    LoadedBinary.clear();
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // STEP 4: Extract texture binaries
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    
+    // create the textures folder if needed
+    if( ROMHeader.NumberOfTextures > 0 )
     {
-        TexturePaths.push_back( GetRequiredStringAttribute( CurrentTexture, "path" ) );
-        CurrentTexture = CurrentTexture->NextSiblingElement( "texture" );
-    }
-    
-    // read all sound paths
-    // (optional: there could be none)
-    XMLElement* CurrentSound = Sounds->FirstChildElement( "sound" );
-    
-    while( CurrentSound != nullptr )
-    {
-        SoundPaths.push_back( GetRequiredStringAttribute( CurrentSound, "path" ) );
-        CurrentSound = CurrentSound->NextSiblingElement( "sound" );
-    }
-    
-    // check that bios roms have 1 texture and 1 sound
-    if( IsBios )
-    {
-        if( TexturePaths.size() != 1u || SoundPaths.size() != 1u )
-          throw runtime_error( "ROM definitions for BIOS must contain exactly 1 texture and 1 sound" );
-    }
-    
-    // check that cartridge maximums are not exceeded
-    else
-    {
-        if( (int)TexturePaths.size() > Constants::GPUMaximumCartridgeTextures )
-          throw runtime_error( "ROM definition contains more textures than allowed by Vircon32 GPU" );
+        string TexturesFolderPath = BaseFolder + PathSeparator + "textures";
         
-        if( (int)SoundPaths.size() > Constants::SPUMaximumCartridgeSounds )
-          throw runtime_error( "ROM definition contains more sounds than allowed by Vircon32 SPU" );
-    }
-}
-
-// -----------------------------------------------------------------------------
-
-void RomDefinition::PackROM( const string& OutputPath )
-{
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // STEP 1: Load program ROM
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    
-    // process the program file
-    vector< uint32_t > ProgramROM;
-    
-    try
-    {
-        ProcessBinary( BinaryPath, ProgramROM );
-    }
-    
-    // do this to always report the specific file on an error
-    catch( const exception& e )
-    {
-        throw runtime_error( string("in binary file \"") + BinaryPath + "\" " + e.what() );
-    }
-    
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // STEP 2: Build video ROM from all textures
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    
-    // process each texture file
-    vector< vector< uint32_t > > VideoROM;
-    
-    for( string TexturePath: TexturePaths )
-    {
-        try
+        if( !DirectoryExists( TexturesFolderPath ) )
         {
-            VideoROM.emplace_back();
-            ProcessTexture( TexturePath, VideoROM.back() );
+            int Status = mkdir( TexturesFolderPath.c_str() );
+            
+            if( Status < 0 )
+              throw runtime_error( "Cannot create textures folder" );
         }
+    }
+    
+    // keep extracting textures
+    ExtractedTextures = 0;
+    
+    for( unsigned i = 0; i < ROMHeader.NumberOfTextures; i++ )
+    {
+        // load a texture file signature
+        TextureFileFormat::Header TextureHeader;
+        InputFile.read( (char*)(&TextureHeader), sizeof(TextureFileFormat::Header) );
         
-        // do this to always report the specific file on an error
-        catch( const exception& e )
-        {
-            throw runtime_error( string("in texture file \"") + TexturePath + "\" " + e.what() );
-        }
-    }
-    
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // STEP 3: Build audio ROM from all sounds
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    
-    // process each sound file
-    vector< vector< uint32_t > > AudioROM;
-    
-    for( string SoundPath: SoundPaths )
-    {
-        try
-        {
-            AudioROM.emplace_back();
-            ProcessSound( SoundPath, AudioROM.back() );
-        }
+        // check signature for embedded texture
+        if( !CheckSignature( TextureHeader.Signature, TextureFileFormat::Signature ) )
+          throw runtime_error( "Cartridge texture does not have a valid signature" );
         
-        // do this to always report the specific file on an error
-        catch( const exception& e )
-        {
-            throw runtime_error( string("in sound file \"") + SoundPath + "\" " + e.what() );
-        }
+        // check texture size limitations
+        if( !IsBetween( TextureHeader.TextureWidth , 1, 1024 )
+        ||  !IsBetween( TextureHeader.TextureHeight, 1, 1024 ) )
+          throw runtime_error( "Cartridge texture does not have correct dimensions (1x1 up to 1024x1024 pixels)" );
+        
+        // load the texture pixels
+        vector< V32Word > LoadedTexture;
+        int NumberOfPixels = TextureHeader.TextureWidth * TextureHeader.TextureHeight;
+        LoadedTexture.resize( NumberOfPixels );
+        InputFile.read( (char*)(&LoadedTexture[ 0 ]), NumberOfPixels * 4 );
+        
+        // extract contents of texture binary
+        ExtractTexture( TextureHeader, LoadedTexture );
+        LoadedTexture.clear();
     }
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // STEP 4: Create the ROM file header
+    // STEP 5: Extract sound binaries
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
-    // make ROM header initially empty to
-    // ensure zeroes at all unused bytes
-    ROMFileFormat::Header ROMHeader;
-    memset( &ROMHeader, 0, sizeof(ROMFileFormat::Header) );
+    // create the sounds folder if needed
+    if( ROMHeader.NumberOfSounds > 0 )
+    {
+        string SoundsFolderPath = BaseFolder + PathSeparator + "sounds";
+        
+        if( !DirectoryExists( SoundsFolderPath ) )
+        {
+            int Status = mkdir( SoundsFolderPath.c_str() );
+            
+            if( Status < 0 )
+              throw runtime_error( "Cannot create sounds folder" );
+        }
+    }
     
-    // fill in Vircon metadata
-    CopySignature( ROMHeader.Signature, IsBios? ROMFileFormat::BiosSignature : ROMFileFormat::CartridgeSignature );
-    ROMHeader.VirconVersion  = Constants::VirconVersion;
-    ROMHeader.VirconRevision = Constants::VirconRevision;
+    // keep extracting sounds
+    ExtractedSounds = 0;
+    uint32_t TotalSPUSamples = 0;
     
-    // fill in ROM metadata
-    strncpy( ROMHeader.Title, Title.c_str(), 63 );
-    ROMHeader.ROMVersion = Version;
-    ROMHeader.ROMRevision = Revision;
+    for( unsigned i = 0; i < ROMHeader.NumberOfSounds; i++ )
+    {
+        // load a sound file signature
+        SoundFileFormat::Header SoundHeader;
+        InputFile.read( (char*)(&SoundHeader), sizeof(SoundFileFormat::Header) );
+        
+        // check signature for embedded sound
+        if( !CheckSignature( SoundHeader.Signature, SoundFileFormat::Signature ) )
+          throw runtime_error( "Cartridge sound does not have a valid signature" );
+        
+        // check length limitations for this sound
+        if( !IsBetween( SoundHeader.SoundSamples, 1, Constants::SPUMaximumCartridgeSamples ) )
+          throw runtime_error( "Cartridge sound does not have correct length (1 up to 256M samples)" );
+        
+        // check length limitations for the whole SPU
+        TotalSPUSamples += SoundHeader.SoundSamples;
+        
+        if( TotalSPUSamples > (uint32_t)Constants::SPUMaximumCartridgeSamples )
+          throw runtime_error( "Cartridge sounds contain too many total samples (Vircon SPU only allows up to 256M total samples)" );
+        
+        // load the sound samples
+        vector< V32Word > LoadedSound;
+        LoadedSound.resize( SoundHeader.SoundSamples );
+        InputFile.read( (char*)(&LoadedSound[ 0 ]), SoundHeader.SoundSamples * 4 );
+        
+        // extract contents of sound binary
+        ExtractSound( SoundHeader, LoadedSound );
+        LoadedSound.clear();
+    }
     
-    // count the number of assets
-    ROMHeader.NumberOfTextures = VideoROM.size();
-    ROMHeader.NumberOfSounds = AudioROM.size();
-    
-    // calculate bytes of program ROM in the file
-    ROMHeader.ProgramROMLocation.StartOffset = sizeof(ROMFileFormat::Header);
-    ROMHeader.ProgramROMLocation.Length = ProgramROM.size() * 4;
-    
-    // calculate the total size in bytes of video ROM
-    // (in the file! not in console GPU)
-    ROMHeader.VideoROMLocation.StartOffset = ROMHeader.ProgramROMLocation.StartOffset + ROMHeader.ProgramROMLocation.Length;
-    ROMHeader.VideoROMLocation.Length = 0;
-    
-    for( vector< uint32_t > TextureROM: VideoROM )
-      ROMHeader.VideoROMLocation.Length += 4 * TextureROM.size();
-    
-    // calculate the total size in bytes of audio ROM
-    // (in the file! not in console SPU)
-    ROMHeader.AudioROMLocation.StartOffset = ROMHeader.VideoROMLocation.StartOffset + ROMHeader.VideoROMLocation.Length;
-    ROMHeader.AudioROMLocation.Length = 0;
-    
-    for( vector< uint32_t > SoundROM: AudioROM )
-      ROMHeader.AudioROMLocation.Length += 4 * SoundROM.size();
+    // we can now close the input ROM file
+    InputFile.close();
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // STEP 4: Build the output file from all partial ROMs
+    // STEP 6: Create XML definition and make scripts
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
-    // open the output file
-    ofstream OutputFile;
-    OutputFile.open( OutputPath, ios_base::binary );
+    // create the XML file for rom definition
+    CreateDefinitionXML();
     
-    if( !OutputFile.good() )
-      throw runtime_error( string("cannot open output file \"") + OutputPath + "\"" );
-    
-    // write global header to file
-    OutputFile.write( (char*)(&ROMHeader), sizeof(ROMFileFormat::Header) );
-    
-    // write program ROM
-    OutputFile.write( (char*)(&ProgramROM[ 0 ]), ProgramROM.size() * 4 );
-    
-    // write video ROM
-    for( vector< uint32_t >& TextureROM: VideoROM )
-      OutputFile.write( (char*)(&TextureROM[ 0 ]), TextureROM.size() * 4 );
-    
-    // write audio ROM
-    for( vector< uint32_t >& SoundROM: AudioROM )
-      OutputFile.write( (char*)(&SoundROM[ 0 ]), SoundROM.size() * 4 );
-    
-    // close the output file
-    OutputFile.close();
+    // create make scripts
+    CreateMakeBAT();
+    CreateMakeSH();
 }
