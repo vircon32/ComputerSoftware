@@ -54,10 +54,6 @@ void LoadWAV( const char *WAVFilePath )
     if( !SDL_LoadWAV( WAVFilePath, &SourceAudioFormat, &SourceSamples, &SourceBytes ) )
       throw runtime_error( string("failed to load file \"") + WAVFilePath + "\" as a WAV file" );
     
-    // detect the number of samples
-    int BytesPerSample = SDL_AUDIO_BITSIZE( SourceAudioFormat.format ) * SourceAudioFormat.channels / 8;
-    NumberOfSamples = SourceBytes / BytesPerSample;
-    
     // start conversion phase
     if( VerboseMode )
       cout << "converting sound to Vircon format" << endl;
@@ -81,16 +77,24 @@ void LoadWAV( const char *WAVFilePath )
 	AudioConversionInfo.buf = (uint8_t*)malloc( SourceBytes * AudioConversionInfo.len_mult );
 	memcpy( AudioConversionInfo.buf, SourceSamples, SourceBytes );
 	
-    // convert input to Vircon format
+    // convert input to Vircon32 format
     // (44100Hz, signed 16-bit samples, stereo)
-	SDL_ConvertAudio( &AudioConversionInfo );
+    if( SDL_ConvertAudio( &AudioConversionInfo ) != 0 )
+      throw runtime_error( string("cannot convert audio format: ") + SDL_GetError() );
 	
 	// we no longer need the source buffer
 	SDL_FreeWAV( SourceSamples );
     
+    // detect the number of samples
+    int ConvertedBytes = AudioConversionInfo.len_cvt;
+    NumberOfSamples = ConvertedBytes / 4;
+    
     // store the converted audio samples
     RawSamples.resize( NumberOfSamples );
     memcpy( &RawSamples[0], AudioConversionInfo.buf, NumberOfSamples * 4 );
+    
+    // free used memory
+    free( AudioConversionInfo.buf );
 }
 
 // -----------------------------------------------------------------------------
