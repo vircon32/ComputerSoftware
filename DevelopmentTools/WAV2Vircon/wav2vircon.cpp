@@ -40,7 +40,7 @@ std::vector< uint32_t > RawSamples;
 
 // -----------------------------------------------------------------------------
 
-void LoadWAV( const char *WAVFilePath )
+void LoadWAV( const char *WAVFilePath, int OutputRate )
 {
 	SDL_AudioSpec SourceAudioFormat;
 	uint8_t *SourceSamples = nullptr;
@@ -53,6 +53,15 @@ void LoadWAV( const char *WAVFilePath )
     // load audio from the input file
     if( !SDL_LoadWAV( WAVFilePath, &SourceAudioFormat, &SourceSamples, &SourceBytes ) )
       throw runtime_error( string("failed to load file \"") + WAVFilePath + "\" as a WAV file" );
+    
+    // for output rate = 0 do not alter the input rate
+    if( OutputRate == 0 )
+    {
+        OutputRate = SourceAudioFormat.freq;
+        
+        if( VerboseMode )
+          cout << "using input sample rate of " << OutputRate << " Hz" << endl;
+    }
     
     // start conversion phase
     if( VerboseMode )
@@ -69,7 +78,7 @@ void LoadWAV( const char *WAVFilePath )
         SourceAudioFormat.freq,         // source frequency
         AUDIO_S16LSB,                   // destination audio format
         2,                              // destination channels
-        44100                           // destination frequency
+        OutputRate                      // destination frequency
     );
     
     // fill the structure's buffer with the source audio
@@ -136,6 +145,8 @@ void PrintUsage()
     cout << "  --help       Displays this information" << endl;
     cout << "  --version    Displays program version" << endl;
     cout << "  -o <file>    Output file, default name is the same as input" << endl;
+    cout << "  -r <rate>    Output sample rate. Default is 44100Hz (Vircon32 native)" << endl;
+    cout << "               Rate = 0 means output keeps same sample rate as input" << endl;
     cout << "  -v           Displays additional information (verbose)" << endl;
 }
 
@@ -162,6 +173,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         
         // variables to capture input parameters
         string InputPath, OutputPath;
+        int OutputRate = 44100;
         
         // process arguments
         for( int i = 1; i < NumberOfArguments; i++ )
@@ -194,6 +206,31 @@ int main( int NumberOfArguments, char* Arguments[] )
                 
                 // now we can safely read the input path
                 OutputPath = Arguments[ i ];
+                continue;
+            }
+            
+            if( Arguments[i] == string("-r") )
+            {
+                // expect another argument
+                i++;
+                
+                if( i >= NumberOfArguments )
+                  throw runtime_error( "missing output rate after '-r'" );
+                
+                // try to parse an integer from rate argument
+                try
+                {
+                    OutputRate = stoi( Arguments[ i ] );
+                }
+                catch( const exception& e )
+                {
+                    throw runtime_error( "cannot read output rate as an integer" );
+                }
+                
+                // establish some sensible boundaries
+                if( (OutputRate < 1000 && OutputRate != 0) || OutputRate > 100000 )
+                  throw runtime_error( "bad output rate (valid range is 1000-100000 Hz)" );
+                
                 continue;
             }
             
@@ -237,7 +274,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         if( VerboseMode )
           cout << "loading input file \"" << InputPath << "\"" << endl;
         
-        LoadWAV( InputPath.c_str() );
+        LoadWAV( InputPath.c_str(), OutputRate );
         
         // we are done with SDL
         SDL_Quit();
