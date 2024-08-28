@@ -108,7 +108,7 @@ namespace V32
             float   DrawingScaleY;
             float   DrawingAngle;
             
-            // quad coordinated for drawing regions
+            // quad coordinates for drawing regions
             GPUQuad RegionQuad;
             
         public:

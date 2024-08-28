@@ -35,9 +35,10 @@ namespace V32
             CPUInstruction Instruction;
             V32Word ImmediateValue;
             
-            // control flags
-            bool Halted;
-            bool Waiting;
+            // control flags (used as bool, but we
+            // want them to have a well defined size)
+            int32_t Halted;
+            int32_t Waiting;
             
         public:
             

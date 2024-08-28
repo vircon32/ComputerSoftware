@@ -189,7 +189,6 @@ namespace V32
             C.LoopEnabled = false;
             
             C.Position = 0.0;
-            C.CurrentSound = &BiosSound;
         }
         
         // reset output buffers
@@ -221,16 +220,18 @@ namespace V32
         // case 1: for a stopped channel, set the initial play
         if( TargetChannel.State == IOPortValues::SPUChannelState_Stopped )
         {
+            SPUSound* ChannelSound = GetChannelSound( PointedChannel );
+            TargetChannel.LoopEnabled = ChannelSound->PlayWithLoop;
             TargetChannel.Position = 0;
-            TargetChannel.LoopEnabled = TargetChannel.CurrentSound->PlayWithLoop;
         }
         
         // case 2: if channel was already playing, make it retrigger
         // (same actions as case 1, but keep it separate)
         else if( TargetChannel.State == IOPortValues::SPUChannelState_Playing )
         {
+            SPUSound* ChannelSound = GetChannelSound( PointedChannel );
+            TargetChannel.LoopEnabled = ChannelSound->PlayWithLoop;
             TargetChannel.Position = 0;
-            TargetChannel.LoopEnabled = TargetChannel.CurrentSound->PlayWithLoop;
         }
         
         // case 3: if channel was paused, just make it resume
@@ -291,6 +292,20 @@ namespace V32
     // =============================================================================
     
     
+    SPUSound* V32SPU::GetChannelSound( SPUChannel* Channel )
+    {
+        int32_t ChannelSoundID = Channel->AssignedSound;
+        
+        // special case for BIOS sound
+        if( ChannelSoundID == -1 )
+          return &BiosSound;
+        
+        // regular cartridge sounds
+        return &CartridgeSounds[ ChannelSoundID ];
+    }
+    
+    // -----------------------------------------------------------------------------
+    
     void V32SPU::UpdateOutputBuffer()
     {
         // assign the next sequence number to the buffer
@@ -312,7 +327,8 @@ namespace V32
                   continue;
                 
                 // pick sample at this position
-                SPUSample PickedSample = ThisChannel->CurrentSound->Samples[ (int)ThisChannel->Position ];
+                SPUSound* ChannelSound = GetChannelSound( ThisChannel );
+                SPUSample PickedSample = ChannelSound->Samples[ (int)ThisChannel->Position ];
                 
                 // mix the sample
                 float TotalVolume = GlobalVolume * ThisChannel->Volume;
@@ -326,8 +342,8 @@ namespace V32
                 // if loop is enabled, check for loop boundary
                 if( ThisChannel->LoopEnabled )
                 {
-                    int32_t LoopStart = ThisChannel->CurrentSound->LoopStart;
-                    int32_t LoopEnd   = ThisChannel->CurrentSound->LoopEnd;
+                    int32_t LoopStart = ChannelSound->LoopStart;
+                    int32_t LoopEnd   = ChannelSound->LoopEnd;
                     
                     // cannot perform loop with a bad loop configuration!
                     // (otherwise, fmod may throw an exception)
@@ -342,7 +358,7 @@ namespace V32
                 }
                 
                 // if the sound ends, stop the channel
-                if( ThisChannel->Position > (ThisChannel->CurrentSound->Length - 1) )
+                if( ThisChannel->Position > (ChannelSound->Length - 1) )
                   StopChannel( *ThisChannel );
             }
             

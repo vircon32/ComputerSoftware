@@ -29,7 +29,7 @@ namespace V32
     
     class V32Console
     {
-        private:
+        public:
             
             // communication lines
             V32MemoryBus  MemoryBus;

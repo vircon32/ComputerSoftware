@@ -177,19 +177,6 @@ namespace V32
         
         // write the value
         SPU.PointedChannel->AssignedSound = Value.AsInteger;
-        
-        // now update the channel's current sound
-        if( Value.AsInteger == -1 )
-        {
-            // special case for BIOS sound
-            SPU.PointedChannel->CurrentSound = &SPU.BiosSound;
-        }
-        else
-        {
-            // regular cartridge sounds
-            SPU.PointedChannel->CurrentSound = &SPU.CartridgeSounds[ Value.AsInteger ];
-        }
-        
         return true;
     }
     
@@ -237,7 +224,8 @@ namespace V32
     bool WriteSPUChannelPosition( V32SPU& SPU, V32Word Value )
     {
         // out of range values are accepted, but they are clamped
-        int32_t SoundLength = SPU.PointedChannel->CurrentSound->Length;
+        SPUSound* ChannelSound = SPU.GetChannelSound( SPU.PointedChannel );
+        int32_t SoundLength = ChannelSound->Length;
         Clamp( Value.AsInteger, 0, SoundLength - 1 );
         
         // write the value as an integer

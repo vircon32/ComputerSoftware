@@ -79,7 +79,6 @@ namespace V32
         
         // other needed fields
         double Position;         // we need double for extra range and precision
-        SPUSound* CurrentSound;  // working pointer for speed
     }
     SPUChannel;
     
@@ -141,6 +140,7 @@ namespace V32
             void StopAllChannels();
             
             // generate output sound
+            SPUSound* GetChannelSound( SPUChannel* Channel );
             void UpdateOutputBuffer();
     };
     
