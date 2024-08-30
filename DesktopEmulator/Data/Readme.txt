@@ -1,6 +1,6 @@
 ============================================================
              README file for Vircon32 emulator
-            (version 24.7.29) written by Carra
+            (version 24.8.30) written by Carra
 ============================================================
 
 What is this?
@@ -128,12 +128,31 @@ How to use memory cards
 
 ------------------------------------------------------------
 
-What's new in version 24.7.29?
+How to use savestates
     
-  - Added option (enabled by default) for automatic memory card
-    handling.
-  - The standard BIOS included with the emulator has been
-    updated to version 1.2.
+    Savestates allow you to save the whole state of the console
+    at any moment while playing a game, and then load it at a
+    later time. This will let you continue playing later, even
+    if the game itself does not allow you to save the game.
+    
+    There are 4 savestate slots for each game. By default you
+    use slot 1 but you can select another slot using the menus.
+    When you load and save state be careful to do it from the
+    correct slot, since these actions cannot be undone!
+    
+    Note that savestates do not save the screen contents,
+    which are persistent on Vircon32. This is done on purpose
+    to reduce savestate size and complexity. Most games will
+    update the screen every frame, but in a few cases your
+    screen will not immediately reflect the changes after
+    loading a savestate. Especially if you saved a state
+    during menus or screen transitions.
+    
+------------------------------------------------------------
+
+What's new in version 24.8.30?
+    
+  - Added support for savestates.
 
 ------------------------------------------------------------
 

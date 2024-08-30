@@ -1,6 +1,6 @@
 ﻿============================================================
         Archivo README para el emulador de Vircon32
-            (versión 24.7.29) escrito por Carra
+            (versión 24.8.30) escrito por Carra
 ============================================================
 
 ¿Qué es esto?
@@ -134,12 +134,31 @@ Cómo usar tarjetas de memoria
 
 ------------------------------------------------------------
 
-Novedades en la versión 24.7.29
+Cómo usar savestates
     
-  - Añadida la opción (activada por defecto) para el manejo
-    automático de las tarjetas de memoria.
-  - La BIOS estándar incluida con el emulador se ha actualizado
-    a la versión 1.2.
+    Los savestates te permiten guardar todo el estado de la
+    consola durante el juego en cualquier momento, y luego
+    cargarlo más tarde. Así puedes continuar jugando después,
+    incluso en juegos que no permiten guardar la partida.
+    
+    Hay 4 ranuras para estados en cada juego. Por defecto se
+    usa la ranura 1 pero puedes elegir otra usando los menús.
+    ¡Ten cuidado de usar la ranura correcta cuando cargas o
+    guardas estado, pues estas acciones no se pueden deshacer!
+    
+    Ten en cuenta que los savestads no guardan el contenido de
+    la pantalla, que en Vircon32 es persistente. Esto es así a
+    propósito para reducir tamaño y complejidad de los estados.
+    Casi todos los juegos redibujan la pantalla cada frame,
+    pero en unos pocos casos puede que tras cargar un estado
+    la pantalla no se actualice inmediatamente. Especialmente
+    si guardaste un estado en menús o transiciones de pantalla.
+    
+------------------------------------------------------------
+
+Novedades en la versión 24.8.30
+    
+  - Añadido soporte para savestates (guardar estado).
 
 ------------------------------------------------------------
 
