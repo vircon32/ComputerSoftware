@@ -171,6 +171,8 @@ void ShowDelayedMessageBox()
 
 void SetWindowZoom( int ZoomFactor )
 {
+    LOG( "Setting window zoom x" + to_string(ZoomFactor) );
+    
     // pause emulation at window events to
     // ensure sound is restored after them
     bool WasRunning = Emulator.IsPowerOn() && !Emulator.IsPaused();
@@ -193,6 +195,8 @@ void SetWindowZoom( int ZoomFactor )
 
 void SetFullScreen()
 {
+    LOG( "Setting fullscreen" );
+    
     // pause emulation at window events to
     // ensure sound is restored after them
     bool WasRunning = Emulator.IsPowerOn() && !Emulator.IsPaused();
@@ -215,6 +219,8 @@ void SetFullScreen()
 
 void SaveScreenshot( const string& FilePath )
 {
+    LOG( "Saving a screenshot" );
+    
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // STEP 1: Read the contents of the framebuffer object
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

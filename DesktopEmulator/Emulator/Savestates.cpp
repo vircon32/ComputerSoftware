@@ -9,7 +9,6 @@
     
     // include C/C++ headers
     #include <memory>             // [ C++ STL ] Dynamic memory
-    #include <stdexcept>          // [ C++ STL ] Exceptions
     #include <string.h>           // [ ANSI C ] Strings
     
     // declare used namespaces
@@ -164,7 +163,7 @@ void LoadGPUState( const GPUState& State )
     
     // check for success
     if( glGetError() != GL_NO_ERROR )
-      throw runtime_error( "There was an OpenGL error" );
+      THROW( "There was an OpenGL error" );
 }
 
 // -----------------------------------------------------------------------------
@@ -239,7 +238,7 @@ void LoadState( const ConsoleState* State )
     SaveGameInfo( CurrentGame );
     
     if( memcmp( &State->Game, &CurrentGame, sizeof(GameInfo) ) )
-      throw runtime_error( "Current cartridge is not the same one that was saved" );
+      THROW( "Current cartridge is not the same one that was saved" );
     
     // load console state
     LoadCPUState( State->CPU );
@@ -276,6 +275,8 @@ unsigned GetSavestateSize()
 
 void SaveBufferToRLEFile( ofstream& OutputFile, const void* Buffer )
 {
+    LOG( "Compressing state file" );
+    
     // determine buffer size
     unsigned SavestateSize = GetSavestateSize();
     unsigned CompressedSize = 0;
@@ -323,6 +324,8 @@ void SaveBufferToRLEFile( ofstream& OutputFile, const void* Buffer )
 
 void LoadBufferFromRLEFile( ifstream& InputFile, void* Buffer )
 {
+    LOG( "Decompressing state file" );
+    
     unsigned DecompressedSize = 0;
     uint8_t* CurrentByteSaved = (uint8_t*)Buffer;
     uint8_t QuantityByte;
@@ -334,7 +337,7 @@ void LoadBufferFromRLEFile( ifstream& InputFile, void* Buffer )
         InputFile.read( (char*)&QuantityByte, 1 );
         
         if( InputFile.peek() == EOF )
-          throw runtime_error( "Compressed file is corrupt" );
+          THROW( "Compressed file is corrupt" );
         
         InputFile.read( (char*)&CurrentValue, 1 );
         
@@ -347,7 +350,7 @@ void LoadBufferFromRLEFile( ifstream& InputFile, void* Buffer )
         // we should never exceed the maximum savestate size
         // (or else we will write into unknown memory areas)
         if( DecompressedSize >= sizeof(ConsoleState) )
-          throw runtime_error( "Decompressed file size is too large" );
+          THROW( "Decompressed file size is too large" );
     }
     
     // determine the actual savestate size for this game
@@ -355,7 +358,7 @@ void LoadBufferFromRLEFile( ifstream& InputFile, void* Buffer )
     
     // verify final buffer size
     if( DecompressedSize != SavestateSize )
-      throw runtime_error( "Decompressed file size is not correct" );
+      THROW( "Decompressed file size is not correct" );
 }
 
 
@@ -366,6 +369,8 @@ void LoadBufferFromRLEFile( ifstream& InputFile, void* Buffer )
 
 void SaveState( const string& FileName )
 {
+    LOG( "Saving state in slot " + to_string(SavestatesSlot) );
+    
     // save the state from console into the buffer
     unique_ptr< ConsoleState > StateBuffer( new ConsoleState );
     SaveState( StateBuffer.get() );
@@ -375,7 +380,7 @@ void SaveState( const string& FileName )
     OutputFile.open( FileName, ios_base::out | ios_base::binary );
     
     if( !OutputFile.good() )
-      throw runtime_error( "Cannot open output file" );
+      THROW( "Cannot open output file" );
     
     // save and compress the console state into that file
     SaveBufferToRLEFile( OutputFile, StateBuffer.get() );
@@ -386,12 +391,14 @@ void SaveState( const string& FileName )
 
 void LoadState( const string& FileName )
 {
+    LOG( "Loading state from slot " + to_string(SavestatesSlot) );
+    
     // open the file
     ifstream InputFile;
     InputFile.open( FileName, ios_base::in | ios_base::binary );
     
     if( !InputFile.good() )
-      throw runtime_error( "Cannot open input file" );
+      THROW( "Cannot open input file" );
     
     // load and decompressed the console state from that file
     unique_ptr< ConsoleState > StateBuffer( new ConsoleState );
