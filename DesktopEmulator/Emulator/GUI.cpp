@@ -13,6 +13,7 @@
     #include "VideoOutput.hpp"
     #include "AudioOutput.hpp"
     #include "Texture.hpp"
+    #include "Savestates.hpp"
     #include "Globals.hpp"
     #include "Settings.hpp"
     #include "Languages.hpp"
@@ -360,8 +361,29 @@ string GetAutomaticMemoryCardPath( const string& CartridgePath )
     string CartridgeFileName = GetPathFileName( CartridgePath );
     string CardFileName = ReplaceFileExtension( CartridgeFileName, "memc" );
     
-    // step 3: replace or add the file extension
+    // step 3: form the full path
     return CardsFolder + PathSeparator + CardFileName;
+}
+
+// -----------------------------------------------------------------------------
+
+// determine the path of the memory card corresponding to a given,
+// game file, taking into account the emulator's card directory
+// (this is only used when memory card handling is set to automatic)
+string GetAutomaticSaveStatePath( const string& CartridgePath )
+{
+    // step 1: determine the emulator's card folder
+    string SavestatesFolder = EmulatorFolder + "Savestates";
+    
+    // step 2: isolate file name and replace extension
+    string CartridgeFileName = GetPathFileName( CartridgePath );
+    
+    // step 3: add current savestate slot and replace extension
+    string FileNameWithoutExtension = GetFileWithoutExtension( CartridgeFileName );
+    string SavestateFileName = FileNameWithoutExtension + "_Slot" + to_string( SavestatesSlot ) + ".state";
+    
+    // step 4: form the full path
+    return SavestatesFolder + PathSeparator + SavestateFileName;
 }
 
 
@@ -668,6 +690,38 @@ void GUI_SaveScreenshot( string FilePath )
     }
 }
 
+// -----------------------------------------------------------------------------
+
+void GUI_LoadState()
+{
+    try
+    {
+        string SavestatePath = GetAutomaticSaveStatePath( Console.GetCartridgeFileName() );
+        LoadState( SavestatePath );
+    }
+    catch( exception& e )
+    {
+        string MessageBoxText = Texts( TextIDs::Errors_LoadState_Label ) + string(e.what());
+        DelayedMessageBox( SDL_MESSAGEBOX_ERROR, "Error", MessageBoxText.c_str() );
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+void GUI_SaveState()
+{
+    try
+    {
+        string SavestatePath = GetAutomaticSaveStatePath( Console.GetCartridgeFileName() );
+        SaveState( SavestatePath );
+    }
+    catch( exception& e )
+    {
+        string MessageBoxText = Texts( TextIDs::Errors_SaveState_Label ) + string(e.what());
+        DelayedMessageBox( SDL_MESSAGEBOX_ERROR, "Error", MessageBoxText.c_str() );
+    }
+}
+
 
 // =============================================================================
 //      SUPPORT FOR DELAYED FILE GUI ACTIONS
@@ -724,6 +778,33 @@ void ProcessMenuConsole()
             MouseIsOnWindow = false;
         }
     }
+    
+    ImGui::Separator();
+    
+    // allow savestates only during a game
+    bool EnableSavestates = (Emulator.IsPowerOn() && Console.HasCartridge());
+    
+    if( ImGui::MenuItem( Texts(TextIDs::Console_SaveState), nullptr, false, EnableSavestates ) )
+      GUI_SaveState();
+    
+    if( ImGui::MenuItem( Texts(TextIDs::Console_LoadState), nullptr, false, EnableSavestates ) )
+      GUI_LoadState();
+    
+    // but choosing slot is allowed at any moment
+    if( ImGui::BeginMenu( Texts(TextIDs::Console_StateSlot) ) )
+    {
+        for( int Slot = 1; Slot <=4; Slot++ )
+        {
+            const char* ItemText = (Texts(TextIDs::Console_Slot) + to_string( Slot )).c_str();
+            
+            if( ImGui::MenuItem( ItemText, nullptr, (SavestatesSlot == Slot), true ) )
+              SavestatesSlot = Slot;
+        }
+        
+        ImGui::EndMenu();
+    }
+
+    ImGui::Separator();
     
     if( ImGui::MenuItem( Texts(TextIDs::Console_Quit) ) )
       GlobalLoopActive = false;

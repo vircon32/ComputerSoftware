@@ -267,6 +267,7 @@ set(EMULATOR_SRC
     ${EMULATOR_DIR}/GUI.cpp
     ${EMULATOR_DIR}/Languages.cpp
     ${EMULATOR_DIR}/Main.cpp
+    ${EMULATOR_DIR}/Savestates.cpp
     ${EMULATOR_DIR}/Settings.cpp
     ${EMULATOR_DIR}/StopWatch.cpp
     ${EMULATOR_DIR}/Texture.cpp

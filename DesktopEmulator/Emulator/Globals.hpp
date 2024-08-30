@@ -38,6 +38,7 @@ extern std::list< std::string > RecentCartridgePaths;
 extern std::list< std::string > RecentMemoryCardPaths;
 extern std::string LastCartridgeDirectory;
 extern std::string LastMemoryCardDirectory;
+extern int SavestatesSlot;
 
 
 // =============================================================================

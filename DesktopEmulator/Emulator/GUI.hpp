@@ -40,6 +40,7 @@ void AddRecentMemoryCardPath( const std::string& MemoryCardPath );
 void CheckCartridgePaths();
 void CheckMemoryCardPaths();
 std::string GetAutomaticMemoryCardPath( const std::string& CartridgePath );
+std::string GetAutomaticSaveStatePath( const std::string& CartridgePath );
 
 
 // =============================================================================
@@ -56,6 +57,8 @@ void GUI_UnloadCartridge();
 void GUI_LoadCartridge( std::string CartridgePath = "" );
 void GUI_ChangeCartridge( std::string CartridgePath = "" );
 void GUI_SaveScreenshot( std::string FilePath = "" );
+void GUI_LoadState();
+void GUI_SaveState();
 
 
 // =============================================================================

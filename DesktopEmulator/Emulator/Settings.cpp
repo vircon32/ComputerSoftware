@@ -380,6 +380,9 @@ void SetDefaultSettings()
     // set automatic memory card handling
     Emulator.SetCardHandling( true );
     
+    // set default slot for savestates
+    SavestatesSlot = 1;
+    
     // set default load folders
     LastCartridgeDirectory = EmulatorFolder;
     LastMemoryCardDirectory = EmulatorFolder;
@@ -413,8 +416,8 @@ void LoadSettings( const string& FilePath )
         // check document version number
         int Version = GetRequiredIntegerAttribute( SettingsRoot, "version" );
         
-        if( Version < 1 || Version > 5 )
-          THROW( "Document version number is" + to_string( Version ) + ", only versions 1 through 5 are supported" );
+        if( Version < 1 || Version > 6 )
+          THROW( "Document version number is" + to_string( Version ) + ", only versions 1 through 6 are supported" );
         
         // load language settings (optional)
         XMLElement* LanguageElement = SettingsRoot->FirstChildElement( "language" );
@@ -542,6 +545,20 @@ void LoadSettings( const string& FilePath )
             Emulator.SetCardHandling( AutoCards );
         }
         
+        // save current savestate slot (optional)
+        XMLElement* SavestatesElement = SettingsRoot->FirstChildElement( "savestates" );
+        SavestatesSlot = 1;
+        
+        if( SavestatesElement )
+        {
+            int Slot = GetRequiredIntegerAttribute( SavestatesElement, "slot" );
+            SavestatesSlot = Slot;
+            
+            // limit to the valid range
+            if( Slot < 1 ) Slot = 1;
+            if( Slot > 4 ) Slot = 4;
+        }
+        
         // read load folders
         XMLElement* LoadFoldersRoot = GetRequiredElement( SettingsRoot, "load-folders" );
         XMLElement* CartridgeFolder = GetRequiredElement( LoadFoldersRoot, "cartridges" );
@@ -615,7 +632,7 @@ void SaveSettings( const string& FilePath )
         // create a document and its root element
         XMLDocument CreatedDoc;
         XMLElement* SettingsRoot = CreatedDoc.NewElement( "settings" );
-        SettingsRoot->SetAttribute( "version", 5 );
+        SettingsRoot->SetAttribute( "version", 6 );
         CreatedDoc.LinkEndChild( SettingsRoot );
         
         // save language
@@ -677,6 +694,11 @@ void SaveSettings( const string& FilePath )
         XMLElement* MemCardElement = CreatedDoc.NewElement( "memory-card" );
         SettingsRoot->LinkEndChild( MemCardElement );
         MemCardElement->SetAttribute( "automatic", Emulator.IsCardHandlingAuto()? "yes" : "no" );
+        
+        // save current savestate slot
+        XMLElement* SavestatesElement = CreatedDoc.NewElement( "savestates" );
+        SettingsRoot->LinkEndChild( SavestatesElement );
+        SavestatesElement->SetAttribute( "slot", SavestatesSlot );
         
         // save load folders
         XMLElement* FoldersRoot = CreatedDoc.NewElement( "load-folders" );

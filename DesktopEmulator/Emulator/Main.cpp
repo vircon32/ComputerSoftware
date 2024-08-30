@@ -381,6 +381,12 @@ int main( int NumberOfArguments, char* Arguments[] )
                     // Key F5 resets the machine
                     if( Key == SDLK_F5 ) Emulator.Reset();
                     
+                    // Key F2 saves state in the current slot
+                    if( Key == SDLK_F2 ) GUI_SaveState();
+                    
+                    // Key F4 loads state from the current slot
+                    if( Key == SDLK_F4 ) GUI_LoadState();
+                    
                     // when CTRL is pressed, process keyboard shortcuts
                     bool ControlIsPressed = (SDL_GetModState() & KMOD_CTRL);
                     

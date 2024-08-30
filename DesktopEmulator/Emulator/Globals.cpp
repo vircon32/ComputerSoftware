@@ -34,6 +34,7 @@ list< string > RecentCartridgePaths;
 list< string > RecentMemoryCardPaths;
 string LastCartridgeDirectory;
 string LastMemoryCardDirectory;
+int SavestatesSlot;
 
 
 // =============================================================================
