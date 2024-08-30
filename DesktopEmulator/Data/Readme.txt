@@ -153,6 +153,9 @@ How to use savestates
 What's new in version 24.8.30?
     
   - Added support for savestates.
+  - Fixed bad subfolder permissions under Linux and Mac that
+    prevented the emulator from saving screenshots.
+  - Improved logs on window actions.
 
 ------------------------------------------------------------
 

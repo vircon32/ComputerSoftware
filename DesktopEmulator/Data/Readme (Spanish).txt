@@ -136,8 +136,8 @@ Cómo usar tarjetas de memoria
 
 Cómo usar savestates
     
-    Los savestates te permiten guardar todo el estado de la
-    consola durante el juego en cualquier momento, y luego
+    Los savestates (estados) te permiten guardar el estado de
+    la consola durante el juego en cualquier momento, y luego
     cargarlo más tarde. Así puedes continuar jugando después,
     incluso en juegos que no permiten guardar la partida.
     
@@ -146,7 +146,7 @@ Cómo usar savestates
     ¡Ten cuidado de usar la ranura correcta cuando cargas o
     guardas estado, pues estas acciones no se pueden deshacer!
     
-    Ten en cuenta que los savestads no guardan el contenido de
+    Ten en cuenta que los estados no guardan el contenido de
     la pantalla, que en Vircon32 es persistente. Esto es así a
     propósito para reducir tamaño y complejidad de los estados.
     Casi todos los juegos redibujan la pantalla cada frame,
@@ -159,6 +159,9 @@ Cómo usar savestates
 Novedades en la versión 24.8.30
     
   - Añadido soporte para savestates (guardar estado).
+  - Corregido error en permisos de subcarpetas en Linux y Mac
+    que impedían al emulador guardar capturas de pantalla.
+  - Mejorados los logs en acciones de ventana.
 
 ------------------------------------------------------------
 

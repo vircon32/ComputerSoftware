@@ -200,9 +200,6 @@ void OpenGL2DContext::CreateOpenGLWindow()
     // any render clipping is no longer necessary
     glDisable( GL_SCISSOR_TEST );
     
-    // enable textures
-    glEnable( GL_TEXTURE_2D );
-    
     LOG( "Finished creating OpenGL window" );
 }
 

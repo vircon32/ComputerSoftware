@@ -276,9 +276,6 @@ void VideoOutput::CreateOpenGLWindow()
     // any render clipping is no longer necessary
     glDisable( GL_SCISSOR_TEST );
     
-    // enable textures
-    glEnable( GL_TEXTURE_2D );
-    
     LOG( "Finished creating OpenGL window" );
 }
 
@@ -496,7 +493,6 @@ void VideoOutput::InitRendering()
     // bind our textures to GPU's texture unit 0
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, 0 );      // set no texture until we load one
-    glEnable( GL_TEXTURE_2D );
     
     // initialize our multiply color to neutral
     SetMultiplyColor( GPUColor{ 255, 255, 255, 255 } );
@@ -1002,7 +998,6 @@ void VideoOutput::SelectTexture( int GPUTextureID )
       OpenGLTextureID = &CartridgeTextureIDs[ GPUTextureID ];
     
     glBindTexture( GL_TEXTURE_2D, *OpenGLTextureID );
-    glEnable( GL_TEXTURE_2D );
 }
 
 // -----------------------------------------------------------------------------

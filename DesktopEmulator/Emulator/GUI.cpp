@@ -1238,7 +1238,6 @@ bool GUIMustBeDrawn()
 void ShowEmulatorWindow()
 {
     glEnable( GL_BLEND );
-    glEnable( GL_TEXTURE_2D );
     
     // to do the actual drawing on the screen
     // correctly we have to temporarily 
