@@ -333,6 +333,37 @@ char VirconASMLexer::UnescapeHexNumber()
 
 // -----------------------------------------------------------------------------
 
+char VirconASMLexer::ReadCharacter()
+{
+    // first, consume the start delimiter
+    GetChar();
+    
+    char Value = 0;
+    char c = GetChar();
+    
+    // process escaped characters
+    if( c == '\\' )
+    {
+        char c2 = GetChar();
+        
+        if( c2 == 'x' )
+          Value = UnescapeHexNumber();
+        else
+          Value = UnescapeCharacter( c2 );
+    }
+    
+    // process regular characters
+    else Value = c;
+        
+    // expect the closing delimiter
+    if( InputHasEnded() || (GetChar() != '\'') )
+      EmitError( "character not terminated" );
+    
+    return Value;
+}
+
+// -----------------------------------------------------------------------------
+
 LiteralIntegerToken* VirconASMLexer::ReadHexInteger()
 {
     // first consume the "x" in prefix 0x
@@ -577,6 +608,10 @@ Token* VirconASMLexer::ReadNextToken()
     // recognize the beginning of a string
     if( c == '\"' )
       return NewStringToken( ReadLocation, ReadString() );
+    
+    // recognize the beginning of a character
+    if( c == '\'' )
+      return NewIntegerToken( ReadLocation, ReadCharacter() );
     
     // recognize symbols
     char SymbolString[ 2 ] = { c, 0 };
