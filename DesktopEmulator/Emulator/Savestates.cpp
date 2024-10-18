@@ -38,6 +38,9 @@ void SaveGPUState( GPUState& State )
     // read all registers as adjacent
     memcpy( State.Registers, &GPU.Command, sizeof(State.Registers) );
     
+    // copy the BIOS texture
+    memcpy( &State.BiosTexture, &GPU.BiosTexture, sizeof(GPUTexture) );
+    
     // copy only the needed cartridge textures
     unsigned TexturesSize = sizeof(GPUTexture) * GPU.LoadedCartridgeTextures;
     memcpy( State.CartridgeTextures, &GPU.CartridgeTextures[ 0 ], TexturesSize );
@@ -55,6 +58,9 @@ void SaveSPUState( SPUState& State )
     // read all channels as adjacent
     memcpy( State.Channels, &SPU.Channels, sizeof(State.Channels) );
     
+    // copy the BIOS sound
+    memcpy( &State.BiosSound, &SPU.BiosSound, sizeof(SPUSoundState) );
+    
     // copy only the needed cartridge sounds
     // (size will stay the same, but speed will increase)
     unsigned CartridgeSounds = SPU.LoadedCartridgeSounds;
@@ -62,7 +68,7 @@ void SaveSPUState( SPUState& State )
     // do not read data for all sounds as a block!!
     // we don't want to copy the sample vector in each sound
     for( unsigned SoundID = 0; SoundID < CartridgeSounds; SoundID++ )
-      memcpy( (void*)&State.CartridgeSounds[ SoundID ], (void*)&SPU.CartridgeSounds[ SoundID ], 4 * sizeof(int32_t) );
+      memcpy( &State.CartridgeSounds[ SoundID ], &SPU.CartridgeSounds[ SoundID ], sizeof(SPUSoundState) );
 }
 
 // -----------------------------------------------------------------------------
@@ -89,13 +95,15 @@ void SaveOtherConsoleState( OtherConsoleState& State )
 
 // -----------------------------------------------------------------------------
 
-void SaveGameInfo( GameInfo& Info )
+void SaveGameInfo( ROMInfo& Info )
 {
     // ensure title does not exceed 64 bytes and
     // that its unused characters are all null
-    memset( Info.CartridgeTitle, 0, sizeof(Info.CartridgeTitle) );
-    strncpy( Info.CartridgeTitle, Console.CartridgeController.CartridgeTitle.c_str(), sizeof(Info.CartridgeTitle) - 1 );
+    memset( Info.Title, 0, sizeof(Info.Title) );
+    strncpy( Info.Title, Console.CartridgeController.CartridgeTitle.c_str(), sizeof(Info.Title) - 1 );
     
+    Info.Version = Console.CartridgeController.CartridgeVersion;
+    Info.Revision = Console.CartridgeController.CartridgeRevision;
     Info.ProgramROMSize = Console.CartridgeController.MemorySize;
     Info.NumberOfTextures = Console.CartridgeController.NumberOfTextures;
     Info.NumberOfSounds = Console.CartridgeController.NumberOfSounds;
@@ -103,10 +111,27 @@ void SaveGameInfo( GameInfo& Info )
 
 // -----------------------------------------------------------------------------
 
+void SaveBiosInfo( ROMInfo& Info )
+{
+    // ensure title does not exceed 64 bytes and
+    // that its unused characters are all null
+    memset( Info.Title, 0, sizeof(Info.Title) );
+    strncpy( Info.Title, Console.BiosTitle.c_str(), sizeof(Info.Title) - 1 );
+    
+    Info.Version = Console.BiosVersion;
+    Info.Revision = Console.BiosRevision;
+    Info.ProgramROMSize = Console.BiosProgramROM.MemorySize;
+    Info.NumberOfTextures = 1;
+    Info.NumberOfSounds = 1;
+}
+
+// -----------------------------------------------------------------------------
+
 void SaveState( ConsoleState* State )
 {
-    // save info to identify the game
+    // save info to identify the game and BIOS
     SaveGameInfo( State->Game );
+    SaveBiosInfo( State->Bios );
     
     // save console state
     SaveCPUState( State->CPU );
@@ -137,6 +162,9 @@ void LoadGPUState( const GPUState& State )
     
     // write all registers as adjacent
     memcpy( &GPU.Command, State.Registers, sizeof(State.Registers) );
+    
+    // copy the BIOS texture
+    memcpy( &GPU.BiosTexture, &State.BiosTexture, sizeof(GPUTexture) );
     
     // copy only the needed cartridge textures
     unsigned TexturesSize = sizeof(GPUTexture) * GPU.LoadedCartridgeTextures;
@@ -178,6 +206,9 @@ void LoadSPUState( const SPUState& State )
     // write all channels as adjacent
     memcpy( &SPU.Channels, State.Channels, sizeof(State.Channels) );
     
+    // copy the BIOS sound
+    memcpy( (void*)&SPU.BiosSound, &State.BiosSound, sizeof(SPUSoundState) );
+    
     // copy only the needed cartridge sounds
     // (size will stay the same, but speed will increase)
     unsigned CartridgeSounds = SPU.LoadedCartridgeSounds;
@@ -185,7 +216,7 @@ void LoadSPUState( const SPUState& State )
     // do not load data for all sounds as a block!!
     // we must not overwrite the sample vector in each sound
     for( unsigned SoundID = 0; SoundID < CartridgeSounds; SoundID++ )
-      memcpy( (void*)&SPU.CartridgeSounds[ SoundID ], (void*)&State.CartridgeSounds[ SoundID ], 4 * sizeof(int32_t) );
+      memcpy( (void*)&SPU.CartridgeSounds[ SoundID ], &State.CartridgeSounds[ SoundID ], sizeof(SPUSoundState) );
     
     // make the needed updates in audio objects
     V32Word WordValue;
@@ -232,13 +263,17 @@ void LoadOtherConsoleState( const OtherConsoleState& State )
 
 void LoadState( const ConsoleState* State )
 {
-    // try to identify the game and see it it matches the
-    // current one, to avoid loading incompatible states
-    GameInfo CurrentGame;
+    // try to identify the game and BIOS and see if they
+    // match current ones, to avoid loading incompatible states
+    ROMInfo CurrentGame, CurrentBios;
     SaveGameInfo( CurrentGame );
+    SaveBiosInfo( CurrentBios );
     
-    if( memcmp( &State->Game, &CurrentGame, sizeof(GameInfo) ) )
+    if( memcmp( &State->Game, &CurrentGame, sizeof(ROMInfo) ) )
       THROW( "Current cartridge is not the same one that was saved" );
+    
+    if( memcmp( &State->Bios, &CurrentBios, sizeof(ROMInfo) ) )
+      THROW( "Current BIOS is not the same one that was used when saving" );
     
     // load console state
     LoadCPUState( State->CPU );

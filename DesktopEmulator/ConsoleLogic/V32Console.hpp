@@ -53,6 +53,12 @@ namespace V32
             // internal state
             bool PowerIsOn;
             
+            // additional data about the connected bios
+            std::string BiosFileName;
+            std::string BiosTitle;
+            uint32_t BiosVersion;
+            uint32_t BiosRevision;
+            
             // performance info (given in %)
             float LastCPULoads[ 2 ];
             float LastGPULoads[ 2 ];

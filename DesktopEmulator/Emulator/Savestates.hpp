@@ -41,14 +41,26 @@ typedef struct
     // (12 words in total)
     V32::V32Word Registers[ 12 ];
     
+    // configuration for the BIOS texture
+    // (note that this ties each savestate to a particular BIOS)
+    V32::GPUTexture BiosTexture;
+    
     // configuration for cartridge textures
     V32::GPUTexture CartridgeTextures[ V32::Constants::GPUMaximumCartridgeTextures ];
-    
-    // do not include the BIOS texture; that may
-    // break savestates if different BIOSes are
-    // used, and games should not alter BIOS anyway
 }
 GPUState;
+
+// -----------------------------------------------------------------------------
+
+typedef struct
+{
+    // same as SPUSound but not including the sound samples
+    int32_t Length;
+    int32_t PlayWithLoop;
+    int32_t LoopStart;
+    int32_t LoopEnd;
+}
+SPUSoundState;
 
 // -----------------------------------------------------------------------------
 
@@ -62,12 +74,12 @@ typedef struct
     // all SPU channels
     V32::SPUChannel Channels[ V32::Constants::SPUSoundChannels ];
     
-    // configuration for cartridge sounds
-    V32::SPUSound CartridgeSounds[ V32::Constants::SPUMaximumCartridgeSounds ];
+    // configuration for the BIOS sound
+    // (note that this ties each savestate to a particular BIOS)
+    SPUSoundState BiosSound;
     
-    // do not include the BIOS sound; that may
-    // break savestates if different BIOSes are
-    // used, and games should not alter BIOS anyway
+    // configuration for cartridge sounds
+    SPUSoundState CartridgeSounds[ V32::Constants::SPUMaximumCartridgeSounds ];
 }
 SPUState;
 
@@ -111,12 +123,14 @@ OtherConsoleState;
 
 typedef struct
 {
-    char CartridgeTitle[ 64 ];
+    char Title[ 64 ];
+    uint32_t Version;
+    uint32_t Revision;
     int32_t ProgramROMSize;
     int32_t NumberOfTextures;
     int32_t NumberOfSounds;
 }
-GameInfo;
+ROMInfo;
 
 // -----------------------------------------------------------------------------
 
@@ -126,7 +140,13 @@ typedef struct
     // basic attempt at distinguish different
     // games to prevent loading an incompatible
     // savestate and messing things up
-    GameInfo Game;
+    ROMInfo Game;
+    
+    // data to identify the BIOS; this is much
+    // less important than the game itself, but
+    // if different BIOSes are used to save and
+    // load it can produce graphic errors
+    ROMInfo Bios;
     
     // data for all stateful console components;
     // make GPU last so that we can adjust size
