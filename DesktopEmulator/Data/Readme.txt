@@ -1,6 +1,6 @@
 ============================================================
              README file for Vircon32 emulator
-            (version 24.8.30) written by Carra
+            (version 24.10.18) written by Carra
 ============================================================
 
 What is this?
@@ -150,12 +150,15 @@ How to use savestates
     
 ------------------------------------------------------------
 
-What's new in version 24.8.30?
-    
-  - Added support for savestates.
-  - Fixed bad subfolder permissions under Linux and Mac that
-    prevented the emulator from saving screenshots.
-  - Improved logs on window actions.
+What's new in version 24.10.18?
+  
+  - Fixed a bug in savestates that could cause graphical
+    glitches on some games if they use the BIOS.
+  - Because of this, now savestates that are saves are tied
+    to a specific BIOS and cannot be loaded with another one.
+  - These changes make current version's savestates NOT
+    COMPATIBLE WITH PREVIOUS VERSIONS. This emulator version
+    is unable to load savestates created with olver versions.
 
 ------------------------------------------------------------
 

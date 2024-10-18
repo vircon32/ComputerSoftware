@@ -1,6 +1,6 @@
 ﻿============================================================
         Archivo README para el emulador de Vircon32
-            (versión 24.8.30) escrito por Carra
+           (versión 24.10.18) escrito por Carra
 ============================================================
 
 ¿Qué es esto?
@@ -156,12 +156,17 @@ Cómo usar savestates
     
 ------------------------------------------------------------
 
-Novedades en la versión 24.8.30
+Novedades en la versión 24.10.18
     
-  - Añadido soporte para savestates (guardar estado).
-  - Corregido error en permisos de subcarpetas en Linux y Mac
-    que impedían al emulador guardar capturas de pantalla.
-  - Mejorados los logs en acciones de ventana.
+  - Corregido un problema en los savestates que podía crear
+    errores gráficos en algunos juegos si se usa la BIOS.
+  - Debido a esto, ahora los savestates que se guardan quedan
+    vinculados a una BIOS específica y no pueden cargarse
+    con otra.
+  - Estos cambios hacen los savestates de la versión actual
+    INCOMPATIBLES CON LAS VERSIONES ANTERIORES. Esta versión
+    del emulador no puede cargar savestates guardados con
+    versiones más antiguas.
 
 ------------------------------------------------------------
 
