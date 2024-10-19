@@ -1,7 +1,9 @@
 __main:
   mov R0, [__message]
-  halt
+  hlt
   
 __message:
-  string "hola"
+  string "hello"
 
+__message_escaped:
+  string "\"hello\""

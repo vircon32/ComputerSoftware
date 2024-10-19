@@ -4,15 +4,14 @@
 __draw_scene:
 
   ; clear the screen
-  out GPUClearColor, 0x000070FF
-  out GPUCommand, GPUCommand_ClearScreen
+  out GPU_ClearColor, 0x000070FF
+  out GPU_Command, GPUCommand_ClearScreen
   ret
   
 __check_button_a:
   ; - returns in R0 a boolean
-  mov R1, 2
   in R0, INP_GamepadButtonA
-  igt R0
+  igt R0, 0
   ret
   
 __main:
@@ -20,9 +19,9 @@ __main:
   call __draw_scene
   wait
   call __check_button_a
-  icmp R0, 0
-  jne _restart
+  ieq R0, 0
+  jf R0, __restart
   hlt
   
 __restart:
-  jmp _main
+  jmp __main

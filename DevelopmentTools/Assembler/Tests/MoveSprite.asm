@@ -1,37 +1,34 @@
-  %define GPUCommandClearScreen 1
-  %define GPUCommandDrawRegion  2
+%define SpriteX 0x1
+%define SpriteY 0x2
   
-  %define SpriteX 0x1
-  %define SpriteY 0x2
-  
-  jmp _main
-  ; ------------------------
+jmp _main
+; ------------------------
   
 _draw_scene:
 
   ; clear the screen
-  out GPUClearColor, 0x000070FF
-  out GPUCommand, GPUCommandClearScreen
+  out GPU_ClearColor, 0x000070FF
+  out GPU_Command, GPUCommand_ClearScreen
   
   ; draw the sprite at current position
   mov R0, [SpriteX]
   mov R1, [SpriteY]
-  out GPUDrawingPointX, R0
-  out GPUDrawingPointY, R1
-  out GPUCommand, GPUCommandDrawRegion
+  out GPU_DrawingPointX, R0
+  out GPU_DrawingPointY, R1
+  out GPU_Command, GPUCommand_DrawRegion
   ret
   
 _main:
 
   ; create a region
-  out GPUActivePage, 0
-  out GPUActiveRegion, 1
-  out GPURegionMinX, 294
-  out GPURegionMinY, 32
-  out GPURegionWidth, 40
-  out GPURegionHeight, 20
-  out GPURegionHotSpotX, 20
-  out GPURegionHotSpotY, 15
+  out GPU_SelectedTexture, 0
+  out GPU_SelectedRegion, 1
+  out GPU_RegionMinX, 294
+  out GPU_RegionMinY, 32
+  out GPU_RegionMaxX, 333
+  out GPU_RegionMaxY, 51
+  out GPU_RegionHotSpotX, 314
+  out GPU_RegionHotSpotY, 47
   
   ; set initial position
   mov R0, 320
@@ -41,7 +38,7 @@ _main:
   
 _check_left:
 
-  in R0, INPGamepad1Left
+  in R0, INP_GamepadLeft
   ilt R0, 0
   jt R0, _check_right
   mov R1, [SpriteX]
@@ -50,7 +47,7 @@ _check_left:
   
 _check_right:
 
-  in R0, INPGamepad1Right
+  in R0, INP_GamepadRight
   ilt R0, 0
   jt R0, _check_up
   mov R1, [SpriteX]
@@ -59,7 +56,7 @@ _check_right:
   
 _check_up:
 
-  in R0, INPGamepad1Up
+  in R0, INP_GamepadUp
   ilt R0, 0
   jt R0, _check_down
   mov R1, [SpriteY]
@@ -68,7 +65,7 @@ _check_up:
   
 _check_down:
 
-  in R0, INPGamepad1Down
+  in R0, INP_GamepadDown
   ilt R0, 0
   jt R0, _check_button
   mov R1, [SpriteY]
@@ -77,10 +74,10 @@ _check_down:
 
 _check_button:
 
-  in R0, INPGamepad1ButtonA
+  in R0, INP_GamepadButtonA
   ilt R0, 0
   jt R0, _end_frame
-  halt
+  hlt
 
 _end_frame:
 
