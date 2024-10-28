@@ -6,7 +6,7 @@ jmp _main
 
 ; define data values: literal integers
 _literal_ints:
-  integer 1, -3, 0xA, 'H'
+  integer 1, -3, 0xA, 'H', '\x41'
 
 ; true/false are just read as integers 1/0
 _literal_booleans:

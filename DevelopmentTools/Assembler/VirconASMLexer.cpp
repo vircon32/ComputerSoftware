@@ -611,7 +611,19 @@ Token* VirconASMLexer::ReadNextToken()
     
     // recognize the beginning of a character
     if( c == '\'' )
-      return NewIntegerToken( ReadLocation, ReadCharacter() );
+    {
+        // prevent unwanted sign extension if char
+        // is taken as negative (byte value > 127)
+        union
+        {
+            char AsNumber;
+            unsigned char AsBinary;
+        }
+        Character;
+        
+        Character.AsNumber = ReadCharacter();
+        return NewIntegerToken( ReadLocation, Character.AsBinary );
+    }
     
     // recognize symbols
     char SymbolString[ 2 ] = { c, 0 };
