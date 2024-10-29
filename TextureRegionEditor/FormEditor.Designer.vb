@@ -102,6 +102,7 @@ Partial Class FormEditor
         Me.TTHelp = New System.Windows.Forms.ToolTip(Me.components)
         Me.SaveDialog = New System.Windows.Forms.SaveFileDialog()
         Me.ColorPicker = New System.Windows.Forms.ColorDialog()
+        Me.ButtonExportASM = New System.Windows.Forms.Button()
         Me.PanelTexture.SuspendLayout()
         CType(Me.PictureTexture, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.PanelRegionLists.SuspendLayout()
@@ -172,9 +173,9 @@ Partial Class FormEditor
         '
         Me.ButtonLoadTexture.Image = CType(resources.GetObject("ButtonLoadTexture.Image"), System.Drawing.Image)
         Me.ButtonLoadTexture.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft
-        Me.ButtonLoadTexture.Location = New System.Drawing.Point(8, 51)
+        Me.ButtonLoadTexture.Location = New System.Drawing.Point(8, 43)
         Me.ButtonLoadTexture.Name = "ButtonLoadTexture"
-        Me.ButtonLoadTexture.Size = New System.Drawing.Size(159, 44)
+        Me.ButtonLoadTexture.Size = New System.Drawing.Size(159, 43)
         Me.ButtonLoadTexture.TabIndex = 9
         Me.ButtonLoadTexture.Text = "Load PNG texture"
         Me.ButtonLoadTexture.TextAlign = System.Drawing.ContentAlignment.MiddleRight
@@ -183,7 +184,7 @@ Partial Class FormEditor
         'ButtonZoomMinus
         '
         Me.ButtonZoomMinus.Image = CType(resources.GetObject("ButtonZoomMinus.Image"), System.Drawing.Image)
-        Me.ButtonZoomMinus.Location = New System.Drawing.Point(61, 207)
+        Me.ButtonZoomMinus.Location = New System.Drawing.Point(61, 197)
         Me.ButtonZoomMinus.Name = "ButtonZoomMinus"
         Me.ButtonZoomMinus.Size = New System.Drawing.Size(50, 45)
         Me.ButtonZoomMinus.TabIndex = 9
@@ -193,7 +194,7 @@ Partial Class FormEditor
         'ButtonZoomPlus
         '
         Me.ButtonZoomPlus.Image = CType(resources.GetObject("ButtonZoomPlus.Image"), System.Drawing.Image)
-        Me.ButtonZoomPlus.Location = New System.Drawing.Point(117, 207)
+        Me.ButtonZoomPlus.Location = New System.Drawing.Point(117, 197)
         Me.ButtonZoomPlus.Name = "ButtonZoomPlus"
         Me.ButtonZoomPlus.Size = New System.Drawing.Size(50, 45)
         Me.ButtonZoomPlus.TabIndex = 9
@@ -551,14 +552,14 @@ Partial Class FormEditor
         Me.Panel4.Controls.Add(Me.Label11)
         Me.Panel4.Location = New System.Drawing.Point(543, 12)
         Me.Panel4.Name = "Panel4"
-        Me.Panel4.Size = New System.Drawing.Size(177, 262)
+        Me.Panel4.Size = New System.Drawing.Size(177, 252)
         Me.Panel4.TabIndex = 15
         '
         'ButtonColorHotspot
         '
         Me.ButtonColorHotspot.BackColor = System.Drawing.Color.Yellow
         Me.ButtonColorHotspot.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me.ButtonColorHotspot.Location = New System.Drawing.Point(123, 160)
+        Me.ButtonColorHotspot.Location = New System.Drawing.Point(123, 150)
         Me.ButtonColorHotspot.Name = "ButtonColorHotspot"
         Me.ButtonColorHotspot.Size = New System.Drawing.Size(42, 34)
         Me.ButtonColorHotspot.TabIndex = 14
@@ -568,7 +569,7 @@ Partial Class FormEditor
         '
         Me.ButtonColorRegion.BackColor = System.Drawing.Color.Blue
         Me.ButtonColorRegion.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me.ButtonColorRegion.Location = New System.Drawing.Point(72, 160)
+        Me.ButtonColorRegion.Location = New System.Drawing.Point(72, 150)
         Me.ButtonColorRegion.Name = "ButtonColorRegion"
         Me.ButtonColorRegion.Size = New System.Drawing.Size(42, 34)
         Me.ButtonColorRegion.TabIndex = 14
@@ -578,7 +579,7 @@ Partial Class FormEditor
         '
         Me.LabelZoom.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.LabelZoom.Font = New System.Drawing.Font("Microsoft Sans Serif", 18.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.LabelZoom.Location = New System.Drawing.Point(8, 207)
+        Me.LabelZoom.Location = New System.Drawing.Point(8, 197)
         Me.LabelZoom.Name = "LabelZoom"
         Me.LabelZoom.Size = New System.Drawing.Size(46, 45)
         Me.LabelZoom.TabIndex = 13
@@ -588,14 +589,14 @@ Partial Class FormEditor
         'TB_TextureName
         '
         Me.TB_TextureName.Font = New System.Drawing.Font("Microsoft Sans Serif", 11.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TB_TextureName.Location = New System.Drawing.Point(8, 125)
+        Me.TB_TextureName.Location = New System.Drawing.Point(8, 115)
         Me.TB_TextureName.Name = "TB_TextureName"
         Me.TB_TextureName.Size = New System.Drawing.Size(159, 24)
         Me.TB_TextureName.TabIndex = 8
         '
         'Label25
         '
-        Me.Label25.Location = New System.Drawing.Point(9, 160)
+        Me.Label25.Location = New System.Drawing.Point(9, 150)
         Me.Label25.Name = "Label25"
         Me.Label25.Size = New System.Drawing.Size(58, 34)
         Me.Label25.TabIndex = 12
@@ -604,7 +605,7 @@ Partial Class FormEditor
         '
         'Label11
         '
-        Me.Label11.Location = New System.Drawing.Point(8, 101)
+        Me.Label11.Location = New System.Drawing.Point(8, 91)
         Me.Label11.Name = "Label11"
         Me.Label11.Size = New System.Drawing.Size(159, 24)
         Me.Label11.TabIndex = 12
@@ -770,13 +771,14 @@ Partial Class FormEditor
         'PanelProject
         '
         Me.PanelProject.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.PanelProject.Controls.Add(Me.ButtonExportASM)
         Me.PanelProject.Controls.Add(Me.ButtonExportHeader)
         Me.PanelProject.Controls.Add(Me.ButtonSaveProject)
         Me.PanelProject.Controls.Add(Me.ButtonLoadProject)
         Me.PanelProject.Controls.Add(Me.Label16)
-        Me.PanelProject.Location = New System.Drawing.Point(543, 289)
+        Me.PanelProject.Location = New System.Drawing.Point(543, 279)
         Me.PanelProject.Name = "PanelProject"
-        Me.PanelProject.Size = New System.Drawing.Size(177, 207)
+        Me.PanelProject.Size = New System.Drawing.Size(177, 217)
         Me.PanelProject.TabIndex = 14
         '
         'ButtonExportHeader
@@ -784,9 +786,9 @@ Partial Class FormEditor
         Me.ButtonExportHeader.Enabled = False
         Me.ButtonExportHeader.Image = CType(resources.GetObject("ButtonExportHeader.Image"), System.Drawing.Image)
         Me.ButtonExportHeader.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft
-        Me.ButtonExportHeader.Location = New System.Drawing.Point(8, 148)
+        Me.ButtonExportHeader.Location = New System.Drawing.Point(8, 127)
         Me.ButtonExportHeader.Name = "ButtonExportHeader"
-        Me.ButtonExportHeader.Size = New System.Drawing.Size(159, 44)
+        Me.ButtonExportHeader.Size = New System.Drawing.Size(159, 38)
         Me.ButtonExportHeader.TabIndex = 10
         Me.ButtonExportHeader.Text = "Export C header"
         Me.ButtonExportHeader.TextAlign = System.Drawing.ContentAlignment.MiddleRight
@@ -797,9 +799,9 @@ Partial Class FormEditor
         Me.ButtonSaveProject.Enabled = False
         Me.ButtonSaveProject.Image = CType(resources.GetObject("ButtonSaveProject.Image"), System.Drawing.Image)
         Me.ButtonSaveProject.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft
-        Me.ButtonSaveProject.Location = New System.Drawing.Point(8, 100)
+        Me.ButtonSaveProject.Location = New System.Drawing.Point(8, 85)
         Me.ButtonSaveProject.Name = "ButtonSaveProject"
-        Me.ButtonSaveProject.Size = New System.Drawing.Size(159, 44)
+        Me.ButtonSaveProject.Size = New System.Drawing.Size(159, 38)
         Me.ButtonSaveProject.TabIndex = 11
         Me.ButtonSaveProject.Text = "Save project XML"
         Me.ButtonSaveProject.TextAlign = System.Drawing.ContentAlignment.MiddleRight
@@ -809,9 +811,9 @@ Partial Class FormEditor
         '
         Me.ButtonLoadProject.Image = CType(resources.GetObject("ButtonLoadProject.Image"), System.Drawing.Image)
         Me.ButtonLoadProject.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft
-        Me.ButtonLoadProject.Location = New System.Drawing.Point(8, 53)
+        Me.ButtonLoadProject.Location = New System.Drawing.Point(8, 43)
         Me.ButtonLoadProject.Name = "ButtonLoadProject"
-        Me.ButtonLoadProject.Size = New System.Drawing.Size(159, 44)
+        Me.ButtonLoadProject.Size = New System.Drawing.Size(159, 38)
         Me.ButtonLoadProject.TabIndex = 12
         Me.ButtonLoadProject.Text = "Load project XML"
         Me.ButtonLoadProject.TextAlign = System.Drawing.ContentAlignment.MiddleRight
@@ -977,6 +979,20 @@ Partial Class FormEditor
         Me.Label20.Text = "Tools"
         Me.Label20.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
+        'ButtonExportASM
+        '
+        Me.ButtonExportASM.Enabled = False
+        Me.ButtonExportASM.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.ButtonExportASM.Image = CType(resources.GetObject("ButtonExportASM.Image"), System.Drawing.Image)
+        Me.ButtonExportASM.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft
+        Me.ButtonExportASM.Location = New System.Drawing.Point(8, 169)
+        Me.ButtonExportASM.Name = "ButtonExportASM"
+        Me.ButtonExportASM.Size = New System.Drawing.Size(159, 38)
+        Me.ButtonExportASM.TabIndex = 13
+        Me.ButtonExportASM.Text = "Export ASM header"
+        Me.ButtonExportASM.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        Me.ButtonExportASM.UseVisualStyleBackColor = True
+        '
         'FormEditor
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
@@ -1092,5 +1108,6 @@ Partial Class FormEditor
     Friend WithEvents ButtonColorRegion As System.Windows.Forms.Button
     Friend WithEvents Label25 As System.Windows.Forms.Label
     Friend WithEvents ColorPicker As System.Windows.Forms.ColorDialog
+    Friend WithEvents ButtonExportASM As System.Windows.Forms.Button
 
 End Class

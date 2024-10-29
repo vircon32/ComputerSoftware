@@ -584,4 +584,34 @@
 
     End Sub
 
+    Private Sub ButtonExportASM_Click(sender As Object, e As EventArgs) Handles ButtonExportASM.Click
+
+        Try
+            SaveDialog.Filter = "ASM Files|*.asm"
+            If SaveDialog.ShowDialog(Me) <> Windows.Forms.DialogResult.OK Then Return
+            ExportASMHeader(SaveDialog.FileName)
+
+            ' when finished ask whether to also copy the DefineRegionMatrix
+            ' dependency (but only if it is really needed)
+            Dim DependencyPath = IO.Path.GetDirectoryName(SaveDialog.FileName) & "\DefineRegionMatrix.asm"
+
+            If (DefinedMatrices.Count > 0 And Not IO.File.Exists(DependencyPath)) Then
+
+                Dim Message As String = "ASM Headers generated with this program depend on file DefineRegionMatrix.asm. Copy it to that folder as well?"
+
+                If MsgBox(Message, MsgBoxStyle.Information Or MsgBoxStyle.YesNo, "Copy dependencies?") = MsgBoxResult.Yes Then
+                    IO.File.Copy("DefineRegionMatrix.asm", IO.Path.GetDirectoryName(SaveDialog.FileName) & "\DefineRegionMatrix.asm")
+                End If
+
+            End If
+
+            ' on success just report
+            MsgBox("ASM header has been created", MsgBoxStyle.Information Or MsgBoxStyle.OkOnly, "Success")
+
+        Catch ex As Exception
+            MsgBox("Cannot export to ASM header: " & ex.Message, MsgBoxStyle.Critical Or MsgBoxStyle.OkOnly, "Error")
+        End Try
+
+    End Sub
+
 End Class

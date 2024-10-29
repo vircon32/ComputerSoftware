@@ -26,6 +26,7 @@ Public Module FileExports
         MainForm.PanelRegionLists.Enabled = True
         MainForm.ButtonSaveProject.Enabled = True
         MainForm.ButtonExportHeader.Enabled = True
+        MainForm.ButtonExportASM.Enabled = True
 
     End Sub
 
@@ -175,14 +176,14 @@ Public Module FileExports
     '   C HEADER EXPORT FUNCTIONS
     ' ----------------------------------------------
 
-    Public Sub ExportRegionCode(R As Region, HeaderFile As IO.StreamWriter)
+    Public Sub ExportRegionCodeC(R As Region, HeaderFile As IO.StreamWriter)
         HeaderFile.WriteLine("    select_region( Region" & R.Name & " );")
         HeaderFile.WriteLine("    define_region( " & R.Left & "," & R.Top & ",  " &
                              R.Right & "," & R.Bottom & ",  " &
                              R.HotspotX & "," & R.HotspotY & " );")
     End Sub
 
-    Public Sub ExportMatrixCode(M As RegionMatrix, HeaderFile As IO.StreamWriter)
+    Public Sub ExportMatrixCodeC(M As RegionMatrix, HeaderFile As IO.StreamWriter)
         HeaderFile.WriteLine("    define_region_matrix( FirstRegion" & M.FirstRegion.Name & ", " &
                              M.FirstRegion.Left & "," & M.FirstRegion.Top & ",  " &
                              M.FirstRegion.Right & "," & M.FirstRegion.Bottom & ",  " &
@@ -242,7 +243,7 @@ Public Module FileExports
             HeaderFile.WriteLine("    // define single regions")
 
             For Each R As Region In DefinedRegions
-                ExportRegionCode(R, HeaderFile)
+                ExportRegionCodeC(R, HeaderFile)
             Next
 
         End If
@@ -254,7 +255,7 @@ Public Module FileExports
             HeaderFile.WriteLine("    // define region matrices")
 
             For Each M As RegionMatrix In DefinedMatrices
-                ExportMatrixCode(M, HeaderFile)
+                ExportMatrixCodeC(M, HeaderFile)
             Next
 
         End If
@@ -264,6 +265,137 @@ Public Module FileExports
         HeaderFile.WriteLine()
         HeaderFile.WriteLine("// end include guard")
         HeaderFile.WriteLine("#endif")
+        HeaderFile.Close()
+
+    End Sub
+
+    ' ----------------------------------------------
+    '   ASM HEADER EXPORT FUNCTIONS
+    ' ----------------------------------------------
+
+    Public Sub ExportRegionCodeASM(R As Region, HeaderFile As IO.StreamWriter)
+        HeaderFile.WriteLine("  out GPU_SelectedRegion, Region" & R.Name)
+        HeaderFile.WriteLine("  out GPU_RegionMinX, " & R.Left)
+        HeaderFile.WriteLine("  out GPU_RegionMinY, " & R.Top)
+        HeaderFile.WriteLine("  out GPU_RegionMaxX, " & R.Right)
+        HeaderFile.WriteLine("  out GPU_RegionMaxY, " & R.Bottom)
+        HeaderFile.WriteLine("  out GPU_RegionHotspotX, " & R.HotspotX)
+        HeaderFile.WriteLine("  out GPU_RegionHotspotY, " & R.HotspotY)
+        HeaderFile.WriteLine()
+    End Sub
+
+    Public Sub ExportMatrixCodeASM(M As RegionMatrix, HeaderFile As IO.StreamWriter)
+        HeaderFile.WriteLine("  out GPU_SelectedRegion, FirstRegion" & M.FirstRegion.Name)
+        HeaderFile.WriteLine("  mov R0, " & M.FirstRegion.Left)
+        HeaderFile.WriteLine("  push R0")
+        HeaderFile.WriteLine("  mov R0, " & M.FirstRegion.Top)
+        HeaderFile.WriteLine("  push R0")
+        HeaderFile.WriteLine("  mov R0, " & M.FirstRegion.Right)
+        HeaderFile.WriteLine("  push R0")
+        HeaderFile.WriteLine("  mov R0, " & M.FirstRegion.Bottom)
+        HeaderFile.WriteLine("  push R0")
+        HeaderFile.WriteLine("  mov R0, " & M.FirstRegion.HotspotX)
+        HeaderFile.WriteLine("  push R0")
+        HeaderFile.WriteLine("  mov R0, " & M.FirstRegion.HotspotY)
+        HeaderFile.WriteLine("  push R0")
+        HeaderFile.WriteLine("  mov R0, " & M.Columns)
+        HeaderFile.WriteLine("  push R0")
+        HeaderFile.WriteLine("  mov R0, " & M.Rows)
+        HeaderFile.WriteLine("  push R0")
+        HeaderFile.WriteLine("  mov R0, " & M.Separation)
+        HeaderFile.WriteLine("  push R0")
+        HeaderFile.WriteLine("  call _define_region_matrix")
+        HeaderFile.WriteLine()
+    End Sub
+
+    Public Sub ExportASMHeader(FilePath As String)
+
+        ' write header beginning
+        Dim HeaderFile As New IO.StreamWriter(FilePath, False)
+        HeaderFile.WriteLine("; begin include guard")
+        HeaderFile.WriteLine("%ifndef TEXTUREREGIONS_" & TextureName.ToUpper)
+        HeaderFile.WriteLine("%define TEXTUREREGIONS_" & TextureName.ToUpper)
+
+        ' include matrix definition header only when needed
+        If (DefinedMatrices.Count > 0) Then
+            HeaderFile.WriteLine()
+            HeaderFile.WriteLine("; include header to define region matrices")
+            HeaderFile.WriteLine("%include ""DefineRegionMatrix.asm""")
+        End If
+
+        ' we will assign region IDs automatically
+        Dim CurrentID As Integer = 0
+
+        ' define the names of all regions
+        If Not DefinedRegions.Count = 0 Then
+
+            HeaderFile.WriteLine()
+            HeaderFile.WriteLine("; define names for single regions")
+
+            For Each R As Region In DefinedRegions
+                HeaderFile.WriteLine("%define Region" & R.Name & "  " & CurrentID)
+                CurrentID += 1
+            Next
+
+        End If
+
+        ' define the names of all matrices
+        If Not DefinedMatrices.Count = 0 Then
+
+            HeaderFile.WriteLine()
+            HeaderFile.WriteLine("; define names for first region in region matrices")
+
+            For Each M As RegionMatrix In DefinedMatrices
+                HeaderFile.WriteLine("%define FirstRegion" & M.FirstRegion.Name & "  " & CurrentID)
+                CurrentID += M.Columns * M.Rows
+            Next
+
+        End If
+
+        ' declare a function to define regions
+        HeaderFile.WriteLine()
+        HeaderFile.WriteLine("; your initialization code must call this subroutine")
+        HeaderFile.WriteLine("_define_regions_" & TextureName & ":")
+        HeaderFile.WriteLine("  ")
+        HeaderFile.WriteLine("  out GPU_SelectedTexture, " & TextureName)
+
+        ' export all single regions
+        If Not DefinedRegions.Count = 0 Then
+
+            HeaderFile.WriteLine()
+            HeaderFile.WriteLine("  ; ----------------------------------")
+            HeaderFile.WriteLine("  ; define single regions")
+            HeaderFile.WriteLine()
+
+            For Each R As Region In DefinedRegions
+                ExportRegionCodeASM(R, HeaderFile)
+            Next
+
+        End If
+
+        ' export all region matrices
+        If Not DefinedMatrices.Count = 0 Then
+
+            HeaderFile.WriteLine()
+            HeaderFile.WriteLine("  ; ----------------------------------")
+            HeaderFile.WriteLine("  ; define region matrices")
+            HeaderFile.WriteLine()
+
+            For Each M As RegionMatrix In DefinedMatrices
+                ExportMatrixCodeASM(M, HeaderFile)
+            Next
+
+        End If
+
+        ' finish subroutine
+        HeaderFile.WriteLine()
+        HeaderFile.WriteLine("  ; finished, go back")
+        HeaderFile.WriteLine("  ret")
+
+        ' write header end
+        HeaderFile.WriteLine()
+        HeaderFile.WriteLine("; end include guard")
+        HeaderFile.WriteLine("%endif")
         HeaderFile.Close()
 
     End Sub
