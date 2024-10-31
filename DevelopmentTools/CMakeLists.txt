@@ -284,6 +284,7 @@ set(C_COMPILER_SRC
     ${C_COMPILER_DIR}/CheckUnaryOperations.cpp
     ${C_COMPILER_DIR}/CompilerInfrastructure.cpp
     ${C_COMPILER_DIR}/DataTypes.cpp
+    ${C_COMPILER_DIR}/DebugInfo.cpp
     ${C_COMPILER_DIR}/EmitBinaryOperationNodes.cpp
     ${C_COMPILER_DIR}/EmitExpressionNodes.cpp
     ${C_COMPILER_DIR}/EmitNonExpressionNodes.cpp
@@ -309,6 +310,7 @@ set(C_COMPILER_SRC
 set(ASSEMBLER_SRC
     ${ASSEMBLER_DIR}/ASMEmitFunctions.cpp
     ${ASSEMBLER_DIR}/ASTNodes.cpp
+    ${ASSEMBLER_DIR}/DebugInfo.cpp
     ${ASSEMBLER_DIR}/Globals.cpp
     ${ASSEMBLER_DIR}/Main.cpp
     ${ASSEMBLER_DIR}/SourceLocation.cpp

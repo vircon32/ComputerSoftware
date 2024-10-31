@@ -16,10 +16,11 @@
 // =============================================================================
 
 
-// debug configuration
-bool Debug = false;
+// debug configuration (for the assembler itself)
+bool DebugMode = false;
 bool VerboseMode = false;
 
-// assembler configuration
+// assembler configuration (for the generated binary)
 string AssemblerFolder;
 int InitialROMAddress = Constants::CartridgeProgramROMFirstAddress;
+bool CreateDebugVersion = false;

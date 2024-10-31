@@ -13,13 +13,14 @@
 // =============================================================================
 
 
-// debug configuration
-extern bool Debug;
+// debug configuration (for the assembler itself)
+extern bool DebugMode;
 extern bool VerboseMode;
 
-// assembler configuration
+// assembler configuration (for the generated binary)
 extern std::string AssemblerFolder;
 extern int InitialROMAddress;
+extern bool CreateDebugVersion;
 
 
 // *****************************************************************************

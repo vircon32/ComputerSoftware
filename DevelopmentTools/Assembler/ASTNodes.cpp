@@ -32,11 +32,11 @@ string BasicValue::ToString()
         case BasicValueTypes::LiteralFloat:
             return "Float " + to_string(FloatField);
         case BasicValueTypes::CPURegister:
-            return "Hardware " + RegisterToString( RegisterField );
+            return "Register " + RegisterToString( RegisterField );
         case BasicValueTypes::IOPort:
             return "Port " + PortToString( PortField );
         case BasicValueTypes::IOPortValue:
-            return "Port value " + PortValueToString( PortValueField );
+            return "PortValue " + PortValueToString( PortValueField );
         default:  // label
             return "Label " + LabelField;
     }
@@ -123,7 +123,7 @@ int InstructionNode::SizeInWords()
 
 string IntegerDataNode::ToString()
 {
-    string Result = "Integer data:";
+    string Result = "IntegerData:";
     
     for( int32_t Value : Values )
       Result += " " + to_string( Value );
@@ -135,7 +135,7 @@ string IntegerDataNode::ToString()
 
 string FloatDataNode::ToString()
 {
-    string Result = "Float data:";
+    string Result = "FloatData:";
     
     for( float Value : Values )
       Result += " " + to_string( Value );
@@ -147,7 +147,7 @@ string FloatDataNode::ToString()
 
 string StringDataNode::ToString()
 {
-    string Result = "String data: \"" + Value + "\"";
+    string Result = "StringData: \"" + Value + "\"";
     return Result;
 }
 
@@ -155,7 +155,7 @@ string StringDataNode::ToString()
 
 string PointerDataNode::ToString()
 {
-    string Result = "Pointer data:";
+    string Result = "PointerData:";
     
     for( std::string LabelName : LabelNames )
       Result += " " + LabelName;
@@ -185,7 +185,7 @@ string LabelNode::ToString()
 
 string DataFileNode::ToString()
 {
-    string Result = "Data file: \"";
+    string Result = "DataFile: \"";
     Result += FilePath + "\"";
     return Result;
 }

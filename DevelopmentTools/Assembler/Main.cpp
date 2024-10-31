@@ -13,6 +13,7 @@
     #include "VirconASMParser.hpp"
     #include "VirconASMEmitter.hpp"
     #include "Globals.hpp"
+    #include "DebugInfo.hpp"
     
     // include C/C++ headers
     #include <fstream>      // [ C++ STL ] File streams
@@ -39,9 +40,11 @@ void PrintUsage()
     cout << "Options:" << endl;
     cout << "  --help       Displays this information" << endl;
     cout << "  --version    Displays program version" << endl;
+    cout << "  --debugmode  Creates files with results of internal stages" << endl;
     cout << "  -o <file>    Output file, default name is the same as input" << endl;
     cout << "  -b           Assembles the code as a BIOS" << endl;
     cout << "  -v           Displays additional information (verbose)" << endl;
+    cout << "  -g           Outputs an additional file with debug info" << endl;
     cout << "Also, the following options are accepted for compatibility" << endl;
     cout << "but have no effect: -s" << endl;
 }
@@ -116,6 +119,18 @@ int main( int NumberOfArguments, char* Arguments[] )
                 continue;
             }
             
+            if( Arguments[i] == string("-g") )
+            {
+                CreateDebugVersion = true;
+                continue;
+            }
+            
+            if( Arguments[i] == string("--debugmode") )
+            {
+                DebugMode = true;
+                continue;
+            }
+            
             if( Arguments[i] == string("-o") )
             {
                 // expect another argument
@@ -168,6 +183,10 @@ int main( int NumberOfArguments, char* Arguments[] )
               cout << "using output path: \"" << OutputPath << "\"" << endl;
         }
         
+        // report when we are creating a debug binary
+        if( VerboseMode && CreateDebugVersion )
+          cout << "assembler will output debug information of the binary" << endl;
+        
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
         // simple compilation checks to ensure correct ROM creation
@@ -195,29 +214,9 @@ int main( int NumberOfArguments, char* Arguments[] )
         VirconASMPreprocessor Preprocessor;
         Preprocessor.Preprocess( Lexer );
         
-        // DEBUG: log all tokens, with their line numbers
-        if( Debug )
-        {
-            // log to text file
-            ofstream TextFile;
-            TextFile.open( AssemblerFolder + "assemble-lexerlog.txt" );
-            
-            string PathContext = "";
-            
-            for( auto T : Preprocessor.ProcessedTokens )
-            {
-                if( T->Location.FilePath != PathContext )
-                {
-                    TextFile << endl << "File " + T->Location.FilePath + ":" << endl << endl;
-                    PathContext = T->Location.FilePath;
-                }
-                
-                TextFile << "[" + to_string( T->Location.Line ) + "] ";
-                TextFile << T->ToString() << endl;
-            }
-            
-            TextFile.close();
-        }
+        // when requested, log results of lexer + preprocessor stages
+        if( DebugMode )
+          SaveLexerLog( OutputPath + ".lexer.log", Preprocessor );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STAGE 3: Run parser
@@ -228,10 +227,9 @@ int main( int NumberOfArguments, char* Arguments[] )
         VirconASMParser Parser;
         Parser.ParseTopLevel( Preprocessor.ProcessedTokens );
         
-        // DEBUG: log full AST
-        if( Debug )
-          for( ASTNode* Node: Parser.ProgramAST )
-            cout << Node->ToString() << endl;
+        // when requested, log results of parser stage
+        if( DebugMode )
+          SaveParserLog( OutputPath + ".parser.log", Parser );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STAGE 4: Run emitter
@@ -242,15 +240,9 @@ int main( int NumberOfArguments, char* Arguments[] )
         VirconASMEmitter Emitter;
         Emitter.Emit( Parser.ProgramAST );
         
-        // DEBUG: log all label addresses
-        if( Debug )
-          for( auto Pair : Emitter.LabelAddresses )
-            cout << Pair.first << " -> " << Hex( Pair.second, 4 ) << endl;
-        
-        // DEBUG: log all node addresses
-        if( Debug )
-          for( ASTNode* Node: Parser.ProgramAST )
-            cout << (Node->AddressInROM - InitialROMAddress) << ": " << Node->ToString() << endl;
+        // when requested, log results of emitter stage
+        if( DebugMode )
+          SaveEmitterLog( OutputPath + ".emitter.log", Parser );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // open output file, in binary!
@@ -286,6 +278,11 @@ int main( int NumberOfArguments, char* Arguments[] )
         // finally, report size of the produced ROM
         if( VerboseMode )
           cout << "output file created, size: " << ROMSizeInWords << " dwords = " << ROMSizeInBytes << " bytes" << endl;
+        
+        // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        // on debug assembly output an additional debug info file
+        if( CreateDebugVersion )
+          SaveDebugInfoFile( OutputPath + ".debug", Parser, Emitter );
     }
     
     catch( const exception& e )
