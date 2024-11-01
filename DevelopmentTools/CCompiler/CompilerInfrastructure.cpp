@@ -34,9 +34,14 @@ string EscapeXML( const string& Unescaped )
 {
     string Escaped = Unescaped;
     
+    // replace ampersand before anything else,
+    // since other escape sequences will add
+    // extra ampersands that we shouldn't escape
+    ReplaceSubstring( Escaped, "&", "&amp;" );
     ReplaceSubstring( Escaped, "<", "&lt;" );
-    ReplaceSubstring( Escaped, "\"", "&quote;" );
+    ReplaceSubstring( Escaped, ">", "&gt;" );
     ReplaceSubstring( Escaped, "'", "&apos;" );
+    ReplaceSubstring( Escaped, "\"", "&quot;" );
     return Escaped;
 }
 
@@ -64,19 +69,46 @@ void ReplaceSubstring( string& Text, const string& OldSubstring, const string& N
 
 // -----------------------------------------------------------------------------
 
+string EscapeCCharacter( char c )
+{
+    // in our tools, non standard ASCII characters
+    // should always be expressed numerically
+    if( c & 0x80 )
+    {
+        static string HexChars = "0123456789ABCDEF";
+        unsigned char uc = *((unsigned char*)&c);
+        string Escaped = "\\x";
+        Escaped += HexChars[ uc >> 4 ];
+        Escaped += HexChars[ uc & 0xF ];
+        return Escaped;
+    }
+    
+    // the null character will always need to
+    // be escaped, or the string may be incorrect
+    if( !c ) return "\\x00";
+    
+    // our supported escape sequences
+    switch( c )
+    {
+        case '\\': return "\\\\";
+        case '\"': return "\\\"";
+        case '\'': return "\\'";
+        case '\n': return "\\n";
+        case '\r': return "\\r";
+        case '\t': return "\\t";
+        default: return string{ c };
+    }
+}
+
+// -----------------------------------------------------------------------------
+
 // produces a new string, instead of modifying the original
 string EscapeCString( const string& Text )
 {
-    string Escaped = Text;
+    string Escaped;
     
-    // since '\' is the escape character, we will
-    // insert extra ones. So escape it before the
-    // others to avoid incorrect duplication
-    ReplaceSubstring( Escaped, "\\", "\\\\" );
-    ReplaceSubstring( Escaped, "\"", "\\\"" );
-    ReplaceSubstring( Escaped, "\n", "\\n" );
-    ReplaceSubstring( Escaped, "\r", "\\r" );
-    ReplaceSubstring( Escaped, "\t", "\\t" );
+    for( char c : Text )
+      Escaped += EscapeCCharacter( c );
     
     return Escaped;
 }

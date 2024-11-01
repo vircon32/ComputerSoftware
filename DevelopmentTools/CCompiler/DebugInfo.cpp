@@ -13,7 +13,6 @@
     
     // declare used namespaces
     using namespace std;
-    using namespace V32;
 // *****************************************************************************
 
 
@@ -85,7 +84,7 @@ void SaveParserLog( const string& FilePath, const VirconCParser& Parser )
       throw runtime_error( "cannot open parser log file \"" + FilePath + "\"" );
     
     // log full AST tree in XML format
-    LogFile << "<?xml version=\"1.0\"?>" << endl;
+    LogFile << "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>" << endl;
     LogFile << Parser.ProgramAST->ToXML();
     
     LogFile.close();

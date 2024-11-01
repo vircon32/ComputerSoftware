@@ -24,6 +24,7 @@ void ReplaceCharacter( std::string& Text, char OldChar, char NewChar );
 void ReplaceSubstring( std::string& Text, const std::string& OldSubstring, const std::string& NewSubstring );
 
 // this produces a copy, not altering the original
+std::string EscapeCCharacter( char c );
 std::string EscapeCString( const std::string& Text );
 
 
