@@ -14,6 +14,7 @@
     #include "VirconCEmitter.hpp"
     #include "CompilerInfrastructure.hpp"
     #include "Globals.hpp"
+    #include "DebugInfo.hpp"
     
     // include C/C++ headers
     #include <string>           // [ C++ STL ] Strings
@@ -41,9 +42,11 @@ void PrintUsage()
     cout << "Options:" << endl;
     cout << "  --help       Displays this information" << endl;
     cout << "  --version    Displays compiler version" << endl;
+    cout << "  --debugmode  Creates files with results of internal stages" << endl;
     cout << "  -o <file>    Output file, default name is the same as input" << endl;
     cout << "  -b           Compiles the program as a BIOS" << endl;
     cout << "  -v           Displays additional information (verbose)" << endl;
+    cout << "  -g           Outputs an additional file with debug info" << endl;
     cout << "  -w           Inhibit all warnings" << endl;
     cout << "  -Wall        Enable all warnings" << endl;
     cout << "Also, the following options are accepted for compatibility" << endl;
@@ -145,6 +148,18 @@ int main( int NumberOfArguments, char* Arguments[] )
                 continue;
             }
             
+            if( Arguments[i] == string("-g") )
+            {
+                CreateDebugVersion = true;
+                continue;
+            }
+            
+            if( Arguments[i] == string("--debugmode") )
+            {
+                DebugMode = true;
+                continue;
+            }
+            
             if( Arguments[i] == string("-o") )
             {
                 // expect another argument
@@ -220,29 +235,9 @@ int main( int NumberOfArguments, char* Arguments[] )
         VirconCPreprocessor Preprocessor;
         Preprocessor.Preprocess( Lexer );
         
-        // LEXER DEBUG: log all tokens, with their line numbers
-        if( Debug )
-        {
-            // log to text file
-            ofstream TextFile;
-            TextFile.open( CompilerFolder + "compile-lexerlog.txt" );
-            
-            string PathContext = "";
-            
-            for( auto T : Preprocessor.ProcessedTokens )
-            {
-                if( T->Location.FilePath != PathContext )
-                {
-                    TextFile << endl << "File " + T->Location.FilePath + ":" << endl << endl;
-                    PathContext = T->Location.FilePath;
-                }
-                
-                TextFile << "[" + to_string( T->Location.Line ) + "] ";
-                TextFile << T->ToString() << endl;
-            }
-            
-            TextFile.close();
-        }
+        // when requested, log results of lexer + preprocessor stages
+        if( DebugMode )
+          SaveLexerLog( OutputPath + ".lexer.log", Preprocessor );
         
         // avoid later stages if any error was found
         if( CompilationErrors != 0 )
@@ -257,16 +252,9 @@ int main( int NumberOfArguments, char* Arguments[] )
         VirconCParser Parser;
         Parser.ParseTopLevel( Preprocessor.ProcessedTokens );
         
-        // PARSER DEBUG: log full AST
-        if( Debug )
-        {
-            // log to XML file
-            ofstream XMLFile;
-            XMLFile.open( CompilerFolder + "compile-parserlog.xml" );
-            XMLFile << "<?xml version=\"1.0\"?>" << endl;
-            XMLFile << Parser.ProgramAST->ToXML();
-            XMLFile.close();
-        }
+        // when requested, log results of parser stage
+        if( DebugMode )
+          SaveParserLog( OutputPath + ".parser.log", Parser );
         
         // avoid later stages if any error was found
         if( CompilationErrors != 0 )
@@ -298,11 +286,16 @@ int main( int NumberOfArguments, char* Arguments[] )
         if( CompilationErrors != 0 )
           throw runtime_error( "emitter finished with errors" );
         
-        // no need for debug here (result is final)
+        // no need for debug output here (result is final)
         if( VerboseMode )
           cout << "saving output file" << endl;
-          
+        
         Emitter.SaveAssembly( OutputPath );
+        
+        // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        // on debug compilation output an additional debug info file
+        if( CreateDebugVersion )
+          SaveDebugInfoFile( OutputPath + ".debug", Parser, Emitter );
     }
     
     catch( const exception& e )

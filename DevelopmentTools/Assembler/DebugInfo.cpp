@@ -29,7 +29,7 @@ void SaveDebugInfoFile( const string& FilePath, const VirconASMParser& Parser, c
     
     // open output file,
     ofstream DebugInfoFile;
-    DebugInfoFile.open( FilePath, ios_base::out );
+    DebugInfoFile.open( FilePath );
     
     if( DebugInfoFile.fail() )
       throw runtime_error( "cannot open debug info file \"" + FilePath + "\"" );
@@ -76,6 +76,7 @@ void SaveLexerLog( const string& FilePath, const VirconASMPreprocessor& Preproce
     if( LogFile.fail() )
       throw runtime_error( "cannot open lexer log file \"" + FilePath + "\"" );
     
+    // log all tokens, with their line numbers
     string PathContext = "";
     
     for( auto T : Preprocessor.ProcessedTokens )
@@ -106,6 +107,7 @@ void SaveParserLog( const string& FilePath, const VirconASMParser& Parser )
     if( LogFile.fail() )
       throw runtime_error( "cannot open parser log file \"" + FilePath + "\"" );
     
+    // log full AST tree
     for( ASTNode* Node: Parser.ProgramAST )
       LogFile << Node->ToString() << endl;
     

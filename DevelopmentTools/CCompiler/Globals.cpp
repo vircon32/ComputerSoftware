@@ -23,5 +23,9 @@ bool EnableAllWarnings = false;
 // =============================================================================
 
 
-bool Debug = true;
+// debug configuration for the compiler itself
+bool DebugMode = false;
 bool VerboseMode = false;
+
+// debug configuration for the generated binary
+bool CreateDebugVersion = false;

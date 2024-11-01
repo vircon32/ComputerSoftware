@@ -24,8 +24,13 @@ extern bool EnableAllWarnings;
 // =============================================================================
 
 
-extern bool Debug;
+// debug configuration for the compiler itself
+extern bool DebugMode;
 extern bool VerboseMode;
+
+// debug configuration for the generated binary
+extern bool CreateDebugVersion;
+
 
 
 // *****************************************************************************
