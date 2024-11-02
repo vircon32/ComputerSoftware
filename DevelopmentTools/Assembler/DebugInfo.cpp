@@ -9,11 +9,54 @@
     
     // include C/C++ headers
     #include <fstream>      // [ C++ STL ] File streams
+    #include <algorithm>    // [ C++ STL ] Algorithms
     #include <cstring>      // [ ANSI C ] Strings
     
     // declare used namespaces
     using namespace std;
 // *****************************************************************************
+
+
+// =============================================================================
+//      AUXILIARY FUNCTIONS FOR BETTER PATH OUTPUT
+// =============================================================================
+
+
+// this replaces ALL occurences, in place
+void ReplaceCharacter( string& Text, char OldChar, char NewChar )
+{
+    replace( Text.begin(), Text.end(), OldChar, NewChar );
+}
+
+// -----------------------------------------------------------------------------
+
+// this replaces ALL occurences, in place
+void ReplaceSubstring( string& Text, const string& OldSubstring, const string& NewSubstring )
+{
+    size_t Position = 0;
+    
+    while( (Position = Text.find( OldSubstring, Position )) != string::npos )
+    {
+        Text.replace( Position, OldSubstring.length(), NewSubstring );
+        Position += NewSubstring.length();
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+// auxiliary function for better path output
+string NormalizePath( const string& Path )
+{
+    string Result = Path;
+    ReplaceCharacter( Result, '\\', '/' );
+    ReplaceSubstring( Result, "//", "/" );
+    
+    // if needed remove ./ from the start
+    if( Result[ 0 ] == '.' && Result[ 1 ] == '/' )
+      Result = Result.substr( 2 );
+    
+    return Result;
+}
 
 
 // =============================================================================
@@ -41,7 +84,7 @@ void SaveDebugInfoFile( const string& FilePath, const VirconASMParser& Parser, c
           continue;
         
         DebugInfoFile << Hex( Node->AddressInROM, 8 );
-        DebugInfoFile << "," << Node->Location.FilePath;
+        DebugInfoFile << "," << NormalizePath( Node->Location.FilePath );
         DebugInfoFile << "," << Node->Location.Line;
         
         // check if this line corresponds to a label;

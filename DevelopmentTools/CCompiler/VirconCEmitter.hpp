@@ -27,7 +27,14 @@ class VirconCEmitter
         std::vector< std::string > ProgramLines;
         std::vector< std::string > DataLines;
         
+        // debug info: C->ASM line correspondence
+        std::map< int, CNode* > LineMapping;
+        
     public:
+        
+        // called when emitting ASM to keep track of
+        // C -> ASM line correspondence (for debug info)
+        void AddDebugInfo( CNode* Node );
         
         // emit functions for abstract node types
         int EmitCNode( CNode* Node );

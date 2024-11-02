@@ -12,7 +12,7 @@
 
 
 // save debug info for the program
-void SaveDebugInfoFile( const std::string& FilePath, const VirconCParser& Parser, const VirconCEmitter& Emitter );
+void SaveDebugInfoFile( const std::string& FilePath, const std::string& ASMFilePath, const VirconCParser& Parser, const VirconCEmitter& Emitter );
 
 // save debug logs for the internal stages of the compiler itself
 void SaveLexerLog( const std::string& FilePath, const VirconCPreprocessor& Preprocessor );

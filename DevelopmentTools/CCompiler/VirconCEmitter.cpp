@@ -31,6 +31,33 @@ VirconCEmitter::~VirconCEmitter()
 
 
 // =============================================================================
+//      VIRCON C EMITTER: HANDLE LINE MAPPING FOR DEBUG
+// =============================================================================
+
+
+void VirconCEmitter::AddDebugInfo( CNode* Node )
+{
+    // avoid mapping nodes with no actual associated code
+    if( Node->IsPartialDefinition() )
+      return;
+    
+    // add each C source line to the list only once
+    if( !LineMapping.empty() )
+    {
+        SourceLocation LastLocation = LineMapping.rbegin()->second->Location;
+        
+        if( AreInSameLine( Node->Location, LastLocation ) )
+          return;
+    }
+    
+    // careful, we need to add 2 because:
+    // 1) we are referring to the next line we'll add
+    // 2) file lines start from 1, not 0
+    LineMapping[ ProgramLines.size() + 2 ] = Node;
+}
+
+
+// =============================================================================
 //      VIRCON C EMITTER: EMIT FUNCTIONS FOR ABSTRACT NODE TYPES
 // =============================================================================
 
@@ -109,6 +136,9 @@ int VirconCEmitter::EmitCNode( CNode* Node )
 // expression tree, so that a new register allocation is started
 int VirconCEmitter::EmitRootExpression( ExpressionNode* Expression )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( Expression );
+    
     // some contructs have optional parts!
     // nothing to do if they are not used
     if( !Expression ) return 0;
@@ -143,6 +173,9 @@ int VirconCEmitter::EmitRootExpression( ExpressionNode* Expression )
 // into account previously used registers in the tree evaluation 
 void VirconCEmitter::EmitDependentExpression( ExpressionNode* Expression, RegisterAllocation& Registers, int ResultRegister )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( Expression );
+    
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // SPECIAL CASE: Arrays are emitted as their placement (array decay into pointer)
     // This only happens when the array is not used inside other expressions

@@ -471,7 +471,7 @@ void VirconCEmitter::EmitLiteralString( LiteralStringNode* LiteralString, Regist
 }
 
 // -----------------------------------------------------------------------------
-#include <iostream>
+
 void VirconCEmitter::EmitTypeConversion( TypeConversionNode* TypeConversion, RegisterAllocation& Registers, int ResultRegister )
 {
     // first emit the converted expression

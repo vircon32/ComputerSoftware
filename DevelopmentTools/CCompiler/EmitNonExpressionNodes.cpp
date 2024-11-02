@@ -20,6 +20,9 @@
 
 int VirconCEmitter::EmitVariableList( VariableListNode* VariableList )
 {
+    // don't add any debug info
+    // (only variable initializations have actual code)
+    
     int HighestRegister = 0;
     
     // just emit every listed variable
@@ -33,6 +36,9 @@ int VirconCEmitter::EmitVariableList( VariableListNode* VariableList )
 
 int VirconCEmitter::EmitVariable( VariableNode* Variable )
 {
+    // don't add any debug info
+    // (only variable initializations have actual code)
+    
     // embedded variables don't need emission
     if( Variable->Placement.IsEmbedded )
       return 0;
@@ -90,6 +96,9 @@ int VirconCEmitter::EmitFunction( FunctionNode* Function )
     // emit only if it is a full definition
     if( !Function->HasBody )
       return 0;
+    
+    // add info to determine line correspondence
+    AddDebugInfo( Function );
     
     // build labels
     string FunctionLabel = "__function_" + Function->Name;
@@ -216,6 +225,9 @@ int VirconCEmitter::EmitEmbeddedFile( EmbeddedFileNode* EmbeddedFile )
 
 int VirconCEmitter::EmitInitialization( MemoryPlacement LeftPlacement, DataType* LeftType, CNode* InitialValue )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( InitialValue );
+    
     // CASE 1: For a string, if the variable is an array, 
     // interpret the assignment as a char-by-char assignment
     if( InitialValue->Type() == CNodeTypes::LiteralString
@@ -405,6 +417,9 @@ int VirconCEmitter::EmitStructureInitialization( MemoryPlacement LeftPlacement, 
 
 int VirconCEmitter::EmitIf( IfNode* If )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( If );
+    
     int HighestRegister = 0;
     
     string StartLabel = If->NodeLabel() + "_start";
@@ -459,6 +474,9 @@ int VirconCEmitter::EmitIf( IfNode* If )
 
 int VirconCEmitter::EmitWhile( WhileNode* While )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( While );
+    
     int HighestRegister = 0;
     
     // make labels
@@ -496,6 +514,9 @@ int VirconCEmitter::EmitWhile( WhileNode* While )
 
 int VirconCEmitter::EmitDo( DoNode* Do )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( Do );
+    
     int HighestRegister = 0;
     
     // make labels
@@ -533,6 +554,9 @@ int VirconCEmitter::EmitDo( DoNode* Do )
 
 int VirconCEmitter::EmitFor( ForNode* For )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( For );
+    
     int HighestRegister = 0;
     
     // before using this scope, we need to determine the
@@ -589,6 +613,9 @@ int VirconCEmitter::EmitFor( ForNode* For )
 
 int VirconCEmitter::EmitReturn( ReturnNode* Return )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( Return );
+    
     int HighestRegister = 0;
     
     // emit the expression evaluation
@@ -629,6 +656,9 @@ int VirconCEmitter::EmitReturn( ReturnNode* Return )
 
 int VirconCEmitter::EmitBreak( BreakNode* Break )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( Break );
+    
     // check that there is a loop context
     if( !Break->Context )
       RaiseFatalError( Break->Location, "loop or switch context has not been resolved for \"break\"" );
@@ -643,6 +673,9 @@ int VirconCEmitter::EmitBreak( BreakNode* Break )
 
 int VirconCEmitter::EmitContinue( ContinueNode* Continue )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( Continue );
+    
     // check that there is a loop context
     if( !Continue->LoopContext )
       RaiseFatalError( Continue->Location, "loop context has not been resolved for \"continue\"" );
@@ -657,6 +690,9 @@ int VirconCEmitter::EmitContinue( ContinueNode* Continue )
 
 int VirconCEmitter::EmitSwitch( SwitchNode* Switch )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( Switch );
+    
     // case emission will already use R0 and R1
     int HighestRegister = 1;
     
@@ -715,6 +751,9 @@ int VirconCEmitter::EmitSwitch( SwitchNode* Switch )
 
 int VirconCEmitter::EmitCase( CaseNode* Case )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( Case );
+    
     // check that there is a switch context
     if( !Case->SwitchContext )
       RaiseFatalError( Case->Location, "switch context has not been resolved for \"case\"" );
@@ -732,6 +771,9 @@ int VirconCEmitter::EmitCase( CaseNode* Case )
 
 int VirconCEmitter::EmitDefault( DefaultNode* Default )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( Default );
+    
     // check that there is a switch context
     if( !Default->SwitchContext )
       RaiseFatalError( Default->Location, "switch context has not been resolved for \"default\"" );
@@ -746,6 +788,9 @@ int VirconCEmitter::EmitDefault( DefaultNode* Default )
 
 int VirconCEmitter::EmitLabel( LabelNode* Label )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( Label );
+    
     EmitLabel( Label->NodeLabel() + "_" + Label->Name );
     return 0;
 }
@@ -754,6 +799,9 @@ int VirconCEmitter::EmitLabel( LabelNode* Label )
 
 int VirconCEmitter::EmitGoto( GotoNode* Goto )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( Goto );
+    
     // check that there is a target label
     if( !Goto->TargetLabel )
       RaiseFatalError( Goto->Location, "target label has not been resolved for \"goto\"" );
@@ -767,6 +815,9 @@ int VirconCEmitter::EmitGoto( GotoNode* Goto )
 
 int VirconCEmitter::EmitBlock( BlockNode* Block )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( Block );
+    
     int HighestRegister = 0;
     
     // before using this scope, we need to determine the
@@ -786,6 +837,9 @@ int VirconCEmitter::EmitBlock( BlockNode* Block )
 
 int VirconCEmitter::EmitAssemblyBlock( AssemblyBlockNode* AssemblyBlock )
 {
+    // add info to determine line correspondence
+    AddDebugInfo( AssemblyBlock );
+    
     for( auto AssemblyLine: AssemblyBlock->AssemblyLines )
     {
         // lines not containing variables are emitted verbatim

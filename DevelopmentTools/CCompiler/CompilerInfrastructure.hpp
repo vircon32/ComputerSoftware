@@ -5,6 +5,7 @@
     
     // include project headers
     #include "SourceLocation.hpp"
+    #include "CTokens.hpp"
     
     // include C/C++ headers
     #include <string>           // [ C++ STL ] Strings

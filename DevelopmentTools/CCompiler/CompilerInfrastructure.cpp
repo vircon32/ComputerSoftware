@@ -11,7 +11,7 @@
     #include <iostream>     // [ C++ STL ] I/O Streams
     #include <fstream>      // [ C++ STL ] File streams
     #include <map>          // [ C++ STL ] Maps
-    #include <algorithm>    // [ C++ STL ] Algorithm
+    #include <algorithm>    // [ C++ STL ] Algorithms
     
     // declare used namespaces
     using namespace std;

@@ -4,6 +4,7 @@
     #include "../DevToolsInfrastructure/StringFunctions.hpp"
     
     // include project headers
+    #include "CompilerInfrastructure.hpp"
     #include "Globals.hpp"
     #include "DebugInfo.hpp"
     
@@ -21,7 +22,23 @@
 // =============================================================================
 
 
-void SaveDebugInfoFile( const string& FilePath, const VirconCParser& Parser, const VirconCEmitter& Emitter )
+// auxiliary function for better path output
+string NormalizePath( const string& Path )
+{
+    string Result = Path;
+    ReplaceCharacter( Result, '\\', '/' );
+    ReplaceSubstring( Result, "//", "/" );
+    
+    // if needed remove ./ from the start
+    if( Result[ 0 ] == '.' && Result[ 1 ] == '/' )
+      Result = Result.substr( 2 );
+    
+    return Result;
+}
+
+// -----------------------------------------------------------------------------
+
+void SaveDebugInfoFile( const string& FilePath, const string& ASMFilePath, const VirconCParser& Parser, const VirconCEmitter& Emitter )
 {
     if( VerboseMode )
       cout << "saving debug info file" << endl;
@@ -33,7 +50,26 @@ void SaveDebugInfoFile( const string& FilePath, const VirconCParser& Parser, con
     if( DebugInfoFile.fail() )
       throw runtime_error( "cannot open debug info file \"" + FilePath + "\"" );
     
-    // PENDING
+    string NormalizedASMPath = NormalizePath( ASMFilePath );
+    
+    // add all ASM->C line mappings
+    for( auto& MapPair : Emitter.LineMapping )
+    {
+        DebugInfoFile << NormalizedASMPath;
+        DebugInfoFile << "," << MapPair.first;
+        DebugInfoFile << "," << NormalizePath( MapPair.second->Location.FilePath );
+        DebugInfoFile << "," << MapPair.second->Location.Line;
+        
+        // check if this line corresponds to a function;
+        // in that case add its name as a 4th column
+        if( MapPair.second->Type() == CNodeTypes::Function )
+        {
+            FunctionNode* Function = (FunctionNode*)MapPair.second;
+            DebugInfoFile << "," << Function->Name;
+        }
+        
+        DebugInfoFile << endl;
+    }
     
     // close output
     DebugInfoFile.close();

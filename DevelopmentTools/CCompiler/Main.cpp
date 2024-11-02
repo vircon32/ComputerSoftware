@@ -295,7 +295,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // on debug compilation output an additional debug info file
         if( CreateDebugVersion )
-          SaveDebugInfoFile( OutputPath + ".debug", Parser, Emitter );
+          SaveDebugInfoFile( OutputPath + ".debug", OutputPath, Parser, Emitter );
     }
     
     catch( const exception& e )
