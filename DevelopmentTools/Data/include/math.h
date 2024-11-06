@@ -1,5 +1,5 @@
 /* *****************************************************************************
-*  Vircon32 standard library: "math.h"            File version: 2021/02/18     *
+*  Vircon32 standard library: "math.h"            File version: 2024/11/06     *
 *  --------------------------------------------------------------------------- *
 *  This header is part of the Vircon32 C programming tools                     *
 *  --------------------------------------------------------------------------- *
@@ -251,15 +251,15 @@ float acos( float x )
 // -----------------------------------------------------------------------------
 
 // result angle is returned in radians
-// not defined if x = 0 and y = 0
+// not defined if y = 0 and x = 0
 // (will trigger a hardware error)
-float atan2( float x, float y )
+float atan2( float y, float x )
 {
     asm
     {
         "push R1"
-        "mov R0, {x}"
-        "mov R1, {y}"
+        "mov R0, {y}"
+        "mov R1, {x}"
         "atan2 R0, R1"
         "pop R1"
     }
