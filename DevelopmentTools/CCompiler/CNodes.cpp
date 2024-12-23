@@ -235,7 +235,7 @@ void ScopeNode::DeclareNewIdentifier( string Name, CNode* NewDeclaration )
     if( OldDeclaration == NewDeclaration )
       return;
     
-    // redeclarations need to be the same type
+    // redeclarations need to be the same type of node
     if( NewDeclaration->Type() != OldDeclaration->Type() )
     {
         RaiseError( NewDeclaration->Location, "identifier \"" + Name + "\" was already used for a different declaration" );
@@ -253,6 +253,19 @@ void ScopeNode::DeclareNewIdentifier( string Name, CNode* NewDeclaration )
         {
             RaiseError( NewDeclaration->Location, "identifier \"" + Name + "\" was already declared" );
             RaiseFatalError( Pair->second->Location, "previously declared here, with a different prototype" );
+        }
+    }
+    
+    // for variable declarations we require that their types match
+    if( NewDeclaration->Type() == CNodeTypes::Variable )
+    {
+        VariableNode* OldVariable = (VariableNode*)OldDeclaration;
+        VariableNode* NewVariable = (VariableNode*)NewDeclaration;
+        
+        if( !AreEqual( OldVariable->DeclaredType, NewVariable->DeclaredType ) )
+        {
+            RaiseError( NewDeclaration->Location, "variable \"" + Name + "\" was already declared with a different type" );
+            RaiseFatalError( Pair->second->Location, "previously declared here" );
         }
     }
     
