@@ -1,10 +1,9 @@
 #--------------------------------------
 # Local build folders
 #--------------------------------------
-build
-Build
-bin
-obj
+[Bb]uild
+[Bb]in
+[Oo]bj
 Binaries
 Objects
 
@@ -34,6 +33,7 @@ compile-parserlog.xml
 *.suo
 *.vbproj.user
 *.layout
+.vs/
 
 #--------------------------------------
 # Provisional files/folders
