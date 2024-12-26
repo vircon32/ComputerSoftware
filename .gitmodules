@@ -1,3 +1,0 @@
-[submodule "DesktopEmulator/ExternalLibraries/SDL"]
-	path = DesktopEmulator/ExternalLibraries/SDL
-	url = https://github.com/libsdl-org/SDL/
