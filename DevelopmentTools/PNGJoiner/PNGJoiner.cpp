@@ -13,6 +13,7 @@
     #include <iostream>     // [ C++ STL ] I/O Streams
     #include <string>       // [ C++ STL ] Strings
     #include <stdexcept>    // [ C++ STL ] Exceptions
+    #include <string.h>     // [ ANSI C ] Strings
     
     // declare used namespaces
     using namespace std;
@@ -27,20 +28,27 @@
 void PrintUsage()
 {
     cout << "USAGE: joinpngs [options] inputfolder outputfile" << endl;
-    cout << "InputFolder: Path to a folder containing all input PNG images to join:" << endl;
+    cout << "InputFolder: Path to a folder containing all input PNG images to join" << endl;
     cout << "OutputFile: Path for the resulting joined PNG image" << endl;
+    cout << "(a region editor XML will be generated with the same name)" << endl;
     cout << "Options:" << endl;
     cout << "  --help       Displays this information" << endl;
     cout << "  --version    Displays program version" << endl;
-    cout << "  -g <gap>     Separation between joined images, in pixels (default: 0)" << endl;
+    cout << "  -g <gap>     Separation between joined images, in pixels (default: 1)" << endl;
+    cout << "  -hx <where>  Hotspot xs in XML: left/center/right (detault:left)" << endl;
+    cout << "  -hy <where>  Hotspot ys in XML: top/center/bottom (detault:top)" << endl;
     cout << "  -v           Displays additional information (verbose)" << endl;
+    cout << endl;
+    cout << "Images will be interpreted as matrices if their file name follows the" << endl;
+    cout << "pattern 'name_columns_rows_gap.png'. For instance, a file with name" << endl;
+    cout << "walk_4_2_1.png is taken as a grid of 4x2 images separated by 1 pixel." << endl;
 }
 
 // -----------------------------------------------------------------------------
 
 void PrintVersion()
 {
-    cout << "joinpngs v24.11.4" << endl;
+    cout << "joinpngs v24.12.29" << endl;
     cout << "Vircon32 PNG image joiner by Javier Carracedo" << endl;
 }
 
@@ -106,6 +114,46 @@ int main( int NumberOfArguments, char* Arguments[] )
                 continue;
             }
             
+            if( Arguments[i] == string("-hx") )
+            {
+                // expect another argument
+                i++;
+                
+                if( i >= NumberOfArguments )
+                  throw runtime_error( "missing hotspot position after '-hx'" );
+                
+                // read position value
+                if( !strcmp( Arguments[ i ], "left" ) )
+                  HotspotProportionX = 0;
+                else if( !strcmp( Arguments[ i ], "center" ) )
+                  HotspotProportionX = 0.5;
+                else if( !strcmp( Arguments[ i ], "right" ) )
+                  HotspotProportionX = 1;
+                else throw runtime_error( "invalid X hotspot position (must be left, center or right)" );
+                
+                continue;
+            }
+            
+            if( Arguments[i] == string("-hy") )
+            {
+                // expect another argument
+                i++;
+                
+                if( i >= NumberOfArguments )
+                  throw runtime_error( "missing hotspot position after '-hy'" );
+                
+                // read position value
+                if( !strcmp( Arguments[ i ], "top" ) )
+                  HotspotProportionY = 0;
+                else if( !strcmp( Arguments[ i ], "center" ) )
+                  HotspotProportionY = 0.5;
+                else if( !strcmp( Arguments[ i ], "bottom" ) )
+                  HotspotProportionY = 1;
+                else throw runtime_error( "invalid Y hotspot position (must be top, center or bottom)" );
+                
+                continue;
+            }
+            
             // discard any other parameters starting with '-'
             if( Arguments[i][0] == '-' )
               throw runtime_error( string("unrecognized command line option '") + Arguments[i] + "'" );
@@ -114,6 +162,12 @@ int main( int NumberOfArguments, char* Arguments[] )
             if( InputFolder.empty() )
             {
                 InputFolder = Arguments[i];
+            }
+           
+            // second non-option parameter is taken as the output file
+            else if( OutputFile.empty() )
+            {
+                OutputFile = Arguments[i];
             }
             
             // only a single input file is supported!
@@ -134,10 +188,13 @@ int main( int NumberOfArguments, char* Arguments[] )
         if( !filesystem::is_directory( InputPath ) )
           throw runtime_error( "input path is a file, expected a folder" );
         
-        // check if an output file was given
+        // check if an output file was given and is not a folder
         if( OutputFile.empty() )
           throw runtime_error( "no output file" );
         
+        if( filesystem::is_directory( OutputFile ) )
+          throw runtime_error( "input path must be a file, found a folder" );
+      
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 1: Scan folder and load all PNG images
         
@@ -147,8 +204,10 @@ int main( int NumberOfArguments, char* Arguments[] )
         for( auto const& DirEntry : std::filesystem::directory_iterator{ InputPath } )
         {
             // discard symlinks, non-files, etc.
-            //
+            if( DirEntry.is_directory() || DirEntry.is_symlink() || !DirEntry.is_regular_file() )
+              continue;
             
+            // load PNG images
             if( ToLowerCase( DirEntry.path().extension().string() ) == ".png" )
             {
                 LoadedImages.emplace_back();
@@ -159,33 +218,53 @@ int main( int NumberOfArguments, char* Arguments[] )
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 2: Run the joining algorithm
         
-        // first sort all images
-        LoadedImages.sort();
+        if( VerboseMode )
+          cout << "running the join algorithm" << endl;
         
-        // initialize tree root
-        //
+        // assign region IDs for all images, in initial order
+        AssignRegionIDs( LoadedImages );
         
-        // run the algorithm
-        //
+        // run the algorithm to place all images
+        PlaceAllImages();
+        
+        /*
+        for( auto& Image: LoadedImages )
+        {
+            cout << Image.Name << ": ID " << Image.FirstTileID <<
+            " (" << Image.Width << "x" << Image.Height << " px)" <<
+            " [" << Image.TilesX << "x" << Image.TilesY << "]" << endl;
+        }
+        */
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 3: Save the joined PNG file
         
         if( VerboseMode )
-          cout << "saving output file \"" << OutputFile << "\"" << endl;
+          cout << "saving output PNG file \"" << OutputFile << "\"" << endl;
+        
+        /*
+        for( auto& Image: LoadedImages )
+            Image.SaveToFile(InputFolder + "/out/" + Image.Name + ".png");
+        */
+        
+        // create an empty image to hold all subimages
+        int MaxUsedX, MaxUsedY;
+        TextureRectangle.GetContentsLimit( MaxUsedX, MaxUsedY );
         
         PNGImage TextureImage;
-        // ...
+        TextureImage.CreateEmpty( MaxUsedX+1, MaxUsedY+1 );
+        
+        // copy all subimages into the output image and save it
+        CreateOutputImage( TextureImage, TextureRectangle );
         TextureImage.SaveToFile( OutputFile );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        // STEP 4: Create C header and source for the texture
+        // STEP 4: Create texture region editor project for the texture
         
         if( VerboseMode )
-          cout << "saving C header and source for the texture" << endl;
+          cout << "creating region editor project for the joined image" << endl;
         
-        SaveCTextureHeader( ReplaceFileExtension( OutputFile, "h" ) );
-        SaveCTextureSource( ReplaceFileExtension( OutputFile, "c" ) );
+        SaveRegionEditorProject( ReplaceFileExtension( OutputFile, "xml" ) );
     }
     
     catch( const exception& e )
@@ -193,9 +272,6 @@ int main( int NumberOfArguments, char* Arguments[] )
         cerr << "joinpngs: error: " << e.what() << endl;
         return 1;
     }
-    
-    // perform clean-up
-    // (none?? check)
     
     // report success
     if( VerboseMode )

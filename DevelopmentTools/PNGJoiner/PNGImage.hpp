@@ -5,6 +5,7 @@
     
     // include C/C++ headers
     #include <string>       // [ C++ STL ] Strings
+    #include <list>         // [ C++ STL ] Lists
     #include <stdint.h>     // [ ANSI C ] Standard integers
 // *****************************************************************************
 
@@ -45,7 +46,13 @@ class PNGImage
         
         // composing
         void CreateEmpty( int NewWidth, int NewHeight );
-        void PlaceSubImage( const PNGImage& SubImage, int LeftX, int TopY );
+        void CopySubImage( const PNGImage& SubImage, int LeftX, int TopY );
+        
+        // basic queries; padded dimensions are the gap at bottom-right
+        int Area() const;
+        int PaddedWidth() const;
+        int PaddedHeight() const;
+        int PaddedArea() const;
 };
 
 
@@ -55,6 +62,7 @@ class PNGImage
 
 
 bool operator<( const PNGImage& Image1, const PNGImage& Image2 );
+void AssignRegionIDs( std::list< PNGImage >& LoadedImages );
 
 
 // *****************************************************************************

@@ -15,6 +15,7 @@
     #include <sstream>      // [ C++ STL ] String streams
     #include <vector>       // [ C++ STL ] Vectors
     #include <stdexcept>    // [ C++ STL ] Exceptions
+    #include <algorithm>    // [ C++ STL ] Algorithms
     #include <cstring>      // [ ANSI C ] Strings
     
     // declare used namespaces
@@ -113,6 +114,7 @@ void PNGImage::DecomposeFileName( const string& PNGFilePath )
         Name = FileName;
         TilesX = TilesY = 1;
         TilesGap = 0;
+        return;
     }
     
     // check that last 3 parts are numbers
@@ -142,6 +144,15 @@ void PNGImage::DecomposeFileName( const string& PNGFilePath )
 void PNGImage::LoadFromFile( const string& PNGFilePath )
 {
     DecomposeFileName( PNGFilePath );
+    
+    // replace any spaces in the name with underscores
+    replace( Name.begin(), Name.end(), ' ', '_' );
+    
+    // matrix dimensions cannot be zero
+    string FileName = GetPathFileName( PNGFilePath );
+    
+    if( TilesX <= 0 || TilesY <= 0 )
+      throw runtime_error( "File \"" + FileName + "\" states non-positive matrix dimensions" );
     
     // open input file
     FILE *PNGFile = fopen( PNGFilePath.c_str(), "rb" );
@@ -214,6 +225,27 @@ void PNGImage::LoadFromFile( const string& PNGFilePath )
     // clean-up
     fclose( PNGFile );
     png_destroy_read_struct( &PNGHandler, &PNGInfo, nullptr );
+    
+    // images can't be larger than a Vircon32 texture
+    if( Width > 1024 || Height > 1024 )
+      throw runtime_error( "Image in file \"" + FileName + "\" is too large (limit is 1024 pixels)" );
+    
+    // for matrices, check that their dimensions match the stated
+    if( TilesX > 1 )
+    {
+        int EffectiveWidth = Width - TilesGap * (TilesX-1);
+        
+        if( EffectiveWidth < TilesX || (EffectiveWidth % TilesX) != 0)
+          throw runtime_error( "Image width of file \"" + FileName + "\" does not match the stated matrix" );
+    }
+    
+    if( TilesY > 1 )
+    {
+        int EffectiveHeight = Height - TilesGap * (TilesY-1);
+        
+        if( EffectiveHeight < TilesY || (EffectiveHeight % TilesY) != 0)
+          throw runtime_error( "Image height of file \"" + FileName + "\" does not match the stated matrix" );
+    }
 }
 
 
@@ -289,12 +321,12 @@ void PNGImage::CreateEmpty( int NewWidth, int NewHeight )
     
     // create rows and set all to 0 (transparent pixels)
     for( int y = 0; y < NewHeight; y++ )
-      RowPixels[ y ] = (uint8_t*)calloc( 4 * NewWidth, sizeof(uint8_t*) );
+      RowPixels[ y ] = (uint8_t*)calloc( 4 * NewWidth, sizeof(uint8_t) );
 }
 
 // -----------------------------------------------------------------------------
 
-void PNGImage::PlaceSubImage( const PNGImage& SubImage, int LeftX, int TopY )
+void PNGImage::CopySubImage( const PNGImage& SubImage, int LeftX, int TopY )
 {
     // check that subimage will be fully inside this image
     if( LeftX < 0 || (LeftX+SubImage.Width-1) >= Width )
@@ -305,7 +337,35 @@ void PNGImage::PlaceSubImage( const PNGImage& SubImage, int LeftX, int TopY )
     
     // copy pixels for each row
     for( int y = 0; y < SubImage.Height; y++ )
-      memcpy( &RowPixels[ TopY + y ][ LeftX ], SubImage.RowPixels[ y ], 4 * SubImage.Width * sizeof(uint8_t*) );
+      memcpy( &RowPixels[ TopY + y ][ LeftX * 4 ], SubImage.RowPixels[ y ], SubImage.Width * 4 * sizeof(uint8_t) );
+}
+
+// -----------------------------------------------------------------------------
+
+int PNGImage::Area() const
+{
+    return Width * Height;
+}
+
+// -----------------------------------------------------------------------------
+
+int PNGImage::PaddedWidth() const
+{
+    return Width + GapBetweenImages;
+}
+
+// -----------------------------------------------------------------------------
+
+int PNGImage::PaddedHeight() const
+{
+    return Height + GapBetweenImages;
+}
+
+// -----------------------------------------------------------------------------
+
+int PNGImage::PaddedArea() const
+{
+    return PaddedWidth() * PaddedHeight();
 }
 
 
@@ -326,4 +386,17 @@ bool operator<( const PNGImage& Image1, const PNGImage& Image2 )
     
     // otherwise keep the initial order
     return (Image1.FirstTileID < Image2.FirstTileID);
+}
+
+// -----------------------------------------------------------------------------
+
+void AssignRegionIDs( std::list< PNGImage >& LoadedImages )
+{
+    int NextRegionID = 0;
+    
+    for( auto& Image: LoadedImages )
+    {
+        Image.FirstTileID = NextRegionID;
+        NextRegionID += Image.TilesX * Image.TilesY;
+    }
 }

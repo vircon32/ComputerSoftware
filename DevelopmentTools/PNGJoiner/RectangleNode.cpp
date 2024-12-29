@@ -32,8 +32,22 @@ RectangleNode::RectangleNode()
 
 RectangleNode::RectangleNode( const RectangleNode& Copied )
 {
-    Part1 = Copied.Part1;
-    Part2 = Copied.Part2;
+    MinX = Copied.MinX;
+    MinY = Copied.MinY;
+    MaxX = Copied.MaxX;
+    MaxY = Copied.MaxY;
+    
+    // make deep copies of subdivisions; otherwise when one
+    // of the parent copies is deleted all children will be too
+    Part1 = Part2 = nullptr;
+    
+    if( Copied.Part1 )
+      Part1 = new RectangleNode( *Copied.Part1 );
+    
+    if( Copied.Part2 )
+      Part2 = new RectangleNode( *Copied.Part2 );
+    
+    // however the image is just a pointer
     PlacedImage = Copied.PlacedImage;
 }
 
@@ -103,8 +117,8 @@ void RectangleNode::GetContentsLimit( int& MaxContentsX, int& MaxContentsY )
         return;
     }
     
-    // if empty provide 2 zeroes
-    MaxContentsX = MaxContentsY = 0;
+    // if empty provide 2x -1 to get area zero
+    MaxContentsX = MaxContentsY = -1;
 }
 
 // -----------------------------------------------------------------------------
@@ -145,6 +159,7 @@ void RectangleNode::DivideInY( int TopHeight )
 
 bool RectangleNode::CanFitImage( PNGImage& Image )
 {
+    if( PlacedImage ) return false;
     return (Width() >= Image.Width && Height() >= Image.Height);
 }
 
@@ -155,17 +170,17 @@ void RectangleNode::PlaceImageTopLeft( PNGImage& Image )
     if( !CanFitImage( Image ) )
       throw runtime_error( "Rectangle cannot fit image" );
     
-    // (1) partition in Y when needed
-    if( Height() > Image.Height )
+    // (1) partition in X when needed
+    if( Width() > Image.Width )
     {
-        DivideInY( Image.Height );
+        DivideInX( Image.Width );
         Part1->PlaceImageTopLeft( Image );
     }
     
-    // (2) partition in X when needed
-    else if( Width() > Image.Width )
+    // (2) partition in Y when needed
+    else if( Height() > Image.Height )
     {
-        DivideInX( Image.Width );
+        DivideInY( Image.Height );
         Part1->PlaceImageTopLeft( Image );
     }
     
@@ -175,72 +190,109 @@ void RectangleNode::PlaceImageTopLeft( PNGImage& Image )
 
 
 // =============================================================================
+//      DATA FOR TENTATIVE IMAGE PLACEMENTS IN RECTANGLES
+// =============================================================================
+
+
+ImagePlacement::ImagePlacement()
+{
+    Rectangle = nullptr;
+    RectangleUsePercentage = 0;
+    TotalTextureArea = 0;
+}
+
+ImagePlacement::ImagePlacement( const ImagePlacement& Copied )
+{
+    Rectangle = Copied.Rectangle;
+    RectangleUsePercentage = Copied.RectangleUsePercentage;
+    TotalTextureArea = Copied.TotalTextureArea;
+}
+
+bool operator<( const ImagePlacement& Placement1, const ImagePlacement& Placement2 )
+{
+    // discard wrong cases
+    if( !Placement1.Rectangle ) return false;
+    if( !Placement2.Rectangle ) return true;
+    
+    // rule 1: prefer less texture area
+    if( Placement1.TotalTextureArea != Placement2.TotalTextureArea )
+      return (Placement1.TotalTextureArea < Placement2.TotalTextureArea);
+    
+    // rule 2: prefer better filled rectangles
+    if( Placement1.RectangleUsePercentage != Placement2.RectangleUsePercentage )
+      return (Placement1.RectangleUsePercentage < Placement2.RectangleUsePercentage);
+    
+    // rule 3: prefer smaller rectangles
+    return (Placement1.Rectangle->Area() < Placement2.Rectangle->Area());
+}
+
+// =============================================================================
 //      ALGORITHMS FOR TREE HANDLING
 // =============================================================================
 
 
-// auxiliary function used to place an image;
-// returns the contents area that would result
-// or -1 if it can't be placed here
-int TryImageIntoRectangle( PNGImage& Image, RectangleNode& Rectangle )
+void GetPlacementData( PNGImage& Image, RectangleNode& Rectangle, list< ImagePlacement >& PossiblePlacements )
 {
     if( !Rectangle.CanFitImage( Image ) )
-      return -1;
+      return;
     
-    int MaxContentsX = 0, MaxContentsY = 0;
-    Rectangle.GetContentsLimit( MaxContentsX, MaxContentsY );
+    // can't place image in a subdivided rectangle
+    // (should be done in its children instead)
+    if( Rectangle.Part1 )
+      return;
     
-    // expand it with the image at top-left
-    MaxContentsX = max( MaxContentsX, Rectangle.MinX + Image.Width - 1 );
-    MaxContentsY = max( MaxContentsY, Rectangle.MinY + Image.Height - 1 );
-    return (MaxContentsX + 1) * (MaxContentsY + 1);
+    // get current texture contents
+    int GlobalMaxX, GlobalMaxY;
+    TextureRectangle.GetContentsLimit( GlobalMaxX, GlobalMaxY );
+    
+    // suppose we place the image here at top-left
+    int NewMaxX = max( GlobalMaxX, Rectangle.MinX + Image.Width - 1 );
+    int NewMaxY = max( GlobalMaxY, Rectangle.MinY + Image.Height - 1 );
+    
+    // add placement info to the list
+    PossiblePlacements.emplace_back();
+    PossiblePlacements.back().Rectangle = &Rectangle;
+    PossiblePlacements.back().RectangleUsePercentage = 100.0 * Image.Area() / Rectangle.Area();
+    PossiblePlacements.back().TotalTextureArea = (NewMaxX + 1) * (NewMaxY + 1);
 }
 
 // -----------------------------------------------------------------------------
 
-// returns true if image can be fit here;
-// 
-bool PlaceImageInTexture_Recursive( PNGImage& Image, RectangleNode& Rectangle, int& MinArea, RectangleNode* MinAreaRect )
+void PlaceImageInTexture_Recursive( PNGImage& Image, RectangleNode& Rectangle, list< ImagePlacement >& PossiblePlacements )
 {
-    bool Fit1 = PlaceImageInTexture_Recursive( Image, *Rectangle.Part1, MinArea, MinAreaRect );
-    bool Fit2 = PlaceImageInTexture_Recursive( Image, *Rectangle.Part2, MinArea, MinAreaRect );
-    
-    // ???
-    RectangleNode* CurrentRectangle = &Rectangle;
-    
-    if( CurrentRectangle->Part1 )
+    // can't directly place images in subdivided rectangles
+    if( Rectangle.Part1 )
     {
-        int Area1 = TryImageIntoRectangle( Image, *CurrentRectangle->Part1 );
-        int Area2 = TryImageIntoRectangle( Image, *CurrentRectangle->Part2 );
-        
-        int MinArea = 0;
-        
-        if( Area1 > 0 && Area1 < MinArea ) MinArea = Area1;
-        if( Area2 > 0 && Area2 < MinArea ) MinArea = Area2;
+        PlaceImageInTexture_Recursive( Image, *Rectangle.Part1, PossiblePlacements );
+        PlaceImageInTexture_Recursive( Image, *Rectangle.Part2, PossiblePlacements );
+        return;
     }
     
-    return Fit1 || Fit2;
+    if( !Rectangle.CanFitImage( Image ) )
+      return;
+    
+    // create placement info and add it to the list
+    GetPlacementData( Image, Rectangle, PossiblePlacements );
 }
 
 // -----------------------------------------------------------------------------
 
+// returns true if image can be fit in the texture
 bool PlaceImageInTexture( PNGImage& Image )
 {
-    /* traverse the tree and look for a possible rectangle to insert
-       the image; for each possible one determine the limits and do
-       the insertion where the limits would yield the least area */
-    
-    RectangleNode* MinAreaRect = nullptr;
-    int MinArea = 0;
-    
-    PlaceImageInTexture_Recursive( Image, TextureRectangle, MinArea, MinAreaRect );
+    // traverse the tree and look for all possible rectangles
+    // to insert the image; for each one determine insertion
+    // info so that later we can choose the best possible one
+    list< ImagePlacement > PossiblePlacements;
+    PlaceImageInTexture_Recursive( Image, TextureRectangle, PossiblePlacements );
     
     // check if we didn't find a suitable location
-    if( !MinAreaRect )
+    if( PossiblePlacements.empty() )
       return false;
     
-    // place the image in the chosen rectangle
-    MinAreaRect->PlaceImageTopLeft( Image );
+    // place the image in the best placement
+    PossiblePlacements.sort();
+    PossiblePlacements.front().Rectangle->PlaceImageTopLeft( Image );
     return true;
 }
 
@@ -255,4 +307,22 @@ void PlaceAllImages()
     for( PNGImage& Image: LoadedImages )
       if( !PlaceImageInTexture( Image ) )
         throw runtime_error( "Cannot fit all images in the texture" );
+}
+
+// -----------------------------------------------------------------------------
+
+// this will traverse the rectangle partitions, copying all
+// placed images onto the final image at the right coordinates
+void CreateOutputImage( PNGImage& OutputImage, RectangleNode& Rectangle )
+{
+    if( Rectangle.Part1 )
+      CreateOutputImage( OutputImage, *Rectangle.Part1 );
+    
+    if( Rectangle.Part2 )
+      CreateOutputImage( OutputImage, *Rectangle.Part2 );
+    
+    if( !Rectangle.PlacedImage )
+      return;
+    
+    OutputImage.CopySubImage( *Rectangle.PlacedImage, Rectangle.MinX, Rectangle.MinY );
 }

@@ -20,6 +20,8 @@
 
 extern bool VerboseMode;
 extern int GapBetweenImages;
+extern float HotspotProportionX;
+extern float HotspotProportionY;
 extern std::list< PNGImage > LoadedImages;
 extern RectangleNode TextureRectangle;
 
@@ -29,8 +31,7 @@ extern RectangleNode TextureRectangle;
 // =============================================================================
 
 
-void SaveCTextureHeader( const std::string& HeaderPath );
-void SaveCTextureSource( const std::string& SourcePath );
+void SaveRegionEditorProject( const std::string& FilePath );
 
 
 // *****************************************************************************

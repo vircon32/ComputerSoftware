@@ -66,12 +66,36 @@ class RectangleNode
 
 
 // =============================================================================
+//      DATA FOR TENTATIVE IMAGE PLACEMENTS IN RECTANGLES
+// =============================================================================
+
+
+struct ImagePlacement
+{
+    public:
+    
+        RectangleNode* Rectangle;
+        float RectangleUsePercentage;
+        int TotalTextureArea;
+    
+    public:
+    
+        ImagePlacement();
+        ImagePlacement( const ImagePlacement& Copied );
+};
+
+// sorting image placements
+bool operator<( const ImagePlacement& Placement1, const ImagePlacement& Placement2 );
+
+
+// =============================================================================
 //      ALGORITHMS FOR TREE HANDLING
 // =============================================================================
 
 
 bool PlaceImageInTexture( PNGImage& Image );
 void PlaceAllImages();
+void CreateOutputImage( PNGImage& OutputImage, RectangleNode& Rectangle );
 
 
 // *****************************************************************************
