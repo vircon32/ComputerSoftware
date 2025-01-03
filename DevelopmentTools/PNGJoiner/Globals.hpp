@@ -18,11 +18,15 @@
 // =============================================================================
 
 
+// program configuration parameters
 extern bool VerboseMode;
 extern int GapBetweenImages;
 extern float HotspotProportionX;
 extern float HotspotProportionY;
+
+// working objects
 extern std::list< PNGImage > LoadedImages;
+extern std::list< PNGImage* > SortedImages;
 extern RectangleNode TextureRectangle;
 
 
@@ -31,6 +35,8 @@ extern RectangleNode TextureRectangle;
 // =============================================================================
 
 
+// exports an XML project for the texture region
+// editor tool, with all regions for the generated texture
 void SaveRegionEditorProject( const std::string& FilePath );
 
 

@@ -160,7 +160,7 @@ void RectangleNode::DivideInY( int TopHeight )
 bool RectangleNode::CanFitImage( PNGImage& Image )
 {
     if( PlacedImage ) return false;
-    return (Width() >= Image.Width && Height() >= Image.Height);
+    return (Width() >= Image.PaddedWidth() && Height() >= Image.PaddedHeight());
 }
 
 // -----------------------------------------------------------------------------
@@ -171,16 +171,16 @@ void RectangleNode::PlaceImageTopLeft( PNGImage& Image )
       throw runtime_error( "Rectangle cannot fit image" );
     
     // (1) partition in X when needed
-    if( Width() > Image.Width )
+    if( Width() > Image.PaddedWidth() )
     {
-        DivideInX( Image.Width );
+        DivideInX( Image.PaddedWidth() );
         Part1->PlaceImageTopLeft( Image );
     }
     
     // (2) partition in Y when needed
-    else if( Height() > Image.Height )
+    else if( Height() > Image.PaddedHeight() )
     {
-        DivideInY( Image.Height );
+        DivideInY( Image.PaddedHeight() );
         Part1->PlaceImageTopLeft( Image );
     }
     
@@ -246,13 +246,13 @@ void GetPlacementData( PNGImage& Image, RectangleNode& Rectangle, list< ImagePla
     TextureRectangle.GetContentsLimit( GlobalMaxX, GlobalMaxY );
     
     // suppose we place the image here at top-left
-    int NewMaxX = max( GlobalMaxX, Rectangle.MinX + Image.Width - 1 );
-    int NewMaxY = max( GlobalMaxY, Rectangle.MinY + Image.Height - 1 );
+    int NewMaxX = max( GlobalMaxX, Rectangle.MinX + Image.PaddedWidth() - 1 );
+    int NewMaxY = max( GlobalMaxY, Rectangle.MinY + Image.PaddedHeight() - 1 );
     
     // add placement info to the list
     PossiblePlacements.emplace_back();
     PossiblePlacements.back().Rectangle = &Rectangle;
-    PossiblePlacements.back().RectangleUsePercentage = 100.0 * Image.Area() / Rectangle.Area();
+    PossiblePlacements.back().RectangleUsePercentage = 100.0 * Image.PaddedArea() / Rectangle.Area();
     PossiblePlacements.back().TotalTextureArea = (NewMaxX + 1) * (NewMaxY + 1);
 }
 

@@ -58,17 +58,6 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build (Debug or Release)" FORCE)
 endif()
 
-# Configure some legacy CMake behavior ("policies")
-if(POLICY CMP0054)
-    cmake_policy(SET CMP0054 NEW)	# Ignore Quoted Arguments
-endif()
-if(POLICY CMP0072)
-    cmake_policy(SET CMP0072 NEW) # Ignore Legacy GL
-endif()
-if(POLICY CMP0074)
-    cmake_policy(SET CMP0074 NEW) # Root Variables
-endif()
-
 # -----------------------------------------------------
 #   DEFINE THE PROJECT
 # -----------------------------------------------------
@@ -78,8 +67,8 @@ project("Vircon32")
 
 # Define version
 set(PROJECT_VERSION_MAJOR 24)
-set(PROJECT_VERSION_MINOR 8)
-set(PROJECT_VERSION_PATCH 4)
+set(PROJECT_VERSION_MINOR 12)
+set(PROJECT_VERSION_PATCH 31)
 
 # Set names for final executables
 set(C_COMPILER_BINARY_NAME "compile")
@@ -95,7 +84,6 @@ set(DISASSEMBLER_BINARY_NAME "disassemble")
 set(ROM_UNPACKER_BINARY_NAME "unpackrom")
 set(PNG_EXTRACTOR_BINARY_NAME "vircon2png")
 set(WAV_EXTRACTOR_BINARY_NAME "vircon2wav")
-
 
 # -----------------------------------------------------
 #   IDENTIFY HOST ENVIRONMENT

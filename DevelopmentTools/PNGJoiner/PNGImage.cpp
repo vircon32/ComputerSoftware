@@ -14,7 +14,6 @@
     #include <stdexcept>    // [ C++ STL ] Exceptions
     #include <sstream>      // [ C++ STL ] String streams
     #include <vector>       // [ C++ STL ] Vectors
-    #include <stdexcept>    // [ C++ STL ] Exceptions
     #include <algorithm>    // [ C++ STL ] Algorithms
     #include <cstring>      // [ ANSI C ] Strings
     
@@ -31,7 +30,6 @@
 PNGImage::PNGImage()
 {
     Width = Height = 0;
-    FirstTileID = 0;
     TilesX = TilesY = 1;
     TilesGap = 0;
     RowPixels = nullptr;
@@ -43,7 +41,6 @@ PNGImage::PNGImage( const PNGImage& Copied )
 {
     // copy all regular fields
     Name = Copied.Name;
-    FirstTileID = Copied.FirstTileID;
     Width = Copied.Width;
     Height = Copied.Height;
     TilesX = Copied.TilesX;
@@ -342,13 +339,6 @@ void PNGImage::CopySubImage( const PNGImage& SubImage, int LeftX, int TopY )
 
 // -----------------------------------------------------------------------------
 
-int PNGImage::Area() const
-{
-    return Width * Height;
-}
-
-// -----------------------------------------------------------------------------
-
 int PNGImage::PaddedWidth() const
 {
     return Width + GapBetweenImages;
@@ -384,19 +374,6 @@ bool operator<( const PNGImage& Image1, const PNGImage& Image2 )
     if( Image1.Height != Image2.Height )
       return (Image1.Height > Image2.Height);
     
-    // otherwise keep the initial order
-    return (Image1.FirstTileID < Image2.FirstTileID);
-}
-
-// -----------------------------------------------------------------------------
-
-void AssignRegionIDs( std::list< PNGImage >& LoadedImages )
-{
-    int NextRegionID = 0;
-    
-    for( auto& Image: LoadedImages )
-    {
-        Image.FirstTileID = NextRegionID;
-        NextRegionID += Image.TilesX * Image.TilesY;
-    }
+    // otherwise keep the initial order (i.e. alphabetical)
+    return (Image1.Name < Image2.Name);
 }

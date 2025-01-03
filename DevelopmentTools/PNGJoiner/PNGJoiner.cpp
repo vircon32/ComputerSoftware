@@ -42,13 +42,14 @@ void PrintUsage()
     cout << "Images will be interpreted as matrices if their file name follows the" << endl;
     cout << "pattern 'name_columns_rows_gap.png'. For instance, a file with name" << endl;
     cout << "walk_4_2_1.png is taken as a grid of 4x2 images separated by 1 pixel." << endl;
+    cout << "The matrix should not have any surrounding border." << endl;
 }
 
 // -----------------------------------------------------------------------------
 
 void PrintVersion()
 {
-    cout << "joinpngs v24.12.29" << endl;
+    cout << "joinpngs v25.01.03" << endl;
     cout << "Vircon32 PNG image joiner by Javier Carracedo" << endl;
 }
 
@@ -215,26 +216,25 @@ int main( int NumberOfArguments, char* Arguments[] )
             }
         }
         
+        // keep a list of pointers with the original order
+        // since we want to preserve that order on output
+        for( auto& Image: LoadedImages )
+          SortedImages.push_back( &Image );
+        
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 2: Run the joining algorithm
         
         if( VerboseMode )
           cout << "running the join algorithm" << endl;
         
-        // assign region IDs for all images, in initial order
-        AssignRegionIDs( LoadedImages );
+        // extend texture with the separation gap
+        // at bottom and right, so that the actual
+        // usable area is still the same
+        TextureRectangle.MaxX += GapBetweenImages;
+        TextureRectangle.MaxY += GapBetweenImages;
         
         // run the algorithm to place all images
         PlaceAllImages();
-        
-        /*
-        for( auto& Image: LoadedImages )
-        {
-            cout << Image.Name << ": ID " << Image.FirstTileID <<
-            " (" << Image.Width << "x" << Image.Height << " px)" <<
-            " [" << Image.TilesX << "x" << Image.TilesY << "]" << endl;
-        }
-        */
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // STEP 3: Save the joined PNG file
@@ -242,17 +242,12 @@ int main( int NumberOfArguments, char* Arguments[] )
         if( VerboseMode )
           cout << "saving output PNG file \"" << OutputFile << "\"" << endl;
         
-        /*
-        for( auto& Image: LoadedImages )
-            Image.SaveToFile(InputFolder + "/out/" + Image.Name + ".png");
-        */
-        
         // create an empty image to hold all subimages
         int MaxUsedX, MaxUsedY;
         TextureRectangle.GetContentsLimit( MaxUsedX, MaxUsedY );
         
         PNGImage TextureImage;
-        TextureImage.CreateEmpty( MaxUsedX+1, MaxUsedY+1 );
+        TextureImage.CreateEmpty( (MaxUsedX+1) - GapBetweenImages, (MaxUsedY+1) - GapBetweenImages );
         
         // copy all subimages into the output image and save it
         CreateOutputImage( TextureImage, TextureRectangle );

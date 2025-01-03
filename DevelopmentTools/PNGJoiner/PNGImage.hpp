@@ -19,11 +19,14 @@ class PNGImage
 {
     public:
     
+        // basic image info
         std::string Name;
-        int FirstTileID;
         int Width, Height;
+        
+        // configuration for matrices
+        // (i.e. subimages laid out in a grid)
         int TilesX, TilesY;
-        int TilesGap;     // same in X and Y; no external frame
+        int TilesGap;        // same gap in X and Y; we assume no external border
         
         // pixel data
         uint8_t** RowPixels;
@@ -48,8 +51,8 @@ class PNGImage
         void CreateEmpty( int NewWidth, int NewHeight );
         void CopySubImage( const PNGImage& SubImage, int LeftX, int TopY );
         
-        // basic queries; padded dimensions are the gap at bottom-right
-        int Area() const;
+        // queries for padded dimensions; these add
+        // the gap at bottom-right to ensure separation
         int PaddedWidth() const;
         int PaddedHeight() const;
         int PaddedArea() const;
@@ -62,7 +65,6 @@ class PNGImage
 
 
 bool operator<( const PNGImage& Image1, const PNGImage& Image2 );
-void AssignRegionIDs( std::list< PNGImage >& LoadedImages );
 
 
 // *****************************************************************************
