@@ -1,6 +1,6 @@
 ================================================
    PC development tools for Vircon32 console
-  (version 24.8.4). README written by Carra
+  (version 25.1.4). README written by Carra
 ================================================
 
 
@@ -55,6 +55,15 @@ Included programs (build tools)
     into a single file, that will be executable from any
     Vircon32 emulator or implementation.
     
+  - "joinpngs": this tool can take a folder with several PNG
+    images and join them into a single, larger image. For
+    performance this is much better than using a texture for
+    every single small image. This program will also create
+    a project file for the texture region editor (which is
+    distributed separately). From the editor you can then
+    edit region hotspots visually and export C or ASM
+    headers to use the texture in your programs.
+    
 ------------------------------------------------------------
 
 Included programs (reverse tools)
@@ -79,14 +88,31 @@ Included programs (reverse tools)
     
 ------------------------------------------------------------
 
-What's new in version 24.8.4?
+What's new in version 25.1.4?
   
-  - Reverse tools are now included in the dev tools.
-  - On Linux and Mac systems the default installation
-    directory for dev tools has been changed from
-    /opt/Vircon32/DevTools to /usr/local/Vircon32/DevTools.
-  - Along with this, file and folder permissions should
-    now allow the compiler to save logs.
+  - Added new tool: "joinpngs", to join multiple images into
+    a single texture and generate its region editor project.
+  - Because of joinpns, the required C++ version to build
+    the tools from source now changes from C++11 to C++17.
+  - Added new command-line options for debugging to compiler
+    and assembler:
+     - With option -g they will output additional files with
+       debug info for the generated program.
+     - With option --debugmode they will create additional
+       files detailing the result of their internal stages
+       (like the compiler's AST tree).
+  - Added support for character literals in the assembler,
+    using notation 'A', and escaped as '\'' or '\x41'.
+  - Fixed a compiler bug: type consistency was not being
+    checked in declarations of extern variables.
+  - Fixed a typo in compiler's math.h header: in function
+    atan2, the names of the arguments x and y were swapped.
+    However this was just a naming issue. The inner workings
+    of atan2 did not change.
+  - Fixed a bug in wav2vircon: output sound was not always
+    being created correctly if inputs had sample rates
+    different from the default 44100 Hz.
+  - Updated and fixed the assembler tests folder.
 
 ------------------------------------------------------------
 
@@ -96,7 +122,7 @@ License
     under the 3-Clause BSD License, which full text is the
     following:
     
-    Copyright 2021-2024 Carra.
+    Copyright 2021-2025 Carra.
     All rights reserved.
     
     Redistribution and use in source and binary forms, with or

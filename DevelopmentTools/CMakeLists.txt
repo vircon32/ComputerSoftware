@@ -34,6 +34,8 @@ set(WAV_CONVERTER_DIR "WAV2Vircon/"
     CACHE PATH "The path to the WAV converter sources.")
 set(TILED_CONVERTER_DIR "Tiled2Vircon/"
     CACHE PATH "The path to the Tiled converter sources.")
+set(PNG_JOINER_DIR "PNGJoiner/"
+    CACHE PATH "The path to the PNG joiner sources.")
 set(DISASSEMBLER_DIR "Disassembler/"
     CACHE PATH "The path to the disassembler sources.")
 set(ROM_UNPACKER_DIR "RomUnpacker/"
@@ -56,17 +58,6 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build (Debug or Release)" FORCE)
 endif()
 
-# Configure some legacy CMake behavior ("policies")
-if(POLICY CMP0054)
-    cmake_policy(SET CMP0054 NEW)	# Ignore Quoted Arguments
-endif()
-if(POLICY CMP0072)
-    cmake_policy(SET CMP0072 NEW) # Ignore Legacy GL
-endif()
-if(POLICY CMP0074)
-    cmake_policy(SET CMP0074 NEW) # Root Variables
-endif()
-
 # -----------------------------------------------------
 #   DEFINE THE PROJECT
 # -----------------------------------------------------
@@ -75,8 +66,8 @@ endif()
 project("Vircon32")
 
 # Define version
-set(PROJECT_VERSION_MAJOR 24)
-set(PROJECT_VERSION_MINOR 8)
+set(PROJECT_VERSION_MAJOR 25)
+set(PROJECT_VERSION_MINOR 1)
 set(PROJECT_VERSION_PATCH 4)
 
 # Set names for final executables
@@ -86,13 +77,13 @@ set(ROM_PACKER_BINARY_NAME "packrom")
 set(PNG_CONVERTER_BINARY_NAME "png2vircon")
 set(WAV_CONVERTER_BINARY_NAME "wav2vircon")
 set(TILED_CONVERTER_BINARY_NAME "tiled2vircon")
+set(PNG_JOINER_BINARY_NAME "joinpngs")
 
 # Set names for reverse tools executables
 set(DISASSEMBLER_BINARY_NAME "disassemble")
 set(ROM_UNPACKER_BINARY_NAME "unpackrom")
 set(PNG_EXTRACTOR_BINARY_NAME "vircon2png")
 set(WAV_EXTRACTOR_BINARY_NAME "vircon2wav")
-
 
 # -----------------------------------------------------
 #   IDENTIFY HOST ENVIRONMENT
@@ -120,7 +111,7 @@ endif()
 
 # Set compilation flags for C and C++
 if (MINGW OR TARGET_OS STREQUAL "linux")
-    set(cxx_flags "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -Wextra -Wno-unused-parameter")
+    set(cxx_flags "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
     set(c_flags "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter")
 elseif (MSVC)
     set(cxx_flags "${CMAKE_CXX_FLAGS} /W3 /EHsc /MP /GS /wd4267 /wd4244")
@@ -208,6 +199,7 @@ set(ALL_INCLUDE_DIRS
     ${PNG_CONVERTER_DIR}
     ${WAV_CONVERTER_DIR}
     ${TILED_CONVERTER_DIR}
+    ${PNG_JOINER_DIR}
     ${ROM_PACKER_DIR}
     ${DISASSEMBLER_DIR}
     ${ROM_UNPACKER_DIR}
@@ -248,6 +240,11 @@ set(WAV_CONVERTER_LIBS
 # Libraries to link with the Tiled converter
 set(TILED_CONVERTER_LIBS
     ${TINYXML2_LIBRARY}
+    ${CMAKE_DL_LIBS})
+
+# Libraries to link with the PNG joiner
+set(PNG_JOINER_LIBS
+    ${PNG_LIBRARY}
     ${CMAKE_DL_LIBS})
 
 # -----------------------------------------------------
@@ -349,6 +346,15 @@ set(TILED_CONVERTER_SRC
     ${TILED_CONVERTER_DIR}/Tiled2Vircon.cpp
     ${INFRASTRUCTURE_DIR}/FilePaths.cpp)
 
+# Source files to compile for the PNG joiner
+set(PNG_JOINER_SRC
+    ${PNG_JOINER_DIR}/Globals.cpp
+    ${PNG_JOINER_DIR}/PNGImage.cpp
+    ${PNG_JOINER_DIR}/PNGJoiner.cpp
+    ${PNG_JOINER_DIR}/RectangleNode.cpp
+    ${INFRASTRUCTURE_DIR}/FilePaths.cpp
+    ${INFRASTRUCTURE_DIR}/StringFunctions.cpp)
+
 # -----------------------------------------------------
 #   SOURCE FILES (REVERSE TOOLS)
 # -----------------------------------------------------
@@ -412,6 +418,10 @@ set_property(TARGET ${WAV_CONVERTER_BINARY_NAME} PROPERTY CXX_STANDARD 11)
 add_executable(${TILED_CONVERTER_BINARY_NAME} ${TILED_CONVERTER_SRC})
 set_property(TARGET ${TILED_CONVERTER_BINARY_NAME} PROPERTY CXX_STANDARD 11)
 
+# this tool needs C++17 for a portable way to iterate over folders
+add_executable(${PNG_JOINER_BINARY_NAME} ${PNG_JOINER_SRC})
+set_property(TARGET ${PNG_JOINER_BINARY_NAME} PROPERTY CXX_STANDARD 17)
+
 # Libraries to link to the C compiler executables
 target_link_libraries(${C_COMPILER_BINARY_NAME} ${C_COMPILER_LIBS})
 target_link_libraries(${ASSEMBLER_BINARY_NAME} ${ASSEMBLER_LIBS})
@@ -419,6 +429,7 @@ target_link_libraries(${ROM_PACKER_BINARY_NAME} ${ROM_PACKER_LIBS})
 target_link_libraries(${PNG_CONVERTER_BINARY_NAME} ${PNG_CONVERTER_LIBS})
 target_link_libraries(${WAV_CONVERTER_BINARY_NAME} ${WAV_CONVERTER_LIBS})
 target_link_libraries(${TILED_CONVERTER_BINARY_NAME} ${TILED_CONVERTER_LIBS})
+target_link_libraries(${PNG_JOINER_BINARY_NAME} ${PNG_JOINER_LIBS})
 
 # -----------------------------------------------------
 #   EXECUTABLES (REVERSE TOOLS)
@@ -456,6 +467,7 @@ if(TARGET_OS STREQUAL "windows")
         ${PNG_CONVERTER_BINARY_NAME}
         ${WAV_CONVERTER_BINARY_NAME}
         ${TILED_CONVERTER_BINARY_NAME}
+        ${PNG_JOINER_BINARY_NAME}
         RUNTIME
         COMPONENT binaries
         DESTINATION DevTools)
@@ -486,6 +498,7 @@ else()
         ${PNG_CONVERTER_BINARY_NAME}
         ${WAV_CONVERTER_BINARY_NAME}
         ${TILED_CONVERTER_BINARY_NAME}
+        ${PNG_JOINER_BINARY_NAME}
         RUNTIME
         COMPONENT binaries
         DESTINATION ${CMAKE_PROJECT_NAME}/DevTools)
