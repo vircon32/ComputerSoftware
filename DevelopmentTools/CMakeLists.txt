@@ -66,9 +66,9 @@ endif()
 project("Vircon32")
 
 # Define version
-set(PROJECT_VERSION_MAJOR 24)
-set(PROJECT_VERSION_MINOR 12)
-set(PROJECT_VERSION_PATCH 31)
+set(PROJECT_VERSION_MAJOR 25)
+set(PROJECT_VERSION_MINOR 1)
+set(PROJECT_VERSION_PATCH 4)
 
 # Set names for final executables
 set(C_COMPILER_BINARY_NAME "compile")
@@ -111,7 +111,7 @@ endif()
 
 # Set compilation flags for C and C++
 if (MINGW OR TARGET_OS STREQUAL "linux")
-    set(cxx_flags "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -Wextra -Wno-unused-parameter")
+    set(cxx_flags "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
     set(c_flags "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter")
 elseif (MSVC)
     set(cxx_flags "${CMAKE_CXX_FLAGS} /W3 /EHsc /MP /GS /wd4267 /wd4244")

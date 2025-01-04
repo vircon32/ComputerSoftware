@@ -49,7 +49,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "joinpngs v25.01.03" << endl;
+    cout << "joinpngs v25.1.4" << endl;
     cout << "Vircon32 PNG image joiner by Javier Carracedo" << endl;
 }
 
