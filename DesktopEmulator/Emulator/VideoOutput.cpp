@@ -246,17 +246,16 @@ void VideoOutput::CreateOpenGLWindow()
     LOG( "Started OpenGL version " + OpenGLVersionName );
     
     // check that we were not given a GL version lower than required
-    int MajorVersion = 1, MinorVersion = 0;
+    ClearOpenGLErrors();
+    int MajorVersion = 1;
     SDL_GL_GetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, &MajorVersion );
-    SDL_GL_GetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, &MinorVersion );
-    string ReceivedVersion = to_string( MajorVersion ) + "." + to_string( MinorVersion );
     
     #ifdef __arm__
-    if( MajorVersion < 2 )
-      THROW( string("OpenGL ES version 2.0 is not supported. Current version is ") + ReceivedVersion );
+    if( glGetError() != GL_NO_ERROR || MajorVersion < 2 )
+      THROW( "This computer does not support the minimum required OpenGL version (OpenGL ES 2.0)" );
     #else
-    if( MajorVersion < 3 )
-      THROW( string("OpenGL version 3.0 is not supported. Current version is ") + ReceivedVersion );
+    if( glGetError() != GL_NO_ERROR || MajorVersion < 3 )
+      THROW( "This computer does not support the minimum required OpenGL version (OpenGL 3.0)" );
     #endif
     
     // show basic OpenGL information
