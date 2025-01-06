@@ -77,9 +77,9 @@ Public Module FileExports
 
         ' texture path is given as relative to the project folder,
         ' so we need to convert it back to absolute or load will fail
-        Dim XmlURI As New Uri(FilePath)
+        Dim XmlURI As New Uri("file:///" & FilePath)
         Dim TextureURI = New Uri(XmlURI, RelativeTexturePath)
-        TexturePath = TextureURI.AbsolutePath
+        TexturePath = TextureURI.LocalPath
         LoadTexture(TexturePath)
 
         ' clear previous definitions
