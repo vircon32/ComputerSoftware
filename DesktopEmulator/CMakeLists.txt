@@ -4,7 +4,7 @@
 # -----------------------------------------------------
 
 # minimum version of CMake that can parse this file
-cmake_minimum_required(VERSION 2.8.12...3.19.1)
+cmake_minimum_required(VERSION 3.13.0...3.19.1)
 
 # configure some flags for compatibility across CMake versions
 if(POLICY CMP0054)
@@ -26,9 +26,9 @@ endif()
 project("Vircon32" LANGUAGES C CXX)
 
 # Define version
-set(PROJECT_VERSION_MAJOR 24)
-set(PROJECT_VERSION_MINOR 7)
-set(PROJECT_VERSION_PATCH 29)
+set(PROJECT_VERSION_MAJOR 25)
+set(PROJECT_VERSION_MINOR 1)
+set(PROJECT_VERSION_PATCH 12)
 
 # Set names for final executables
 set(EMULATOR_BINARY_NAME "Vircon32")
@@ -308,6 +308,12 @@ set_property(TARGET ${EMULATOR_BINARY_NAME} PROPERTY CXX_STANDARD 11)
 
 # Libraries to link to the emulator executable
 target_link_libraries(${EMULATOR_BINARY_NAME} ${EMULATOR_LIBS})
+
+# Under windows the emulator needs to have this
+# linker flags (this is needed by wmain)
+if(TARGET_OS STREQUAL "windows")
+    target_link_options(${EMULATOR_BINARY_NAME} PRIVATE "-municode")
+endif()
 
 # Define final executable for the EditControls tool
 add_executable(${EDITCONTROLS_BINARY_NAME} ${GUI_TYPE} ${EDITCONTROLS_SRC})

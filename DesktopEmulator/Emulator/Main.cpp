@@ -23,6 +23,7 @@
     #include <cstddef>          // [ ANSI C ] Standard definitions
     
     // include SDL2 headers
+    #define SDL_MAIN_HANDLED
     #include "SDL_image.h"      // [ SDL2 ] SDL_Image
     
     // include imgui headers
@@ -42,6 +43,11 @@
     // on Linux, include GTK headers
     #if defined(__linux__)
       #include <gtk/gtk.h>      // [ GTK ] Main header
+    #endif
+    
+    // detection of Windows
+    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+      #define WINDOWS_OS
     #endif
     
     // declare used namespaces
@@ -119,7 +125,14 @@ string GetProgramFolder()
 // =============================================================================
 
 
-int main( int NumberOfArguments, char* Arguments[] )
+// on Windows we need to use wmain to be able to receive
+// unicode text from the console as input arguments; if
+// we use regular main we can only process ASCII paths
+#if defined(WINDOWS_OS)
+  int wmain( int NumberOfArguments, wchar_t* Arguments[] )
+#else
+  int main( int NumberOfArguments, char* Arguments[] )
+#endif
 {
     if( NumberOfArguments > 2 )
     {
@@ -284,12 +297,15 @@ int main( int NumberOfArguments, char* Arguments[] )
         Console.LoadBios( EmulatorFolder + "Bios" + PathSeparator + BiosFileName );
         
         // if a cartridge file has been specified, load it
+        // (this will also turn on the console)
         if( NumberOfArguments == 2 )
         {
-            string CartridgePath = Arguments[ 1 ];
-            
-            // this will also turn on the console
-            GUI_LoadCartridge( CartridgePath );
+            #if defined(WINDOWS_OS)
+              wstring CartridgePathUTF16 = Arguments[ 1 ];
+              GUI_LoadCartridge( ToUTF8( CartridgePathUTF16 ) );
+            #else
+              GUI_LoadCartridge( Arguments[ 1 ] );
+            #endif
         }
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
