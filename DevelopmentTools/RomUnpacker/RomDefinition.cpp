@@ -104,7 +104,7 @@ void RomDefinition::CreateDefinitionXML()
     XMLFile << "\" version=\"" << ROMVersion << "." << ROMRevision << "\" />" << endl;
 
     // write ROM binary
-    XMLFile << "    <binary path=\"" << RomFileName << ".vbin\" />" << endl;
+    XMLFile << "    <binary path=\"" << EscapeXML( RomFileName ) << ".vbin\" />" << endl;
     
     // write ROM textures
     XMLFile << "    <textures>" << endl;

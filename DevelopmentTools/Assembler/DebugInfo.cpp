@@ -18,33 +18,11 @@
 
 
 // =============================================================================
-//      AUXILIARY FUNCTIONS FOR BETTER PATH OUTPUT
+//      AUXILIARY FUNCTIONS
 // =============================================================================
 
 
-// this replaces ALL occurences, in place
-void ReplaceCharacter( string& Text, char OldChar, char NewChar )
-{
-    replace( Text.begin(), Text.end(), OldChar, NewChar );
-}
-
-// -----------------------------------------------------------------------------
-
-// this replaces ALL occurences, in place
-void ReplaceSubstring( string& Text, const string& OldSubstring, const string& NewSubstring )
-{
-    size_t Position = 0;
-    
-    while( (Position = Text.find( OldSubstring, Position )) != string::npos )
-    {
-        Text.replace( Position, OldSubstring.length(), NewSubstring );
-        Position += NewSubstring.length();
-    }
-}
-
-// -----------------------------------------------------------------------------
-
-// auxiliary function for better path output
+// normalize separators for better path output
 string NormalizePath( const string& Path )
 {
     string Result = Path;

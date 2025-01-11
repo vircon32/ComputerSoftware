@@ -6,6 +6,7 @@
     #include <iomanip>      // [ C++ STL ] I/O Manipulation
     #include <iostream>     // [ C++ STL ] I/O Streams
     #include <sstream>      // [ C++ STL ] String streams
+    #include <algorithm>    // [ C++ STL ] Algorithms
     
     // declare used namespaces
     using namespace std;
@@ -60,6 +61,56 @@ vector<string> SplitString( const string& str, char separator )
    
    Result.push_back( str.substr(pos1, str.size()-pos1) );
    return Result;
+}
+
+// -----------------------------------------------------------------------------
+
+// this replaces ALL occurences, in place
+void ReplaceCharacter( string& Text, char OldChar, char NewChar )
+{
+    replace( Text.begin(), Text.end(), OldChar, NewChar );
+}
+
+// -----------------------------------------------------------------------------
+
+// this replaces ALL occurences, in place
+void ReplaceSubstring( string& Text, const string& OldSubstring, const string& NewSubstring )
+{
+    size_t Position = 0;
+    
+    while( (Position = Text.find( OldSubstring, Position )) != string::npos )
+    {
+        Text.replace( Position, OldSubstring.length(), NewSubstring );
+        Position += NewSubstring.length();
+    }
+}
+
+
+// =============================================================================
+//      TREATMENT OF XML STRINGS
+// =============================================================================
+
+
+string XMLBlock( const string& BlockName, const string& BlockContent )
+{
+    return "<" + BlockName + ">" + BlockContent + "</" + BlockName + ">";
+}
+
+// -----------------------------------------------------------------------------
+
+string EscapeXML( const string& Unescaped )
+{
+    string Escaped = Unescaped;
+    
+    // replace ampersand before anything else,
+    // since other escape sequences will add
+    // extra ampersands that we shouldn't escape
+    ReplaceSubstring( Escaped, "&", "&amp;" );
+    ReplaceSubstring( Escaped, "<", "&lt;" );
+    ReplaceSubstring( Escaped, ">", "&gt;" );
+    ReplaceSubstring( Escaped, "'", "&apos;" );
+    ReplaceSubstring( Escaped, "\"", "&quot;" );
+    return Escaped;
 }
 
 

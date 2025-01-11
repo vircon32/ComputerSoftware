@@ -1,4 +1,7 @@
 // *****************************************************************************
+    // include infrastructure headers
+    #include "../DevToolsInfrastructure/StringFunctions.hpp"
+    
     // include project headers
     #include "CNodes.hpp"
     #include "CompilerInfrastructure.hpp"
