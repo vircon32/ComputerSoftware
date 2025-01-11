@@ -1,6 +1,7 @@
 // *****************************************************************************
     // include infrastructure headers
     #include "Logger.hpp"
+    #include "FilePaths.hpp"
     
     // include C/C++ headers
     #include <iostream>         // [ C++ STL ] I/O Streams
@@ -38,14 +39,14 @@ Logger::~Logger()
 // =============================================================================
 
 
-bool Logger::OpenFile( const string& File, const string& Title )
+bool Logger::OpenFile( const string& FilePath, const string& Title )
 {
     // close previous file, if any
     CloseFile();
     OutputFile.clear();
     
     // attempt to open the file
-    OutputFile.open( File.c_str(), ios::out );
+    OpenOutputFile( OutputFile, FilePath, ios::out );
     
     // if file didn't open, report and use the console
     if( !OutputFile.is_open() || OutputFile.bad() )
@@ -53,7 +54,7 @@ bool Logger::OpenFile( const string& File, const string& Title )
         ConsoleMode = true;
         
         WriteString( "ERROR: Could not open log file \"" );
-        WriteString( File );
+        WriteString( FilePath );
         WriteString( "\". Logging to console." );
         AddLine();
         

@@ -5,11 +5,14 @@
     
     // include C/C++ headers
     #include <string>           // [ C++ STL ] Strings
+    #include <iostream>         // [ C++ STL ] I/O streams
+    #include <fstream>          // [ C++ STL ] File streams
+    #include <stdio.h>          // [ ANSI C ] Standard I/O
 // *****************************************************************************
 
 
 // =============================================================================
-//      STRING MANIPULATION FUNCTIONS
+//      FILE PATH MANIPULATION FUNCTIONS
 // =============================================================================
 
 
@@ -31,6 +34,31 @@ bool FileExists( const std::string &FilePath );
 bool DirectoryExists( const std::string &Path );
 
 
+// =============================================================================
+//      WRAPPERS FOR PROPER FILE ACCESS ON UNICODE PATHS
+// =============================================================================
+
+
+// functions for C++ I/O file streams
+void OpenInputFile
+(
+    std::ifstream& InputFile, const std::string& FilePathUTF8,
+    std::ios_base::openmode Mode = std::ios_base::in
+);
+
+void OpenOutputFile
+(
+    std::ofstream& OutputFile, const std::string& FilePathUTF8,
+    std::ios_base::openmode Mode = std::ios_base::out
+);
+
+// -----------------------------------------------------------------------------
+
+// functions for C FILE pointers
+FILE* OpenInputFile ( const std::string& FilePathUTF8 );
+FILE* OpenOutputFile( const std::string& FilePathUTF8 );
+
+    
 // *****************************************************************************
     // end include guard
     #endif

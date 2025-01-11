@@ -412,7 +412,7 @@ void SaveState( const string& FileName )
     
     // open the file
     ofstream OutputFile;
-    OutputFile.open( FileName, ios_base::out | ios_base::binary );
+    OpenOutputFile( OutputFile, FileName, ios_base::out | ios_base::binary );
     
     if( !OutputFile.good() )
       THROW( "Cannot open output file" );
@@ -430,7 +430,7 @@ void LoadState( const string& FileName )
     
     // open the file
     ifstream InputFile;
-    InputFile.open( FileName, ios_base::in | ios_base::binary );
+    OpenInputFile( InputFile, FileName, ios_base::in | ios_base::binary );
     
     if( !InputFile.good() )
       THROW( "Cannot open input file" );
