@@ -117,7 +117,7 @@ void VirconASMLexer::OpenFile( const string& FilePath )
     
     // open the file as binary, not as text!
     // (otherwise there can be bugs using tellg/seekg and unget)
-    Input.open( FilePath, ios_base::in | ios_base::binary );
+    OpenInputFile( Input, FilePath, ios_base::in | ios_base::binary );
     Input.seekg( 0, ios::beg );
     
     if( Input.fail() )

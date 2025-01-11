@@ -233,7 +233,7 @@ int main( int NumberOfArguments, char** Arguments )
             
             // create a file with that name
             ofstream OutputFile;
-            OutputFile.open( FilePath, ios_base::binary | ios_base::trunc );
+            OpenOutputFile( OutputFile, FilePath, ios_base::binary | ios_base::trunc );
             
             if( !OutputFile.good() )
               throw runtime_error( "Cannot open output file" );

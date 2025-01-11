@@ -111,7 +111,7 @@ void LoadWAV( const char *WAVFilePath, int OutputRate )
 void SaveVSND( const char *VSNDFilePath )
 {
     // open output file
-    FILE *VSNDFile = fopen( VSNDFilePath, "wb" );
+    FILE *VSNDFile = OpenOutputFile( VSNDFilePath );
     
     if( !VSNDFile )
       throw runtime_error( string("Cannot open output file \"") + VSNDFilePath + "\"" );

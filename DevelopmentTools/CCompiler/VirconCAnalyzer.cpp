@@ -1,4 +1,7 @@
 // *****************************************************************************
+    // include infrastructure headers
+    #include "../DevToolsInfrastructure/FilePaths.hpp"
+    
     // include project headers
     #include "VirconCAnalyzer.hpp"
     #include "CheckNodes.hpp"
@@ -259,7 +262,7 @@ void VirconCAnalyzer::AnalyzeEmbeddedFile( EmbeddedFileNode* EmbeddedFile )
 {
     // before embedding the file, check that it exists
     ifstream CheckedFile;
-    CheckedFile.open( EmbeddedFile->FilePath, ios::binary | ios::ate );
+    OpenInputFile( CheckedFile, EmbeddedFile->FilePath, ios::binary | ios::ate );
     
     if( !CheckedFile.good() )
     {

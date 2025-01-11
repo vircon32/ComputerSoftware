@@ -45,7 +45,7 @@ void SaveDebugInfoFile( const string& FilePath, const string& ASMFilePath, const
     
     // open output file,
     ofstream DebugInfoFile;
-    DebugInfoFile.open( FilePath );
+    OpenOutputFile( DebugInfoFile, FilePath );
     
     if( DebugInfoFile.fail() )
       throw runtime_error( "cannot open debug info file \"" + FilePath + "\"" );
@@ -83,7 +83,7 @@ void SaveLexerLog( const string& FilePath, const VirconCPreprocessor& Preprocess
       cout << "Debug mode: Saving lexer log" << endl;
     
     ofstream LogFile;
-    LogFile.open( FilePath );
+    OpenOutputFile( LogFile, FilePath );
     
     if( LogFile.fail() )
       throw runtime_error( "cannot open lexer log file \"" + FilePath + "\"" );
@@ -114,7 +114,7 @@ void SaveParserLog( const string& FilePath, const VirconCParser& Parser )
       cout << "Debug mode: Saving parser log" << endl;
     
     ofstream LogFile;
-    LogFile.open( FilePath );
+    OpenOutputFile( LogFile, FilePath );
     
     if( LogFile.fail() )
       throw runtime_error( "cannot open parser log file \"" + FilePath + "\"" );

@@ -58,7 +58,7 @@ std::vector< uint32_t > RawSamples;
 void LoadVSND( const char *VSNDFilePath )
 {
     // open input file
-    FILE *VSNDFile = fopen( VSNDFilePath, "rb" );
+    FILE *VSNDFile = OpenInputFile( VSNDFilePath );
     
     if( !VSNDFile )
       throw runtime_error( string("Cannot open intput file \"") + VSNDFilePath + "\"" );
@@ -120,7 +120,7 @@ void LoadVSND( const char *VSNDFilePath )
 void SaveWAV( const char *WAVFilePath )
 {
     // open output file
-    FILE *WAVFile = fopen( WAVFilePath, "wb" );
+    FILE *WAVFile = OpenOutputFile( WAVFilePath );
     
     if( !WAVFile )
       throw runtime_error( string("Cannot open output file \"") + WAVFilePath + "\"" );

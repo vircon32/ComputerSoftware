@@ -139,7 +139,7 @@ void RomDefinition::ProcessBinary( string& BinaryPath, vector< uint32_t >& Progr
     
     // open the file
     ifstream BinaryFile;
-    BinaryFile.open( BinaryPath, ios_base::binary | ios_base::ate );
+    OpenInputFile( BinaryFile, BinaryPath, ios_base::binary | ios_base::ate );
     
     if( !BinaryFile.good() )
       throw runtime_error( "cannot open binary file" );
@@ -191,7 +191,7 @@ void RomDefinition::ProcessTexture( string& TexturePath, vector< uint32_t >& Tex
     
     // open the file
     ifstream TextureFile;
-    TextureFile.open( TexturePath, ios_base::binary | ios_base::ate );
+    OpenInputFile( TextureFile, TexturePath, ios_base::binary | ios_base::ate );
     
     if( !TextureFile.good() )
       throw runtime_error( "cannot open texture file" );
@@ -249,7 +249,7 @@ void RomDefinition::ProcessSound( string& SoundPath, vector< uint32_t >& SoundRO
     
     // open the file
     ifstream SoundFile;
-    SoundFile.open( SoundPath, ios_base::binary | ios_base::ate );
+    OpenInputFile( SoundFile, SoundPath, ios_base::binary | ios_base::ate );
     
     if( !SoundFile.good() )
       throw runtime_error( "cannot open sound file" );
@@ -514,7 +514,7 @@ void RomDefinition::PackROM( const string& OutputPath )
     
     // open the output file
     ofstream OutputFile;
-    OutputFile.open( OutputPath, ios_base::binary );
+    OpenOutputFile( OutputFile, OutputPath, ios_base::binary );
     
     if( !OutputFile.good() )
       throw runtime_error( string("cannot open output file \"") + OutputPath + "\"" );

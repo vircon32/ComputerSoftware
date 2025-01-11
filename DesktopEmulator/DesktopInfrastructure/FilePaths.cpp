@@ -27,9 +27,9 @@
 
 // this is dependent on the host operating system
 #if defined(WINDOWS_OS)
-    char PathSeparator = '\\';
+    const char PathSeparator = '\\';
 #else
-    char PathSeparator = '/';
+    const char PathSeparator = '/';
 #endif
 
 
@@ -122,12 +122,16 @@ bool IsFileNameValid( const string& FileName )
 
 // -----------------------------------------------------------------------------
 
-// auxiliary function for all UTF-8 to UTF-16 string conversions
-wstring ToUTF16( const string& TextUTF8 )
-{
-    wstring_convert< codecvt_utf8_utf16< wchar_t > > Converter;
-    return Converter.from_bytes( TextUTF8 );
-}
+#if defined(WINDOWS_OS)
+
+  // auxiliary function for all UTF-8 to UTF-16 string conversions
+  wstring ToUTF16( const string& TextUTF8 )
+  {
+      wstring_convert< codecvt_utf8_utf16< wchar_t > > Converter;
+      return Converter.from_bytes( TextUTF8 );
+  }
+
+#endif
 
 // -----------------------------------------------------------------------------
 

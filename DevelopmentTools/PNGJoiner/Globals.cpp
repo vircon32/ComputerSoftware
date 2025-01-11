@@ -135,7 +135,7 @@ void SaveRegionEditorProject( const string& FilePath )
 {
     // open output file as text
     ofstream XMLFile;
-    XMLFile.open( FilePath );
+    OpenOutputFile( XMLFile, FilePath );
     
     if( !XMLFile.good() )
       throw runtime_error( "cannot create region editor project file" );

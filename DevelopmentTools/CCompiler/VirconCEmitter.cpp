@@ -1,4 +1,7 @@
 // *****************************************************************************
+    // include infrastructure headers
+    #include "../DevToolsInfrastructure/FilePaths.hpp"
+    
     // include project headers
     #include "VirconCEmitter.hpp"
     #include "CompilerInfrastructure.hpp"
@@ -631,7 +634,7 @@ void VirconCEmitter::SaveAssembly( const std::string& FilePath )
 {
     // open output file, in text mode
     ofstream OutputFile;
-    OutputFile.open( FilePath, ios_base::out );
+    OpenOutputFile( OutputFile, FilePath, ios_base::out );
     
     if( OutputFile.fail() )
       throw runtime_error( "cannot open output file \"" + FilePath + "\"" );

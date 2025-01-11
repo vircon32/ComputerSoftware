@@ -153,7 +153,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         
         // now open output file
         ofstream OutputFile;
-        OutputFile.open( OutputPath, ios_base::out );
+        OpenOutputFile( OutputFile, OutputPath, ios_base::out );
         
         if( OutputFile.fail() )
           throw runtime_error( "cannot open output file \"" + OutputPath + "\"" );

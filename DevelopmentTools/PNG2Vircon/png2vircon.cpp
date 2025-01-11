@@ -44,7 +44,7 @@ png_bytep *RowPointers = nullptr;
 void LoadPNG( const char *PNGFilePath )
 {
     // open input file
-    FILE *PNGFile = fopen( PNGFilePath, "rb" );
+    FILE *PNGFile = OpenInputFile( PNGFilePath );
     
     if( !PNGFile )
       throw runtime_error( string("cannot open input file \"") + PNGFilePath + "\"" );
@@ -124,7 +124,7 @@ void LoadPNG( const char *PNGFilePath )
 void SaveVTEX( const char *VTEXFilePath )
 {
     // open output file
-    FILE *VTEXFile = fopen( VTEXFilePath, "wb" );
+    FILE *VTEXFile = OpenOutputFile( VTEXFilePath );
     
     if( !VTEXFile )
       throw runtime_error( string("cannot open output file \"") + VTEXFilePath + "\"" );

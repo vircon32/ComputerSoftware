@@ -251,7 +251,7 @@ int main( int NumberOfArguments, char* Arguments[] )
           cout << "saving binary file" << endl;
         
         ofstream OutputFile;
-        OutputFile.open( OutputPath, ios_base::out | ios_base::binary );
+        OpenOutputFile( OutputFile, OutputPath, ios_base::out | ios_base::binary );
         
         if( OutputFile.fail() )
           throw runtime_error( "cannot open output file \"" + OutputPath + "\"" );
