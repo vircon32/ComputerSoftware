@@ -4,7 +4,7 @@
 # -----------------------------------------------------
 
 # minimum version of CMake that can parse this file
-cmake_minimum_required(VERSION 2.8.12...3.19.1)
+cmake_minimum_required(VERSION 3.13.0...3.19.1)
 
 # configure some flags for compatibility across CMake versions
 if(POLICY CMP0054)
@@ -68,7 +68,7 @@ project("Vircon32")
 # Define version
 set(PROJECT_VERSION_MAJOR 25)
 set(PROJECT_VERSION_MINOR 1)
-set(PROJECT_VERSION_PATCH 4)
+set(PROJECT_VERSION_PATCH 12)
 
 # Set names for final executables
 set(C_COMPILER_BINARY_NAME "compile")
@@ -110,7 +110,7 @@ endif()
 # -----------------------------------------------------
 
 # Set compilation flags for C and C++
-if (MINGW OR TARGET_OS STREQUAL "linux")
+if(MINGW OR TARGET_OS STREQUAL "linux")
     set(cxx_flags "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
     set(c_flags "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter")
 elseif (MSVC)
@@ -124,11 +124,17 @@ set(CMAKE_CXX_FLAGS "${cxx_flags}"
 set(CMAKE_C_FLAGS "${c_flags}"
     CACHE STRING "Flags used by the compiler during all build types." FORCE)
 
+# On Windows, set linker flag for Unicode to use wmain
+# (this affects all programs since all are command line tools)
+if(TARGET_OS STREQUAL "windows")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -municode")
+endif()
+
 # Mark executables as debug (*_d) when debug build is selected
-if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" OR CMAKE_CFG_INTDIR STREQUAL "Debug" OR CMAKE_CFG_INTDIR STREQUAL "RelWithDebInfo")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" OR CMAKE_CFG_INTDIR STREQUAL "Debug" OR CMAKE_CFG_INTDIR STREQUAL "RelWithDebInfo")
 	set(IS_DEBUG TRUE)
 	set(CMAKE_DEBUG_POSTFIX "_d")
-	if (TARGET_OS STREQUAL "windows")
+	if(TARGET_OS STREQUAL "windows")
 		set(CMAKE_EXECUTABLE_SUFFIX "_d.exe")
 	else()
 		set(CMAKE_EXECUTABLE_SUFFIX "_d")

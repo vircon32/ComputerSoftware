@@ -9,7 +9,7 @@
     #include <sys/stat.h>       // [ ANSI C ] File status
     
     // these includes are only for unicode conversions
-    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+    #if defined(WINDOWS_OS)
       #define WINDOWS_OS
       #include <locale>         // [ C++ STL ] Locales
       #include <codecvt>        // [ C++ STL ] Encoding conversions
@@ -143,19 +143,6 @@ bool IsFileNameValid( const string& FileName )
 
 // -----------------------------------------------------------------------------
 
-#if defined(WINDOWS_OS)
-
-  // auxiliary function for all UTF-8 to UTF-16 string conversions
-  wstring ToUTF16( const string& TextUTF8 )
-  {
-      wstring_convert< codecvt_utf8_utf16< wchar_t > > Converter;
-      return Converter.from_bytes( TextUTF8 );
-  }
-
-#endif
-
-// -----------------------------------------------------------------------------
-
 bool FileExists( const string& FilePath )
 {
     #if defined(WINDOWS_OS)
@@ -224,6 +211,30 @@ bool CreateDirectory( const std::string DirectoryPath )
     
     return (Status >= 0);
 }
+
+
+// =============================================================================
+//      UNICODE STRING CONVERSIONS UTF-8 <-> UTF-16
+// =============================================================================
+
+
+#if defined(WINDOWS_OS)
+
+  wstring ToUTF16( const string& TextUTF8 )
+  {
+      wstring_convert< codecvt_utf8_utf16< wchar_t > > Converter;
+      return Converter.from_bytes( TextUTF8 );
+  }
+  
+  // -----------------------------------------------------------------------------
+  
+  string ToUTF8( const wstring& TextUTF16 )
+  {
+      wstring_convert< codecvt_utf8_utf16< wchar_t > > Converter;
+      return Converter.to_bytes( TextUTF16 );
+  }
+
+#endif
 
 
 // =============================================================================

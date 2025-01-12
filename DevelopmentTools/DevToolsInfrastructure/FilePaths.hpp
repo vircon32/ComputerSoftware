@@ -8,6 +8,11 @@
     #include <iostream>         // [ C++ STL ] I/O streams
     #include <fstream>          // [ C++ STL ] File streams
     #include <stdio.h>          // [ ANSI C ] Standard I/O
+    
+    // detection of Windows
+    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+      #define WINDOWS_OS
+    #endif
 // *****************************************************************************
 
 
@@ -35,6 +40,20 @@ bool DirectoryExists( const std::string &Path );
 
 // creating directories
 bool CreateDirectory( const std::string DirectoryPath );
+
+
+// =============================================================================
+//      UNICODE STRING CONVERSIONS UTF-8 <-> UTF-16
+// =============================================================================
+
+
+#if defined(WINDOWS_OS)
+
+  // auxiliary functions for all UTF-8 to UTF-16 string conversions
+  std::wstring ToUTF16( const std::string& TextUTF8 );
+  std::string ToUTF8( const std::wstring& TextUTF16 );
+
+#endif
 
 
 // =============================================================================

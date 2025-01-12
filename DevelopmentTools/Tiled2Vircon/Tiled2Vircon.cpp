@@ -8,9 +8,15 @@
     #include <iostream>         // [ C++ STL ] I/O streams
     #include <fstream>          // [ C++ STL ] File streams
     #include <sstream>          // [ C++ STL ] String streams
+    #include <vector>           // [ C++ STL ] Vectors
     
     // include TinyXML2 headers
     #include <tinyxml2.h>       // [ TinyXML2 ] Main header
+    
+    // detection of Windows
+    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+      #define WINDOWS_OS
+    #endif
     
     // declare used namespaces
     using namespace std;
@@ -116,7 +122,14 @@ void PrintVersion()
 // =============================================================================
 
 
-int main( int NumberOfArguments, char** Arguments )
+// on Windows we need to use wmain to be able to receive
+// unicode text from the console as input arguments; if
+// we use regular main we can only process ASCII paths
+#if defined(WINDOWS_OS)
+  int wmain( int NumberOfArguments, wchar_t* ArgumentsUTF16[] )
+#else
+  int main( int NumberOfArguments, char* Arguments[] )
+#endif
 {
     try
     {
@@ -125,6 +138,15 @@ int main( int NumberOfArguments, char** Arguments )
         
         // variables to capture input parameters
         string InputPath, OutputFolder;
+        
+        // on Windows convert all arguments to UTF-8 beforehand
+        // (that way we can treat them the same as in other OSs)
+        #if defined(WINDOWS_OS)
+          vector< string > Arguments;
+          
+          for( int i = 1; i < NumberOfArguments; i++ )
+            Arguments.push_back( ToUTF8( ArgumentsUTF16[i] ) );
+        #endif
         
         // process arguments
         for( int i = 1; i < NumberOfArguments; i++ )
@@ -193,13 +215,37 @@ int main( int NumberOfArguments, char** Arguments )
         // STEP 1: Open the source XML and read basic information
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
-        // try to open the source file as an XML document
+        FILE* InputFile = nullptr;
         XMLDocument LoadedMap;
-        XMLError ErrorCode = LoadedMap.LoadFile( InputPath.c_str() );
         
-        if( ErrorCode != XML_SUCCESS )
-          throw runtime_error( "Cannot read XML from file path " + InputPath );
-          
+        try
+        {
+            // open the file
+            InputFile = OpenInputFile( InputPath );
+            
+            if( !InputFile )
+              throw runtime_error( string("cannot open input file \"") + InputPath + "\"" );
+            
+            // load file as an XML document
+            XMLError ErrorCode = LoadedMap.LoadFile( InputFile );
+            
+            if( ErrorCode != XML_SUCCESS )
+              throw runtime_error( "Cannot read XML from file path " + InputPath );
+        
+            // close the file
+            fclose( InputFile );
+            InputFile = nullptr;
+        }
+        catch(...)
+        {
+            // ensure the file is never left open
+            if( InputFile )
+              fclose( InputFile );
+            
+            // and then rethrow the exception&
+            throw;
+        }
+        
         // obtain XML root
         XMLElement* MapRoot = LoadedMap.FirstChildElement( "map" );
         

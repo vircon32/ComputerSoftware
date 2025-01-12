@@ -16,6 +16,12 @@
     #include <iostream>     // [ C++ STL ] I/O Streams
     #include <map>          // [ C++ STL ] Maps
     #include <list>         // [ C++ STL ] Lists
+    #include <vector>       // [ C++ STL ] Vectors
+    
+    // detection of Windows
+    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+      #define WINDOWS_OS
+    #endif
     
     // declare used namespaces
     using namespace std;
@@ -53,7 +59,14 @@ void PrintVersion()
 // =============================================================================
 
 
-int main( int NumberOfArguments, char* Arguments[] )
+// on Windows we need to use wmain to be able to receive
+// unicode text from the console as input arguments; if
+// we use regular main we can only process ASCII paths
+#if defined(WINDOWS_OS)
+  int wmain( int NumberOfArguments, wchar_t* ArgumentsUTF16[] )
+#else
+  int main( int NumberOfArguments, char* Arguments[] )
+#endif
 {
     try
     {
@@ -62,6 +75,15 @@ int main( int NumberOfArguments, char* Arguments[] )
         
         // variables to capture input parameters
         string InputPath, OutputPath;
+        
+        // on Windows convert all arguments to UTF-8 beforehand
+        // (that way we can treat them the same as in other OSs)
+        #if defined(WINDOWS_OS)
+          vector< string > Arguments;
+          
+          for( int i = 1; i < NumberOfArguments; i++ )
+            Arguments.push_back( ToUTF8( ArgumentsUTF16[i] ) );
+        #endif
         
         // process arguments
         for( int i = 1; i < NumberOfArguments; i++ )

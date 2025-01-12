@@ -13,7 +13,13 @@
     #include <iostream>     // [ C++ STL ] I/O Streams
     #include <string>       // [ C++ STL ] Strings
     #include <stdexcept>    // [ C++ STL ] Exceptions
+    #include <vector>       // [ C++ STL ] Vectors
     #include <string.h>     // [ ANSI C ] Strings
+    
+    // detection of Windows
+    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+      #define WINDOWS_OS
+    #endif
     
     // declare used namespaces
     using namespace std;
@@ -59,7 +65,14 @@ void PrintVersion()
 // =============================================================================
 
 
-int main( int NumberOfArguments, char* Arguments[] )
+// on Windows we need to use wmain to be able to receive
+// unicode text from the console as input arguments; if
+// we use regular main we can only process ASCII paths
+#if defined(WINDOWS_OS)
+  int wmain( int NumberOfArguments, wchar_t* ArgumentsUTF16[] )
+#else
+  int main( int NumberOfArguments, char* Arguments[] )
+#endif
 {
     try
     {
@@ -68,6 +81,15 @@ int main( int NumberOfArguments, char* Arguments[] )
         
         // variables to capture input parameters
         string InputFolder, OutputFile;
+        
+        // on Windows convert all arguments to UTF-8 beforehand
+        // (that way we can treat them the same as in other OSs)
+        #if defined(WINDOWS_OS)
+          vector< string > Arguments;
+          
+          for( int i = 1; i < NumberOfArguments; i++ )
+            Arguments.push_back( ToUTF8( ArgumentsUTF16[i] ) );
+        #endif
         
         // process arguments
         for( int i = 1; i < NumberOfArguments; i++ )
@@ -124,11 +146,11 @@ int main( int NumberOfArguments, char* Arguments[] )
                   throw runtime_error( "missing hotspot position after '-hx'" );
                 
                 // read position value
-                if( !strcmp( Arguments[ i ], "left" ) )
+                if( Arguments[ i ] == string("left") )
                   HotspotProportionX = 0;
-                else if( !strcmp( Arguments[ i ], "center" ) )
+                else if( Arguments[ i ] == string("center") )
                   HotspotProportionX = 0.5;
-                else if( !strcmp( Arguments[ i ], "right" ) )
+                else if( Arguments[ i ] == string("right") )
                   HotspotProportionX = 1;
                 else throw runtime_error( "invalid X hotspot position (must be left, center or right)" );
                 
@@ -144,11 +166,11 @@ int main( int NumberOfArguments, char* Arguments[] )
                   throw runtime_error( "missing hotspot position after '-hy'" );
                 
                 // read position value
-                if( !strcmp( Arguments[ i ], "top" ) )
+                if( Arguments[ i ] == string("top") )
                   HotspotProportionY = 0;
-                else if( !strcmp( Arguments[ i ], "center" ) )
+                else if( Arguments[ i ] == string("center") )
                   HotspotProportionY = 0.5;
-                else if( !strcmp( Arguments[ i ], "bottom" ) )
+                else if( Arguments[ i ] == string("bottom") )
                   HotspotProportionY = 1;
                 else throw runtime_error( "invalid Y hotspot position (must be top, center or bottom)" );
                 
