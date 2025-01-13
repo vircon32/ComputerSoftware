@@ -200,7 +200,7 @@ bool DirectoryExists( const string& Path )
 
 
 // returns true on success
-bool CreateDirectory( const std::string DirectoryPath )
+bool CreateNewDirectory( const string& DirectoryPath )
 {
     #if defined(WINDOWS_OS)
       wstring DirectoryPathUTF16 = ToUTF16( DirectoryPath );

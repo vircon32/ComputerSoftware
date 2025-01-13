@@ -39,7 +39,7 @@ bool FileExists( const std::string &FilePath );
 bool DirectoryExists( const std::string &Path );
 
 // creating directories
-bool CreateDirectory( const std::string DirectoryPath );
+bool CreateNewDirectory( const std::string& DirectoryPath );
 
 
 // =============================================================================

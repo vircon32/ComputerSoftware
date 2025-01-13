@@ -356,7 +356,7 @@ void RomDefinition::UnpackROM( const std::string& InputPath, const std::string& 
         string TexturesFolderPath = BaseFolder + PathSeparator + "textures";
         
         if( !DirectoryExists( TexturesFolderPath ) )
-          if( !CreateDirectory( TexturesFolderPath ) )
+          if( !CreateNewDirectory( TexturesFolderPath ) )
             throw runtime_error( "Cannot create textures folder" );
     }
     
@@ -399,7 +399,7 @@ void RomDefinition::UnpackROM( const std::string& InputPath, const std::string& 
         string SoundsFolderPath = BaseFolder + PathSeparator + "sounds";
         
         if( !DirectoryExists( SoundsFolderPath ) )
-          if( !CreateDirectory( SoundsFolderPath ) )
+          if( !CreateNewDirectory( SoundsFolderPath ) )
             throw runtime_error( "Cannot create sounds folder" );
     }
     

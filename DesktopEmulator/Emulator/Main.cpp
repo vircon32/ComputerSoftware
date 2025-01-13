@@ -45,9 +45,11 @@
       #include <gtk/gtk.h>      // [ GTK ] Main header
     #endif
     
-    // detection of Windows
+    // on Windows include headers for unicode conversion
     #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
       #define WINDOWS_OS
+      #include <windows.h>      // [ WINDOWS ] Main header
+      #include <shellapi.h>     // [ WINDOWS ] Shell API
     #endif
     
     // declare used namespaces
@@ -125,14 +127,7 @@ string GetProgramFolder()
 // =============================================================================
 
 
-// on Windows we need to use wmain to be able to receive
-// unicode text from the console as input arguments; if
-// we use regular main we can only process ASCII paths
-#if defined(WINDOWS_OS)
-  int wmain( int NumberOfArguments, wchar_t* Arguments[] )
-#else
-  int main( int NumberOfArguments, char* Arguments[] )
-#endif
+int main( int NumberOfArguments, char* Arguments[] )
 {
     if( NumberOfArguments > 2 )
     {
@@ -258,7 +253,7 @@ string GetProgramFolder()
         {
             // on non-windows systems load and set the window icon
             // (not needed on Windows: already packed in the executable)
-            #if !defined(__WIN32__) && !defined(_WIN32) && !defined(_WIN64)            
+            #if !defined(WINDOWS_OS)            
               string IconPath = string(EmulatorFolder) + "Images" + PathSeparator + "Vircon32Multisize.ico";
               SDL_Surface* WindowIcon = IMG_Load( IconPath.c_str() );
               SDL_SetWindowIcon( Video.GetWindow(), WindowIcon );
@@ -301,10 +296,22 @@ string GetProgramFolder()
         if( NumberOfArguments == 2 )
         {
             #if defined(WINDOWS_OS)
-              wstring CartridgePathUTF16 = Arguments[ 1 ];
-              GUI_LoadCartridge( ToUTF8( CartridgePathUTF16 ) );
+            
+              // on Windows we can't rely on the arguments received
+              // in main: ask Windows for the UTF-16 command line
+              wchar_t* CommandLineUTF16 = GetCommandLineW();
+              wchar_t** ArgumentsUTF16 = CommandLineToArgvW( CommandLineUTF16, &NumberOfArguments );
+              
+              // now convert the first program argument to UTF-8
+              GUI_LoadCartridge( ToUTF8( ArgumentsUTF16[ 1 ] ) );
+              
+              LocalFree( ArgumentsUTF16 );
+          
             #else
+                
+              // on Linux/Mac arguments in main are already UTF-8
               GUI_LoadCartridge( Arguments[ 1 ] );
+              
             #endif
         }
         

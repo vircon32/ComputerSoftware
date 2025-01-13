@@ -33,6 +33,11 @@
     #include <imgui/imgui_impl_sdl.h>       // [ Dear ImGui ] SDL2 backend header
     #include <imgui/imgui_impl_opengl3.h>   // [ Dear ImGui ] OpenGL 3 backend header
     
+    // detection of Windows
+    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+      #define WINDOWS_OS
+    #endif
+    
     // declare used namespaces
     using namespace std;
     using namespace V32;
@@ -365,7 +370,10 @@ string GetAutomaticMemoryCardPath( const string& CartridgePath )
     
     // step 2: isolate file name and replace extension
     string CartridgeFileName = GetPathFileName( CartridgePath );
+    LOG( "CartridgePath = \"" + CartridgePath );
+    LOG( "CartridgeFileName = \"" + CartridgeFileName );
     string CardFileName = ReplaceFileExtension( CartridgeFileName, "memc" );
+    LOG( "CardFileName = \"" + CardFileName );
     
     // step 3: form the full path
     return CardsFolder + PathSeparator + CardFileName;
@@ -1159,20 +1167,22 @@ void ProcessMenuHelp()
         // unfortunately the way to open a text file is
         // dependent on the underlying operating system
         #if defined(__linux__)
-          string ReadmePath = "xdg-open \"" + EmulatorFolder + Texts(TextIDs::FileNames_Readme) + "\"";
-        
-        #elif defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
-          string ReadmePath = "start notepad \"" + EmulatorFolder + Texts(TextIDs::FileNames_Readme) + "\"";
+          string ReadmeCommand = "xdg-open \"" + EmulatorFolder + Texts(TextIDs::FileNames_Readme) + "\"";
+          system( ReadmeCommand.c_str() );
+          
+        #elif defined(WINDOWS_OS)
+          string ReadmeCommand = "start notepad \"" + EmulatorFolder + Texts(TextIDs::FileNames_Readme) + "\"";
+          wstring ReadmeCommandUTF16 = ToUTF16( ReadmeCommand );
+          _wsystem( ReadmeCommandUTF16.c_str() );
         
         #elif defined(__APPLE__)
-          string ReadmePath = "open -a TextEdit \"" + EmulatorFolder + Texts(TextIDs::FileNames_Readme) + "\"";
-        
+          string ReadmeCommand = "open -a TextEdit \"" + EmulatorFolder + Texts(TextIDs::FileNames_Readme) + "\"";
+          system( ReadmeCommand.c_str() );
+          
         #else
           #error No information on how to show Readme file in this operating system!
 
         #endif
-        
-        system( ReadmePath.c_str() );
     }
     
     if( ImGui::MenuItem( Texts(TextIDs::Help_About) ) )

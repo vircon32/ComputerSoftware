@@ -16,9 +16,11 @@
     #include <vector>       // [ C++ STL ] Vectors
     #include <string.h>     // [ ANSI C ] Strings
     
-    // detection of Windows
+    // on Windows include headers for unicode conversion
     #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
       #define WINDOWS_OS
+      #include <windows.h>      // [ WINDOWS ] Main header
+      #include <shellapi.h>     // [ WINDOWS ] Shell API
     #endif
     
     // declare used namespaces
@@ -65,14 +67,7 @@ void PrintVersion()
 // =============================================================================
 
 
-// on Windows we need to use wmain to be able to receive
-// unicode text from the console as input arguments; if
-// we use regular main we can only process ASCII paths
-#if defined(WINDOWS_OS)
-  int wmain( int NumberOfArguments, wchar_t* ArgumentsUTF16[] )
-#else
-  int main( int NumberOfArguments, char* Arguments[] )
-#endif
+int main( int NumberOfArguments, char* Arguments[] )
 {
     try
     {
@@ -82,37 +77,53 @@ void PrintVersion()
         // variables to capture input parameters
         string InputFolder, OutputFile;
         
-        // on Windows convert all arguments to UTF-8 beforehand
-        // (that way we can treat them the same as in other OSs)
+        // to treat arguments the same in any OS we
+        // will convert them to UTF-8 in all cases
+        vector< string > ArgumentsUTF8;
+        
         #if defined(WINDOWS_OS)
-          vector< string > Arguments;
+        
+          // on Windows we can't rely on the arguments received
+          // in main: ask Windows for the UTF-16 command line
+          wchar_t* CommandLineUTF16 = GetCommandLineW();
+          wchar_t** ArgumentsUTF16 = CommandLineToArgvW( CommandLineUTF16, &NumberOfArguments );
           
-          for( int i = 1; i < NumberOfArguments; i++ )
-            Arguments.push_back( ToUTF8( ArgumentsUTF16[i] ) );
+          // now convert every program argument to UTF-8
+          for( int i = 0; i < NumberOfArguments; i++ )
+            ArgumentsUTF8.push_back( ToUTF8( ArgumentsUTF16[i] ) );
+          
+          LocalFree( ArgumentsUTF16 );
+          
+        #else
+            
+          // on Linux/Mac arguments in main are already UTF-8
+          for( int i = 0; i < NumberOfArguments; i++ )
+            ArgumentsUTF8.push_back( Arguments[i] );
+        
         #endif
         
         // process arguments
         for( int i = 1; i < NumberOfArguments; i++ )
         {
-            if( Arguments[i] == string("--help") )
+            if( ArgumentsUTF8[i] == string("--help") )
             {
                 PrintUsage();
                 return 0;
             }
             
-            if( Arguments[i] == string("--version") )
+            if( ArgumentsUTF8[i] == string("--version") )
             {
                 PrintVersion();
                 return 0;
             }
             
-            if( Arguments[i] == string("-v") )
+            if( ArgumentsUTF8[i] == string("-v") )
             {
                 VerboseMode = true;
                 continue;
             }
             
-            if( Arguments[i] == string("-g") )
+            if( ArgumentsUTF8[i] == string("-g") )
             {
                 // expect another argument
                 i++;
@@ -123,7 +134,7 @@ void PrintVersion()
                 // try to parse an integer from rate argument
                 try
                 {
-                    GapBetweenImages = stoi( Arguments[ i ] );
+                    GapBetweenImages = stoi( ArgumentsUTF8[ i ] );
                 }
                 catch( const exception& e )
                 {
@@ -137,7 +148,7 @@ void PrintVersion()
                 continue;
             }
             
-            if( Arguments[i] == string("-hx") )
+            if( ArgumentsUTF8[i] == string("-hx") )
             {
                 // expect another argument
                 i++;
@@ -146,18 +157,18 @@ void PrintVersion()
                   throw runtime_error( "missing hotspot position after '-hx'" );
                 
                 // read position value
-                if( Arguments[ i ] == string("left") )
+                if( ArgumentsUTF8[ i ] == string("left") )
                   HotspotProportionX = 0;
-                else if( Arguments[ i ] == string("center") )
+                else if( ArgumentsUTF8[ i ] == string("center") )
                   HotspotProportionX = 0.5;
-                else if( Arguments[ i ] == string("right") )
+                else if( ArgumentsUTF8[ i ] == string("right") )
                   HotspotProportionX = 1;
                 else throw runtime_error( "invalid X hotspot position (must be left, center or right)" );
                 
                 continue;
             }
             
-            if( Arguments[i] == string("-hy") )
+            if( ArgumentsUTF8[i] == string("-hy") )
             {
                 // expect another argument
                 i++;
@@ -166,11 +177,11 @@ void PrintVersion()
                   throw runtime_error( "missing hotspot position after '-hy'" );
                 
                 // read position value
-                if( Arguments[ i ] == string("top") )
+                if( ArgumentsUTF8[ i ] == string("top") )
                   HotspotProportionY = 0;
-                else if( Arguments[ i ] == string("center") )
+                else if( ArgumentsUTF8[ i ] == string("center") )
                   HotspotProportionY = 0.5;
-                else if( Arguments[ i ] == string("bottom") )
+                else if( ArgumentsUTF8[ i ] == string("bottom") )
                   HotspotProportionY = 1;
                 else throw runtime_error( "invalid Y hotspot position (must be top, center or bottom)" );
                 
@@ -178,24 +189,24 @@ void PrintVersion()
             }
             
             // discard any other parameters starting with '-'
-            if( Arguments[i][0] == '-' )
-              throw runtime_error( string("unrecognized command line option '") + Arguments[i] + "'" );
+            if( ArgumentsUTF8[i][0] == '-' )
+              throw runtime_error( string("unrecognized command line option '") + ArgumentsUTF8[i] + "'" );
             
             // first non-option parameter is taken as the input folder
             if( InputFolder.empty() )
             {
-                InputFolder = Arguments[i];
+                InputFolder = ArgumentsUTF8[i];
             }
            
             // second non-option parameter is taken as the output file
             else if( OutputFile.empty() )
             {
-                OutputFile = Arguments[i];
+                OutputFile = ArgumentsUTF8[i];
             }
             
             // only a single input file is supported!
             else
-              throw runtime_error( "too many input files, only 1 is supported" );
+              throw runtime_error( "too many arguments" );
         }
         
         // check if an input folder was given
@@ -203,19 +214,21 @@ void PrintVersion()
           throw runtime_error( "no input folder" );
         
         // check that it exists and is a folder
-        filesystem::path InputPath( InputFolder );
+        filesystem::path InputFolderPath = filesystem::u8path( InputFolder );
         
-        if( !filesystem::exists( InputPath ) )
+        if( !filesystem::exists( InputFolderPath ) )
           throw runtime_error( "input folder does not exist" );
         
-        if( !filesystem::is_directory( InputPath ) )
+        if( !filesystem::is_directory( InputFolderPath ) )
           throw runtime_error( "input path is a file, expected a folder" );
         
         // check if an output file was given and is not a folder
         if( OutputFile.empty() )
           throw runtime_error( "no output file" );
         
-        if( filesystem::is_directory( OutputFile ) )
+        filesystem::path OutputFilePath = filesystem::u8path( OutputFile );
+        
+        if( filesystem::is_directory( OutputFilePath ) )
           throw runtime_error( "input path must be a file, found a folder" );
       
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -224,7 +237,7 @@ void PrintVersion()
         if( VerboseMode )
           cout << "loading PNGs from input folder \"" << InputFolder << "\"" << endl;
         
-        for( auto const& DirEntry : std::filesystem::directory_iterator{ InputPath } )
+        for( auto const& DirEntry : std::filesystem::directory_iterator{ InputFolderPath } )
         {
             // discard symlinks, non-files, etc.
             if( DirEntry.is_directory() || DirEntry.is_symlink() || !DirEntry.is_regular_file() )

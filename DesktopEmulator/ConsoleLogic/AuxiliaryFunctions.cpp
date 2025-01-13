@@ -2,6 +2,11 @@
     // include console logic headers
     #include "AuxiliaryFunctions.hpp"
     
+    // detection of Windows
+    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+      #define WINDOWS_OS
+    #endif
+    
     // declare used namespaces
     using namespace std;
 // *****************************************************************************
@@ -15,7 +20,7 @@ namespace V32
     
     
     // this is dependent on the host operating system
-    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+    #if defined(WINDOWS_OS)
         char PathSeparator = '\\';
     #else
         char PathSeparator = '/';
@@ -28,7 +33,7 @@ namespace V32
         size_t SlashPosition = FilePath.rfind( PathSeparator );
         
         if( SlashPosition == string::npos )
-          return "";
+          return FilePath;
         
         if( FilePath.size() < (SlashPosition + 2) )
           return "";

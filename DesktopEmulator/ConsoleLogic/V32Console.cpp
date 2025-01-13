@@ -665,6 +665,8 @@ namespace V32
         
         // save the file name
         CartridgeController.CartridgeFileName = GetPathFileName( FilePath );
+        Callbacks::LogLine( "FilePath = \"" + FilePath );
+        Callbacks::LogLine( "CartridgeFileName = \"" + CartridgeController.CartridgeFileName );
         Callbacks::LogLine( "Finished loading cartridge" );
     }
     

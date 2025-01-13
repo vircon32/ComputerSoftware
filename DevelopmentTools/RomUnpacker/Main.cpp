@@ -18,9 +18,11 @@
     #include <stdexcept>    // [ C++ STL ] Exceptions
     #include <vector>       // [ C++ STL ] Vectors
     
-    // detection of Windows
+    // on Windows include headers for unicode conversion
     #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
       #define WINDOWS_OS
+      #include <windows.h>      // [ WINDOWS ] Main header
+      #include <shellapi.h>     // [ WINDOWS ] Shell API
     #endif
     
     // declare used namespaces
@@ -95,14 +97,7 @@ void PerformABIAssertions()
 // =============================================================================
 
 
-// on Windows we need to use wmain to be able to receive
-// unicode text from the console as input arguments; if
-// we use regular main we can only process ASCII paths
-#if defined(WINDOWS_OS)
-  int wmain( int NumberOfArguments, wchar_t* ArgumentsUTF16[] )
-#else
-  int main( int NumberOfArguments, char* Arguments[] )
-#endif
+int main( int NumberOfArguments, char* Arguments[] )
 {
     try
     {
@@ -112,37 +107,53 @@ void PerformABIAssertions()
         // variables to capture input parameters
         string InputPath, OutputPath;
         
-        // on Windows convert all arguments to UTF-8 beforehand
-        // (that way we can treat them the same as in other OSs)
+        // to treat arguments the same in any OS we
+        // will convert them to UTF-8 in all cases
+        vector< string > ArgumentsUTF8;
+        
         #if defined(WINDOWS_OS)
-          vector< string > Arguments;
+        
+          // on Windows we can't rely on the arguments received
+          // in main: ask Windows for the UTF-16 command line
+          wchar_t* CommandLineUTF16 = GetCommandLineW();
+          wchar_t** ArgumentsUTF16 = CommandLineToArgvW( CommandLineUTF16, &NumberOfArguments );
           
-          for( int i = 1; i < NumberOfArguments; i++ )
-            Arguments.push_back( ToUTF8( ArgumentsUTF16[i] ) );
+          // now convert every program argument to UTF-8
+          for( int i = 0; i < NumberOfArguments; i++ )
+            ArgumentsUTF8.push_back( ToUTF8( ArgumentsUTF16[i] ) );
+          
+          LocalFree( ArgumentsUTF16 );
+          
+        #else
+            
+          // on Linux/Mac arguments in main are already UTF-8
+          for( int i = 0; i < NumberOfArguments; i++ )
+            ArgumentsUTF8.push_back( Arguments[i] );
+        
         #endif
         
         // process arguments
         for( int i = 1; i < NumberOfArguments; i++ )
         {
-            if( Arguments[i] == string("--help") )
+            if( ArgumentsUTF8[i] == string("--help") )
             {
                 PrintUsage();
                 return 0;
             }
             
-            if( Arguments[i] == string("--version") )
+            if( ArgumentsUTF8[i] == string("--version") )
             {
                 PrintVersion();
                 return 0;
             }
             
-            if( Arguments[i] == string("-v") )
+            if( ArgumentsUTF8[i] == string("-v") )
             {
                 VerboseMode = true;
                 continue;
             }
             
-            if( Arguments[i] == string("-o") )
+            if( ArgumentsUTF8[i] == string("-o") )
             {
                 // expect another argument
                 i++;
@@ -151,21 +162,21 @@ void PerformABIAssertions()
                   throw runtime_error( "missing filename after '-o'" );
                 
                 // now we can safely read the input path
-                OutputPath = Arguments[ i ];
+                OutputPath = ArgumentsUTF8[ i ];
                 continue;
             }
             
             // discard any other parameters starting with '-'
-            if( Arguments[i][0] == '-' )
-              throw runtime_error( string("unrecognized command line option '") + Arguments[i] + "'" );
+            if( ArgumentsUTF8[i][0] == '-' )
+              throw runtime_error( string("unrecognized command line option '") + ArgumentsUTF8[i] + "'" );
             
             // the first non-option parameter is taken as the input file
             if( InputPath.empty() )
-              InputPath = Arguments[i];
+              InputPath = ArgumentsUTF8[i];
             
             // the second non-option parameter is taken as the output folder
             else if( OutputPath.empty() )
-              OutputPath = Arguments[i];
+              OutputPath = ArgumentsUTF8[i];
             
             // other parameters are not supported
             else throw runtime_error( "too many non-option parameters" );
@@ -189,7 +200,7 @@ void PerformABIAssertions()
             if( VerboseMode )
               cout << "creating output folder: \"" << OutputPath << "\"" << endl;
             
-            if( !CreateDirectory( OutputPath ) )
+            if( !CreateNewDirectory( OutputPath ) )
               throw runtime_error( "Cannot create output folder" );
         }
         
