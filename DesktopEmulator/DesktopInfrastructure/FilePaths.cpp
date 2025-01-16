@@ -8,6 +8,12 @@
     #include <algorithm>        // [ C++ STL ] Algorithms
     #include <sys/stat.h>       // [ ANSI C ] File status
     
+    // these includes are only for unicode conversions
+    #if defined(WINDOWS_OS)
+      #include <locale>         // [ C++ STL ] Locales
+      #include <codecvt>        // [ C++ STL ] Encoding conversions
+    #endif
+    
     // declare used namespaces
     using namespace std;
 // *****************************************************************************
@@ -19,15 +25,15 @@
 
 
 // this is dependent on the host operating system
-#if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
-    char PathSeparator = '\\';
+#if defined(WINDOWS_OS)
+    const char PathSeparator = '\\';
 #else
-    char PathSeparator = '/';
+    const char PathSeparator = '/';
 #endif
 
 
 // =============================================================================
-//      STRING MANIPULATION FUNCTIONS
+//      FILE PATH MANIPULATION FUNCTIONS
 // =============================================================================
 
 
@@ -117,22 +123,126 @@ bool IsFileNameValid( const string& FileName )
 
 bool FileExists( const string& FilePath )
 {
-    struct stat Info;
-
-    if( stat( FilePath.c_str(), &Info ) != 0 )
-      return false;
+    #if defined(WINDOWS_OS)
     
-    return !(Info.st_mode & S_IFDIR);
+      struct _stat Info;
+      wstring FilePathUTF16 = ToUTF16( FilePath );
+      
+      if( _wstat( FilePathUTF16.c_str(), &Info ) != 0 )
+        return false;
+      
+      return !(Info.st_mode & _S_IFDIR);
+      
+    #else
+        
+      struct stat Info;
+      
+      if( stat( FilePath.c_str(), &Info ) != 0 )
+        return false;
+      
+      return !(Info.st_mode & S_IFDIR);
+      
+    #endif
 }
 
 // -----------------------------------------------------------------------------
 
 bool DirectoryExists( const string& Path )
 {
-    struct stat Info;
-
-    if( stat( Path.c_str(), &Info ) != 0 )
-      return false;
+    #if defined(WINDOWS_OS)
     
-    return (Info.st_mode & S_IFDIR);
+      struct _stat Info;
+      wstring PathUTF16 = ToUTF16( Path );
+      
+      if( _wstat( PathUTF16.c_str(), &Info ) != 0 )
+        return false;
+      
+      return (Info.st_mode & _S_IFDIR);
+      
+    #else
+        
+      struct stat Info;
+      
+      if( stat( Path.c_str(), &Info ) != 0 )
+        return false;
+      
+      return (Info.st_mode & S_IFDIR);
+      
+    #endif
+}
+
+
+// =============================================================================
+//      UNICODE STRING CONVERSIONS UTF-8 <-> UTF-16
+// =============================================================================
+
+
+#if defined(WINDOWS_OS)
+
+  wstring ToUTF16( const string& TextUTF8 )
+  {
+      wstring_convert< codecvt_utf8_utf16< wchar_t > > Converter;
+      return Converter.from_bytes( TextUTF8 );
+  }
+  
+  // -----------------------------------------------------------------------------
+  
+  string ToUTF8( const wstring& TextUTF16 )
+  {
+      wstring_convert< codecvt_utf8_utf16< wchar_t > > Converter;
+      return Converter.to_bytes( TextUTF16 );
+  }
+
+#endif
+
+
+// =============================================================================
+//      WRAPPERS FOR PROPER FILE ACCESS ON UNICODE PATHS
+// =============================================================================
+
+
+void OpenInputFile( ifstream& InputFile, const string& FilePathUTF8, ios_base::openmode Mode )
+{
+    #if defined(WINDOWS_OS)
+      wstring FilePathUTF16 = ToUTF16( FilePathUTF8 );
+      InputFile.open( FilePathUTF16.c_str(), Mode );
+    #else
+      InputFile.open( FilePathUTF8.c_str(), Mode );
+    #endif
+}
+
+// -----------------------------------------------------------------------------
+
+void OpenOutputFile( ofstream& OutputFile, const string& FilePathUTF8, ios_base::openmode Mode )
+{
+    #if defined(WINDOWS_OS)
+      wstring FilePathUTF16 = ToUTF16( FilePathUTF8 );
+      OutputFile.open( FilePathUTF16.c_str(), Mode );
+    #else
+      OutputFile.open( FilePathUTF8.c_str(), Mode );
+    #endif
+}
+
+// -----------------------------------------------------------------------------
+
+FILE* OpenInputFile( const std::string& FilePathUTF8 )
+{
+    #if defined(WINDOWS_OS)
+      wstring FilePathUTF16 = ToUTF16( FilePathUTF8 );
+      return _wfopen( FilePathUTF16.c_str(), L"rb" );
+    #else
+      return fopen( FilePathUTF8.c_str(), "rb" );
+    #endif
+}
+
+// -----------------------------------------------------------------------------
+
+FILE* OpenOutputFile( const std::string& FilePathUTF8 )
+{
+    #if defined(WINDOWS_OS)
+      wstring FilePathUTF16 = ToUTF16( FilePathUTF8 );
+      return _wfopen( FilePathUTF16.c_str(), L"wb" );
+    #else
+      return fopen( FilePathUTF8.c_str(), "wb" );
+    #endif
 }

@@ -23,6 +23,7 @@
     #include <cstddef>          // [ ANSI C ] Standard definitions
     
     // include SDL2 headers
+    #define SDL_MAIN_HANDLED
     #include "SDL_image.h"      // [ SDL2 ] SDL_Image
     
     // include imgui headers
@@ -42,6 +43,13 @@
     // on Linux, include GTK headers
     #if defined(__linux__)
       #include <gtk/gtk.h>      // [ GTK ] Main header
+    #endif
+    
+    // on Windows include headers for unicode conversion
+    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+      #define WINDOWS_OS
+      #include <windows.h>      // [ WINDOWS ] Main header
+      #include <shellapi.h>     // [ WINDOWS ] Shell API
     #endif
     
     // declare used namespaces
@@ -245,7 +253,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         {
             // on non-windows systems load and set the window icon
             // (not needed on Windows: already packed in the executable)
-            #if !defined(__WIN32__) && !defined(_WIN32) && !defined(_WIN64)            
+            #if !defined(WINDOWS_OS)            
               string IconPath = string(EmulatorFolder) + "Images" + PathSeparator + "Vircon32Multisize.ico";
               SDL_Surface* WindowIcon = IMG_Load( IconPath.c_str() );
               SDL_SetWindowIcon( Video.GetWindow(), WindowIcon );
@@ -284,12 +292,27 @@ int main( int NumberOfArguments, char* Arguments[] )
         Console.LoadBios( EmulatorFolder + "Bios" + PathSeparator + BiosFileName );
         
         // if a cartridge file has been specified, load it
+        // (this will also turn on the console)
         if( NumberOfArguments == 2 )
         {
-            string CartridgePath = Arguments[ 1 ];
+            #if defined(WINDOWS_OS)
             
-            // this will also turn on the console
-            GUI_LoadCartridge( CartridgePath );
+              // on Windows we can't rely on the arguments received
+              // in main: ask Windows for the UTF-16 command line
+              wchar_t* CommandLineUTF16 = GetCommandLineW();
+              wchar_t** ArgumentsUTF16 = CommandLineToArgvW( CommandLineUTF16, &NumberOfArguments );
+              
+              // now convert the first program argument to UTF-8
+              GUI_LoadCartridge( ToUTF8( ArgumentsUTF16[ 1 ] ) );
+              
+              LocalFree( ArgumentsUTF16 );
+          
+            #else
+                
+              // on Linux/Mac arguments in main are already UTF-8
+              GUI_LoadCartridge( Arguments[ 1 ] );
+              
+            #endif
         }
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

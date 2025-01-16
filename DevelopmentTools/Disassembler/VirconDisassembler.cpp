@@ -6,6 +6,7 @@
     #include "../DevToolsInfrastructure/EnumStringConversions.hpp"
     #include "../DevToolsInfrastructure/StringFunctions.hpp"
     #include "../DevToolsInfrastructure/FileSignatures.hpp"
+    #include "../DevToolsInfrastructure/FilePaths.hpp"
     
     // include project headers
     #include "VirconDisassembler.hpp"
@@ -156,7 +157,7 @@ void VirconDisassembler::LoadROM( const string& InputPath )
     
     // open input file
     ifstream InputFile;
-    InputFile.open( InputPath, ios_base::binary | ios_base::ate );
+    OpenInputFile( InputFile, InputPath, ios_base::binary | ios_base::ate );
     
     if( InputFile.fail() )
       throw runtime_error( "cannot open input file \"" + InputPath + "\"" );

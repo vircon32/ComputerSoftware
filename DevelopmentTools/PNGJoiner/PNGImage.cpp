@@ -152,7 +152,7 @@ void PNGImage::LoadFromFile( const string& PNGFilePath )
       throw runtime_error( "File \"" + FileName + "\" states non-positive matrix dimensions" );
     
     // open input file
-    FILE *PNGFile = fopen( PNGFilePath.c_str(), "rb" );
+    FILE *PNGFile = OpenInputFile( PNGFilePath );
     
     if( !PNGFile )
       throw runtime_error( string("cannot open input file \"") + PNGFilePath + "\"" );
@@ -251,7 +251,7 @@ void PNGImage::LoadFromFile( const string& PNGFilePath )
 void PNGImage::SaveToFile( const string& PNGFilePath ) const
 {
     // open output file
-    FILE *PNGFile = fopen( PNGFilePath.c_str(), "wb" );
+    FILE *PNGFile = OpenOutputFile( PNGFilePath );
     
     if( !PNGFile )
       throw runtime_error( "Cannot open output file for writing" );

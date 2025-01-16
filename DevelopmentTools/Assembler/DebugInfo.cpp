@@ -18,33 +18,11 @@
 
 
 // =============================================================================
-//      AUXILIARY FUNCTIONS FOR BETTER PATH OUTPUT
+//      AUXILIARY FUNCTIONS
 // =============================================================================
 
 
-// this replaces ALL occurences, in place
-void ReplaceCharacter( string& Text, char OldChar, char NewChar )
-{
-    replace( Text.begin(), Text.end(), OldChar, NewChar );
-}
-
-// -----------------------------------------------------------------------------
-
-// this replaces ALL occurences, in place
-void ReplaceSubstring( string& Text, const string& OldSubstring, const string& NewSubstring )
-{
-    size_t Position = 0;
-    
-    while( (Position = Text.find( OldSubstring, Position )) != string::npos )
-    {
-        Text.replace( Position, OldSubstring.length(), NewSubstring );
-        Position += NewSubstring.length();
-    }
-}
-
-// -----------------------------------------------------------------------------
-
-// auxiliary function for better path output
+// normalize separators for better path output
 string NormalizePath( const string& Path )
 {
     string Result = Path;
@@ -71,7 +49,7 @@ void SaveDebugInfoFile( const string& FilePath, const VirconASMParser& Parser, c
     
     // open output file,
     ofstream DebugInfoFile;
-    DebugInfoFile.open( FilePath );
+    OpenOutputFile( DebugInfoFile, FilePath );
     
     if( DebugInfoFile.fail() )
       throw runtime_error( "cannot open debug info file \"" + FilePath + "\"" );
@@ -113,7 +91,7 @@ void SaveLexerLog( const string& FilePath, const VirconASMPreprocessor& Preproce
       cout << "Debug mode: Saving lexer log" << endl;
     
     ofstream LogFile;
-    LogFile.open( FilePath );
+    OpenOutputFile( LogFile, FilePath );
     
     if( LogFile.fail() )
       throw runtime_error( "cannot open lexer log file \"" + FilePath + "\"" );
@@ -144,7 +122,7 @@ void SaveParserLog( const string& FilePath, const VirconASMParser& Parser )
       cout << "Debug mode: Saving parser log" << endl;
     
     ofstream LogFile;
-    LogFile.open( FilePath );
+    OpenOutputFile( LogFile, FilePath );
     
     if( LogFile.fail() )
       throw runtime_error( "cannot open parser log file \"" + FilePath + "\"" );
@@ -164,7 +142,7 @@ void SaveEmitterLog( const string& FilePath, const VirconASMParser& Parser )
       cout << "Debug mode: Saving emitter log" << endl;
     
     ofstream LogFile;
-    LogFile.open( FilePath );
+    OpenOutputFile( LogFile, FilePath );
     
     if( LogFile.fail() )
       throw runtime_error( "cannot open emitter log file \"" + FilePath + "\"" );

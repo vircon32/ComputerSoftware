@@ -13,16 +13,9 @@
 
 
 // =============================================================================
-//      SPECIFIC STRING MANIPULATIONS
+//      ESCAPING C CHARS & STRINGS
 // =============================================================================
 
-
-std::string XMLBlock( const std::string& BlockName, const std::string& BlockContent );
-std::string EscapeXML( const std::string& Unescaped );
-
-// these replace ALL occurences, in place
-void ReplaceCharacter( std::string& Text, char OldChar, char NewChar );
-void ReplaceSubstring( std::string& Text, const std::string& OldSubstring, const std::string& NewSubstring );
 
 // this produces a copy, not altering the original
 std::string EscapeCCharacter( char c );

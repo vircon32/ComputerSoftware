@@ -2,6 +2,7 @@
     // include infrastructure headers
     #include "DesktopInfrastructure/Logger.hpp"
     #include "DesktopInfrastructure/StringFunctions.hpp"
+    #include "DesktopInfrastructure/FilePaths.hpp"
     
     // include controls editor headers
     #include "Controls.hpp"
@@ -333,12 +334,19 @@ void LoadJoystickControl( JoystickControl* LoadedControl, XMLElement* Parent, co
 void LoadControls( const string& FilePath )
 {
     LOG( "Loading controls from \"" + FilePath + "\"" );
+    FILE* InputFile = nullptr;
     
     try
     {
+        // open the file
+        InputFile = OpenInputFile( FilePath );
+        
+        if( !InputFile )
+          THROW( "Cannot open XML from file path " + FilePath );
+        
         // load file and parse it as XML
         XMLDocument FileDoc;
-        XMLError ErrorCode = FileDoc.LoadFile( FilePath.c_str() );
+        XMLError ErrorCode = FileDoc.LoadFile( InputFile );
         
         if( ErrorCode != XML_SUCCESS )
           THROW( "Cannot read XML from file path " + FilePath );
@@ -450,6 +458,10 @@ void LoadControls( const string& FilePath )
         
         SetDefaultControls();
     }
+    
+    // ensure the file is never left open
+    if( InputFile )
+      fclose( InputFile );
 }
 
 
@@ -516,6 +528,9 @@ void SaveJoystickControl( JoystickControl* SavedControl, XMLElement* Parent, con
 
 void SaveControls( const std::string& FilePath )
 {
+    LOG( "Saving controls to \"" + FilePath + "\"" );
+    FILE* OutputFile = nullptr;
+    
     try
     {
         // create a document and its root element
@@ -586,8 +601,14 @@ void SaveControls( const std::string& FilePath )
             SaveJoystickControl( &JoystickProfile->ButtonStart, JoystickRoot, "button-start" );
         }
         
+        // open the output file
+        OutputFile = OpenOutputFile( FilePath );
+        
+        if( !OutputFile )
+          THROW( "Cannot save XML to file path " + FilePath );
+        
         // save XML document to the designated file
-        CreatedDoc.SaveFile( FilePath.c_str() );
+        CreatedDoc.SaveFile( OutputFile );
     }
     
     // no backup; just report to the user
@@ -597,4 +618,8 @@ void SaveControls( const std::string& FilePath )
         string ErrorMessage = Texts( TextIDs::Errors_SaveControls_Label ) + string(e.what());
         SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, "Error", ErrorMessage.c_str(), nullptr );
     }
+    
+    // ensure the file is never left open
+    if( OutputFile )
+      fclose( OutputFile );
 }

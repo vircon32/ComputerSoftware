@@ -10,6 +10,8 @@
     // include C/C++ headers
     #include <string>         // [ C++ STL ] Strings
     #include <stdexcept>      // [ C++ STL ] Exceptions
+    #include <iostream>       // [ C++ STL ] I/O streams
+    #include <fstream>        // [ C++ STL ] File streams
 // *****************************************************************************
 
 
@@ -110,6 +112,30 @@ namespace V32
             CPUException() {};
             virtual ~CPUException() noexcept {};
     };
+    
+    
+    // =============================================================================
+    //      WRAPPERS FOR PROPER FILE ACCESS ON UNICODE PATHS
+    // =============================================================================
+    
+    
+    void OpenInputFile
+    (
+        std::ifstream& InputFile, const std::string& FilePathUTF8,
+        std::ios_base::openmode Mode = std::ios_base::in
+    );
+    
+    void OpenOutputFile
+    (
+        std::ofstream& OutputFile, const std::string& FilePathUTF8,
+        std::ios_base::openmode Mode = std::ios_base::out
+    );
+    
+    void OpenInputOutputFile
+    (
+        std::fstream& IOFile, const std::string& FilePathUTF8,
+        std::ios_base::openmode Mode = std::ios_base::in | std::ios_base::out
+    );
 }
 
 

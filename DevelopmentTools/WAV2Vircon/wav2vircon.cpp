@@ -15,6 +15,13 @@
     #define SDL_MAIN_HANDLED
     #include "SDL.h"            // [ SDL2 ] Main header
     
+    // on Windows include headers for unicode conversion
+    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+      #define WINDOWS_OS
+      #include <windows.h>      // [ WINDOWS ] Main header
+      #include <shellapi.h>     // [ WINDOWS ] Shell API
+    #endif
+    
     // declare used namespaces
     using namespace std;
     using namespace V32;
@@ -111,7 +118,7 @@ void LoadWAV( const char *WAVFilePath, int OutputRate )
 void SaveVSND( const char *VSNDFilePath )
 {
     // open output file
-    FILE *VSNDFile = fopen( VSNDFilePath, "wb" );
+    FILE *VSNDFile = OpenOutputFile( VSNDFilePath );
     
     if( !VSNDFile )
       throw runtime_error( string("Cannot open output file \"") + VSNDFilePath + "\"" );
@@ -175,28 +182,53 @@ int main( int NumberOfArguments, char* Arguments[] )
         string InputPath, OutputPath;
         int OutputRate = 44100;
         
+        // to treat arguments the same in any OS we
+        // will convert them to UTF-8 in all cases
+        vector< string > ArgumentsUTF8;
+        
+        #if defined(WINDOWS_OS)
+        
+          // on Windows we can't rely on the arguments received
+          // in main: ask Windows for the UTF-16 command line
+          wchar_t* CommandLineUTF16 = GetCommandLineW();
+          wchar_t** ArgumentsUTF16 = CommandLineToArgvW( CommandLineUTF16, &NumberOfArguments );
+          
+          // now convert every program argument to UTF-8
+          for( int i = 0; i < NumberOfArguments; i++ )
+            ArgumentsUTF8.push_back( ToUTF8( ArgumentsUTF16[i] ) );
+          
+          LocalFree( ArgumentsUTF16 );
+          
+        #else
+            
+          // on Linux/Mac arguments in main are already UTF-8
+          for( int i = 0; i < NumberOfArguments; i++ )
+            ArgumentsUTF8.push_back( Arguments[i] );
+        
+        #endif
+        
         // process arguments
         for( int i = 1; i < NumberOfArguments; i++ )
         {
-            if( Arguments[i] == string("--help") )
+            if( ArgumentsUTF8[i] == string("--help") )
             {
                 PrintUsage();
                 return 0;
             }
             
-            if( Arguments[i] == string("--version") )
+            if( ArgumentsUTF8[i] == string("--version") )
             {
                 PrintVersion();
                 return 0;
             }
             
-            if( Arguments[i] == string("-v") )
+            if( ArgumentsUTF8[i] == string("-v") )
             {
                 VerboseMode = true;
                 continue;
             }
             
-            if( Arguments[i] == string("-o") )
+            if( ArgumentsUTF8[i] == string("-o") )
             {
                 // expect another argument
                 i++;
@@ -205,11 +237,11 @@ int main( int NumberOfArguments, char* Arguments[] )
                   throw runtime_error( "missing filename after '-o'" );
                 
                 // now we can safely read the input path
-                OutputPath = Arguments[ i ];
+                OutputPath = ArgumentsUTF8[ i ];
                 continue;
             }
             
-            if( Arguments[i] == string("-r") )
+            if( ArgumentsUTF8[i] == string("-r") )
             {
                 // expect another argument
                 i++;
@@ -220,7 +252,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                 // try to parse an integer from rate argument
                 try
                 {
-                    OutputRate = stoi( Arguments[ i ] );
+                    OutputRate = stoi( ArgumentsUTF8[ i ] );
                 }
                 catch( const exception& e )
                 {
@@ -235,13 +267,13 @@ int main( int NumberOfArguments, char* Arguments[] )
             }
             
             // discard any other parameters starting with '-'
-            if( Arguments[i][0] == '-' )
-              throw runtime_error( string("unrecognized command line option '") + Arguments[i] + "'" );
+            if( ArgumentsUTF8[i][0] == '-' )
+              throw runtime_error( string("unrecognized command line option '") + ArgumentsUTF8[i] + "'" );
             
             // any non-option parameter is taken as the input file
             if( InputPath.empty() )
             {
-                InputPath = Arguments[i];
+                InputPath = ArgumentsUTF8[i];
             }
             
             // only a single input file is supported!

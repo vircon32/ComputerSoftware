@@ -31,7 +31,7 @@ void RomDefinition::ExtractBinary( BinaryFileFormat::Header& BinaryHeader, vecto
     
     // open output file as binary
     ofstream BinaryFile;
-    BinaryFile.open( BinaryFilePath, ios_base::binary );
+    OpenOutputFile( BinaryFile, BinaryFilePath, ios_base::binary );
     
     // write all data into the file
     BinaryFile.write( (char*)(&BinaryHeader), sizeof( BinaryFileFormat::Header ) );
@@ -49,7 +49,7 @@ void RomDefinition::ExtractTexture( TextureFileFormat::Header& TextureHeader, ve
     
     // open output file as binary
     ofstream TextureFile;
-    TextureFile.open( TextureFilePath, ios_base::binary );
+    OpenOutputFile( TextureFile, TextureFilePath, ios_base::binary );
     
     // write all data into the file
     TextureFile.write( (char*)(&TextureHeader), sizeof( TextureFileFormat::Header ) );
@@ -70,7 +70,7 @@ void RomDefinition::ExtractSound( SoundFileFormat::Header& SoundHeader, vector< 
     
     // open output file as binary
     ofstream SoundFile;
-    SoundFile.open( SoundFilePath, ios_base::binary );
+    OpenOutputFile( SoundFile, SoundFilePath, ios_base::binary );
     
     // write all data into the file
     SoundFile.write( (char*)(&SoundHeader), sizeof( SoundFileFormat::Header ) );
@@ -89,7 +89,7 @@ void RomDefinition::CreateDefinitionXML()
     
     // open output file as text
     ofstream XMLFile;
-    XMLFile.open( XMLFilePath );
+    OpenOutputFile( XMLFile, XMLFilePath );
     
     if( !XMLFile.good() )
       throw runtime_error( "cannot create XML file" );
@@ -104,7 +104,7 @@ void RomDefinition::CreateDefinitionXML()
     XMLFile << "\" version=\"" << ROMVersion << "." << ROMRevision << "\" />" << endl;
 
     // write ROM binary
-    XMLFile << "    <binary path=\"" << RomFileName << ".vbin\" />" << endl;
+    XMLFile << "    <binary path=\"" << EscapeXML( RomFileName ) << ".vbin\" />" << endl;
     
     // write ROM textures
     XMLFile << "    <textures>" << endl;
@@ -135,7 +135,7 @@ void RomDefinition::CreateMakeBAT()
     
     // open output file as text
     ofstream BATFile;
-    BATFile.open( BATFilePath );
+    OpenOutputFile( BATFile, BATFilePath );
     
     if( !BATFile.good() )
       throw runtime_error( "cannot create BAT file" );
@@ -185,7 +185,7 @@ void RomDefinition::CreateMakeSH()
     
     // open output file as text
     ofstream SHFile;
-    SHFile.open( SHFilePath );
+    OpenOutputFile( SHFile, SHFilePath );
     
     if( !SHFile.good() )
       throw runtime_error( "cannot create SH file" );
@@ -236,7 +236,7 @@ void RomDefinition::UnpackROM( const std::string& InputPath, const std::string& 
     
     // open the ROM file
     ifstream InputFile;
-    InputFile.open( InputPath, ios_base::binary | ios_base::ate );
+    OpenInputFile( InputFile, InputPath, ios_base::binary | ios_base::ate );
     
     if( !InputFile.good() )
       throw runtime_error( "cannot open input file" );
@@ -356,7 +356,7 @@ void RomDefinition::UnpackROM( const std::string& InputPath, const std::string& 
         string TexturesFolderPath = BaseFolder + PathSeparator + "textures";
         
         if( !DirectoryExists( TexturesFolderPath ) )
-          if( !CreateDirectory( TexturesFolderPath ) )
+          if( !CreateNewDirectory( TexturesFolderPath ) )
             throw runtime_error( "Cannot create textures folder" );
     }
     
@@ -399,7 +399,7 @@ void RomDefinition::UnpackROM( const std::string& InputPath, const std::string& 
         string SoundsFolderPath = BaseFolder + PathSeparator + "sounds";
         
         if( !DirectoryExists( SoundsFolderPath ) )
-          if( !CreateDirectory( SoundsFolderPath ) )
+          if( !CreateNewDirectory( SoundsFolderPath ) )
             throw runtime_error( "Cannot create sounds folder" );
     }
     

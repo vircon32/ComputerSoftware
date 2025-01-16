@@ -6,6 +6,7 @@
     
     // include infrastructure headers
     #include "../DevToolsInfrastructure/EnumStringConversions.hpp"
+    #include "../DevToolsInfrastructure/FilePaths.hpp"
     
     // include C/C++ headers
     #include <iostream>             // [ C++ STL ] I/O Streams
@@ -174,7 +175,7 @@ void VirconASMEmitter::ReadDataFile( DataFileNode& Node )
 {
     // open the file
     ifstream InputFile;
-    InputFile.open( Node.FilePath, ios_base::binary | ios_base::ate );
+    OpenInputFile( InputFile, Node.FilePath, ios_base::binary | ios_base::ate );
     
     // get size and ensure it is a multiple of 4
     // (otherwise file contents are probably wrong)

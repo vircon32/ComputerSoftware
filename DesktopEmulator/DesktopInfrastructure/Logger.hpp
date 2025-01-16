@@ -34,7 +34,7 @@ class Logger
        ~Logger();
         
         // file handling methods
-        bool OpenFile( const std::string& File, const std::string& Title );
+        bool OpenFile( const std::string& FilePath, const std::string& Title );
         void CloseFile();
         
         // log methods

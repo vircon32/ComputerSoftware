@@ -26,9 +26,9 @@ endif()
 project("Vircon32" LANGUAGES C CXX)
 
 # Define version
-set(PROJECT_VERSION_MAJOR 24)
-set(PROJECT_VERSION_MINOR 7)
-set(PROJECT_VERSION_PATCH 29)
+set(PROJECT_VERSION_MAJOR 25)
+set(PROJECT_VERSION_MINOR 1)
+set(PROJECT_VERSION_PATCH 13)
 
 # Set names for final executables
 set(EMULATOR_BINARY_NAME "Vircon32")

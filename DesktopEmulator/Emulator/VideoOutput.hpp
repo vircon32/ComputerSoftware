@@ -14,11 +14,6 @@
     #define SDL_MAIN_HANDLED
     #include "SDL.h"            // [ SDL2 ] Main header
     
-    // this is needed by OpenGL headers under Windows
-    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
-      #include <windef.h>
-    #endif
-    
     // include OpenGL headers
     #include <glad/glad.h>      // [ OpenGL ] GLAD Loader (already includes <GL/gl.h>)
 // *****************************************************************************

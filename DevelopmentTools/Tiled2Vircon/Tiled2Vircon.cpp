@@ -8,9 +8,17 @@
     #include <iostream>         // [ C++ STL ] I/O streams
     #include <fstream>          // [ C++ STL ] File streams
     #include <sstream>          // [ C++ STL ] String streams
+    #include <vector>           // [ C++ STL ] Vectors
     
     // include TinyXML2 headers
     #include <tinyxml2.h>       // [ TinyXML2 ] Main header
+    
+    // on Windows include headers for unicode conversion
+    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+      #define WINDOWS_OS
+      #include <windows.h>      // [ WINDOWS ] Main header
+      #include <shellapi.h>     // [ WINDOWS ] Shell API
+    #endif
     
     // declare used namespaces
     using namespace std;
@@ -116,7 +124,7 @@ void PrintVersion()
 // =============================================================================
 
 
-int main( int NumberOfArguments, char** Arguments )
+int main( int NumberOfArguments, char* Arguments[] )
 {
     try
     {
@@ -126,28 +134,53 @@ int main( int NumberOfArguments, char** Arguments )
         // variables to capture input parameters
         string InputPath, OutputFolder;
         
+        // to treat arguments the same in any OS we
+        // will convert them to UTF-8 in all cases
+        vector< string > ArgumentsUTF8;
+        
+        #if defined(WINDOWS_OS)
+        
+          // on Windows we can't rely on the arguments received
+          // in main: ask Windows for the UTF-16 command line
+          wchar_t* CommandLineUTF16 = GetCommandLineW();
+          wchar_t** ArgumentsUTF16 = CommandLineToArgvW( CommandLineUTF16, &NumberOfArguments );
+          
+          // now convert every program argument to UTF-8
+          for( int i = 0; i < NumberOfArguments; i++ )
+            ArgumentsUTF8.push_back( ToUTF8( ArgumentsUTF16[i] ) );
+          
+          LocalFree( ArgumentsUTF16 );
+          
+        #else
+            
+          // on Linux/Mac arguments in main are already UTF-8
+          for( int i = 0; i < NumberOfArguments; i++ )
+            ArgumentsUTF8.push_back( Arguments[i] );
+        
+        #endif
+        
         // process arguments
         for( int i = 1; i < NumberOfArguments; i++ )
         {
-            if( Arguments[i] == string("--help") )
+            if( ArgumentsUTF8[i] == string("--help") )
             {
                 PrintUsage();
                 return 0;
             }
             
-            if( Arguments[i] == string("--version") )
+            if( ArgumentsUTF8[i] == string("--version") )
             {
                 PrintVersion();
                 return 0;
             }
             
-            if( Arguments[i] == string("-v") )
+            if( ArgumentsUTF8[i] == string("-v") )
             {
                 VerboseMode = true;
                 continue;
             }
             
-            if( Arguments[i] == string("-o") )
+            if( ArgumentsUTF8[i] == string("-o") )
             {
                 // expect another argument
                 i++;
@@ -156,18 +189,18 @@ int main( int NumberOfArguments, char** Arguments )
                   throw runtime_error( "missing folder name after '-o'" );
                 
                 // now we can safely read the input path
-                OutputFolder = Arguments[ i ];
+                OutputFolder = ArgumentsUTF8[ i ];
                 continue;
             }
             
             // discard any other parameters starting with '-'
-            if( Arguments[i][0] == '-' )
-              throw runtime_error( string("unrecognized command line option '") + Arguments[i] + "'" );
+            if( ArgumentsUTF8[i][0] == '-' )
+              throw runtime_error( string("unrecognized command line option '") + ArgumentsUTF8[i] + "'" );
             
             // any non-option parameter is taken as the input file
             if( InputPath.empty() )
             {
-                InputPath = Arguments[i];
+                InputPath = ArgumentsUTF8[i];
             }
             
             // only a single input file is supported!
@@ -193,13 +226,37 @@ int main( int NumberOfArguments, char** Arguments )
         // STEP 1: Open the source XML and read basic information
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         
-        // try to open the source file as an XML document
-        XMLDocument LoadedMap;
-        XMLError ErrorCode = LoadedMap.LoadFile( InputPath.c_str() );
+        FILE* InputFile = nullptr;
+        tinyxml2::XMLDocument LoadedMap;
         
-        if( ErrorCode != XML_SUCCESS )
-          throw runtime_error( "Cannot read XML from file path " + InputPath );
-          
+        try
+        {
+            // open the file
+            InputFile = OpenInputFile( InputPath );
+            
+            if( !InputFile )
+              throw runtime_error( string("cannot open input file \"") + InputPath + "\"" );
+            
+            // load file as an XML document
+            XMLError ErrorCode = LoadedMap.LoadFile( InputFile );
+            
+            if( ErrorCode != XML_SUCCESS )
+              throw runtime_error( "Cannot read XML from file path " + InputPath );
+        
+            // close the file
+            fclose( InputFile );
+            InputFile = nullptr;
+        }
+        catch(...)
+        {
+            // ensure the file is never left open
+            if( InputFile )
+              fclose( InputFile );
+            
+            // and then rethrow the exception&
+            throw;
+        }
+        
         // obtain XML root
         XMLElement* MapRoot = LoadedMap.FirstChildElement( "map" );
         
@@ -233,7 +290,7 @@ int main( int NumberOfArguments, char** Arguments )
             
             // create a file with that name
             ofstream OutputFile;
-            OutputFile.open( FilePath, ios_base::binary | ios_base::trunc );
+            OpenOutputFile( OutputFile, FilePath, ios_base::binary | ios_base::trunc );
             
             if( !OutputFile.good() )
               throw runtime_error( "Cannot open output file" );

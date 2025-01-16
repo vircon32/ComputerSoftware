@@ -3,6 +3,7 @@
     #include "DesktopInfrastructure/Logger.hpp"
     #include "DesktopInfrastructure/NumericFunctions.hpp"
     #include "DesktopInfrastructure/StringFunctions.hpp"
+    #include "DesktopInfrastructure/FilePaths.hpp"
     
     // include console logic headers
     #include "ConsoleLogic/V32Console.hpp"
@@ -214,12 +215,19 @@ void LoadJoystickControl( JoystickControl* LoadedControl, XMLElement* Parent, co
 void LoadControls( const std::string& FilePath )
 {
     LOG( "Loading controls from \"" + FilePath + "\"" );
+    FILE* InputFile = nullptr;
     
     try
     {
+        // open the file
+        InputFile = OpenInputFile( FilePath );
+        
+        if( !InputFile )
+          THROW( "Cannot open XML from file path " + FilePath );
+        
         // load file and parse it as XML
         XMLDocument FileDoc;
-        XMLError ErrorCode = FileDoc.LoadFile( FilePath.c_str() );
+        XMLError ErrorCode = FileDoc.LoadFile( InputFile );
         
         if( ErrorCode != XML_SUCCESS )
           THROW( "Cannot read XML from file path " + FilePath );
@@ -339,6 +347,10 @@ void LoadControls( const std::string& FilePath )
         
         Gamepads.SetDefaultProfiles();
     }
+    
+    // ensure the file is never left open
+    if( InputFile )
+      fclose( InputFile );
 }
 
 
@@ -397,12 +409,19 @@ void SetDefaultSettings()
 void LoadSettings( const string& FilePath )
 {
     LOG( "Loading settings from \"" + FilePath + "\"" );
+    FILE* InputFile = nullptr;
     
     try
     {
+        // open the file
+        InputFile = OpenInputFile( FilePath );
+        
+        if( !InputFile )
+          THROW( "Cannot open XML from file path " + FilePath );
+        
         // load file and parse it as XML
         XMLDocument FileDoc;
-        XMLError ErrorCode = FileDoc.LoadFile( FilePath.c_str() );
+        XMLError ErrorCode = FileDoc.LoadFile( InputFile );
         
         if( ErrorCode != XML_SUCCESS )
           THROW( "Cannot read XML from file path " + FilePath );
@@ -619,6 +638,10 @@ void LoadSettings( const string& FilePath )
         
         SetDefaultSettings();
     }
+    
+    // ensure the file is never left open
+    if( InputFile )
+      fclose( InputFile );
 }
 
 // -----------------------------------------------------------------------------
@@ -626,6 +649,7 @@ void LoadSettings( const string& FilePath )
 void SaveSettings( const string& FilePath )
 {
     LOG( "Saving settings to \"" + FilePath + "\"" );
+    FILE* OutputFile = nullptr;
     
     try
     {
@@ -734,8 +758,14 @@ void SaveSettings( const string& FilePath )
             MemoryCardsRoot->LinkEndChild( PathElement );            
         }
         
+        // open the output file
+        OutputFile = OpenOutputFile( FilePath );
+        
+        if( !OutputFile )
+          THROW( "Cannot save XML to file path " + FilePath );
+        
         // save XML document to the designated file
-        CreatedDoc.SaveFile( FilePath.c_str() );
+        CreatedDoc.SaveFile( OutputFile );
     }
     
     // as backup, set our default configuration
@@ -746,4 +776,8 @@ void SaveSettings( const string& FilePath )
         string Message = Texts( TextIDs::Errors_SaveSettings_Label ) + string(e.what());
         DelayedMessageBox( SDL_MESSAGEBOX_ERROR, "Error", Message.c_str() );
     }
+    
+    // ensure the file is never left open
+    if( OutputFile )
+      fclose( OutputFile );
 }

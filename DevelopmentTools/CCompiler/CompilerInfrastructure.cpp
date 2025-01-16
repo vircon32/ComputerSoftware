@@ -11,7 +11,6 @@
     #include <iostream>     // [ C++ STL ] I/O Streams
     #include <fstream>      // [ C++ STL ] File streams
     #include <map>          // [ C++ STL ] Maps
-    #include <algorithm>    // [ C++ STL ] Algorithms
     
     // declare used namespaces
     using namespace std;
@@ -19,55 +18,9 @@
 
 
 // =============================================================================
-//      SPECIFIC STRING MANIPULATIONS
+//      ESCAPING C CHARS & STRINGS
 // =============================================================================
 
-
-string XMLBlock( const string& BlockName, const string& BlockContent )
-{
-    return "<" + BlockName + ">" + BlockContent + "</" + BlockName + ">";
-}
-
-// -----------------------------------------------------------------------------
-
-string EscapeXML( const string& Unescaped )
-{
-    string Escaped = Unescaped;
-    
-    // replace ampersand before anything else,
-    // since other escape sequences will add
-    // extra ampersands that we shouldn't escape
-    ReplaceSubstring( Escaped, "&", "&amp;" );
-    ReplaceSubstring( Escaped, "<", "&lt;" );
-    ReplaceSubstring( Escaped, ">", "&gt;" );
-    ReplaceSubstring( Escaped, "'", "&apos;" );
-    ReplaceSubstring( Escaped, "\"", "&quot;" );
-    return Escaped;
-}
-
-// -----------------------------------------------------------------------------
-
-// this replaces ALL occurences, in place
-void ReplaceCharacter( string& Text, char OldChar, char NewChar )
-{
-    replace( Text.begin(), Text.end(), OldChar, NewChar );
-}
-
-// -----------------------------------------------------------------------------
-
-// this replaces ALL occurences, in place
-void ReplaceSubstring( string& Text, const string& OldSubstring, const string& NewSubstring )
-{
-    size_t Position = 0;
-    
-    while( (Position = Text.find( OldSubstring, Position )) != string::npos )
-    {
-        Text.replace( Position, OldSubstring.length(), NewSubstring );
-        Position += NewSubstring.length();
-    }
-}
-
-// -----------------------------------------------------------------------------
 
 string EscapeCCharacter( char c )
 {

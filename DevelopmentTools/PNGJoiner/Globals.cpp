@@ -1,6 +1,7 @@
 // *****************************************************************************
     // include infrastructure headers
     #include "../DevToolsInfrastructure/FilePaths.hpp"
+    #include "../DevToolsInfrastructure/StringFunctions.hpp"
     
     // include project headers
     #include "Globals.hpp"
@@ -74,7 +75,7 @@ void ExportSingleRegion( PNGImage& Image, ofstream& XMLFile )
     
     // export all properties to XML
     XMLFile << "    " << "<region";
-    XMLFile << " name=\"" << Image.Name << "\"";
+    XMLFile << " name=\"" << EscapeXML( Image.Name ) << "\"";
     XMLFile << " left=\"" << MinX << "\"";
     XMLFile << " top=\"" << MinY << "\"";
     XMLFile << " right=\"" << MaxX << "\"";
@@ -116,7 +117,7 @@ void ExportRegionMatrix( PNGImage& Image, ofstream& XMLFile )
     
     // export first region properties
     XMLFile << "        " << "<region";
-    XMLFile << " name=\"" << Image.Name << "\"";
+    XMLFile << " name=\"" << EscapeXML( Image.Name ) << "\"";
     XMLFile << " left=\"" << MinX << "\"";
     XMLFile << " top=\"" << MinY << "\"";
     XMLFile << " right=\"" << MaxX << "\"";
@@ -135,7 +136,7 @@ void SaveRegionEditorProject( const string& FilePath )
 {
     // open output file as text
     ofstream XMLFile;
-    XMLFile.open( FilePath );
+    OpenOutputFile( XMLFile, FilePath );
     
     if( !XMLFile.good() )
       throw runtime_error( "cannot create region editor project file" );
@@ -145,7 +146,7 @@ void SaveRegionEditorProject( const string& FilePath )
     
     // write texture name
     string TextureName = GetPathFileName( FilePath );
-    TextureName = GetFileWithoutExtension( TextureName );
+    TextureName = EscapeXML( GetFileWithoutExtension( TextureName ) );
     XMLFile << "    <texture name=\"" << TextureName << "\" path=\"" << TextureName << ".png\" />" << endl;
     
     // export all regions

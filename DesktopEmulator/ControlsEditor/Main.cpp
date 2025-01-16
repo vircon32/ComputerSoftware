@@ -25,6 +25,11 @@
     #include "SDL_joystick.h"   // [ SDL2 ] Joystick functions
     #include "SDL_image.h"      // [ SDL2 ] SDL_Image
     
+    // detection of Windows
+    #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
+      #define WINDOWS_OS
+    #endif
+    
     // declare used namespaces
     using namespace std;
 // *****************************************************************************
@@ -365,7 +370,7 @@ int main()
         // on non-windows systems load and set the window icon
         // (not needed on Windows: already packed in the executable)
         // but do not crash just because the icon is not found
-        #if !defined(__WIN32__) && !defined(_WIN32) && !defined(_WIN64)            
+        #if !defined(WINDOWS_OS)            
           try
           {
               string IconPath = string(ProgramFolder) + "Images" + PathSeparator + "EditControlsMultisize.ico";
