@@ -508,9 +508,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                 {
                     // run another frame
                     Emulator.RunNextFrame();
-                    
-                    // this frame is done
-                    PendingFrames = max( PendingFrames - 1, 0.0f );
+                    PendingFrames -= 1;
                 }
             }
             
