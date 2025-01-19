@@ -1,6 +1,6 @@
 ================================================
    PC development tools for Vircon32 console
-  (version 25.1.4). README written by Carra
+  (version 25.1.19). README written by Carra
 ================================================
 
 
@@ -88,31 +88,10 @@ Included programs (reverse tools)
     
 ------------------------------------------------------------
 
-What's new in version 25.1.4?
+What's new in version 25.1.19?
   
-  - Added new tool: "joinpngs", to join multiple images into
-    a single texture and generate its region editor project.
-  - Because of joinpns, the required C++ version to build
-    the tools from source now changes from C++11 to C++17.
-  - Added new command-line options for debugging to compiler
-    and assembler:
-     - With option -g they will output additional files with
-       debug info for the generated program.
-     - With option --debugmode they will create additional
-       files detailing the result of their internal stages
-       (like the compiler's AST tree).
-  - Added support for character literals in the assembler,
-    using notation 'A', and escaped as '\'' or '\x41'.
-  - Fixed a compiler bug: type consistency was not being
-    checked in declarations of extern variables.
-  - Fixed a typo in compiler's math.h header: in function
-    atan2, the names of the arguments x and y were swapped.
-    However this was just a naming issue. The inner workings
-    of atan2 did not change.
-  - Fixed a bug in wav2vircon: output sound was not always
-    being created correctly if inputs had sample rates
-    different from the default 44100 Hz.
-  - Updated and fixed the assembler tests folder.
+  - Fixes the previous problems on Windows that prevented
+    accessing files if their path had non English characters.
 
 ------------------------------------------------------------
 

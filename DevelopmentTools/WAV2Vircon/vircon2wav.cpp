@@ -194,7 +194,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "vircon2wav v25.1.4" << endl;
+    cout << "vircon2wav v25.1.19" << endl;
     cout << "Vircon32 WAV file extractor by Javier Carracedo" << endl;
 }
 

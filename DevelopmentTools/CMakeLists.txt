@@ -68,7 +68,7 @@ project("Vircon32")
 # Define version
 set(PROJECT_VERSION_MAJOR 25)
 set(PROJECT_VERSION_MINOR 1)
-set(PROJECT_VERSION_PATCH 13)
+set(PROJECT_VERSION_PATCH 19)
 
 # Set names for final executables
 set(C_COMPILER_BINARY_NAME "compile")
