@@ -1,6 +1,6 @@
 ============================================================
              README file for Vircon32 emulator
-            (version 24.10.18) written by Carra
+            (version 25.1.19) written by Carra
 ============================================================
 
 What is this?
@@ -150,15 +150,12 @@ How to use savestates
     
 ------------------------------------------------------------
 
-What's new in version 24.10.18?
+What's new in version 25.1.19?
   
-  - Fixed a bug in savestates that could cause graphical
-    glitches on some games if they use the BIOS.
-  - Because of this, now savestates that are saves are tied
-    to a specific BIOS and cannot be loaded with another one.
-  - These changes make current version's savestates NOT
-    COMPATIBLE WITH PREVIOUS VERSIONS. This emulator version
-    is unable to load savestates created with olver versions.
+  - Fixes the previous problems on Windows that prevented
+    accessing files if their path had non English characters.
+  - Emulation speed is now correct on screens which use a
+    refresh rate over 60 Hz.
 
 ------------------------------------------------------------
 
@@ -167,7 +164,7 @@ License
     This program is free and open source. It is offered under
     the 3-Clause BSD License, which full text is the following:
     
-    Copyright 2021-2024 Carra.
+    Copyright 2021-2025 Carra.
     All rights reserved.
     
     Redistribution and use in source and binary forms, with or

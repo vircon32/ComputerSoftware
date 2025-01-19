@@ -1,6 +1,6 @@
 ﻿============================================================
         Archivo README para el emulador de Vircon32
-           (versión 24.10.18) escrito por Carra
+           (versión 25.1.19) escrito por Carra
 ============================================================
 
 ¿Qué es esto?
@@ -156,17 +156,12 @@ Cómo usar savestates
     
 ------------------------------------------------------------
 
-Novedades en la versión 24.10.18
+Novedades en la versión 25.1.19
     
-  - Corregido un problema en los savestates que podía crear
-    errores gráficos en algunos juegos si se usa la BIOS.
-  - Debido a esto, ahora los savestates que se guardan quedan
-    vinculados a una BIOS específica y no pueden cargarse
-    con otra.
-  - Estos cambios hacen los savestates de la versión actual
-    INCOMPATIBLES CON LAS VERSIONES ANTERIORES. Esta versión
-    del emulador no puede cargar savestates guardados con
-    versiones más antiguas.
+  - En Windows se arreglan los problemas que impedían acceder
+    a archivos si su ruta tenía caracteres no ingleses.
+  - Se corrige la velocidad de emulación en pantallas que usen
+    una tasa de refresco por encima de los 60 Hz.
 
 ------------------------------------------------------------
 
@@ -176,7 +171,7 @@ Licencia
     la licencia BSD de 3 cláusulas, cuyo texto completo es el
     siguiente:
     
-    Copyright 2021-2024 Carra.
+    Copyright 2021-2025 Carra.
     Todos los derechos reservados.
     
     La redistribución y el uso en las formas de código fuente y
