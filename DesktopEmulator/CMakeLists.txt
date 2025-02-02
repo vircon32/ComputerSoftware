@@ -27,8 +27,8 @@ project("Vircon32" LANGUAGES C CXX)
 
 # Define version
 set(PROJECT_VERSION_MAJOR 25)
-set(PROJECT_VERSION_MINOR 1)
-set(PROJECT_VERSION_PATCH 19)
+set(PROJECT_VERSION_MINOR 2)
+set(PROJECT_VERSION_PATCH 2)
 
 # Set names for final executables
 set(EMULATOR_BINARY_NAME "Vircon32")
@@ -151,7 +151,6 @@ endif()
 # These are treated as independent (they don't depend on anything else)
 find_library(PNG_LIBRARY NAMES png REQUIRED)
 find_library(FREEALUT_LIBRARY NAMES freealut alut REQUIRED)
-find_library(TINYXML2_LIBRARY tinyxml2 REQUIRED)
 
 # -----------------------------------------------------
 #   SHOW BUILD INFORMATION IN PRETTY FORMAT
@@ -190,7 +189,6 @@ show_dependency_status("SDL2_image" SDL2_image)
 show_dependency_status("OPENAL" OPENAL)
 show_dependency_status("PNG" PNG)
 show_dependency_status("FREEALUT" FREEALUT)
-show_dependency_status("TINYXML2" TINYXML2)
 
 if(TARGET_OS STREQUAL "linux")
     show_dependency_status("GTK2" GTK2)
@@ -230,7 +228,7 @@ set(EMULATOR_LIBS
     osdialog
     imgui
     V32ConsoleLogic
-    ${TINYXML2_LIBRARY}
+    tinyxml2
     ${PNG_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${SDL2_LIBRARY}
@@ -245,7 +243,7 @@ set(EMULATOR_LIBS
 set(EDITCONTROLS_LIBS
     osdialog
     imgui
-    ${TINYXML2_LIBRARY}
+    tinyxml2
     ${OPENGL_LIBRARIES}
     ${SDL2_LIBRARY}
     ${SDL2_IMAGE_LIBRARY}

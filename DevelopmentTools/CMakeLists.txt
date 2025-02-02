@@ -22,6 +22,8 @@ endif()
 # -----------------------------------------------------
 
 # These general project variables should be cached
+set(LIBRARIES_DIR "ExternalLibraries/"
+    CACHE PATH "The path to the external libraries.")
 set(C_COMPILER_DIR "CCompiler/"
     CACHE PATH "The path to the C compiler sources.")
 set(ASSEMBLER_DIR "Assembler/"
@@ -67,8 +69,8 @@ project("Vircon32")
 
 # Define version
 set(PROJECT_VERSION_MAJOR 25)
-set(PROJECT_VERSION_MINOR 1)
-set(PROJECT_VERSION_PATCH 19)
+set(PROJECT_VERSION_MINOR 2)
+set(PROJECT_VERSION_PATCH 2)
 
 # Set names for final executables
 set(C_COMPILER_BINARY_NAME "compile")
@@ -150,7 +152,6 @@ find_package(SDL2 REQUIRED)
 
 # These are treated as independent (they don't depend on anything else)
 find_library(PNG_LIBRARY NAMES png REQUIRED)
-find_library(TINYXML2_LIBRARY NAMES tinyxml2 REQUIRED)
 
 # -----------------------------------------------------
 #   SHOW BUILD INFORMATION IN PRETTY FORMAT
@@ -185,7 +186,6 @@ endfunction()
 message(STATUS "System Dependencies:")
 show_dependency_status("SDL2" SDL2)
 show_dependency_status("LIBPNG" PNG)
-show_dependency_status("TINYXML2" TINYXML2)
 
 # -----------------------------------------------------
 #   FOLDERS FOR INCLUDES
@@ -204,13 +204,17 @@ set(ALL_INCLUDE_DIRS
     ${DISASSEMBLER_DIR}
     ${ROM_UNPACKER_DIR}
     ${INFRASTRUCTURE_DIR}
-    ${DEFINITIONS_DIR})
+    ${DEFINITIONS_DIR}
+    ${LIBRARIES_DIR})
 
 include_directories(${ALL_INCLUDE_DIRS})
 
 # -----------------------------------------------------
 #   LINKED LIBRARIES FILES (BUILD TOOLS)
 # -----------------------------------------------------
+
+# Add external libraries
+add_subdirectory(${LIBRARIES_DIR})
 
 # Libraries to link with the C compiler
 set(C_COMPILER_LIBS
@@ -224,7 +228,7 @@ set(ASSEMBLER_LIBS
 
 # Libraries to link with the ROM packer
 set(ROM_PACKER_LIBS
-    ${TINYXML2_LIBRARY}
+    tinyxml2
     ${CMAKE_DL_LIBS})
 
 # Libraries to link with the PNG converter
@@ -239,7 +243,7 @@ set(WAV_CONVERTER_LIBS
 
 # Libraries to link with the Tiled converter
 set(TILED_CONVERTER_LIBS
-    ${TINYXML2_LIBRARY}
+    tinyxml2
     ${CMAKE_DL_LIBS})
 
 # Libraries to link with the PNG joiner
