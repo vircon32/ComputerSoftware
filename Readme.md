@@ -51,16 +51,13 @@ To correctly build the software in this repository you will need to have at leas
 
 ##### General purpose libraries:
 * SDL2
-* TinyXML2
 
 ##### Video libraries:
-* SDL2_image
 * OpenGL
-* GLUT (only for older versions)
 * LibPNG
 
 ##### Audio libraries:
 * OpenAL
 * ALUT / FreeALUT
 
-These programs also use 3 other libraries that are already included in the sources as external libraries: osdialog, imgui and glad.
+These programs also use 4 other libraries that are already included in the sources as external libraries: tinyxml2, osdialog, imgui and glad.
