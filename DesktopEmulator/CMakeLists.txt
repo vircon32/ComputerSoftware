@@ -28,7 +28,7 @@ project("Vircon32" LANGUAGES C CXX)
 # Define version
 set(PROJECT_VERSION_MAJOR 25)
 set(PROJECT_VERSION_MINOR 2)
-set(PROJECT_VERSION_PATCH 2)
+set(PROJECT_VERSION_PATCH 3)
 
 # Set names for final executables
 set(EMULATOR_BINARY_NAME "Vircon32")
@@ -140,7 +140,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeMod
 # For these depencencies, find everything they need too
 find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
 find_package(OpenAL REQUIRED)
 
 # On Linux we will need to find GTK too
@@ -185,7 +184,6 @@ endfunction()
 message(STATUS "System Dependencies:")
 show_dependency_status("OPENGL" OPENGL)
 show_dependency_status("SDL2" SDL2)
-show_dependency_status("SDL2_image" SDL2_image)
 show_dependency_status("OPENAL" OPENAL)
 show_dependency_status("PNG" PNG)
 show_dependency_status("FREEALUT" FREEALUT)
@@ -229,10 +227,8 @@ set(EMULATOR_LIBS
     imgui
     V32ConsoleLogic
     tinyxml2
-    ${PNG_LIBRARY}
     ${OPENGL_LIBRARIES}
     ${SDL2_LIBRARY}
-    ${SDL2_IMAGE_LIBRARY}
     ${PNG_LIBRARY}
     glad
     ${OPENAL_LIBRARY}
@@ -246,8 +242,6 @@ set(EDITCONTROLS_LIBS
     tinyxml2
     ${OPENGL_LIBRARIES}
     ${SDL2_LIBRARY}
-    ${SDL2_IMAGE_LIBRARY}
-    ${PNG_LIBRARY}
     glad
     ${CMAKE_DL_LIBS})
 

@@ -23,7 +23,6 @@
     #include "SDL.h"            // [ SDL2 ] Main header
     #include "SDL_opengl.h"     // [ SDL2 ] OpenGL interface
     #include "SDL_joystick.h"   // [ SDL2 ] Joystick functions
-    #include "SDL_image.h"      // [ SDL2 ] SDL_Image
     
     // detection of Windows
     #if defined(__WIN32__) || defined(_WIN32) || defined(_WIN64)
@@ -358,7 +357,7 @@ int main()
         Languages[ "Spanish" ] = LanguageSpanish;
         
         // load our gamepad texture
-        GamepadTextureID = LoadTexture( ProgramFolder + "Images" + PathSeparator + "GamepadMapping.png" );
+        GamepadTextureID = LoadTexture( ProgramFolder + "Images" + PathSeparator + "GamepadMapping.bmp" );
         
         // load our configuration from XML file
         LoadControls( ProgramFolder + "Config-Controls.xml" );
@@ -373,8 +372,8 @@ int main()
         #if !defined(WINDOWS_OS)            
           try
           {
-              string IconPath = string(ProgramFolder) + "Images" + PathSeparator + "EditControlsMultisize.ico";
-              SDL_Surface* WindowIcon = IMG_Load( IconPath.c_str() );
+              string IconPath = string(ProgramFolder) + "Images" + PathSeparator + "EditControlsWindowIcon.bmp";
+              SDL_Surface* WindowIcon = SDL_LoadBMP( IconPath.c_str() );
               SDL_SetWindowIcon( OpenGL2D.Window, WindowIcon );
               LOG( "Loaded program icon" );
           }

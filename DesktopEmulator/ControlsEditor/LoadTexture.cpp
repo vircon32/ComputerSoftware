@@ -9,7 +9,6 @@
     // include SDL2 headers
     #define SDL_MAIN_HANDLED
     #include "SDL.h"            // [ SDL2 ] Main header
-    #include "SDL_image.h"      // [ SDL2 ] SDL_Image
     
     // declare used namespaces
     using namespace std;
@@ -31,15 +30,11 @@ GLuint LoadTexture( const string& FileName )
     SDL_Surface* LoadedImage = NULL;
     
     // load image from file
-    LoadedImage = IMG_Load( FileName.c_str() );
+    LoadedImage = SDL_LoadBMP( FileName.c_str() );
     
     // check errors
     if( !LoadedImage )
       THROW( "Could not load image into an SDL surface" );
-    
-    // only 32bpp images are supported
-    if( LoadedImage->format->BitsPerPixel < 24 )
-      THROW( "Only true color images are supported (24 or 32 bits per pixel)" );
     
     // read image dimensions
     int ImageWidth  = LoadedImage->w;
@@ -48,6 +43,16 @@ GLuint LoadTexture( const string& FileName )
     // read image dimensions
     int TextureWidth  = NextPowerOf2( ImageWidth  );
     int TextureHeight = NextPowerOf2( ImageHeight );
+    
+    // convert surface to 32-bit RGBA
+    SDL_Surface* Aux = LoadedImage;
+    SDL_Surface* ConvertedImage = SDL_ConvertSurfaceFormat( LoadedImage, SDL_PIXELFORMAT_RGBA32, 0 );
+    
+    if( !ConvertedImage )
+      THROW( "SDL failed to convert texture to RGBA" );
+    
+    LoadedImage = ConvertedImage;
+    SDL_FreeSurface( Aux );
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // STEP 2: CREATE OPENGL TEXTURE FROM LOADED IMAGE
@@ -65,9 +70,6 @@ GLuint LoadTexture( const string& FileName )
     // clear OpenGL errors
     glGetError();
     
-    // format configuration to build the OpenGL texture from the SDL surface
-    GLenum ImageType = (LoadedImage->format->BytesPerPixel == 4)? GL_RGBA : GL_RGB;
-    
     // (1) first we build an empty texture of the extented size
     glTexImage2D
     (
@@ -77,7 +79,7 @@ GLuint LoadTexture( const string& FileName )
         TextureWidth,           // texture width in pixels
         TextureHeight,          // texture height in pixels
         0,                      // border width (must be 0 or 1)
-        ImageType,              // color components in the source
+        GL_RGBA,                // color components in the source
         GL_UNSIGNED_BYTE,       // each color component is a byte
         nullptr                 // buffer storing the texture data
     );
@@ -95,7 +97,7 @@ GLuint LoadTexture( const string& FileName )
         0,                      // y offset
         ImageWidth,             // image width in pixels
         ImageHeight,            // image height in pixels
-        ImageType,              // color components in the source
+        GL_RGBA,                // color components in the source
         GL_UNSIGNED_BYTE,       // each color component is a byte
         LoadedImage->pixels     // buffer storing the texture data
     );

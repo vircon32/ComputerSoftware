@@ -24,7 +24,7 @@
     
     // include SDL2 headers
     #define SDL_MAIN_HANDLED
-    #include "SDL_image.h"      // [ SDL2 ] SDL_Image
+    #include "SDL.h"            // [ SDL2 ] Main header
     
     // include imgui headers
     #include <imgui/imgui.h>                // [ Dear ImGui ] Main header
@@ -254,14 +254,14 @@ int main( int NumberOfArguments, char* Arguments[] )
             // on non-windows systems load and set the window icon
             // (not needed on Windows: already packed in the executable)
             #if !defined(WINDOWS_OS)            
-              string IconPath = string(EmulatorFolder) + "Images" + PathSeparator + "Vircon32Multisize.ico";
-              SDL_Surface* WindowIcon = IMG_Load( IconPath.c_str() );
+              string IconPath = string(EmulatorFolder) + "Images" + PathSeparator + "Vircon32WindowIcon.bmp";
+              SDL_Surface* WindowIcon = SDL_LoadBMP( IconPath.c_str() );
               SDL_SetWindowIcon( Video.GetWindow(), WindowIcon );
               LOG( "Loaded program icon" );
             #endif
             
             // load the no signal image
-            NoSignalTexture.Load( string(EmulatorFolder) + "Images" + PathSeparator + "NoSignal.png" );
+            NoSignalTexture.Load( string(EmulatorFolder) + "Images" + PathSeparator + "NoSignal.bmp" );
         }
         catch( exception& e )
         {
