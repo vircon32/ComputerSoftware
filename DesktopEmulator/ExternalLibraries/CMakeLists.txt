@@ -29,8 +29,6 @@ else()
         osdialog/osdialog_${OSDIALOG_TARGET}.c)
 endif()
 
-# source files to compile XML library tinyxml2
-# (ignore the original CMake script)
-add_library(tinyxml2 STATIC
-    tinyxml2/tinyxml2.cpp)
-
+# XML library tinyxml2
+# (use the modified CMake script in its folder)
+add_subdirectory(tinyxml2)
