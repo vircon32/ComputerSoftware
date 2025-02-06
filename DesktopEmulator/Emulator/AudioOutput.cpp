@@ -13,7 +13,7 @@
     // include C/C++ headers
     #include <stdexcept>        // [ C++ STL ] Exceptions
     #include <iostream>         // [ C++ STL ] I/O Streams
-    #include <climits>          // [ ANSI C ] Numeric limits
+    #include <cstring>          // [ ANSI C ] Strings
     
     // declare used namespaces
     using namespace std;
@@ -22,50 +22,6 @@
 
     
 // =============================================================================
-//      AUXILIARY AUDIO FUNCTIONS
-// =============================================================================
-
-
-bool IsOpenALActive()
-{
-    // STEP 1: Check there is an audio context
-    ALCcontext* AudioContext = alcGetCurrentContext();
-    
-    if( !AudioContext )
-      return false;
-    
-    alGetError();
-    
-    // STEP 2: Check there is an audio device
-    ALCdevice* AudioDevice = alcGetContextsDevice( AudioContext );
-    
-    if( !AudioDevice )
-      return false;
-    
-    alGetError();
-    
-    return true;
-}
-
-// -----------------------------------------------------------------------------
-
-ALenum GetSourceState( ALuint SourceID )
-{
-    ALenum State;
-    alGetSourcei( SourceID, AL_SOURCE_STATE, &State );
-    
-    return State;
-}
-
-// -----------------------------------------------------------------------------
-
-bool IsSourcePlaying( ALuint SourceID )
-{
-    return (GetSourceState( SourceID ) == AL_PLAYING);
-}
-
-
-// =============================================================================
 //      AUDIO OUTPUT: INSTANCE HANDLING
 // =============================================================================
 
@@ -73,19 +29,14 @@ bool IsSourcePlaying( ALuint SourceID )
 AudioOutput::AudioOutput()
 {
     // set null IDs for OpenAL objects
-    SoundSourceID = 0;
+    AudioDeviceID = 0;
     
-    // initial state for buffers
-    for( int i = 0; i < MAX_BUFFERS; i++ )
-      PlaybackBuffers[ i ].BufferID = 0;
+    // initial state for playback
+    memset( &AudioFormat, 0, sizeof(SDL_AudioSpec) );
+    memset( &PlaybackBuffer, 0, sizeof(V32::SPUOutputBuffer) );
     
     // set default configuration for sound buffers
-    NumberOfBuffers = 6;      // audio latency would be (6 / 2) * (1/60 s) = 50 ms
-    
-    // initial state for playback variables
-    PlaybackThread = nullptr;
-    ThreadExitFlag = false;
-    ThreadPauseFlag = true;
+    LatencyFrames = 3;      // audio latency would be 3 * (1/60 s) = 50 ms
     
     // initial state for output volume control
     OutputVolume = 1.0;
@@ -108,73 +59,83 @@ AudioOutput::~AudioOutput()
 
 void AudioOutput::Initialize()
 {
-    // don't try next operations without OpenAL active
-    if( !IsOpenALActive() )
-      THROW( "OpenAL is not active" );
+    LOG( "Initializing audio output" );
     
-    // create sound buffers to alternate streaming
-    for( int i = 0; i < MAX_BUFFERS; i++ )
-      alGenBuffers( 1, &PlaybackBuffers[ i ].BufferID );
+    // tell SDL the audio format we will use
+    SDL_AudioSpec DesiredAudioFormat;
+    memset( &DesiredAudioFormat, 0, sizeof(SDL_AudioSpec) );
     
-    // create a sound SourceID to play the buffers
-    alGenSources( 1, &SoundSourceID );
+    DesiredAudioFormat.freq = V32::Constants::SPUSamplingRate;
+    DesiredAudioFormat.format = AUDIO_S16LSB;
+    DesiredAudioFormat.channels = 2;           // stereo
+    DesiredAudioFormat.samples = 2048;         // must be power of 2
+    DesiredAudioFormat.callback = nullptr;     // we use push, not callback
     
-    // configure sound source
-    alSource3f( SoundSourceID, AL_POSITION, 0, 0, 0 );
-    alSourcef ( SoundSourceID, AL_GAIN, (Mute? 0 : OutputVolume) );
+    // open audio device for playback
+    AudioDeviceID = SDL_OpenAudioDevice
+    (
+        nullptr,                // default device
+        false,                  // don't need recording
+        &DesiredAudioFormat,    // format we want
+        &AudioFormat,           // format we get 
+        0                       // allow no spec changes, (SDL will convert audio when needed)
+    );
     
-    // start the playback thread
-    LaunchPlaybackThread();
+    if( AudioDeviceID <= 0 )
+      THROW( "Failed to open audio device: " + string( SDL_GetError() ) );
 }
 
 // -----------------------------------------------------------------------------
 
 void AudioOutput::Terminate()
 {
+    LOG( "Terminating audio output" );
+    
     // do nothing if audio was not initialized
-    if( !SoundSourceID )
+    if( !AudioDeviceID || !IsDeviceReady() )
       return;
     
-    // don't try next operations without OpenAL active
-    if( !IsOpenALActive() )
-      return;
-    
-    // stop sound emission
-    // (must be done before clearing queue or unattaching buffer)
-    alSourceStop( SoundSourceID );
-    
-    // remove any pending queued buffers
+    // stop any currently playing sounds
     ClearBufferQueue();
     
-    // unattach any buffer from the source
-    alSourcei( SoundSourceID, AL_BUFFER, 0 );
-    
-    // stop the playback thread
-    StopPlaybackThread();
-    
-    // delete sound buffers
-    for( int i = 0; i < MAX_BUFFERS; i++ )
-      alDeleteBuffers( 1, &PlaybackBuffers[ i ].BufferID );
-    
-    // delete sound source
-    alDeleteSources( 1, &SoundSourceID );
+    // close the audio device
+    SDL_CloseAudioDevice( AudioDeviceID );
 }
+
+// =============================================================================
+//      AUDIO OUTPUT: QUERYING SOUND DEVICE STATE
+// =============================================================================
+
+
+bool AudioOutput::IsDeviceReady()
+{
+    return (SDL_GetAudioDeviceStatus( AudioDeviceID ) != SDL_AUDIO_STOPPED);
+}
+
+// -----------------------------------------------------------------------------
+
+bool AudioOutput::IsDevicePlaying()
+{
+    return (SDL_GetAudioDeviceStatus( AudioDeviceID ) == SDL_AUDIO_PLAYING);
+}
+
 
 // =============================================================================
 //      AUDIO OUTPUT: BUFFER CONFIGURATION
 // =============================================================================
 
 
-void AudioOutput::SetNumberOfBuffers( int NewNumberOfBuffers )
+void AudioOutput::SetLatencyFrames( int NewLatencyFrames )
 {
-    NumberOfBuffers = NewNumberOfBuffers;
+    Clamp( LatencyFrames, MIN_LATENCY_FRAMES, MAX_LATENCY_FRAMES );
+    LatencyFrames = NewLatencyFrames;
 }
 
 // -----------------------------------------------------------------------------
 
-int AudioOutput::GetNumberOfBuffers()
+int AudioOutput::GetLatencyFrames()
 {
-    return NumberOfBuffers;
+    return LatencyFrames;
 }
 
 
@@ -185,29 +146,14 @@ int AudioOutput::GetNumberOfBuffers()
 
 void AudioOutput::Reset()
 {
-    // reset playback variables
-    ThreadExitFlag = false;
-    ThreadPauseFlag = true;
-    
     // stop any currently playing sounds
-    alSourceStop( SoundSourceID );
     ClearBufferQueue();
     
-    // reset all output buffers
-    for( int i = 0; i < MAX_BUFFERS; i++ )
-    {
-        memset( PlaybackBuffers[ i ].Contents.Samples, 0, Constants::SPUSamplesPerFrame * 4 );
-        PlaybackBuffers[ i ].State = SoundBufferStates::ToBeFilled;
-        PlaybackBuffers[ i ].Contents.SequenceNumber = 0;
-    }
+    // reset the output buffer
+    memset( PlaybackBuffer.Samples, 0, sizeof(PlaybackBuffer.Samples) );
     
     // reinitialize audio playback
     InitializeBufferQueue();
-    ThreadPauseFlag = false;
-    alSourcePlay( SoundSourceID );
-    
-    // reset sound volume
-    alSourcef( SoundSourceID, AL_GAIN, (Mute? 0 : OutputVolume) );
     
     // do NOT reset output volume configuration!
 }
@@ -220,34 +166,25 @@ void AudioOutput::ChangeFrame()
     // actually running (this is a fail-safe mechanism
     // to prevent the emulator from losing audio in
     // some specific window, input or file events)
-    if( !IsSourcePlaying( SoundSourceID ) )
-      alSourcePlay( SoundSourceID );
-    
-    if( ThreadPauseFlag )
-      ThreadPauseFlag = false;
+    if( !IsDevicePlaying() )
+      Play();
     
     // use next frame's sound
-    FillNextSoundBuffer();
+    QueueNextBuffer();
 }
 
 // -----------------------------------------------------------------------------
 
 void AudioOutput::Pause()
 {
-    ThreadPauseFlag = true;
-    alSourcePause( SoundSourceID );
+    SDL_PauseAudioDevice( AudioDeviceID, true );
 }
 
 // -----------------------------------------------------------------------------
 
-void AudioOutput::Resume()
+void AudioOutput::Play()
 {
-    // do nothing when not applicable
-    if( !ThreadPauseFlag ) return;
-    
-    // take resume actions
-    alSourcePlay( SoundSourceID );
-    ThreadPauseFlag = false;
+    SDL_PauseAudioDevice( AudioDeviceID, false );
 }
 
 
@@ -260,14 +197,6 @@ void AudioOutput::SetOutputVolume( float Volume )
 {
     OutputVolume = Volume;
     Clamp( OutputVolume, 0, 1 );
-    
-    // within SPU output volume works linearly
-    // (it is just a gain level) but here we
-    // will treat it quadratically to get the
-    // human-perceived output volume level
-    // vary in a more progressive way
-    float QuadraticVolume = OutputVolume * OutputVolume;
-    alSourcef( SoundSourceID, AL_GAIN, (Mute? 0 : QuadraticVolume) );
 }
 
 // -----------------------------------------------------------------------------
@@ -282,7 +211,6 @@ float AudioOutput::GetOutputVolume()
 void AudioOutput::SetMute( bool NewMute )
 {
     Mute = NewMute;
-    alSourcef( SoundSourceID, AL_GAIN, (Mute? 0 : OutputVolume) );
 }
 
 // -----------------------------------------------------------------------------
@@ -294,248 +222,54 @@ bool AudioOutput::IsMuted()
 
 
 // =============================================================================
-//      AUDIO OUTPUT: GENERATING SOUND
-// =============================================================================
-
-
-// this function is only called from the main thread;
-// returns true if successful
-bool AudioOutput::FillNextSoundBuffer()
-{
-    SoundBuffer* Buffer = FindNextBufferToFill();
-    if( !Buffer ) return false;
-    
-    // obtain sound output for the current frame
-    Console.GetFrameSoundOutput( Buffer->Contents );
-    
-    // ignore OpenAL errors so far
-    alGetError();
-    
-    // copy our local buffer to internal OpenAL one
-    alBufferData( Buffer->BufferID, AL_FORMAT_STEREO16, Buffer->Contents.Samples, Constants::SPUSamplesPerFrame * 4, Constants::SPUSamplingRate );
-    
-    // finally, change buffer state
-    Buffer->State = SoundBufferStates::Filled;
-    return (alGetError() == AL_NO_ERROR);
-}
-
-
-// =============================================================================
-//      AUDIO OUTPUT: SEARCHING FOR SOUND BUFFERS
-// =============================================================================
-
-
-SoundBuffer& AudioOutput::FindBufferFromID( ALuint TargetID )
-{
-    for( int i = 0; i < NumberOfBuffers; i++ )
-      if( PlaybackBuffers[ i ].BufferID == TargetID )
-        return PlaybackBuffers[ i ];
-    
-    THROW( "Cannot find OpenAL buffer ID in SPU output buffers" );
-}
-
-// -----------------------------------------------------------------------------
-
-SoundBuffer* AudioOutput::FindNextBufferToPlay()
-{
-    int MinimumSequenceNumber = INT_MAX;
-    SoundBuffer* NextBufferToPlay = nullptr;
-    
-    for( int i = 0; i < NumberOfBuffers; i++ )
-      if( PlaybackBuffers[ i ].State == SoundBufferStates::Filled )
-        if( PlaybackBuffers[ i ].Contents.SequenceNumber <= MinimumSequenceNumber )
-        {
-            MinimumSequenceNumber = PlaybackBuffers[ i ].Contents.SequenceNumber;
-            NextBufferToPlay = &PlaybackBuffers[ i ];
-        }
-    
-    return NextBufferToPlay;
-}
-
-// -----------------------------------------------------------------------------
-
-SoundBuffer* AudioOutput::FindNextBufferToFill()
-{
-    // we can refill buffers in any order, so we don't
-    // need to look for the lowest sequence number here
-    for( int i = 0; i < NumberOfBuffers; i++ )
-      if( PlaybackBuffers[ i ].State == SoundBufferStates::ToBeFilled )
-        return &PlaybackBuffers[ i ];
-    
-    return nullptr;
-}
-
-
-// =============================================================================
 //      AUDIO OUTPUT: HANDLING PLAYBACK BUFFER QUEUE
 // =============================================================================
 
 
-int AudioOutput::GetQueuedBuffers()
-{
-    int QueuedBuffers = 0;
-    alGetSourcei( SoundSourceID, AL_BUFFERS_QUEUED, &QueuedBuffers );
-    
-    return max( QueuedBuffers, 0 );
-}
-
-// -----------------------------------------------------------------------------
-
-// NOTE: read the documentation for all cases regarding AL_BUFFERS_PROCESSED
-// (will only work right with source state AL_PLAYING)
-int AudioOutput::GetProcessedBuffers()
-{
-    // without this check, the playback thread produces "invalid operation" error on exit
-    int SourceState;
-    alGetSourcei( SoundSourceID, AL_SOURCE_STATE, &SourceState );
-    
-    if( SourceState != AL_PLAYING )
-      return 0;
-    
-    // now do the actual check for buffers
-    int ProcessedBuffers = 0;
-    alGetSourcei( SoundSourceID, AL_BUFFERS_PROCESSED, &ProcessedBuffers );
-    
-    return max( ProcessedBuffers, 0 );
-}
-
-// -----------------------------------------------------------------------------
-
-// NOTE: read the documentation for alSourceUnqueueBuffers
-// (will only work right with source state AL_STOPPED)
 void AudioOutput::ClearBufferQueue()
 {
-    int SourceState;
-    alGetSourcei( SoundSourceID, AL_SOURCE_STATE, &SourceState );
-    
-    if( SourceState != AL_STOPPED )
-      return;
-    
-    // remove all buffers from the queue
-    try
-    {
-        // obtain the number of buffers queued for play in the source
-        int QueuedBuffers = GetQueuedBuffers();
-        
-        // remove each buffer
-        while( QueuedBuffers-- )
-        {
-            ALuint QueuedBufferID = 0;
-            alSourceUnqueueBuffers( SoundSourceID, 1, &QueuedBufferID );
-        }
-        
-        // update state for all buffers
-        for( int i = 0; i < NumberOfBuffers; i++ )
-          PlaybackBuffers[ i ].State = SoundBufferStates::ToBeFilled;
-    }
-    
-    catch( const exception& e )
-    {
-        LOG( "Exception clearing sound buffer queue: " + string(e.what()) );
-    }
+    Pause();
+    SDL_ClearQueuedAudio( AudioDeviceID );
 }
 
 // -----------------------------------------------------------------------------
 
 void AudioOutput::InitializeBufferQueue()
 {
-    // we will only fill half of the buffers
-    // (the rest are left free for later use)
-    for( int i = 0; i < NumberOfBuffers / 2 ; i++ )
-      FillNextSoundBuffer();
+    for( int i = 0; i < LatencyFrames; i++ )
+      if( !QueueNextBuffer() )
+        THROW( "Failed to initialize audio buffer queue: " + string( SDL_GetError() ) );
     
-    // as an exception, this one time we will
-    // need to call this from the main thread;
-    // but it is still safe: at this point the
-    // playback thread is paused and the sound
-    // source is stopped 
-    QueueFilledBuffers();
+    Play();
 }
 
 // -----------------------------------------------------------------------------
 
-// this function is only called from the playback thread,
-// with only one exception for initial queuing on reset
-void AudioOutput::QueueFilledBuffers()
+// returns true on success
+bool AudioOutput::QueueNextBuffer()
 {
-    while( true )
+    // console sound output is ignored when muted
+    if( Mute ) return true;
+    
+    // obtain sound output for the current frame
+    Console.GetFrameSoundOutput( PlaybackBuffer );
+    
+    // apply external volume;
+    // within SPU output volume works linearly
+    // (it is just a gain level) but here we
+    // will treat it quadratically to get the
+    // human-perceived output volume level
+    // vary in a more progressive way
+    int16_t* SingleSample = (int16_t*)PlaybackBuffer.Samples;
+    float QuadraticVolume = OutputVolume * OutputVolume;
+    
+    for( int i = 0; i < V32::Constants::SPUSamplesPerFrame; i++ )
     {
-        SoundBuffer* BufferToPlay = FindNextBufferToPlay();
-        if( !BufferToPlay ) return;
-        
-        // put them in the source play queue 
-        alSourceQueueBuffers( SoundSourceID, 1, &BufferToPlay->BufferID );
-        BufferToPlay->State = SoundBufferStates::QueuedToPlay;
-    }
-}
-
-// -----------------------------------------------------------------------------
-
-// this function is only called from the playback thread
-void AudioOutput::UnqueuePlayedBuffers()
-{
-    // state validations
-    if( !GetQueuedBuffers() )
-      return;
-    
-    // query number of queued buffers already processed
-    int ProcessedBuffers = GetProcessedBuffers();
-    
-    // unqueue every processed buffer
-    while( ProcessedBuffers-- )
-    {
-        ALuint ProcessedBufferID = 0;
-        alSourceUnqueueBuffers( SoundSourceID, 1, &ProcessedBufferID );
-        
-        // buffer is ready to be refilled
-        SoundBuffer& UnqueuedBuffer = FindBufferFromID( ProcessedBufferID );
-        UnqueuedBuffer.State = SoundBufferStates::ToBeFilled;
-    }
-}
-
-
-// =============================================================================
-//      AUDIO OUTPUT: HANDLING PLAYBACK THREAD
-// =============================================================================
-
-
-void AudioOutput::LaunchPlaybackThread()
-{
-    LOG( "Creating audio playback thread" );
-    
-    // ensure thread continuity, but don't play yet
-    ThreadExitFlag = false;
-    ThreadPauseFlag = true;
-    
-    // create thread, if needed
-    if( !PlaybackThread )
-    {
-        PlaybackThread = SDL_CreateThread
-        (
-            AudioPlaybackThread,   // function to use as thread entry point
-            "Playback",            // thread name
-            this                   // function parameters (= the owner instance)
-        );
+        // twice, for left and right samples
+        *(SingleSample++) *= QuadraticVolume;
+        *(SingleSample++) *= QuadraticVolume;
     }
     
-    if( !PlaybackThread )
-      THROW( "Could not create audio playback thread" );
-}
-
-// -----------------------------------------------------------------------------
-
-void AudioOutput::StopPlaybackThread()
-{
-    LOG( "Stopping audio playback thread" );
-    
-    ThreadExitFlag = true;
-    
-    // wait for thread to terminate (only for a limited time)
-    if( PlaybackThread )
-    {
-        int ExitCode = 0;
-        SDL_WaitThread( PlaybackThread, &ExitCode );
-    }
-    
-    PlaybackThread = nullptr;
+    // queue it to play
+    return !SDL_QueueAudio( AudioDeviceID, PlaybackBuffer.Samples, sizeof(PlaybackBuffer.Samples) );
 }

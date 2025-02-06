@@ -107,7 +107,7 @@ GLuint LoadTexture( const string& FileName )
       THROW( "Could not copy the loaded SDL image to the OpenGL texture" );
     
     // delete the original SDL surface loaded by SDL_Image
-    delete LoadedImage;
+    SDL_FreeSurface( LoadedImage );
     
     // for this console none of our textures will be smoothed
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );         
