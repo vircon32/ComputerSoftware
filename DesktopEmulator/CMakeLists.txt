@@ -140,7 +140,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeMod
 # For these depencencies, find everything they need too
 find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
-find_package(OpenAL REQUIRED)
 
 # On Linux we will need to find GTK too
 if(TARGET_OS STREQUAL "linux")
@@ -149,7 +148,6 @@ endif()
 
 # These are treated as independent (they don't depend on anything else)
 find_library(PNG_LIBRARY NAMES png REQUIRED)
-find_library(FREEALUT_LIBRARY NAMES freealut alut REQUIRED)
 
 # -----------------------------------------------------
 #   SHOW BUILD INFORMATION IN PRETTY FORMAT
@@ -184,9 +182,7 @@ endfunction()
 message(STATUS "System Dependencies:")
 show_dependency_status("OPENGL" OPENGL)
 show_dependency_status("SDL2" SDL2)
-show_dependency_status("OPENAL" OPENAL)
 show_dependency_status("PNG" PNG)
-show_dependency_status("FREEALUT" FREEALUT)
 
 if(TARGET_OS STREQUAL "linux")
     show_dependency_status("GTK2" GTK2)
@@ -200,7 +196,6 @@ endif()
 set(ALL_INCLUDE_DIRS
     ${OPENGL_INCLUDE_DIR}
     ${SDL2_INCLUDE_DIR}
-    ${OPENAL_INCLUDE_DIR}
     ${LIBRARIES_DIR}
     ${LIBRARIES_DIR}/glad/include/)
   
@@ -231,8 +226,6 @@ set(EMULATOR_LIBS
     ${SDL2_LIBRARY}
     ${PNG_LIBRARY}
     glad
-    ${OPENAL_LIBRARY}
-    ${FREEALUT_LIBRARY}
     ${CMAKE_DL_LIBS})
 
 # Libraries to link with the EditControls tool
@@ -252,7 +245,6 @@ set(EDITCONTROLS_LIBS
 # Source files to compile for the emulator
 set(EMULATOR_SRC
     ${EMULATOR_DIR}/AudioOutput.cpp
-    ${EMULATOR_DIR}/AudioThread.cpp
     ${EMULATOR_DIR}/EmulatorControl.cpp
     ${EMULATOR_DIR}/GamepadsInput.cpp
     ${EMULATOR_DIR}/Globals.cpp

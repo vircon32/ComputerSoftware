@@ -31,15 +31,6 @@
     #include <imgui/imgui_impl_sdl.h>       // [ Dear ImGui ] SDL2 backend header
     #include <imgui/imgui_impl_opengl3.h>   // [ Dear ImGui ] OpenGL 3 backend header
     
-    // include OpenAL headers
-    #if defined(__APPLE__)
-      #include <OpenAL/al.h>    // [ OpenAL ] Main header
-      #include <AL/alut.h>      // [ OpenAL ] Utility Toolkit
-    #else
-      #include <AL/al.h>        // [ OpenAL ] Main header
-      #include <AL/alut.h>      // [ OpenAL ] Utility Toolkit
-    #endif
-    
     // on Linux, include GTK headers
     #if defined(__linux__)
       #include <gtk/gtk.h>      // [ GTK ] Main header
@@ -237,11 +228,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         
         //initialize audio
         LOG( "Initializing audio" );
-        alutInit( NULL, NULL );
-        
-        // locating listener
-        alListener3f( AL_POSITION, 0, 0, 0 );
-        alListenerf( AL_GAIN, 1.0 );
+        Audio.Initialize();
         
         // initialize languages
         Languages[ "English" ] = LanguageEnglish;
@@ -544,9 +531,9 @@ int main( int NumberOfArguments, char* Arguments[] )
         // end connection to SDL joysticks
         Gamepads.CloseAllJoysticks();
         
-        // shut down ALUT
+        // shut down audio
         LOG( "Terminating audio" );
-        alutExit();
+        Audio.Terminate();
         
         // shut down imgui
         LOG( "Shutting down ImGui" );

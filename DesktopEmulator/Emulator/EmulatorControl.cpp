@@ -103,7 +103,7 @@ void EmulatorControl::Resume()
     
     // take resume actions
     Paused = false;
-    Audio.Resume();
+    Audio.Play();
 }
 
 // -----------------------------------------------------------------------------

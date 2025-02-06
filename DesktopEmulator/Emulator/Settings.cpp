@@ -490,10 +490,9 @@ void LoadSettings( const string& FilePath )
         // load audio buffers settings
         XMLElement* AudioBuffersElement = GetRequiredElement( SettingsRoot, "audio-buffers" );
         int NumberOfBuffers = GetRequiredIntegerAttribute( AudioBuffersElement, "number" );
-        Clamp( NumberOfBuffers, MIN_BUFFERS, MAX_BUFFERS );
         
         // apply audio buffers settings
-        Audio.SetNumberOfBuffers( NumberOfBuffers );
+        Audio.SetLatencyFrames( NumberOfBuffers );
         
         // configure gamepads
         for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
@@ -684,7 +683,7 @@ void SaveSettings( const string& FilePath )
         
         // save audio buffers settings
         XMLElement* AudioBuffersElement = CreatedDoc.NewElement( "audio-buffers" );
-        AudioBuffersElement->SetAttribute( "number", Audio.GetNumberOfBuffers() );
+        AudioBuffersElement->SetAttribute( "number", Audio.GetLatencyFrames() );
         SettingsRoot->LinkEndChild( AudioBuffersElement );
         
         // save gamepad profiles
