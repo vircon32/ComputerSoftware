@@ -38,6 +38,9 @@ enum class TextIDs: int
     Info_DeviceGUID,
     Info_Keyboard,
     Info_NoGUID,
+    Command_Name,
+    Command_TextLine1,
+    Command_TextLine2,
     
     WaitKeyboard_Waiting,
     WaitKeyboard_PressKey,

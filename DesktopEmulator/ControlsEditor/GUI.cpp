@@ -142,40 +142,44 @@ void DisplayKeyboardMapping()
     ImGui::Text( Texts(TextIDs::Info_NoGUID) );
     
     // write left mappings
-    ImGui::SetCursorScreenPos(ImVec2(95,164));
+    ImGui::SetCursorScreenPos(ImVec2(19,164));
     ProcessKeyButton( &KeyboardProfile.ButtonL, "ButtonL" );
     
-    ImGui::SetCursorScreenPos(ImVec2(95,164+29));
+    ImGui::SetCursorScreenPos(ImVec2(19,164+29));
     ProcessKeyButton( &KeyboardProfile.Up, "Up" );
     
-    ImGui::SetCursorScreenPos(ImVec2(95,164+29*2));
+    ImGui::SetCursorScreenPos(ImVec2(19,164+29*2));
     ProcessKeyButton( &KeyboardProfile.Left, "Left" );
     
-    ImGui::SetCursorScreenPos(ImVec2(95,164+29*3));
+    ImGui::SetCursorScreenPos(ImVec2(19,164+29*3));
     ProcessKeyButton( &KeyboardProfile.Down, "Down" );
     
-    ImGui::SetCursorScreenPos(ImVec2(95,164+29*4));
+    ImGui::SetCursorScreenPos(ImVec2(19,164+29*4));
     ProcessKeyButton( &KeyboardProfile.Right, "Right" );
     
     // write right mappings
-    ImGui::SetCursorScreenPos(ImVec2(445,164));
+    ImGui::SetCursorScreenPos(ImVec2(369,164));
     ProcessKeyButton( &KeyboardProfile.ButtonR, "ButtonR" );
     
-    ImGui::SetCursorScreenPos(ImVec2(445,164+29));
+    ImGui::SetCursorScreenPos(ImVec2(369,164+29));
     ProcessKeyButton( &KeyboardProfile.ButtonX, "ButtonX" );
     
-    ImGui::SetCursorScreenPos(ImVec2(445,164+29*2));
+    ImGui::SetCursorScreenPos(ImVec2(369,164+29*2));
     ProcessKeyButton( &KeyboardProfile.ButtonA, "ButtonA" );
     
-    ImGui::SetCursorScreenPos(ImVec2(445,164+29*3));
+    ImGui::SetCursorScreenPos(ImVec2(369,164+29*3));
     ProcessKeyButton( &KeyboardProfile.ButtonB, "ButtonB" );
     
-    ImGui::SetCursorScreenPos(ImVec2(445,164+29*4));
+    ImGui::SetCursorScreenPos(ImVec2(369,164+29*4));
     ProcessKeyButton( &KeyboardProfile.ButtonY, "ButtonY" );
     
     // write start mapping
-    ImGui::SetCursorScreenPos(ImVec2(268,298));
+    ImGui::SetCursorScreenPos(ImVec2(192,298));
     ProcessKeyButton( &KeyboardProfile.ButtonStart, "ButtonStart" );
+    
+    // write command mapping
+    ImGui::SetCursorScreenPos(ImVec2(508,164+29*3));
+    ProcessKeyButton( &KeyboardProfile.Command, "Command" );
     
     // modal window to change a key
     ProcessWaitForKeyboardWindow();
@@ -190,11 +194,11 @@ void DisplayKeyboardMapping()
 string WriteJoystickControl( JoystickControl C )
 {
     // CASE 1: axis
-    if( C.IsAxis )
+    if( C.IsAxis() )
       return "Axis " + to_string( C.AxisIndex ) + (C.AxisPositive? " plus" : " minus");
     
     // CASE 2: hat
-    if( C.IsHat )
+    if( C.IsHat() )
     {
         string DirectionText = "";
         
@@ -214,7 +218,7 @@ string WriteJoystickControl( JoystickControl C )
     }
     
     // CASE 3: button
-    if( C.ButtonIndex >= 0 )
+    if( C.IsButton() )
       return "Button " + to_string( C.ButtonIndex );
     
     // CASE 4: unmapped
@@ -252,8 +256,10 @@ void ProcessWaitForJoystickWindow()
         if( ImGui::Button( Texts(TextIDs::WaitJoystick_Clear) ) )
         {
             ImGui::CloseCurrentPopup();
-            ControlBeingMapped->IsAxis = false;
+            ControlBeingMapped->Type = JoystickControlTypes::None;
             ControlBeingMapped->ButtonIndex = -1;
+            ControlBeingMapped->AxisIndex = -1;
+            ControlBeingMapped->HatIndex = -1;
             ControlBeingMapped = nullptr;
         }
         
@@ -300,40 +306,44 @@ void DisplayJoystickMapping( JoystickMapping* SelectedProfile )
     ImGui::Text( GUIDString );
     
     // write left mappings
-    ImGui::SetCursorScreenPos(ImVec2(95,164));
+    ImGui::SetCursorScreenPos(ImVec2(19,164));
     ProcessJoystickButton( &SelectedProfile->ButtonL, "ButtonL" );
     
-    ImGui::SetCursorScreenPos(ImVec2(95,164+29));
+    ImGui::SetCursorScreenPos(ImVec2(19,164+29));
     ProcessJoystickButton( &SelectedProfile->Up, "Up" );
     
-    ImGui::SetCursorScreenPos(ImVec2(95,164+29*2));
+    ImGui::SetCursorScreenPos(ImVec2(19,164+29*2));
     ProcessJoystickButton( &SelectedProfile->Left, "Left" );
     
-    ImGui::SetCursorScreenPos(ImVec2(95,164+29*3));
+    ImGui::SetCursorScreenPos(ImVec2(19,164+29*3));
     ProcessJoystickButton( &SelectedProfile->Down, "Down" );
     
-    ImGui::SetCursorScreenPos(ImVec2(95,164+29*4));
+    ImGui::SetCursorScreenPos(ImVec2(19,164+29*4));
     ProcessJoystickButton( &SelectedProfile->Right, "Right" );
     
     // write right mappings
-    ImGui::SetCursorScreenPos(ImVec2(445,164));
+    ImGui::SetCursorScreenPos(ImVec2(369,164));
     ProcessJoystickButton( &SelectedProfile->ButtonR, "ButtonR" );
     
-    ImGui::SetCursorScreenPos(ImVec2(445,164+29));
+    ImGui::SetCursorScreenPos(ImVec2(369,164+29));
     ProcessJoystickButton( &SelectedProfile->ButtonX, "ButtonX" );
     
-    ImGui::SetCursorScreenPos(ImVec2(445,164+29*2));
+    ImGui::SetCursorScreenPos(ImVec2(369,164+29*2));
     ProcessJoystickButton( &SelectedProfile->ButtonA, "ButtonA" );
     
-    ImGui::SetCursorScreenPos(ImVec2(445,164+29*3));
+    ImGui::SetCursorScreenPos(ImVec2(369,164+29*3));
     ProcessJoystickButton( &SelectedProfile->ButtonB, "ButtonB" );
     
-    ImGui::SetCursorScreenPos(ImVec2(445,164+29*4));
+    ImGui::SetCursorScreenPos(ImVec2(369,164+29*4));
     ProcessJoystickButton( &SelectedProfile->ButtonY, "ButtonY" );
     
     // write start mapping
-    ImGui::SetCursorScreenPos(ImVec2(268,298));
+    ImGui::SetCursorScreenPos(ImVec2(192,298));
     ProcessJoystickButton( &SelectedProfile->ButtonStart, "ButtonStart" );
+    
+    // write command mapping
+    ImGui::SetCursorScreenPos(ImVec2(508,164+29*3));
+    ProcessJoystickButton( &SelectedProfile->Command, "Command" );
     
     // modal window to change a key
     ProcessWaitForJoystickWindow();
@@ -649,14 +659,22 @@ void RenderGUI()
         ImGui::SetCursorScreenPos(ImVec2(0,130));
         ImGui::Separator();
         
-        ImGui::SetCursorScreenPos(ImVec2(95,163));
-        ImGui::Image( (void*)GamepadTextureID, ImVec2(512,256) );
+        ImGui::SetCursorScreenPos(ImVec2(19,163));
+        ImGui::Image( (void*)GamepadTextureID, ImVec2(1024,256) );
         
         // now write the actual values
         if( SelectedProfile )
           DisplayJoystickMapping( SelectedProfile );  
         else
           DisplayKeyboardMapping();
+        
+        // draw texts for command button
+        ImGui::SetCursorScreenPos(ImVec2(557,168));
+        TextAlignedCenter( Texts(TextIDs::Command_Name) );
+        ImGui::SetCursorScreenPos(ImVec2(557,288));
+        TextAlignedCenter( Texts(TextIDs::Command_TextLine1) );
+        ImGui::SetCursorScreenPos(ImVec2(557,304));
+        TextAlignedCenter( Texts(TextIDs::Command_TextLine2) );
     }
     ImGui::End();
     

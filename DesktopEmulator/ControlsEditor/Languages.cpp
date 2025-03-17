@@ -40,7 +40,7 @@ const char* Texts( TextIDs ID )
 
 
 string AboutTextEnglish =
-    "EditControls version 25.1.19."
+    "EditControls version 25.3.17."
     "\n"
     "\nThis program is a tool included with the Vircon32 emulator."
     "\nIt can create control profiles for keyboard and joysticks."
@@ -69,7 +69,10 @@ string GuideTextEnglish =
     "\n2) Open the emulator and go to the 'Gamepads' menu."
     "\n3) For each of the 4 gamepads, assign the device you want to use."
     "\n4) The keyboard can only be assigned to one gamepad."
-    "\n5) If you have N identical joysticks, assign that profile to N gamepads.";
+    "\n5) If you have N identical joysticks, assign that profile to N gamepads."
+    "\n"
+    "\nYou may optionally define a Command button for emulator control."
+    "\nIt is used with combinations, for instance: Command + X = Reset.";
 ;
 
 string LanguageEnglish[] = 
@@ -100,6 +103,9 @@ string LanguageEnglish[] =
     "Device GUID:",
     "Keyboard",
     "(none)",
+    "Command button",
+    "Optional, used for",
+    "emulator control",
     
     "Waiting for key...",
     "Press a new key for this control",
@@ -139,7 +145,7 @@ string LanguageEnglish[] =
 
 
 string AboutTextSpanish =
-    "EditControls versi\u00F3n 25.1.19."
+    "EditControls versi\u00F3n 25.3.17."
     "\n"
     "\nEste programa es una herramienta incluida con el emulador de Vircon32."
     "\nPermite crear perfiles de control para teclado y joysticks."
@@ -168,7 +174,10 @@ string GuideTextSpanish =
     "\n2) Abre el emulador y ve al men\u00FA 'Mandos'."
     "\n3) En cada uno de los 4 mandos, asigna el aparato que quieras usar."
     "\n4) El teclado s\u00F3lo se puede asignar a un mando."
-    "\n5) Si tienes N joysticks id\u00E9nticos, asigna ese perfil a N mandos.";
+    "\n5) Si tienes N joysticks id\u00E9nticos, asigna ese perfil a N mandos."
+    "\n"
+    "\nOpcionalmente puedes definir un bot\u00F3n Comando para control del emulador."
+    "\nSe usa con combinaciones, por ejemplo: Comando + X = Reset";
 ;
 
 string LanguageSpanish[] = 
@@ -199,6 +208,9 @@ string LanguageSpanish[] =
     "GUID aparato:",
     "Teclado",
     "(ninguno)",
+    "Bot\u00F3n de Comando",
+    "Opcional, para el",
+    "control del emulador",
     
     "Esperando tecla...",
     "Pulsa nueva tecla para este control",

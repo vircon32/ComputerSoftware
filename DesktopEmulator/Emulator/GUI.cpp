@@ -166,6 +166,13 @@ void ShowDelayedMessageBox()
       Emulator.Resume();
 }
 
+// -----------------------------------------------------------------------------
+
+void CancelDelayedMessageBox()
+{
+    MessageBoxPending = false;
+}
+
 
 // =============================================================================
 //      ADDITIONAL GUI FUNCTIONS

@@ -32,6 +32,20 @@ class KeyboardMapping
         // buttons
         SDL_Keycode ButtonA, ButtonB, ButtonX, ButtonY;
         SDL_Keycode ButtonL, ButtonR, ButtonStart;
+        
+        // optional command button
+        SDL_Keycode Command;
+};
+
+// -----------------------------------------------------------------------------
+
+// possible types of joystick controls
+enum class JoystickControlTypes
+{
+    None,
+    Button,
+    Axis,
+    Hat
 };
 
 // -----------------------------------------------------------------------------
@@ -42,8 +56,7 @@ class JoystickControl
     public:
         
         // control type
-        bool IsAxis;
-        bool IsHat;
+        JoystickControlTypes Type;
         
         // button info
         int ButtonIndex;
@@ -60,6 +73,11 @@ class JoystickControl
         
         // constructor to leave all controls unmapped
         JoystickControl();
+        
+        // type queries
+        bool IsButton() { return (Type == JoystickControlTypes::Button); };
+        bool IsAxis()   { return (Type == JoystickControlTypes::Axis  ); };
+        bool IsHat()    { return (Type == JoystickControlTypes::Hat   ); };
 };
 
 // -----------------------------------------------------------------------------
@@ -82,6 +100,9 @@ class JoystickMapping
         // buttons
         JoystickControl ButtonA, ButtonB, ButtonX, ButtonY;
         JoystickControl ButtonL, ButtonR, ButtonStart;    
+        
+        // optional command button
+        JoystickControl Command;
 };
 
 // -----------------------------------------------------------------------------
@@ -140,10 +161,14 @@ class GamepadsInput
         KeyboardMapping KeyboardProfile;
         std::map< SDL_JoystickGUID, JoystickMapping* > JoystickProfiles;
         
+        // state of the command button for each gamepad (these are optional
+        // and not part of the console gamepads so handle them separately)
+        bool CommandPressed[ V32::Constants::GamepadPorts ];
+        
     public:
         
         // maps {Vircon gamepads} --> {PC devices}
-        DeviceInfo MappedGamepads[ V32::Constants::GamepadPorts ];    
+        DeviceInfo MappedGamepads[ V32::Constants::GamepadPorts ];
         
     private:
         

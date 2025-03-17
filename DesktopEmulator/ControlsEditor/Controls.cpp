@@ -28,8 +28,7 @@
 
 JoystickControl::JoystickControl()
 {
-    IsAxis = false;
-    IsHat = false;
+    Type = JoystickControlTypes::None;
     ButtonIndex = -1;
     AxisIndex = -1;
     HatIndex = -1;
@@ -223,6 +222,9 @@ void SetDefaultControls()
     
     KeyboardProfile.ButtonStart = SDLK_RETURN;
     
+    // by default Command button is not used
+    KeyboardProfile.Command = -1;
+    
     // keyboard is the only selectable profile now
     SelectedProfile = nullptr;
 }
@@ -256,9 +258,10 @@ void LoadJoystickControl( JoystickControl* LoadedControl, XMLElement* Parent, co
     // controls may be unmapped
     if( !ControlElement )
     {
-        LoadedControl->IsAxis = false;
-        LoadedControl->IsHat = false;
+        LoadedControl->Type = JoystickControlTypes::None;
         LoadedControl->ButtonIndex = -1;
+        LoadedControl->AxisIndex = -1;
+        LoadedControl->HatIndex = -1;
         return;
     }
     
@@ -269,7 +272,7 @@ void LoadJoystickControl( JoystickControl* LoadedControl, XMLElement* Parent, co
     
     if( ButtonAttribute )
     {
-        LoadedControl->IsAxis = false;
+        LoadedControl->Type = JoystickControlTypes::Button;
         XMLError ErrorCode = ControlElement->QueryIntAttribute( "button", &LoadedControl->ButtonIndex );
         
         if( ErrorCode != XML_SUCCESS )
@@ -278,7 +281,7 @@ void LoadJoystickControl( JoystickControl* LoadedControl, XMLElement* Parent, co
     
     else if( AxisAttribute )
     {
-        LoadedControl->IsAxis = true;
+        LoadedControl->Type = JoystickControlTypes::Axis;
         XMLError ErrorCode = ControlElement->QueryIntAttribute( "axis", &LoadedControl->AxisIndex );
         
         if( ErrorCode != XML_SUCCESS )
@@ -299,7 +302,7 @@ void LoadJoystickControl( JoystickControl* LoadedControl, XMLElement* Parent, co
     
     else if( HatAttribute )
     {
-        LoadedControl->IsHat = true;
+        LoadedControl->Type = JoystickControlTypes::Hat;
         XMLError ErrorCode = ControlElement->QueryIntAttribute( "hat", &LoadedControl->HatIndex );
         
         if( ErrorCode != XML_SUCCESS )
@@ -360,8 +363,8 @@ void LoadControls( const string& FilePath )
         // check document version number
         int Version = GetRequiredIntegerAttribute( ControlsRoot, "version" );
         
-        if( Version < 1 || Version > 2 )
-          THROW( "Document version number is" + to_string( Version ) + ", only versions 1 and 2 are supported" );
+        if( Version < 1 || Version > 3 )
+          THROW( "Document version number is" + to_string( Version ) + ", only versions 1 to 3 are supported" );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // first read the keyboard profile
@@ -385,6 +388,12 @@ void LoadControls( const string& FilePath )
         LoadKey( &KeyboardProfile.ButtonL, KeyboardRoot, "button-l" );
         LoadKey( &KeyboardProfile.ButtonR, KeyboardRoot, "button-r" );
         LoadKey( &KeyboardProfile.ButtonStart, KeyboardRoot, "button-start" );        
+        
+        // load command button
+        if( Version >= 3 )
+          LoadKey( &KeyboardProfile.Command, KeyboardRoot, "command" ); 
+        else
+          KeyboardProfile.Command = -1;
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // now read any listed joystick profiles
@@ -440,6 +449,10 @@ void LoadControls( const string& FilePath )
             LoadJoystickControl( &JoystickProfile->ButtonR, JoystickRoot, "button-r" );
             LoadJoystickControl( &JoystickProfile->ButtonStart, JoystickRoot, "button-start" );
             
+            // load command button
+            if( Version >= 3 )
+              LoadJoystickControl( &JoystickProfile->Command, JoystickRoot, "command" );
+            
             // create a joystick mapping, replacing the previous
             JoystickProfiles[ GUID ] = JoystickProfile;
             
@@ -485,19 +498,19 @@ void SaveKey( SDL_Keycode* SavedKey, XMLElement* Parent, const string& KeyName )
 void SaveJoystickControl( JoystickControl* SavedControl, XMLElement* Parent, const string& ControlName )
 {
     // the control may be unmapped
-    if( !SavedControl->IsAxis && !SavedControl->IsHat && SavedControl->ButtonIndex < 0 )
+    if( SavedControl->Type == JoystickControlTypes::None )
       return;
     
     XMLElement* ControlElement = Parent->GetDocument()->NewElement( ControlName.c_str() );
     Parent->InsertEndChild( ControlElement );
     
-    if( SavedControl->IsAxis )
+    if( SavedControl->IsAxis() )
     {
         ControlElement->SetAttribute( "axis", (int)SavedControl->AxisIndex );
         ControlElement->SetAttribute( "direction", SavedControl->AxisPositive? "plus" : "minus" );
     }
     
-    else if( SavedControl->IsHat )
+    else if( SavedControl->IsHat() )
     {
         ControlElement->SetAttribute( "hat", (int)SavedControl->HatIndex );
         
@@ -536,7 +549,7 @@ void SaveControls( const std::string& FilePath )
         // create a document and its root element
         XMLDocument CreatedDoc;
         XMLElement* ControlsRoot = CreatedDoc.NewElement( "controls" );
-        ControlsRoot->SetAttribute( "version", 2 );
+        ControlsRoot->SetAttribute( "version", 3 );
         CreatedDoc.LinkEndChild( ControlsRoot );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -561,6 +574,9 @@ void SaveControls( const std::string& FilePath )
         SaveKey( &KeyboardProfile.ButtonL, KeyboardRoot, "button-l" );
         SaveKey( &KeyboardProfile.ButtonR, KeyboardRoot, "button-r" );
         SaveKey( &KeyboardProfile.ButtonStart, KeyboardRoot, "button-start" );
+        
+        // save command button
+        SaveKey( &KeyboardProfile.Command, KeyboardRoot, "command" );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // save every joystick mapping 
@@ -599,6 +615,9 @@ void SaveControls( const std::string& FilePath )
             SaveJoystickControl( &JoystickProfile->ButtonL, JoystickRoot, "button-l" );
             SaveJoystickControl( &JoystickProfile->ButtonR, JoystickRoot, "button-r" );
             SaveJoystickControl( &JoystickProfile->ButtonStart, JoystickRoot, "button-start" );
+            
+            // save command button
+            SaveJoystickControl( &JoystickProfile->Command, JoystickRoot, "command" );
         }
         
         // open the output file

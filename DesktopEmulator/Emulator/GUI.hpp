@@ -25,6 +25,7 @@ std::string GetSaveFilePath( const char* Filters, const std::string& Directory )
 
 void DelayedMessageBox( uint32_t flags, const char *Title, const char *Message );
 void ShowDelayedMessageBox();
+void CancelDelayedMessageBox();
 
 
 // =============================================================================

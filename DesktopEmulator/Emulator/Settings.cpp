@@ -137,9 +137,10 @@ void LoadJoystickControl( JoystickControl* LoadedControl, XMLElement* Parent, co
     // controls may be unmapped
     if( !ControlElement )
     {
-        LoadedControl->IsAxis = false;
-        LoadedControl->IsHat = false;
+        LoadedControl->Type = JoystickControlTypes::None;
         LoadedControl->ButtonIndex = -1;
+        LoadedControl->AxisIndex = -1;
+        LoadedControl->HatIndex = -1;
         return;
     }
     
@@ -150,7 +151,7 @@ void LoadJoystickControl( JoystickControl* LoadedControl, XMLElement* Parent, co
     
     if( ButtonAttribute )
     {
-        LoadedControl->IsAxis = false;
+        LoadedControl->Type = JoystickControlTypes::Button;
         XMLError ErrorCode = ControlElement->QueryIntAttribute( "button", &LoadedControl->ButtonIndex );
         
         if( ErrorCode != XML_SUCCESS )
@@ -159,7 +160,7 @@ void LoadJoystickControl( JoystickControl* LoadedControl, XMLElement* Parent, co
     
     else if( AxisAttribute )
     {
-        LoadedControl->IsAxis = true;
+        LoadedControl->Type = JoystickControlTypes::Axis;
         XMLError ErrorCode = ControlElement->QueryIntAttribute( "axis", &LoadedControl->AxisIndex );
         
         if( ErrorCode != XML_SUCCESS )
@@ -180,7 +181,7 @@ void LoadJoystickControl( JoystickControl* LoadedControl, XMLElement* Parent, co
     
     else if( HatAttribute )
     {
-        LoadedControl->IsHat = true;
+        LoadedControl->Type = JoystickControlTypes::Hat;
         XMLError ErrorCode = ControlElement->QueryIntAttribute( "hat", &LoadedControl->HatIndex );
         
         if( ErrorCode != XML_SUCCESS )
@@ -241,8 +242,8 @@ void LoadControls( const std::string& FilePath )
         // check document version number
         int Version = GetRequiredIntegerAttribute( ControlsRoot, "version" );
         
-        if( Version < 1 || Version > 2 )
-          THROW( "Document version number is" + to_string( Version ) + ", only versions 1 and 2 are supported" );
+        if( Version < 1 || Version > 3 )
+          THROW( "Document version number is" + to_string( Version ) + ", only versions 1 to 3 are supported" );
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // first read the keyboard profile
@@ -267,6 +268,12 @@ void LoadControls( const std::string& FilePath )
         LoadKey( &KeyboardProfile.ButtonL, KeyboardRoot, "button-l" );
         LoadKey( &KeyboardProfile.ButtonR, KeyboardRoot, "button-r" );
         LoadKey( &KeyboardProfile.ButtonStart, KeyboardRoot, "button-start" );        
+        
+        // load command button
+        if( Version >= 3 )
+          LoadKey( &KeyboardProfile.Command, KeyboardRoot, "command" ); 
+        else
+          KeyboardProfile.Command = -1;
         
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // now read any listed joystick profiles
@@ -321,6 +328,10 @@ void LoadControls( const std::string& FilePath )
             LoadJoystickControl( &JoystickProfile->ButtonL, JoystickRoot, "button-l" );
             LoadJoystickControl( &JoystickProfile->ButtonR, JoystickRoot, "button-r" );
             LoadJoystickControl( &JoystickProfile->ButtonStart, JoystickRoot, "button-start" );
+            
+            // load command button
+            if( Version >= 3 )
+              LoadJoystickControl( &JoystickProfile->Command, JoystickRoot, "command" );
             
             // create a joystick mapping, replacing the previous
             Gamepads.AddJoystickProfile( GUID, JoystickProfile );

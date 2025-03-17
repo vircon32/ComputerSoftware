@@ -1,6 +1,6 @@
 ============================================================
              README file for Vircon32 emulator
-            (version 25.1.19) written by Carra
+            (version 25.3.17) written by Carra
 ============================================================
 
 What is this?
@@ -42,10 +42,7 @@ Installing
     (it can be installed from its website). The commands needed
     to install the dependencies are:
       brew install sdl2
-      brew install sdl2_image
-      brew install openal-soft
-      brew install freealut
-      brew install tinyxml2
+      brew install libpng
     
 ------------------------------------------------------------
 
@@ -91,6 +88,31 @@ Controls
     joystick controls can be edited using a second program
     included with this emulator, called EditControls. Read the
     help in EditControls to learn how to configure your devices.
+
+------------------------------------------------------------
+
+Command button
+
+    Emulators such as this are often used within arcade setups
+    or front-end programs. In these situations it is desirable
+    to be able to access certain emulator functions using only
+    the gamepads.
+    
+    To allow for this, the EditControls program allows every
+    keyboard/joystick profile to define and map an optional
+    additional button called the Command button. This button
+    is not part of the Vircon32 gamepad, but defining it will
+    allow you to trigger a few core emulator functions using
+    the following button combinations:
+    
+      - Command + Start: Quit emulator
+      - Command + X: Reset
+      - Command + L: Save state
+      - Command + R: Load state
+    
+    These combinations can be used from any of the 4 console
+    gamepads. The intended way to press a combination is to
+    press the second button while keeping Command button held.
 
 ------------------------------------------------------------
 
@@ -150,12 +172,19 @@ How to use savestates
     
 ------------------------------------------------------------
 
-What's new in version 25.1.19?
+What's new in version 25.3.17?
   
-  - Fixes the previous problems on Windows that prevented
-    accessing files if their path had non English characters.
-  - Emulation speed is now correct on screens which use a
-    refresh rate over 60 Hz.
+  - Keyboard/joystick profiles for Vircon32 gamepad now allow
+    defining an additional command button. This makes it
+    possible to trigger certain emulator functions using only
+    the controller, with certain button combinations.
+  - The sound system no longer uses OpenAL or ALUT. They are
+    now replaced with the native SDL2 audio system. With this
+    their external libraries are no longer required.
+  - Image loading no longer uses SDL2_image, so its external
+    library is no longer required.
+  - XML library tinyxml2 is now included in the executables,
+    so its external library is no longer required.
 
 ------------------------------------------------------------
 

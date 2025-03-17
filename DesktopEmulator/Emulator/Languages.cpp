@@ -39,7 +39,7 @@ const char* Texts( TextIDs ID )
 
 
 string AboutTextEnglish =
-    "Vircon32 Emulator version 25.1.19."
+    "Vircon32 Emulator version 25.3.17."
     "\n"
     "\nEmulator for the Vircon32 virtual console."
     "\nThis program allows you to play Vircon32 games."
@@ -72,8 +72,9 @@ string GuideTextEnglish =
     "\n  that should be in this same folder. After your control profiles are"
     "\n  saved you can come back to the emulator and use the Gamepads menu to"
     "\n  assign your profiles to each of the 4 console gamepads."
-    "\n\n"
-    "If you need more help, you can click on 'Show readme file'."
+    "\n"
+    "\nYou can also define a Command button to trigger some emulator functions."
+    "\nIf you need more help, you can click on 'Show readme file'."
 ;
 
 string LanguageEnglish[] = 
@@ -176,7 +177,7 @@ string LanguageEnglish[] =
 
 
 string AboutTextSpanish =
-    "Emulador de Vircon32 versi\u00F3n 25.1.19."
+    "Emulador de Vircon32 versi\u00F3n 25.3.17."
     "\n"
     "\nEmulador de la consola virtual Vircon32."
     "\nEste programa te permite jugar a juegos de Vircon32."
@@ -211,8 +212,9 @@ string GuideTextSpanish =
     "\n  tus perfiles de control se hayan guardado puedes volver al emulador"
     "\n  y usar el men\u00FA Mandos para asignar esos perfiles a cada uno de los 4"
     "\n  mandos de la consola."
-    "\n\n"
-    "Si necesitas m\u00E1s ayuda, puedes hacer click en 'Ver archivo Readme'."
+    "\n"
+    "\nTambi\u00E9n puedes definir un bot\u00F3n de Comando para activar ciertas funciones."
+    "\nSi necesitas m\u00E1s ayuda, puedes hacer click en 'Ver archivo Readme'."
 ;
 
 string LanguageSpanish[] = 

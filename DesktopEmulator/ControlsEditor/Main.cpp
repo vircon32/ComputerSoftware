@@ -85,7 +85,7 @@ void ProcessJoystickButtonDown( SDL_JoyButtonEvent ButtonEvent )
     Uint8 ButtonIndex = ButtonEvent.button;
     
     // save the pressed button
-    ControlBeingMapped->IsAxis = false;
+    ControlBeingMapped->Type = JoystickControlTypes::Button;
     ControlBeingMapped->ButtonIndex = ButtonIndex;
     
     // exit wait mode
@@ -120,7 +120,7 @@ void ProcessJoystickAxisMotion( SDL_JoyAxisEvent AxisEvent )
     if( PositivePressed )
     {
         // save the moved axis
-        ControlBeingMapped->IsAxis = true;
+        ControlBeingMapped->Type = JoystickControlTypes::Axis;
         ControlBeingMapped->AxisPositive = true;
         ControlBeingMapped->AxisIndex = AxisIndex;
         
@@ -131,7 +131,7 @@ void ProcessJoystickAxisMotion( SDL_JoyAxisEvent AxisEvent )
     else if( NegativePressed )
     {
         // save the moved axis
-        ControlBeingMapped->IsAxis = true;
+        ControlBeingMapped->Type = JoystickControlTypes::Axis;
         ControlBeingMapped->AxisPositive = false;
         ControlBeingMapped->AxisIndex = AxisIndex;
         
@@ -163,7 +163,7 @@ void ProcessJoystickHatMotion( SDL_JoyHatEvent HatEvent )
     if( HatPosition & SDL_HAT_LEFT )
     {
         // save the moved hat
-        ControlBeingMapped->IsHat = true;
+        ControlBeingMapped->Type = JoystickControlTypes::Hat;
         ControlBeingMapped->HatIndex = HatIndex;
         ControlBeingMapped->HatDirection = SDL_HAT_LEFT;
         
@@ -174,7 +174,7 @@ void ProcessJoystickHatMotion( SDL_JoyHatEvent HatEvent )
     else if( HatPosition & SDL_HAT_RIGHT )
     {
         // save the moved hat
-        ControlBeingMapped->IsHat = true;
+        ControlBeingMapped->Type = JoystickControlTypes::Hat;
         ControlBeingMapped->HatIndex = HatIndex;
         ControlBeingMapped->HatDirection = SDL_HAT_RIGHT;
         
@@ -185,7 +185,7 @@ void ProcessJoystickHatMotion( SDL_JoyHatEvent HatEvent )
     else if( HatPosition & SDL_HAT_UP )
     {
         // save the moved hat
-        ControlBeingMapped->IsHat = true;
+        ControlBeingMapped->Type = JoystickControlTypes::Hat;
         ControlBeingMapped->HatIndex = HatIndex;
         ControlBeingMapped->HatDirection = SDL_HAT_UP;
         
@@ -196,7 +196,7 @@ void ProcessJoystickHatMotion( SDL_JoyHatEvent HatEvent )
     else if( HatPosition & SDL_HAT_DOWN )
     {
         // save the moved hat
-        ControlBeingMapped->IsHat = true;
+        ControlBeingMapped->Type = JoystickControlTypes::Hat;
         ControlBeingMapped->HatIndex = HatIndex;
         ControlBeingMapped->HatDirection = SDL_HAT_DOWN;
         

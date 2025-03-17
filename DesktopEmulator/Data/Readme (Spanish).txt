@@ -1,6 +1,6 @@
 ﻿============================================================
         Archivo README para el emulador de Vircon32
-           (versión 25.1.19) escrito por Carra
+           (versión 25.3.17) escrito por Carra
 ============================================================
 
 ¿Qué es esto?
@@ -43,10 +43,7 @@ Instalación
     gestor de paquetes Homebrew (se puede instalar desde su web).
     Los comandos para instalarlas son:
       brew install sdl2
-      brew install sdl2_image
-      brew install openal-soft
-      brew install freealut
-      brew install tinyxml2
+      brew install libpng
     
 ------------------------------------------------------------
 
@@ -94,6 +91,32 @@ Controles
     Lee la ayuda de EditControls para aprender cómo configurar
     tus dispositivos.
   
+------------------------------------------------------------
+
+Botón de Comando
+
+    Emuladores como éste a menudo se usan desde muebles arcade
+    o interfaces tipo front-end. En esas situaciones puede ser
+    deseable tener acceso a ciertas funciones del emulador
+    usando sólo los mandos.
+    
+    Para permitir esto, el programa EditControls permite que
+    cada perfil de teclado/joystick defina y mapee un botón
+    adicional opcional llamado botón de Comando. Este botón no
+    es parte del mando de Vircon32, pero definirlo nos permite
+    invocar unas algunas funciones principales del emulador
+    usando las siguientes combinaciones de botones:
+    
+      - Comando + Start: Cerrar emulador
+      - Comando + X: Reset
+      - Comando + L: Guardar estado
+      - Comando + R: Cargar estado
+    
+    Estas combinaciones pueden usarse desde cualquiera de los
+    4 mandos de la consola. La forma de pulsar una combinación
+    es pulsar el segundo botón mientras se mantiene pulsado el
+    botón de Comando.
+
 ------------------------------------------------------------
 
 Cómo usar tarjetas de memoria
@@ -156,12 +179,20 @@ Cómo usar savestates
     
 ------------------------------------------------------------
 
-Novedades en la versión 25.1.19
+Novedades en la versión 25.3.17
     
-  - En Windows se arreglan los problemas que impedían acceder
-    a archivos si su ruta tenía caracteres no ingleses.
-  - Se corrige la velocidad de emulación en pantallas que usen
-    una tasa de refresco por encima de los 60 Hz.
+  - Los perfiles de teclado/joysticks para el mando de Vircon32
+    ahora permiten definir un botón de comando adicional. Esto
+    permite activar ciertas funciones del emulador usando sólo
+    el mando, mediante combinaciones de botones.
+  - El sistema de sonido ya no usa OpenAL ni ALUT. Se sustituye
+    por el sistema de audio nativo de SDL2. Con esto ya no son
+    necesarias sus librerías externas.
+  - La carga de imágenes ya no usa SDL2_image, por lo que ya no
+    es necesaria su librería externa.
+  - La librería de XML tinyxml2 ahora está incluida en los
+    ejecutables, por lo que ya no es necesaria su librería
+    externa.
 
 ------------------------------------------------------------
 

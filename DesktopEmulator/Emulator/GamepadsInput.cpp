@@ -7,6 +7,7 @@
     
     // include emulator headers
     #include "GamepadsInput.hpp"
+    #include "GUI.hpp"
     #include "Globals.hpp"
     
     // include C/C++ headers
@@ -28,8 +29,7 @@
 
 JoystickControl::JoystickControl()
 {
-    IsAxis = false;
-    IsHat = false;
+    Type = JoystickControlTypes::None;
     ButtonIndex = -1;
     AxisIndex = -1;
     HatIndex = -1;
@@ -100,6 +100,10 @@ bool GUIDStringIsValid( const string& GUIDString )
 GamepadsInput::GamepadsInput()
 {
     SetDefaultProfiles();
+    
+    // command buttons are all initially unpressed
+    for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
+      CommandPressed[ Gamepad ] = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -141,6 +145,9 @@ void GamepadsInput::SetDefaultProfiles()
     KeyboardProfile.ButtonR = SDLK_w;
     
     KeyboardProfile.ButtonStart = SDLK_RETURN;
+    
+    // by default Command button is not used
+    KeyboardProfile.Command = -1;
 }
 
 // -----------------------------------------------------------------------------
@@ -401,51 +408,111 @@ void GamepadsInput::ProcessJoystickAxisMotion( SDL_Event Event )
         
         JoystickMapping* JoystickProfile = Position->second;
         
+        // if the command button is mapped to an axis
+        // check it before any regular controls
+        if( JoystickProfile->Command.IsAxis() )
+          if( AxisIndex == JoystickProfile->Command.AxisIndex )
+            CommandPressed[ Gamepad ] = JoystickProfile->Command.AxisPositive? PositivePressed : NegativePressed;
+        
         // check the mapped axes for directions
-        if( JoystickProfile->Left.IsAxis )
+        if( JoystickProfile->Left.IsAxis() )
           if( AxisIndex == JoystickProfile->Left.AxisIndex )
             Console.SetGamepadControl( Gamepad, GamepadControls::Left, JoystickProfile->Left.AxisPositive? PositivePressed : NegativePressed );
         
-        if( JoystickProfile->Right.IsAxis )
+        if( JoystickProfile->Right.IsAxis() )
           if( AxisIndex == JoystickProfile->Right.AxisIndex )
             Console.SetGamepadControl( Gamepad, GamepadControls::Right, JoystickProfile->Right.AxisPositive? PositivePressed : NegativePressed );
         
-        if( JoystickProfile->Up.IsAxis )
+        if( JoystickProfile->Up.IsAxis() )
           if( AxisIndex == JoystickProfile->Up.AxisIndex )
             Console.SetGamepadControl( Gamepad, GamepadControls::Up, JoystickProfile->Up.AxisPositive? PositivePressed : NegativePressed );
         
-        if( JoystickProfile->Down.IsAxis )
+        if( JoystickProfile->Down.IsAxis() )
           if( AxisIndex == JoystickProfile->Down.AxisIndex )
             Console.SetGamepadControl( Gamepad, GamepadControls::Down, JoystickProfile->Down.AxisPositive? PositivePressed : NegativePressed );
         
-        // check the mapped axes for buttons
-        if( JoystickProfile->ButtonA.IsAxis )
-          if( AxisIndex == JoystickProfile->ButtonA.AxisIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonA, JoystickProfile->ButtonA.AxisPositive? PositivePressed : NegativePressed );
+        // when command is pressed, check only for button combinations
+        // (regular button presses are ignored until command is released)
+        if( CommandPressed[ Gamepad ] )
+        {
+            // hold Command + press X = Reset
+            if( JoystickProfile->ButtonX.IsAxis() )
+              if( AxisIndex == JoystickProfile->ButtonX.AxisIndex )
+              {
+                  bool IsPressed = JoystickProfile->ButtonX.AxisPositive? PositivePressed : NegativePressed;
+                  
+                  if( IsPressed )
+                    Console.Reset();
+              }
+            
+            // hold Command + press L = Save state
+            if( JoystickProfile->ButtonL.IsAxis() )
+              if( AxisIndex == JoystickProfile->ButtonL.AxisIndex )
+              {
+                  bool IsPressed = JoystickProfile->ButtonL.AxisPositive? PositivePressed : NegativePressed;
+                  
+                  if( IsPressed )
+                  {
+                      GUI_SaveState();
+                      CancelDelayedMessageBox();  // for these combinations inhibit any GUI messages
+                  }
+              }
+            
+            // hold Command + press R = Load state
+            if( JoystickProfile->ButtonR.IsAxis() )
+              if( AxisIndex == JoystickProfile->ButtonR.AxisIndex )
+              {
+                  bool IsPressed = JoystickProfile->ButtonR.AxisPositive? PositivePressed : NegativePressed;
+                  
+                  if( IsPressed && CommandPressed[ Gamepad ] )
+                  {
+                      GUI_LoadState();
+                      CancelDelayedMessageBox();  // for these combinations inhibit any GUI messages
+                  }
+              }
+            
+            // hold Command + press Start = Quit emulator
+            if( JoystickProfile->ButtonStart.IsAxis() )
+              if( AxisIndex == JoystickProfile->ButtonStart.AxisIndex )
+              {
+                  bool IsPressed = JoystickProfile->ButtonStart.AxisPositive? PositivePressed : NegativePressed;
+                  
+                  if( IsPressed )
+                    GlobalLoopActive = false;
+              }
+        }
         
-        if( JoystickProfile->ButtonB.IsAxis )
-          if( AxisIndex == JoystickProfile->ButtonB.AxisIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonB, JoystickProfile->ButtonB.AxisPositive? PositivePressed : NegativePressed );
-        
-        if( JoystickProfile->ButtonX.IsAxis )
-          if( AxisIndex == JoystickProfile->ButtonX.AxisIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonX, JoystickProfile->ButtonX.AxisPositive? PositivePressed : NegativePressed );
-        
-        if( JoystickProfile->ButtonY.IsAxis )
-          if( AxisIndex == JoystickProfile->ButtonY.AxisIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonY, JoystickProfile->ButtonY.AxisPositive? PositivePressed : NegativePressed );
-        
-        if( JoystickProfile->ButtonL.IsAxis )
-          if( AxisIndex == JoystickProfile->ButtonL.AxisIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonL, JoystickProfile->ButtonL.AxisPositive? PositivePressed : NegativePressed );
-        
-        if( JoystickProfile->ButtonR.IsAxis )
-          if( AxisIndex == JoystickProfile->ButtonR.AxisIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonR, JoystickProfile->ButtonR.AxisPositive? PositivePressed : NegativePressed );
-        
-        if( JoystickProfile->ButtonStart.IsAxis )
-          if( AxisIndex == JoystickProfile->ButtonStart.AxisIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, JoystickProfile->ButtonStart.AxisPositive? PositivePressed : NegativePressed );
+        // only when command is not pressed check the mapped axes for buttons
+        else
+        {
+            if( JoystickProfile->ButtonA.IsAxis() )
+              if( AxisIndex == JoystickProfile->ButtonA.AxisIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonA, JoystickProfile->ButtonA.AxisPositive? PositivePressed : NegativePressed );
+            
+            if( JoystickProfile->ButtonB.IsAxis() )
+              if( AxisIndex == JoystickProfile->ButtonB.AxisIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonB, JoystickProfile->ButtonB.AxisPositive? PositivePressed : NegativePressed );
+            
+            if( JoystickProfile->ButtonY.IsAxis() )
+              if( AxisIndex == JoystickProfile->ButtonY.AxisIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonY, JoystickProfile->ButtonY.AxisPositive? PositivePressed : NegativePressed );
+            
+            if( JoystickProfile->ButtonX.IsAxis() )
+              if( AxisIndex == JoystickProfile->ButtonX.AxisIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonX, JoystickProfile->ButtonX.AxisPositive? PositivePressed : NegativePressed );
+            
+            if( JoystickProfile->ButtonL.IsAxis() )
+              if( AxisIndex == JoystickProfile->ButtonL.AxisIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonL, JoystickProfile->ButtonL.AxisPositive? PositivePressed : NegativePressed );
+            
+            if( JoystickProfile->ButtonR.IsAxis() )
+              if( AxisIndex == JoystickProfile->ButtonR.AxisIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonR, JoystickProfile->ButtonR.AxisPositive? PositivePressed : NegativePressed );
+            
+            if( JoystickProfile->ButtonStart.IsAxis() )
+              if( AxisIndex == JoystickProfile->ButtonStart.AxisIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, JoystickProfile->ButtonStart.AxisPositive? PositivePressed : NegativePressed );
+        }
     }
 }
 
@@ -459,8 +526,8 @@ void GamepadsInput::ProcessJoystickHatMotion( SDL_Event Event )
     SDL_Joystick* Joystick = SDL_JoystickFromInstanceID( InstanceID );
     SDL_JoystickGUID GUID = SDL_JoystickGetGUID( Joystick );
     
-    // we need to process both axes together, and
-    // for each axis we need to process both directions
+    // SDL treats hat directions similar to a d-pad: we are
+    // given its current direction with combinable flags
     
     // check all gamepads
     for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
@@ -486,51 +553,111 @@ void GamepadsInput::ProcessJoystickHatMotion( SDL_Event Event )
         
         JoystickMapping* JoystickProfile = Position->second;
         
-        // check the mapped axes for directions
-        if( JoystickProfile->Left.IsHat )
+        // if the command button is mapped to a hat direction
+        // check it before any regular controls
+        if( JoystickProfile->Command.IsHat() )
+          if( HatIndex == JoystickProfile->Command.HatIndex )
+            CommandPressed[ Gamepad ] = (bool)(HatDirection & JoystickProfile->Command.HatDirection);
+        
+        // check the mapped hat directions for directions
+        if( JoystickProfile->Left.IsHat() )
           if( HatIndex == JoystickProfile->Left.HatIndex )
             Console.SetGamepadControl( Gamepad, GamepadControls::Left, (bool)(HatDirection & JoystickProfile->Left.HatDirection) );
         
-        if( JoystickProfile->Right.IsHat )
+        if( JoystickProfile->Right.IsHat() )
           if( HatIndex == JoystickProfile->Right.HatIndex )
             Console.SetGamepadControl( Gamepad, GamepadControls::Right, (bool)(HatDirection & JoystickProfile->Right.HatDirection) );
         
-        if( JoystickProfile->Up.IsHat )
+        if( JoystickProfile->Up.IsHat() )
           if( HatIndex == JoystickProfile->Up.HatIndex )
             Console.SetGamepadControl( Gamepad, GamepadControls::Up, (bool)(HatDirection & JoystickProfile->Up.HatDirection) );
         
-        if( JoystickProfile->Down.IsHat )
+        if( JoystickProfile->Down.IsHat() )
           if( HatIndex == JoystickProfile->Down.HatIndex )
             Console.SetGamepadControl( Gamepad, GamepadControls::Down, (bool)(HatDirection & JoystickProfile->Down.HatDirection) );
         
-        // check the mapped buttons for buttons
-        if( !JoystickProfile->ButtonA.IsHat )
-          if( HatIndex == JoystickProfile->ButtonA.HatIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonA, (bool)(HatDirection & JoystickProfile->ButtonA.HatDirection) );
+        // when command is pressed, check only for button combinations
+        // (regular button presses are ignored until command is released)
+        if( CommandPressed[ Gamepad ] )
+        {
+            // hold Command + press X = Reset
+            if( JoystickProfile->ButtonX.IsHat() )
+              if( HatIndex == JoystickProfile->ButtonX.HatIndex )
+              {
+                  bool IsPressed = (bool)(HatDirection & JoystickProfile->ButtonX.HatDirection);
+                  
+                  if( IsPressed )
+                    Console.Reset();
+              }
+            
+            // hold Command + press L = Save state
+            if( JoystickProfile->ButtonL.IsHat() )
+              if( HatIndex == JoystickProfile->ButtonL.HatIndex )
+              {
+                  bool IsPressed = (bool)(HatDirection & JoystickProfile->ButtonL.HatDirection);
+                  
+                  if( IsPressed )
+                  {
+                      GUI_SaveState();
+                      CancelDelayedMessageBox();  // for these combinations inhibit any GUI messages
+                  }
+              }
+            
+            // hold Command + press R = Load state
+            if( JoystickProfile->ButtonR.IsHat() )
+              if( HatIndex == JoystickProfile->ButtonR.HatIndex )
+              {
+                  bool IsPressed = (bool)(HatDirection & JoystickProfile->ButtonR.HatDirection);
+                  
+                  if( IsPressed && CommandPressed[ Gamepad ] )
+                  {
+                      GUI_LoadState();
+                      CancelDelayedMessageBox();  // for these combinations inhibit any GUI messages
+                  }
+              }
+            
+            // hold Command + press Start = Quit emulator
+            if( JoystickProfile->ButtonStart.IsHat() )
+              if( HatIndex == JoystickProfile->ButtonStart.HatIndex )
+              {
+                  bool IsPressed = (bool)(HatDirection & JoystickProfile->ButtonStart.HatDirection);
+                  
+                  if( IsPressed )
+                    GlobalLoopActive = false;
+              }
+        }
         
-        if( !JoystickProfile->ButtonB.IsHat )
-          if( HatIndex == JoystickProfile->ButtonB.HatIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonB, (bool)(HatDirection & JoystickProfile->ButtonB.HatDirection) );
-        
-        if( !JoystickProfile->ButtonX.IsHat )
-          if( HatIndex == JoystickProfile->ButtonX.HatIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonX, (bool)(HatDirection & JoystickProfile->ButtonX.HatDirection) );
-        
-        if( !JoystickProfile->ButtonY.IsHat )
-          if( HatIndex == JoystickProfile->ButtonY.HatIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonY, (bool)(HatDirection & JoystickProfile->ButtonY.HatDirection) );
-        
-        if( !JoystickProfile->ButtonL.IsHat )
-          if( HatIndex == JoystickProfile->ButtonL.HatIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonL, (bool)(HatDirection & JoystickProfile->ButtonL.HatDirection) );
-        
-        if( !JoystickProfile->ButtonR.IsHat )
-          if( HatIndex == JoystickProfile->ButtonR.HatIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonR, (bool)(HatDirection & JoystickProfile->ButtonR.HatDirection) );
-        
-        if( !JoystickProfile->ButtonStart.IsHat )
-          if( HatIndex == JoystickProfile->ButtonStart.HatIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, (bool)(HatDirection & JoystickProfile->ButtonStart.HatDirection) );
+        // only when command is not pressed check the mapped hat directions for buttons
+        else
+        {
+            if( !JoystickProfile->ButtonA.IsHat() )
+              if( HatIndex == JoystickProfile->ButtonA.HatIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonA, (bool)(HatDirection & JoystickProfile->ButtonA.HatDirection) );
+            
+            if( !JoystickProfile->ButtonB.IsHat() )
+              if( HatIndex == JoystickProfile->ButtonB.HatIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonB, (bool)(HatDirection & JoystickProfile->ButtonB.HatDirection) );
+            
+            if( !JoystickProfile->ButtonX.IsHat() )
+              if( HatIndex == JoystickProfile->ButtonX.HatIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonX, (bool)(HatDirection & JoystickProfile->ButtonX.HatDirection) );
+            
+            if( !JoystickProfile->ButtonY.IsHat() )
+              if( HatIndex == JoystickProfile->ButtonY.HatIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonY, (bool)(HatDirection & JoystickProfile->ButtonY.HatDirection) );
+            
+            if( !JoystickProfile->ButtonL.IsHat() )
+              if( HatIndex == JoystickProfile->ButtonL.HatIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonL, (bool)(HatDirection & JoystickProfile->ButtonL.HatDirection) );
+            
+            if( !JoystickProfile->ButtonR.IsHat() )
+              if( HatIndex == JoystickProfile->ButtonR.HatIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonR, (bool)(HatDirection & JoystickProfile->ButtonR.HatDirection) );
+            
+            if( !JoystickProfile->ButtonStart.IsHat() )
+              if( HatIndex == JoystickProfile->ButtonStart.HatIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, (bool)(HatDirection & JoystickProfile->ButtonStart.HatDirection) );
+        }
     }
 }
 
@@ -566,51 +693,92 @@ void GamepadsInput::ProcessJoystickButtonDown( SDL_Event Event )
         
         JoystickMapping* JoystickProfile = Position->second;
         
+        // if the command button is mapped to a joystick button
+        // check it before any regular controls
+        if( JoystickProfile->Command.IsButton() )
+          if( ButtonIndex == JoystickProfile->Command.ButtonIndex )
+            CommandPressed[ Gamepad ] = true;
+        
         // check the mapped buttons for directions
-        if( !JoystickProfile->Left.IsAxis )
+        if( JoystickProfile->Left.IsButton() )
           if( ButtonIndex == JoystickProfile->Left.ButtonIndex )
             Console.SetGamepadControl( Gamepad, GamepadControls::Left, true );
           
-        if( !JoystickProfile->Right.IsAxis )
+        if( JoystickProfile->Right.IsButton() )
           if( ButtonIndex == JoystickProfile->Right.ButtonIndex )
             Console.SetGamepadControl( Gamepad, GamepadControls::Right, true );
           
-        if( !JoystickProfile->Up.IsAxis )
+        if( JoystickProfile->Up.IsButton() )
           if( ButtonIndex == JoystickProfile->Up.ButtonIndex )
             Console.SetGamepadControl( Gamepad, GamepadControls::Up, true );
           
-        if( !JoystickProfile->Down.IsAxis )
+        if( JoystickProfile->Down.IsButton() )
           if( ButtonIndex == JoystickProfile->Down.ButtonIndex )
             Console.SetGamepadControl( Gamepad, GamepadControls::Down, true );
           
-        // check the mapped buttons for buttons
-        if( !JoystickProfile->ButtonA.IsAxis )
-          if( ButtonIndex == JoystickProfile->ButtonA.ButtonIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonA, true );
+        // when command is pressed, check only for button combinations
+        // (regular button presses are ignored until command is released)
+        if( CommandPressed[ Gamepad ] )
+        {
+            // hold Command + press X = Reset
+            if( JoystickProfile->ButtonX.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonX.ButtonIndex )
+                Console.Reset();
+            
+            // hold Command + press L = Save state
+            if( JoystickProfile->ButtonL.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonL.ButtonIndex )
+              {
+                  GUI_SaveState();
+                  CancelDelayedMessageBox();  // for these combinations inhibit any GUI messages
+              }
+            
+            // hold Command + press R = Load state
+            if( JoystickProfile->ButtonR.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonR.ButtonIndex )
+              {
+                  GUI_LoadState();
+                  CancelDelayedMessageBox();  // for these combinations inhibit any GUI messages
+              }
+            
+            // hold Command + press Start = Quit emulator
+            if( JoystickProfile->ButtonStart.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonStart.ButtonIndex )
+                GlobalLoopActive = false;
+        }
         
-        if( !JoystickProfile->ButtonB.IsAxis )
-          if( ButtonIndex == JoystickProfile->ButtonB.ButtonIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonB, true );
-        
-        if( !JoystickProfile->ButtonX.IsAxis )
-          if( ButtonIndex == JoystickProfile->ButtonX.ButtonIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonX, true );
-        
-        if( !JoystickProfile->ButtonY.IsAxis )
-          if( ButtonIndex == JoystickProfile->ButtonY.ButtonIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonY, true );
-          
-        if( !JoystickProfile->ButtonL.IsAxis )
-          if( ButtonIndex == JoystickProfile->ButtonL.ButtonIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonL, true );
-        
-        if( !JoystickProfile->ButtonR.IsAxis )
-          if( ButtonIndex == JoystickProfile->ButtonR.ButtonIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonR, true );
-        
-        if( !JoystickProfile->ButtonStart.IsAxis )
-          if( ButtonIndex == JoystickProfile->ButtonStart.ButtonIndex )
-            Console.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, true );
+        // only when command is not pressed check the mapped joystick buttons for buttons
+        else
+        {
+            // check the mapped buttons for buttons
+            if( JoystickProfile->ButtonA.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonA.ButtonIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonA, true );
+            
+            if( JoystickProfile->ButtonB.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonB.ButtonIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonB, true );
+            
+            if( JoystickProfile->ButtonX.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonX.ButtonIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonX, true );
+            
+            if( JoystickProfile->ButtonY.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonY.ButtonIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonY, true );
+              
+            if( JoystickProfile->ButtonL.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonL.ButtonIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonL, true );
+            
+            if( JoystickProfile->ButtonR.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonR.ButtonIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonR, true );
+            
+            if( JoystickProfile->ButtonStart.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonStart.ButtonIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, true );
+        }
     }
 }
 
@@ -646,40 +814,60 @@ void GamepadsInput::ProcessJoystickButtonUp( SDL_Event Event )
         
         JoystickMapping* JoystickProfile = Position->second;
         
+        // if the command button is mapped to a joystick button
+        // check it before any regular controls
+        if( JoystickProfile->Command.IsButton() )
+          if( ButtonIndex == JoystickProfile->Command.ButtonIndex )
+            CommandPressed[ Gamepad ] = false;
+        
         // check the mapped buttons for directions
-        if( ButtonIndex == JoystickProfile->Left.ButtonIndex )
-          Console.SetGamepadControl( Gamepad, GamepadControls::Left, false );
+        if( JoystickProfile->Left.IsButton() )
+          if( ButtonIndex == JoystickProfile->Left.ButtonIndex )
+            Console.SetGamepadControl( Gamepad, GamepadControls::Left, false );
           
-        if( ButtonIndex == JoystickProfile->Right.ButtonIndex )
-          Console.SetGamepadControl( Gamepad, GamepadControls::Right, false );
+        if( JoystickProfile->Right.IsButton() )
+          if( ButtonIndex == JoystickProfile->Right.ButtonIndex )
+            Console.SetGamepadControl( Gamepad, GamepadControls::Right, false );
           
-        if( ButtonIndex == JoystickProfile->Up.ButtonIndex )
-          Console.SetGamepadControl( Gamepad, GamepadControls::Up, false );
+        if( JoystickProfile->Up.IsButton() )
+          if( ButtonIndex == JoystickProfile->Up.ButtonIndex )
+            Console.SetGamepadControl( Gamepad, GamepadControls::Up, false );
           
-        if( ButtonIndex == JoystickProfile->Down.ButtonIndex )
-          Console.SetGamepadControl( Gamepad, GamepadControls::Down, false );
+        if( JoystickProfile->Down.IsButton() )
+          if( ButtonIndex == JoystickProfile->Down.ButtonIndex )
+            Console.SetGamepadControl( Gamepad, GamepadControls::Down, false );
           
-        // check the mapped buttons for buttons
-        if( ButtonIndex == JoystickProfile->ButtonA.ButtonIndex )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonA, false );
-        
-        if( ButtonIndex == JoystickProfile->ButtonB.ButtonIndex )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonB, false );
-        
-        if( ButtonIndex == JoystickProfile->ButtonX.ButtonIndex )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonX, false );
-        
-        if( ButtonIndex == JoystickProfile->ButtonY.ButtonIndex )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonY, false );
-          
-        if( ButtonIndex == JoystickProfile->ButtonL.ButtonIndex )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonL, false );
-        
-        if( ButtonIndex == JoystickProfile->ButtonR.ButtonIndex )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonR, false );
-        
-        if( ButtonIndex == JoystickProfile->ButtonStart.ButtonIndex )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, false );
+        // only when command is not pressed check the mapped buttons for buttons
+        if( !CommandPressed[ Gamepad ] )
+        {
+            if( JoystickProfile->ButtonA.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonA.ButtonIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonA, false );
+            
+            if( JoystickProfile->ButtonB.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonB.ButtonIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonB, false );
+            
+            if( JoystickProfile->ButtonX.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonX.ButtonIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonX, false );
+            
+            if( JoystickProfile->ButtonY.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonY.ButtonIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonY, false );
+              
+            if( JoystickProfile->ButtonL.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonL.ButtonIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonL, false );
+            
+            if( JoystickProfile->ButtonR.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonR.ButtonIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonR, false );
+            
+            if( JoystickProfile->ButtonStart.IsButton() )
+              if( ButtonIndex == JoystickProfile->ButtonStart.ButtonIndex )
+                Console.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, false );
+        }
     }
 }
 
@@ -707,6 +895,12 @@ void GamepadsInput::ProcessKeyDown( SDL_Event Event )
         if( MappedGamepads[ Gamepad ].Type != DeviceTypes::Keyboard )
           continue;
         
+        // if the command button is mapped to a key
+        // check it before any regular controls
+        if( KeyboardProfile.Command >= 0 )
+          if( KeyCode == KeyboardProfile.Command )
+            CommandPressed[ Gamepad ] = true;
+        
         // check the mapped keys for directions
         if( KeyCode == KeyboardProfile.Left )
           Console.SetGamepadControl( Gamepad, GamepadControls::Left, true );
@@ -720,27 +914,57 @@ void GamepadsInput::ProcessKeyDown( SDL_Event Event )
         if( KeyCode == KeyboardProfile.Down )
           Console.SetGamepadControl( Gamepad, GamepadControls::Down, true );
           
-        // check the mapped keys for buttons
-        if( KeyCode == KeyboardProfile.ButtonA )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonA, true );
+        // when command is pressed, check only for button combinations
+        // (regular button presses are ignored until command is released)
+        if( CommandPressed[ Gamepad ] )
+        {
+            // hold Command + press X = Reset
+            if( KeyCode == KeyboardProfile.ButtonX )
+              Console.Reset();
+            
+            // hold Command + press L = Save state
+            if( KeyCode == KeyboardProfile.ButtonL )
+            {
+                GUI_SaveState();
+                CancelDelayedMessageBox();  // for these combinations inhibit any GUI messages
+            }
+            
+            // hold Command + press R = Load state
+            if( KeyCode == KeyboardProfile.ButtonR )
+            {
+                GUI_LoadState();
+                CancelDelayedMessageBox();  // for these combinations inhibit any GUI messages
+            }
+            
+            // hold Command + press Start = Quit emulator
+            if( KeyCode == KeyboardProfile.ButtonStart )
+              GlobalLoopActive = false;
+        }
         
-        if( KeyCode == KeyboardProfile.ButtonB )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonB, true );
-        
-        if( KeyCode == KeyboardProfile.ButtonX )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonX, true );
-        
-        if( KeyCode == KeyboardProfile.ButtonY )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonY, true );
-          
-        if( KeyCode == KeyboardProfile.ButtonL )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonL, true );
-        
-        if( KeyCode == KeyboardProfile.ButtonR )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonR, true );
-        
-        if( KeyCode == KeyboardProfile.ButtonStart )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, true );
+        // only when command is not pressed check the mapped keys for buttons
+        else
+        {
+            if( KeyCode == KeyboardProfile.ButtonA )
+              Console.SetGamepadControl( Gamepad, GamepadControls::ButtonA, true );
+            
+            if( KeyCode == KeyboardProfile.ButtonB )
+              Console.SetGamepadControl( Gamepad, GamepadControls::ButtonB, true );
+            
+            if( KeyCode == KeyboardProfile.ButtonX )
+              Console.SetGamepadControl( Gamepad, GamepadControls::ButtonX, true );
+            
+            if( KeyCode == KeyboardProfile.ButtonY )
+              Console.SetGamepadControl( Gamepad, GamepadControls::ButtonY, true );
+              
+            if( KeyCode == KeyboardProfile.ButtonL )
+              Console.SetGamepadControl( Gamepad, GamepadControls::ButtonL, true );
+            
+            if( KeyCode == KeyboardProfile.ButtonR )
+              Console.SetGamepadControl( Gamepad, GamepadControls::ButtonR, true );
+            
+            if( KeyCode == KeyboardProfile.ButtonStart )
+              Console.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, true );
+        }
     }
 }
 
@@ -765,6 +989,12 @@ void GamepadsInput::ProcessKeyUp( SDL_Event Event )
         if( MappedGamepads[ Gamepad ].Type != DeviceTypes::Keyboard )
           continue;
         
+        // if the command button is mapped to a key
+        // check it before any regular controls
+        if( KeyboardProfile.Command >= 0 )
+          if( KeyCode == KeyboardProfile.Command )
+            CommandPressed[ Gamepad ] = false;
+        
         // check the mapped keys for directions
         if( KeyCode == KeyboardProfile.Left )
           Console.SetGamepadControl( Gamepad, GamepadControls::Left, false );
@@ -778,26 +1008,30 @@ void GamepadsInput::ProcessKeyUp( SDL_Event Event )
         if( KeyCode == KeyboardProfile.Down )
           Console.SetGamepadControl( Gamepad, GamepadControls::Down, false );
           
-        // check the mapped keys for buttons
-        if( KeyCode == KeyboardProfile.ButtonA )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonA, false );
-        
-        if( KeyCode == KeyboardProfile.ButtonB )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonB, false );
-        
-        if( KeyCode == KeyboardProfile.ButtonX )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonX, false );
-        
-        if( KeyCode == KeyboardProfile.ButtonY )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonY, false );
-          
-        if( KeyCode == KeyboardProfile.ButtonL )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonL, false );
-        
-        if( KeyCode == KeyboardProfile.ButtonR )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonR, false );
-        
-        if( KeyCode == KeyboardProfile.ButtonStart )
-          Console.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, false );
+        // only when command is not pressed check the mapped buttons for buttons
+        if( !CommandPressed[ Gamepad ] )
+        {
+            // check the mapped keys for buttons
+            if( KeyCode == KeyboardProfile.ButtonA )
+              Console.SetGamepadControl( Gamepad, GamepadControls::ButtonA, false );
+            
+            if( KeyCode == KeyboardProfile.ButtonB )
+              Console.SetGamepadControl( Gamepad, GamepadControls::ButtonB, false );
+            
+            if( KeyCode == KeyboardProfile.ButtonX )
+              Console.SetGamepadControl( Gamepad, GamepadControls::ButtonX, false );
+            
+            if( KeyCode == KeyboardProfile.ButtonY )
+              Console.SetGamepadControl( Gamepad, GamepadControls::ButtonY, false );
+              
+            if( KeyCode == KeyboardProfile.ButtonL )
+              Console.SetGamepadControl( Gamepad, GamepadControls::ButtonL, false );
+            
+            if( KeyCode == KeyboardProfile.ButtonR )
+              Console.SetGamepadControl( Gamepad, GamepadControls::ButtonR, false );
+            
+            if( KeyCode == KeyboardProfile.ButtonStart )
+              Console.SetGamepadControl( Gamepad, GamepadControls::ButtonStart, false );
+        }
     }
 }
