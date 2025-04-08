@@ -1,5 +1,5 @@
 /* *****************************************************************************
-*  Vircon32 standard library: "string.h"          File version: 2022/09/18     *
+*  Vircon32 standard library: "string.h"          File version: 2025/04/08     *
 *  --------------------------------------------------------------------------- *
 *  This header is part of the Vircon32 C programming tools                     *
 *  --------------------------------------------------------------------------- *
@@ -299,12 +299,14 @@ void strncat( int* initial_text, int* added_text, int max_characters )
 
 // converts an integer number to a null-terminated
 // character string, storing it in the given buffer;
-// careful! no control of buffer length is done;
-// only in the case of base 10, value is taken as signed
+// careful! no control of buffer length is done; it
+// will accept bases from 2 to 16; only in the case
+// of base 10, value is taken as signed
 void itoa( int value, int* result_text, int base )
 {
     int[ 16+1 ] hex_characters = "0123456789ABCDEF";
-    int[ 33 ] reversed_digits;
+    int[ 32+1 ] reversed_digits;
+    int* next_digit = reversed_digits;
     
     // do nothing if base is not in range [2-16]
     if( base < 2 || base > 16 )
@@ -313,14 +315,46 @@ void itoa( int value, int* result_text, int base )
     // for base 10 numbers, prepend the sign if needed
     if( base == 10 && value < 0 )
     {
+        // special treatment for 0x80000000 since we can't
+        // change its sign in an int32 (because -2147483648
+        // can be represented but +2147483648 cannot)
+        if( value == 0x80000000 )
+        {
+            int[ 11+1 ] int32_min = "-2147483648";
+            strcpy( result_text, int32_min );
+            return;
+        }
+        
         *result_text = '-';
         ++result_text;
         value = -value;
     }
     
-    // keep adding digits starting from the right
-    int* next_digit = reversed_digits;
+    // otherwise do a first iteration if the sign bit is set
+    // to remove it and treat next iterations as positive
+    else if( value < 0 )
+    {
+        // split value in the sum of 2 parts, to prevent any quantity
+        // from reaching the last bit and being taken as negative
+        // (thus, we must use 2*0x40000000 instead of 0x80000000!)
+        value &= 0x7FFFFFFF;
+        int half_complement = 0x40000000;
+        int half_complement_mod = 0x40000000 % base;
+
+        // obtaining 1st digit = value % base
+        int sum_remainders = 2 * half_complement_mod + value % base;
+        int digit_value = sum_remainders % base;
+        *next_digit = hex_characters[ digit_value ];
+        ++next_digit;
+
+        // this will obtain "original value / base", as if
+        // the original value was an unsigned 32-bit integer
+        // next value = (original value) / base
+        value = 2 * (half_complement / base) + (value / base) + (sum_remainders / base);
+        if( !value ) goto digits_stored;
+    }
     
+    // keep adding digits starting from the right
     do
     {
         *next_digit = hex_characters[ value % base ];
@@ -329,6 +363,8 @@ void itoa( int value, int* result_text, int base )
         value /= base;
     }
     while( value );
+    
+    digits_stored:
     
     // now place the digits into result, in the correct order
     do
