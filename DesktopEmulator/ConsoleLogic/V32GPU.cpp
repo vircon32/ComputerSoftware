@@ -375,7 +375,7 @@ namespace V32
         RegionQuad.Vertices[ 3 ].texture_y = TextureMaxY;
         
         // precalculate angle properties when needed
-        float AngleCos, AngleSin;
+        float AngleCos = 0.0, AngleSin = 0.0;
         
         if( RotationEnabled )
         {
