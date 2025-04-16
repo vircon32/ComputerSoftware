@@ -21,6 +21,9 @@ extern bool VerboseMode;
 extern std::string AssemblerFolder;
 extern int InitialROMAddress;
 extern bool CreateDebugVersion;
+extern bool FilesystemByteOffset;
+extern bool CartridgeOffset;
+extern bool VBINOffset;
 
 
 // *****************************************************************************
