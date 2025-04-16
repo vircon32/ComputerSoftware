@@ -34,7 +34,7 @@ extern OpenGL2DContext OpenGL2D;
 
 
 extern char ProfileName[ 41 ];
-extern unsigned GamepadTextureID;
+extern GLuint GamepadTextureID;
 
 
 // *****************************************************************************
