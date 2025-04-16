@@ -24,5 +24,3 @@ bool VerboseMode = false;
 string AssemblerFolder;
 int InitialROMAddress = Constants::CartridgeProgramROMFirstAddress;
 bool CreateDebugVersion = false;
-bool CartridgeOffset = false;
-bool VBINOffset = false;

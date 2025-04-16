@@ -46,22 +46,7 @@ void SaveDebugInfoFile( const string& FilePath, const VirconASMParser& Parser, c
 {
     if( VerboseMode )
       cout << "saving debug info file" << endl;
-
-	int BaseOffset  = 0;
-	int UnitSize    = 1;
-
-	if( CartridgeOffset )
-	{
-		BaseOffset  = 0x8C;
-		UnitSize    = 4;
-	}
     
-	if( VBINOffset )
-	{
-		BaseOffset  = 0x0C;
-		UnitSize    = 4;
-	}
-
     // open output file,
     ofstream DebugInfoFile;
     OpenOutputFile( DebugInfoFile, FilePath );
@@ -76,8 +61,7 @@ void SaveDebugInfoFile( const string& FilePath, const VirconASMParser& Parser, c
         if( Node->Type() != ASTNodeTypes::Instruction )
           continue;
         
-
-        DebugInfoFile << Hex( Node->AddressInROM * UnitSize + BaseOffset, 8 );
+        DebugInfoFile << Hex( Node->AddressInROM, 8 );
         DebugInfoFile << "," << NormalizePath( Node->Location.FilePath );
         DebugInfoFile << "," << Node->Location.Line;
         

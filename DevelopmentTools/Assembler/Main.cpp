@@ -51,10 +51,8 @@ void PrintUsage()
     cout << "  --debugmode  Creates files with results of internal stages" << endl;
     cout << "  -o <file>    Output file, default name is the same as input" << endl;
     cout << "  -b           Assembles the code as a BIOS" << endl;
-    cout << "  -g           Outputs an additional file with debug info" << endl;
-    cout << "  --cartoffset Used with '-g': full cart offsets in bytes" << endl;
-    cout << "  --vbinoffset Used with '-g': VBIN section offsets in bytes" << endl;
     cout << "  -v           Displays additional information (verbose)" << endl;
+    cout << "  -g           Outputs an additional file with debug info" << endl;
     cout << "Also, the following options are accepted for compatibility" << endl;
     cout << "but have no effect: -s" << endl;
 }
@@ -157,18 +155,6 @@ int main( int NumberOfArguments, char* Arguments[] )
             if( ArgumentsUTF8[i] == string("-g") )
             {
                 CreateDebugVersion = true;
-                continue;
-            }
-            
-            if( ArgumentsUTF8[i] == string("--cartoffsets") )
-            {
-                CartridgeOffset = true;
-                continue;
-            }
-            
-            if( ArgumentsUTF8[i] == string("--vbinoffsets") )
-            {
-                VBINOffset = true;
                 continue;
             }
             
