@@ -660,7 +660,7 @@ void RenderGUI()
         ImGui::Separator();
         
         ImGui::SetCursorScreenPos(ImVec2(19,163));
-        ImGui::Image( (void*)GamepadTextureID, ImVec2(1024,256) );
+        ImGui::Image( (ImTextureID)(intptr_t)GamepadTextureID, ImVec2(1024,256) );
         
         // now write the actual values
         if( SelectedProfile )

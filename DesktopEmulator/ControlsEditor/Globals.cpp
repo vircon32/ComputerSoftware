@@ -34,4 +34,4 @@ OpenGL2DContext OpenGL2D;
 
 // resources
 char ProfileName[ 41 ];
-unsigned GamepadTextureID;
+GLuint GamepadTextureID;
