@@ -309,8 +309,8 @@ void SaveScreenshot( const string& FilePath )
     fclose( PNGFile );
     png_destroy_write_struct( &PNGHandler, &PNGInfo );
     
-    delete Pixels;
-    delete RowPointers;
+    delete [] Pixels;
+    delete [] RowPointers;
 }
 
 // -----------------------------------------------------------------------------
