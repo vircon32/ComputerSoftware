@@ -679,8 +679,8 @@ void GUI_SaveScreenshot( string FilePath )
             snprintf
             (
                 FileName,
-				23,
-                "%04d-%02d-%02d %02d.%02d.%02d.png",
+				24,
+                "%04hd-%02hhd-%02hhd %02hhd.%02hhd.%02hhd.png",
                 CreationTimeInfo->tm_year+1900,
                 CreationTimeInfo->tm_mon+1,
                 CreationTimeInfo->tm_mday,
