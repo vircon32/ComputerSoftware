@@ -676,9 +676,10 @@ void GUI_SaveScreenshot( string FilePath )
             // (Careful! C gives year counting from 1900)
             char FileName[ 40 ];
             
-            sprintf
+            snprintf
             (
                 FileName,
+				23,
                 "%04d-%02d-%02d %02d.%02d.%02d.png",
                 CreationTimeInfo->tm_year+1900,
                 CreationTimeInfo->tm_mon+1,
