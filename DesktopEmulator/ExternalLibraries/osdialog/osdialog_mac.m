@@ -133,7 +133,7 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 				}
 			}
 
-			[panel setAllowedFileTypes:fileTypes];
+			[panel setAllowedContentTypes:fileTypes];
 		}
 
 		if (action == OSDIALOG_OPEN || action == OSDIALOG_OPEN_DIR) {
