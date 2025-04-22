@@ -845,7 +845,7 @@ void ProcessMenuCartridge()
     if( !Console.HasCartridge() )
     {
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-        ImGui::Text( Texts(TextIDs::Cartridge_NoCartridge) );
+        ImGui::Text( "%s", Texts(TextIDs::Cartridge_NoCartridge) );
         ImGui::PopStyleVar();
         ImGui::Separator();
     }
@@ -853,7 +853,7 @@ void ProcessMenuCartridge()
     {
         string DisplayedName = "[ " + Console.GetCartridgeFileName() + " ]";
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-        ImGui::Text( DisplayedName.c_str() );
+        ImGui::Text( "%s", DisplayedName.c_str() );
         ImGui::PopStyleVar();
         ImGui::Separator();
     }
@@ -880,7 +880,7 @@ void ProcessMenuCartridge()
     else
     {
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-        ImGui::Text( Texts(TextIDs::Cartridge_Locked) );
+        ImGui::Text( "%s", Texts(TextIDs::Cartridge_Locked) );
         ImGui::PopStyleVar();
     }
     
@@ -890,10 +890,10 @@ void ProcessMenuCartridge()
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
         {
             ImGui::Separator();
-            ImGui::Text( Texts(TextIDs::Cartridge_RecentTitle) );
+            ImGui::Text( "%s", Texts(TextIDs::Cartridge_RecentTitle) );
         
             if( RecentCartridgePaths.empty() )
-              ImGui::Text( Texts(TextIDs::Cartridge_RecentEmpty) );
+              ImGui::Text( "%s", Texts(TextIDs::Cartridge_RecentEmpty) );
         }
         ImGui::PopStyleVar();
         
@@ -932,7 +932,7 @@ void ProcessMenuMemoryCard()
     if( !Console.HasMemoryCard() )
     {
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-        ImGui::Text( Texts(TextIDs::Card_NoCard) );
+        ImGui::Text( "%s", Texts(TextIDs::Card_NoCard) );
         ImGui::PopStyleVar();
         ImGui::Separator();
     }
@@ -940,7 +940,7 @@ void ProcessMenuMemoryCard()
     {
         string DisplayedName = "[ " + Console.GetMemoryCardFileName() + " ]";
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-        ImGui::Text( DisplayedName.c_str() );
+        ImGui::Text( "%s", DisplayedName.c_str() );
         ImGui::PopStyleVar();
         ImGui::Separator();
     }
@@ -949,7 +949,7 @@ void ProcessMenuMemoryCard()
     if( Emulator.IsCardHandlingAuto() )
     {
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-        ImGui::Text( Texts(TextIDs::Options_CardsAuto) );
+        ImGui::Text( "%s", Texts(TextIDs::Options_CardsAuto) );
         ImGui::PopStyleVar();
         ImGui::EndMenu();
         return;
@@ -978,10 +978,10 @@ void ProcessMenuMemoryCard()
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
     {
         ImGui::Separator();
-        ImGui::Text( Texts(TextIDs::Card_RecentTitle) );
+        ImGui::Text( "%s", Texts(TextIDs::Card_RecentTitle) );
     
         if( RecentCartridgePaths.empty() )
-          ImGui::Text( Texts(TextIDs::Card_RecentEmpty) );
+          ImGui::Text( "%s", Texts(TextIDs::Card_RecentEmpty) );
     }
     ImGui::PopStyleVar();
     
@@ -1214,11 +1214,11 @@ void ProcessLabelCPU()
     
     // loads are not applicable if the machine is off
     if( !Emulator.IsPowerOn() )
-      ImGui::Text( Texts(TextIDs::Status_ConsoleOff) );
+      ImGui::Text( "%s", Texts(TextIDs::Status_ConsoleOff) );
     
     // not applicable either if the machine is halted
     else if( Console.IsCPUHalted() )
-      ImGui::Text( Texts(TextIDs::Status_CPUHalted) );
+      ImGui::Text( "%s", Texts(TextIDs::Status_CPUHalted) );
     
     // show the maximum load of the last 2 frames
     else
