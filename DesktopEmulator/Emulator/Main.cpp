@@ -311,7 +311,10 @@ int main( int NumberOfArguments, char* Arguments[] )
         GlobalLoopActive = true;
         bool WindowActive = true;
         float PendingFrames = 1;
-		int (*SDL_ProcessEvent)(SDL_Event *) = &SDL_PollEvent;
+        
+        // depending on focus changes we will wait for events or
+        // just poll them and continue; this pointer controls that
+        int (*EventProcessor)(SDL_Event *) = &SDL_PollEvent;
         
         // timing control
         StopWatch Watch;
@@ -322,7 +325,7 @@ int main( int NumberOfArguments, char* Arguments[] )
             // process window events
             SDL_Event Event;
             
-            while( SDL_ProcessEvent( &Event ) )
+            while( EventProcessor( &Event ) )
             {
                 // - - - - - - - - - - - - - - - - - - - - - - -
                 // FIRST, PROCESS THE GLOBAL BEHAVIORS
@@ -349,7 +352,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                         LOG("Focus lost");
                         WindowActive = false;
                         MouseIsOnWindow = false;
-						SDL_ProcessEvent = &SDL_WaitEvent;
+                        EventProcessor = &SDL_WaitEvent;
                         Emulator.Pause();
                     }
                     
@@ -360,7 +363,7 @@ int main( int NumberOfArguments, char* Arguments[] )
                     {
                         LOG("Focus gained");
                         WindowActive = true;
-						SDL_ProcessEvent = &SDL_PollEvent;
+                        EventProcessor = &SDL_PollEvent;
                         Emulator.Resume();
                     }
                     
