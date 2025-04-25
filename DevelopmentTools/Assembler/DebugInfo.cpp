@@ -42,10 +42,31 @@ string NormalizePath( const string& Path )
 // =============================================================================
 
 
-void SaveDebugInfoFile( const string& FilePath, const VirconASMParser& Parser, const VirconASMEmitter& Emitter )
+void SaveDebugInfoFile
+(
+    const std::string& FilePath,
+    const VirconASMParser& Parser,
+    const VirconASMEmitter& Emitter,
+    DebugInfoModes Mode
+)
 {
     if( VerboseMode )
       cout << "saving debug info file" << endl;
+    
+    int BaseOffset  = 0;   // initial address for the first byte/word
+    int UnitSize    = 1;   // word subdivision (1 = full words, 4 = individual bytes)
+    
+    if( Mode == DebugInfoModes::V32File )
+    {
+        BaseOffset  = 0x8C;
+        UnitSize    = 4;
+    }
+    
+    if( Mode == DebugInfoModes::VBINFile )
+    {
+        BaseOffset  = 0x0C;
+        UnitSize    = 4;
+    }
     
     // open output file,
     ofstream DebugInfoFile;
@@ -61,7 +82,8 @@ void SaveDebugInfoFile( const string& FilePath, const VirconASMParser& Parser, c
         if( Node->Type() != ASTNodeTypes::Instruction )
           continue;
         
-        DebugInfoFile << Hex( Node->AddressInROM, 8 );
+        
+        DebugInfoFile << Hex( BaseOffset + Node->AddressInROM * UnitSize, 8 );
         DebugInfoFile << "," << NormalizePath( Node->Location.FilePath );
         DebugInfoFile << "," << Node->Location.Line;
         

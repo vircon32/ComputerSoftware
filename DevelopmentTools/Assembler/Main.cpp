@@ -52,10 +52,15 @@ void PrintUsage()
     cout << "  -o <file>    Output file, default name is the same as input" << endl;
     cout << "  -b           Assembles the code as a BIOS" << endl;
     cout << "  -v           Displays additional information (verbose)" << endl;
-    cout << "  -g           Outputs an additional file with debug info" << endl;
+    cout << "  -g <ref>     Outputs an additional file with debug info" << endl;
+    cout << "The possible reference modes for -g are the following:" << endl;
+    cout << "  program --> '-g' addresses in words relative to program start" << endl;
+    cout << "  vbin    --> '-g' addresses in bytes relative to VBIN file" << endl;
+    cout << "  v32     --> '-g' addresses in bytes relative to V32 file" << endl;
     cout << "Also, the following options are accepted for compatibility" << endl;
     cout << "but have no effect: -s" << endl;
 }
+
 
 // -----------------------------------------------------------------------------
 
@@ -105,6 +110,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         
         // variables to capture input parameters
         string InputPath, OutputPath;
+        DebugInfoModes DebugReference = DebugInfoModes::Program;
         
         // to treat arguments the same in any OS we
         // will convert them to UTF-8 in all cases
@@ -155,12 +161,25 @@ int main( int NumberOfArguments, char* Arguments[] )
             if( ArgumentsUTF8[i] == string("-g") )
             {
                 CreateDebugVersion = true;
-                continue;
-            }
-            
-            if( ArgumentsUTF8[i] == string("--debugmode") )
-            {
-                DebugMode = true;
+                
+                // expect another argument
+                i++;
+                
+                if( i >= NumberOfArguments )
+                  throw runtime_error( "missing reference mode after '-g'" );
+                
+                // now we can safely read the debug reference mode
+                string DebugMode = ArgumentsUTF8[ i ];
+                
+                if( DebugMode == "program" )
+                  DebugReference = DebugInfoModes::Program;
+                else if( DebugMode == "vbin" )
+                  DebugReference = DebugInfoModes::VBINFile;
+                else if( DebugMode == "v32" )
+                  DebugReference = DebugInfoModes::V32File;
+                else
+                  throw runtime_error( "unrecognized reference mode after '-g'" );
+                
                 continue;
             }
             
@@ -315,7 +334,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         // on debug assembly output an additional debug info file
         if( CreateDebugVersion )
-          SaveDebugInfoFile( OutputPath + ".debug", Parser, Emitter );
+          SaveDebugInfoFile( OutputPath + ".debug", Parser, Emitter, DebugReference );
     }
     
     catch( const exception& e )
