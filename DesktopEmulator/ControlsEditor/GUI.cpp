@@ -27,7 +27,7 @@
 
 void TextAlignedLeft( const string& Text )
 {
-    ImGui::Text( Text.c_str() );
+    ImGui::Text( "%s", Text.c_str() );
 }
 
 // -----------------------------------------------------------------------------
@@ -39,7 +39,7 @@ void TextAlignedCenter( const string& Text )
     ScreenPosition.x -= TextWidth / 2;
     ImGui::SetCursorScreenPos(ScreenPosition);
 
-    ImGui::Text( Text.c_str() );
+    ImGui::Text( "%s", Text.c_str() );
 }
 
 // -----------------------------------------------------------------------------
@@ -51,7 +51,7 @@ void TextAlignedRight( const string& Text )
     ScreenPosition.x -= TextWidth;
     ImGui::SetCursorScreenPos(ScreenPosition);
 
-    ImGui::Text( Text.c_str() );
+    ImGui::Text( "%s", Text.c_str() );
 }
 
 
@@ -94,8 +94,8 @@ void ProcessWaitForKeyboardWindow()
 {
     if( ImGui::BeginPopupModal( Texts(TextIDs::WaitKeyboard_Waiting) ) )
     {
-        ImGui::Text( Texts(TextIDs::WaitKeyboard_PressKey) );
-        ImGui::Text( Texts(TextIDs::WaitKeyboard_EscapeCancel) );
+        ImGui::Text( "%s", Texts(TextIDs::WaitKeyboard_PressKey) );
+        ImGui::Text( "%s", Texts(TextIDs::WaitKeyboard_EscapeCancel) );
         ImGui::Text(" ");
         
         if( ImGui::Button( Texts(TextIDs::WaitKeyboard_Clear) ) )
@@ -136,10 +136,10 @@ void DisplayKeyboardMapping()
     
     // write device name and GUID
     ImGui::SetCursorScreenPos(ImVec2(220,70));
-    ImGui::Text( Texts(TextIDs::Info_Keyboard) );
+    ImGui::Text( "%s", Texts(TextIDs::Info_Keyboard) );
     
     ImGui::SetCursorScreenPos(ImVec2(220,90));
-    ImGui::Text( Texts(TextIDs::Info_NoGUID) );
+    ImGui::Text( "%s", Texts(TextIDs::Info_NoGUID) );
     
     // write left mappings
     ImGui::SetCursorScreenPos(ImVec2(19,164));
@@ -249,8 +249,8 @@ void ProcessWaitForJoystickWindow()
 {
     if( ImGui::BeginPopupModal( Texts(TextIDs::WaitJoystick_Waiting) ) )
     {
-        ImGui::Text( Texts(TextIDs::WaitJoystick_PressControl) );
-        ImGui::Text( Texts(TextIDs::WaitJoystick_EscapeCancel) );
+        ImGui::Text( "%s", Texts(TextIDs::WaitJoystick_PressControl) );
+        ImGui::Text( "%s", Texts(TextIDs::WaitJoystick_EscapeCancel) );
         ImGui::Text(" ");
         
         if( ImGui::Button( Texts(TextIDs::WaitJoystick_Clear) ) )
@@ -298,12 +298,12 @@ void DisplayJoystickMapping( JoystickMapping* SelectedProfile )
     
     // write device name and GUID
     ImGui::SetCursorScreenPos(ImVec2(220,70));
-    ImGui::Text( SelectedProfile->JoystickName.c_str() );
+    ImGui::Text( "%s", SelectedProfile->JoystickName.c_str() );
     
     ImGui::SetCursorScreenPos(ImVec2(220,90));
     char GUIDString[ 40 ];
     SDL_JoystickGetGUIDString( SelectedProfile->GUID, GUIDString, 39 );
-    ImGui::Text( GUIDString );
+    ImGui::Text( "%s", GUIDString );
     
     // write left mappings
     ImGui::SetCursorScreenPos(ImVec2(19,164));
@@ -650,11 +650,11 @@ void RenderGUI()
     ImGui::Begin("Window", nullptr, WindowFlags);
     {
         ImGui::SetCursorScreenPos(ImVec2(100,50));
-        ImGui::Text( Texts(TextIDs::Info_ProfileName) );
+        ImGui::Text( "%s", Texts(TextIDs::Info_ProfileName) );
         ImGui::SetCursorScreenPos(ImVec2(100,70));
-        ImGui::Text( Texts(TextIDs::Info_DeviceName) );
+        ImGui::Text( "%s", Texts(TextIDs::Info_DeviceName) );
         ImGui::SetCursorScreenPos(ImVec2(100,90));
-        ImGui::Text( Texts(TextIDs::Info_DeviceGUID) );
+        ImGui::Text( "%s", Texts(TextIDs::Info_DeviceGUID) );
         
         ImGui::SetCursorScreenPos(ImVec2(0,130));
         ImGui::Separator();
