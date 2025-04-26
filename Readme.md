@@ -1,8 +1,36 @@
 # Vircon32: Computer software
 
-This is a general repository containing source code related to Vircon32 implementation, this is, software that does NOT run in the console itself but in an external computer or device.
+This is one of the GitHub repositories for Vircon32. This here is a general repository containing source code related to Vircon32 implementation, this is, software that does NOT run in the console itself but in an external computer or device.
 
-This will include:
+----------------------------------
+### What is Vircon32?
+
+Vircon32 ([website here](https://www.vircon32.com)) is a 32-bit virtual game console. It was designed from scratch with the intent of being as simple as possible but still offer decent capabilities for retro, arcade-style games. Vircon32 is an open project: anyone can make their own emulators, games or tools. And the console has already been integrated into several emulation front-ends, like EmulationStation as shown here.
+
+![Vircon32 on EmulationStation](Image-EmulationStation.jpg)
+
+### What can it do?
+On terms of power and features it is roughly in the same level as the 32-bit era home consoles like PSX and Saturn. But for simplicity this console is limited to 2D only, since even a basic 3D engine would add significant complexity to the console design and game programming.
+
+These are the basic console specs:
+
+- **Screen:** Resolution of 640x360 pixels, 16:9. True color.
+- **Graphics:** Support for transparencies, rotation and scaling.
+- **Sound:** 16 sample-based channels with CD quality sound.
+- **Gamepads:** D-Pad and 6 buttons + start. 4 gamepad ports.
+- **Saving:** Supports game saving via 1 MB memory cards.
+- **Memory:** 16 MB RAM, with games up to 2.5 GB.
+
+Here are some screenshots for you to have a quick idea.
+
+![Vircon32 game screenshots](Image-GameScreenshots.jpg)
+
+For more details about the console, or the Vircon32 project in general, you can visit its website [www.vircon32.com](https://www.vircon32.com "Vircon32 Homepage") for more information. There you will also find everything you may need to try out the console and to make games for it.
+
+----------------------------------
+### What is included here?
+
+This repository will include:
 - Emulator for desktop PC
 - Development tools (assembler, C compiler, file importers)
 - Any future emulators (for Raspberry Pi, etc)
@@ -16,11 +44,6 @@ However, it does not include console software such as the following:
 - The BIOS
 
 Most of these projects are written in C++ version 2011, and use portable libraries (SDL, OpenGL, OpenAL) along with CMake in an attempt to support multiplatform compilation.
-
-----------------------------------
-### Where to learn about Vircon32?
-
-If you are not familiar with Vircon32, a 32-bit virtual game console, you can visit its website [www.vircon32.com](http://www.vircon32.com "Vircon32 Homepage") for more information. There you will also find everything you may need to try out the console and to make games for it.
 
 ----------------------------------
 ### License
