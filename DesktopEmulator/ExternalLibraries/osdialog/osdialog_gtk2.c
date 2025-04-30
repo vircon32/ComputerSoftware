@@ -27,11 +27,7 @@ int osdialog_message(osdialog_message_level level, osdialog_message_buttons butt
 	GtkWidget* dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, messageType, buttonsType, "%s", message);
 
 	gint result = gtk_dialog_run(GTK_DIALOG(dialog));
-#ifdef OSDIALOG_GTK4
-	gtk_window_destroy(dialog);
-#else
 	gtk_widget_destroy(dialog);
-#endif
 
 	while (gtk_events_pending())
 		gtk_main_iteration();
@@ -121,11 +117,7 @@ char* osdialog_file(osdialog_file_action action, const char* path, const char* f
 		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 
 	if (path)
-#ifdef OSDIALOG_GTK4
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), path, NULL); // 3rd parameter is a GError **
-#else
 		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog), path);
-#endif
 
 	if (action == OSDIALOG_SAVE && filename)
 		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), filename);
@@ -153,11 +145,7 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 		return 0;
 	assert(gtk_init_check(NULL, NULL));
 
-#ifdef OSDIALOG_GTK4
-	GtkWidget* dialog = gtk_color_chooser_dialog_new("Color", NULL);
-	GtkColorChooser* colorsel = GTK_COLOR_CHOOSER(dialog);
-	gtk_color_chooser_set_use_alpha(colorsel, opacity);
-#elif OSDIALOG_GTK3
+#ifdef OSDIALOG_GTK3
 	GtkWidget* dialog = gtk_color_chooser_dialog_new("Color", NULL);
 	GtkColorChooser* colorsel = GTK_COLOR_CHOOSER(dialog);
 	gtk_color_chooser_set_use_alpha(colorsel, opacity);
@@ -169,14 +157,7 @@ int osdialog_color_picker(osdialog_color* color, int opacity) {
 
 	int result = 0;
 	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
-#ifdef OSDIALOG_GTK4
-		GdkRGBA c;
-		gtk_color_chooser_get_rgba(colorsel, &c);
-		color->r = c.red * 65535 + 0.5;
-		color->g = c.green * 65535 + 0.5;
-		color->b = c.blue * 65535 + 0.5;
-		color->a = c.alpha * 65535 + 0.5;
-#elif OSDIALOG_GTK3
+#ifdef OSDIALOG_GTK3
 		GdkRGBA c;
 		gtk_color_chooser_get_rgba(colorsel, &c);
 		color->r = c.red * 65535 + 0.5;
