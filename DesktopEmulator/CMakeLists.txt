@@ -58,16 +58,6 @@ endif()
 #   BASIC PROJECT CONFIGURATION
 # -----------------------------------------------------
 
-# Library osdialog can target differeng GUI systems (win/mac/gtk2/gtk3/zenity)
-if(TARGET_OS STREQUAL "windows")
-    set(OSDIALOG_TARGET win CACHE STRING "osdialog target env")
-elseif(TARGET_OS STREQUAL "linux")
-    set(OSDIALOG_TARGET gtk2 CACHE STRING "osdialog target env")
-elseif(TARGET_OS STREQUAL "mac")
-    set(OSDIALOG_TARGET mac CACHE STRING "osdialog target env")
-    enable_language(OBJC)
-endif()
-
 # These general project variables should be cached
 set(LIBRARIES_DIR "ExternalLibraries/"
     CACHE PATH "The path to the external libraries.")
@@ -141,9 +131,32 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeMod
 find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
 
-# On Linux we will need to find GTK too
-if(TARGET_OS STREQUAL "linux")
-    find_package(GTK2 COMPONENTS gtk REQUIRED)
+# Library osdialog can target differeng GUI systems (win/mac/gtk2/gtk3/zenity)
+if(TARGET_OS STREQUAL "windows")
+    set(OSDIALOG_TARGET win CACHE STRING "osdialog target env")
+elseif(TARGET_OS STREQUAL "linux")
+    # Linux-specific dependency: GTK3 or GTK2 functionality available
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GTK3 QUIET gtk+-3.0)
+    if (GTK3_FOUND)
+        message("--  * GTK3 version (${GTK3_VERSION})")
+        set(OSDIALOG_TARGET gtk3 CACHE STRING "osdialog target env")
+        set(OSDIALOG_GTK3)
+        set(GTK "GTK3")
+        set(GTK_LIBRARIES ${GTK3_LIBRARIES})
+        set(GTK_INCLUDE_DIRS ${GTK3_INCLUDE_DIRS})
+    else()
+        pkg_check_modules(GTK2 REQUIRED QUIET gtk+-2.0)
+        message("--  * GTK2 version (${GTK2_VERSION})")
+        set(OSDIALOG_TARGET gtk2 CACHE STRING "osdialog target env")
+        set(OSDIALOG_GTK2)
+        set(GTK "GTK2")
+        set(GTK_LIBRARIES ${GTK2_LIBRARIES})
+        set(GTK_INCLUDE_DIRS ${GTK2_INCLUDE_DIRS})
+    endif()
+elseif(TARGET_OS STREQUAL "mac")
+    set(OSDIALOG_TARGET mac CACHE STRING "osdialog target env")
+    enable_language(OBJC)
 endif()
 
 # These are treated as independent (they don't depend on anything else)
@@ -184,8 +197,9 @@ show_dependency_status("OPENGL" OPENGL)
 show_dependency_status("SDL2" SDL2)
 show_dependency_status("PNG" PNG)
 
+# Linux-specific: report on GTK dependency
 if(TARGET_OS STREQUAL "linux")
-    show_dependency_status("GTK2" GTK2)
+    show_dependency_status("${GTK}" ${GTK})
 endif()
 
 # -----------------------------------------------------
@@ -196,15 +210,12 @@ endif()
 set(ALL_INCLUDE_DIRS
     ${OPENGL_INCLUDE_DIR}
     ${SDL2_INCLUDE_DIR}
+    ${GTK_INCLUDE_DIRS}
     ${LIBRARIES_DIR}
     ${LIBRARIES_DIR}/glad/include/)
   
 include_directories(${ALL_INCLUDE_DIRS})
 include_directories(.)
-
-if(TARGET_OS STREQUAL "linux")
-    include_directories (${GTK2_INCLUDE_DIRS})
-endif()
 
 # -----------------------------------------------------
 #   LINKED LIBRARIES FILES
@@ -308,8 +319,8 @@ endif()
 
 # On linux both binaries will also need this set of libraries
 if(TARGET_OS STREQUAL "linux")
-    target_link_libraries(${EMULATOR_BINARY_NAME} ${GTK2_LIBRARIES})
-    target_link_libraries(${EDITCONTROLS_BINARY_NAME} ${GTK2_LIBRARIES})
+    target_link_libraries(${EMULATOR_BINARY_NAME} ${GTK_LIBRARIES})
+    target_link_libraries(${EDITCONTROLS_BINARY_NAME} ${GTK_LIBRARIES})
 endif()
 
 # On mac both binaries will also need this framework
