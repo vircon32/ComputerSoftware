@@ -2475,7 +2475,7 @@ StaticValue UnaryOperationNode::GetStaticValue()
             
             // binary operations
             case UnaryOperators::BitwiseNot:
-                Result.Word.AsBinary = !Result.Word.AsBinary;
+                Result.Word.AsBinary = ~Result.Word.AsBinary;
                 break;
             
             // unknown or binary-only operators
