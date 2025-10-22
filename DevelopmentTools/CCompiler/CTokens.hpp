@@ -8,6 +8,7 @@
     
     // include C/C++ headers
     #include <list>         // [ C++ STL ] Lists
+    #include <stdint.h>     // [ ANSI C ] Standard integers
 // *****************************************************************************
 
 

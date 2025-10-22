@@ -18,7 +18,7 @@ target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
 
 # Source files to compile dialog library osdialog;
 # These are dependent on the backend GUI system
-# that osdialog is targeting (win/mac/gtk2/gtk3/zenity)
+# that osdialog is targeting (win/mac/gtk/zenity)
 if(OSDIALOG_TARGET STREQUAL "mac")
     add_library(osdialog STATIC
         osdialog/osdialog.c
