@@ -28,7 +28,7 @@
 
 AudioOutput::AudioOutput()
 {
-    // set null IDs for OpenAL objects
+    // set null IDs for SDL audio objects
     AudioDeviceID = 0;
     
     // initial state for playback
@@ -47,7 +47,7 @@ AudioOutput::AudioOutput()
 
 AudioOutput::~AudioOutput()
 {
-    // release OpenAL objects
+    // release SDL audio objects
     Terminate();
 }
 

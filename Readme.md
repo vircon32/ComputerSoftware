@@ -43,7 +43,7 @@ However, it does not include console software such as the following:
 - Examples and tutorials
 - The BIOS
 
-Most of these projects are written in C++ version 2011, and use portable libraries (SDL, OpenGL, OpenAL) along with CMake in an attempt to support multiplatform compilation.
+Most of these projects are written in C++ version 2011, and use portable libraries (SDL, OpenGL) along with CMake in an attempt to support multiplatform compilation.
 
 ----------------------------------
 ### License
@@ -78,9 +78,5 @@ To correctly build the software in this repository you will need to have at leas
 ##### Video libraries:
 * OpenGL
 * LibPNG
-
-##### Audio libraries:
-* OpenAL
-* ALUT / FreeALUT
 
 These programs also use 4 other libraries that are already included in the sources as external libraries: tinyxml2, osdialog, imgui and glad.
