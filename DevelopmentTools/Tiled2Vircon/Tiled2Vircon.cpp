@@ -114,7 +114,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "tiled2vircon v25.1.19" << endl;
+    cout << "tiled2vircon v25.10.29" << endl;
     cout << "Vircon32 Tiled tilemap importer by Javier Carracedo" << endl;
 }
 

@@ -40,7 +40,7 @@ const char* Texts( TextIDs ID )
 
 
 string AboutTextEnglish =
-    "EditControls version 25.3.17."
+    "EditControls version 25.10.29."
     "\n"
     "\nThis program is a tool included with the Vircon32 emulator."
     "\nIt can create control profiles for keyboard and joysticks."
@@ -145,7 +145,7 @@ string LanguageEnglish[] =
 
 
 string AboutTextSpanish =
-    "EditControls versi\u00F3n 25.3.17."
+    "EditControls versi\u00F3n 25.10.29."
     "\n"
     "\nEste programa es una herramienta incluida con el emulador de Vircon32."
     "\nPermite crear perfiles de control para teclado y joysticks."

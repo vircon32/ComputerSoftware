@@ -1,6 +1,6 @@
 ============================================================
              README file for Vircon32 emulator
-            (version 25.3.17) written by Carra
+            (version 25.10.29) written by Carra
 ============================================================
 
 What is this?
@@ -172,19 +172,14 @@ How to use savestates
     
 ------------------------------------------------------------
 
-What's new in version 25.3.17?
+What's new in version 25.10.29?
   
-  - Keyboard/joystick profiles for Vircon32 gamepad now allow
-    defining an additional command button. This makes it
-    possible to trigger certain emulator functions using only
-    the controller, with certain button combinations.
-  - The sound system no longer uses OpenAL or ALUT. They are
-    now replaced with the native SDL2 audio system. With this
-    their external libraries are no longer required.
-  - Image loading no longer uses SDL2_image, so its external
-    library is no longer required.
-  - XML library tinyxml2 is now included in the executables,
-    so its external library is no longer required.
+  - Updated build to use more recent versions of C++ compiler
+    and dependencies.
+  - Builds are now 64-bit by default.
+  - Library tinyxml2 is now built from source code.
+  - Linux builds can now link against GTK3
+  - Emulator will no longer waste CPU while window is unfocused.
 
 ------------------------------------------------------------
 

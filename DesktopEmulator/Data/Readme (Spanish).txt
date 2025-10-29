@@ -1,6 +1,6 @@
 ﻿============================================================
         Archivo README para el emulador de Vircon32
-           (versión 25.3.17) escrito por Carra
+           (versión 25.10.29) escrito por Carra
 ============================================================
 
 ¿Qué es esto?
@@ -179,20 +179,14 @@ Cómo usar savestates
     
 ------------------------------------------------------------
 
-Novedades en la versión 25.3.17
+Novedades en la versión 25.10.29
     
-  - Los perfiles de teclado/joysticks para el mando de Vircon32
-    ahora permiten definir un botón de comando adicional. Esto
-    permite activar ciertas funciones del emulador usando sólo
-    el mando, mediante combinaciones de botones.
-  - El sistema de sonido ya no usa OpenAL ni ALUT. Se sustituye
-    por el sistema de audio nativo de SDL2. Con esto ya no son
-    necesarias sus librerías externas.
-  - La carga de imágenes ya no usa SDL2_image, por lo que ya no
-    es necesaria su librería externa.
-  - La librería de XML tinyxml2 ahora está incluida en los
-    ejecutables, por lo que ya no es necesaria su librería
-    externa.
+  - La compilación se ha actualizado para usar versiones más
+    recientes del compilador C++ y las librerías.
+  - La compilación ahora es de 64 bits por defecto.
+  - La librería tinyxml2 ahora se compila desde código fuente.
+  - Las compilaciones de linux ahora pueden usar GTK3.
+  - El emulador ya no gasta CPU si la ventana pierde el foco.
 
 ------------------------------------------------------------
 

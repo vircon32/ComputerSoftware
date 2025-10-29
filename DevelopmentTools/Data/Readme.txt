@@ -1,6 +1,6 @@
 ================================================
    PC development tools for Vircon32 console
-  (version 25.1.19). README written by Carra
+  (version 25.10.29). README written by Carra
 ================================================
 
 
@@ -88,10 +88,15 @@ Included programs (reverse tools)
     
 ------------------------------------------------------------
 
-What's new in version 25.1.19?
+What's new in version 25.10.29?
   
-  - Fixes the previous problems on Windows that prevented
-    accessing files if their path had non English characters.
+  - Updated build to use more recent versions of C++ compiler
+    and dependencies.
+  - Builds are now 64-bit by default.
+  - Library tinyxml2 is now built from source code.
+  - Fixed compiler bug when applying logical NOT to a constant.
+  - Fixed itoa for negative numbers in bases other than 10.
+  - Modified assembler debug arguments for more flexiblility.
 
 ------------------------------------------------------------
 

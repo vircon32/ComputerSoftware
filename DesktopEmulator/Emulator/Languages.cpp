@@ -39,7 +39,7 @@ const char* Texts( TextIDs ID )
 
 
 string AboutTextEnglish =
-    "Vircon32 Emulator version 25.3.17."
+    "Vircon32 Emulator version 25.10.29."
     "\n"
     "\nEmulator for the Vircon32 virtual console."
     "\nThis program allows you to play Vircon32 games."
@@ -177,7 +177,7 @@ string LanguageEnglish[] =
 
 
 string AboutTextSpanish =
-    "Emulador de Vircon32 versi\u00F3n 25.3.17."
+    "Emulador de Vircon32 versi\u00F3n 25.10.29."
     "\n"
     "\nEmulador de la consola virtual Vircon32."
     "\nEste programa te permite jugar a juegos de Vircon32."
