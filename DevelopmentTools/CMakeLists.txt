@@ -69,8 +69,8 @@ project("Vircon32")
 
 # Define version
 set(PROJECT_VERSION_MAJOR 25)
-set(PROJECT_VERSION_MINOR 10)
-set(PROJECT_VERSION_PATCH 29)
+set(PROJECT_VERSION_MINOR 12)
+set(PROJECT_VERSION_PATCH 28)
 
 # Set names for final executables
 set(C_COMPILER_BINARY_NAME "compile")
@@ -526,4 +526,42 @@ endif()
 if(TARGET_OS STREQUAL "linux" OR TARGET_OS STREQUAL "mac")
     # Allow compiler and assembler to create logs
     install(CODE "execute_process(COMMAND chmod 777 ${CMAKE_INSTALL_PREFIX}/${CMAKE_PROJECT_NAME}/DevTools)")
+endif()
+
+# -----------------------------------------------------
+#   DEFINE THE PACKAGE CREATION WITH CPACK
+# -----------------------------------------------------
+
+if(TARGET_OS STREQUAL "linux")
+
+    # define install directory
+    set(CPACK_PACKAGING_INSTALL_PREFIX "/usr/local")
+    set(CPACK_INSTALL_PREFIX "/usr/local")
+
+    # define base package info
+    set(CPACK_PACKAGE_NAME "vircon32-devtools")
+    set(CPACK_PACKAGE_VERSION "25.12.28")
+    set(CPACK_PACKAGE_VENDOR "Carra")
+    set(CPACK_PACKAGE_MAINTAINER "Carra")
+    set(CPACK_PACKAGE_LICENSE "BSD-3-Clause")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Development tools for Vircon32 console")
+    set(CPACK_PACKAGE_DESCRIPTION "These are the official development tools for Vircon32, for the Debian Linux family. Vircon32 is an open source, 32-bit virtual game console")
+    set(CPACK_PACKAGE_HOMEPAGE_URL "https://www.vircon32.com")
+
+    # Set dependencies and package specific configuration
+    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Carra")
+    set(CPACK_DEBIAN_PACKAGE_SECTION "games")
+
+    set(CPACK_RPM_PACKAGE_AUTOREQ ON)
+    set(CPACK_RPM_PACKAGE_AUTOPROV ON)
+    set(CPACK_RPM_PACKAGE_NAME "vircon32-devtools")
+    set(CPACK_RPM_PACKAGE_LICENSE "BSD-3-Clause")
+    set(CPACK_RPM_PACKAGE_GROUP "Amusements/Games")
+
+    set(CPACK_GENERATOR "DEB;RPM;TGZ")
+    
+    # finally this reads all CPack variables
+    include(CPack)
+
 endif()

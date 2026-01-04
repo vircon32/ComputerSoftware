@@ -2,10 +2,10 @@
 Version=22.6.4
 Name=Vircon32
 Comment=Vircon32, a 32-bit virtual game console
-TryExec=/opt/Vircon32/Emulator/Vircon32
-Exec=/opt/Vircon32/Emulator/Vircon32
+TryExec=/usr/local/Vircon32/Emulator/Vircon32
+Exec=/usr/local/Vircon32/Emulator/Vircon32
 Icon=Vircon32
 Terminal=false
 Type=Application
-Categories=games
-Keywords=games;emulation
+Categories=Game;Emulator;
+Keywords=V32;emulator;
