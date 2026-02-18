@@ -35,7 +35,6 @@ namespace V32
         WriteSPUChannelVolume,
         WriteSPUChannelSpeed,
         WriteSPUChannelLoopEnabled,
-        WriteSPUChannelSpeed,
         WriteSPUChannelPosition
     };
     
