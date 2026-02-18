@@ -1,6 +1,6 @@
 ﻿============================================================
         Archivo README para el emulador de Vircon32
-           (versión 25.10.29) escrito por Carra
+           (versión 26.02.18) escrito por Carra
 ============================================================
 
 ¿Qué es esto?
@@ -179,14 +179,10 @@ Cómo usar savestates
     
 ------------------------------------------------------------
 
-Novedades en la versión 25.10.29
+Novedades en la versión 26.02.18
     
-  - La compilación se ha actualizado para usar versiones más
-    recientes del compilador C++ y las librerías.
-  - La compilación ahora es de 64 bits por defecto.
-  - La librería tinyxml2 ahora se compila desde código fuente.
-  - Las compilaciones de linux ahora pueden usar GTK3.
-  - El emulador ya no gasta CPU si la ventana pierde el foco.
+  - Arreglado un error que impedía cambiar la posición de
+    reproducción en los canales de sonido.
 
 ------------------------------------------------------------
 
@@ -196,7 +192,7 @@ Licencia
     la licencia BSD de 3 cláusulas, cuyo texto completo es el
     siguiente:
     
-    Copyright 2021-2025 Carra.
+    Copyright 2021-2026 Carra.
     Todos los derechos reservados.
     
     La redistribución y el uso en las formas de código fuente y

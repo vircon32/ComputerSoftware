@@ -1,6 +1,6 @@
 ============================================================
              README file for Vircon32 emulator
-            (version 25.10.29) written by Carra
+            (version 26.02.18) written by Carra
 ============================================================
 
 What is this?
@@ -172,14 +172,10 @@ How to use savestates
     
 ------------------------------------------------------------
 
-What's new in version 25.10.29?
+What's new in version 26.02.18?
   
-  - Updated build to use more recent versions of C++ compiler
-    and dependencies.
-  - Builds are now 64-bit by default.
-  - Library tinyxml2 is now built from source code.
-  - Linux builds can now link against GTK3
-  - Emulator will no longer waste CPU while window is unfocused.
+  - Fixed a bug that preventing setting playback position
+    in sound channels.
 
 ------------------------------------------------------------
 
@@ -188,7 +184,7 @@ License
     This program is free and open source. It is offered under
     the 3-Clause BSD License, which full text is the following:
     
-    Copyright 2021-2025 Carra.
+    Copyright 2021-2026 Carra.
     All rights reserved.
     
     Redistribution and use in source and binary forms, with or
