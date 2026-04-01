@@ -727,6 +727,43 @@ DataType* VirconCParser::ParseType( CNode* Parent, CTokenIterator& TokenPosition
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
+    // check for a function type modifier: ReturnType( ParamTypes... )
+    // this turns ParsedType into a FunctionType
+    if( TokenIsThisDelimiter( *TokenPosition, DelimiterTypes::OpenParenthesis ) )
+    {
+        // consume '('
+        TokenPosition++;
+        
+        list< DataType* > ParamTypes;
+        
+        // "void" alone means no parameters
+        if( TokenIsThisKeyword( *TokenPosition, KeywordTypes::Void )
+        &&  TokenIsThisDelimiter( *Next(TokenPosition), DelimiterTypes::CloseParenthesis ) )
+        {
+            TokenPosition++;  // consume "void"
+        }
+        else
+        {
+            while( !IsLastToken( *TokenPosition ) )
+            {
+                if( TokenIsThisDelimiter( *TokenPosition, DelimiterTypes::CloseParenthesis ) )
+                  break;
+                
+                if( !ParamTypes.empty() )
+                  ExpectSpecialSymbol( TokenPosition, SpecialSymbolTypes::Comma );
+                
+                ParamTypes.push_back( ParseType( Parent, TokenPosition ) );
+            }
+        }
+        
+        ExpectDelimiter( TokenPosition, DelimiterTypes::CloseParenthesis );
+        ParsedType = new FunctionType( ParsedType, ParamTypes );
+        
+        // clean up the temporary param type copies
+        for( DataType* PT: ParamTypes )
+          delete PT;
+    }
+    
     // keep reading pointer and array modifiers
     while( (*TokenPosition)->Type() != CTokenTypes::EndOfFile )
     {
@@ -1562,13 +1599,31 @@ ExpressionNode* VirconCParser::ParseExpression( CNode* Parent, CTokenIterator& T
     else if( TokenIsUnaryOperator( NextToken ) )
       PrimaryExpression = ParseUnaryOperation( Parent, TokenPosition );
     
-    // CASE 5: Function call
+    // CASE 5: Function calls
     else if( NextToken->Type() == CTokenTypes::Identifier )
     {
         CToken* FollowingToken = *Next( TokenPosition );
         
         if( TokenIsThisDelimiter( FollowingToken, DelimiterTypes::OpenParenthesis ) )
-          PrimaryExpression = ParseFunctionCall( Parent, TokenPosition );
+        {
+            // Determine whether the identifier name is a function or a variable.
+            string SymbolName = ((IdentifierToken*)NextToken)->Name;
+            ScopeNode* Scope = Parent->FindClosestScope( true );
+            CNode* Declaration = Scope->ResolveIdentifier( SymbolName );
+            bool IsFunction = (Declaration && Declaration->Type() == CNodeTypes::Function);
+            
+            // CASE 5-A: Direct function call
+            if( IsFunction )
+              PrimaryExpression = ParseFunctionCall( Parent, TokenPosition );
+            
+            // CASE 5-B: Indirect call through a pointer
+            else
+            {
+                // Parse the identifier as an atom, then parse the argument list
+                ExpressionAtomNode* CalleeAtom = ParseExpressionAtom( Parent, TokenPosition );
+                PrimaryExpression = ParseIndirectCall( Parent, CalleeAtom, TokenPosition );
+            }
+        }
     }
     
     // CASE 6: Atom (all other cases)
@@ -1627,6 +1682,11 @@ ExpressionNode* VirconCParser::ParseExpression( CNode* Parent, CTokenIterator& T
             PrimaryExpression->Parent = UnaryOperation;
             PrimaryExpression = UnaryOperation;
         }
+        
+        // CASE 6: Indirect call via '(' after any non-identifier primary
+        // expression (e.g. (*fn_ptr)(args) or array[i](args))
+        else if( TokenIsThisDelimiter( NextToken, DelimiterTypes::OpenParenthesis ) )
+          PrimaryExpression = ParseIndirectCall( Parent, PrimaryExpression, TokenPosition );
         
         else break;
     }
@@ -1703,6 +1763,7 @@ ExpressionAtomNode* VirconCParser::ParseExpressionAtom( CNode* Parent, CTokenIte
             Atom->FloatValue = Literal->FloatValue;
             return Atom;
         }
+        
         // 1-C: Literal boolean
         else
         {
@@ -1779,6 +1840,46 @@ FunctionCallNode* VirconCParser::ParseFunctionCall( CNode* Parent, CTokenIterato
     FunctionCall->AllocateCallSpace();
     
     return FunctionCall;
+}
+
+// -----------------------------------------------------------------------------
+
+IndirectCallNode* VirconCParser::ParseIndirectCall( CNode* Parent, ExpressionNode* Callee, CTokenIterator& TokenPosition )
+{
+    IndirectCallNode* IndirectCall = new IndirectCallNode( Parent );
+    IndirectCall->Location = (*TokenPosition)->Location;
+    
+    // take ownership of the callee expression
+    IndirectCall->CalleeExpression = Callee;
+    Callee->Parent = IndirectCall;
+    
+    // here we already know '(' is next; consume it
+    TokenPosition++;
+    
+    // parse the parameter list
+    while( !IsLastToken( *TokenPosition ) )
+    {
+        CToken* NextToken = *TokenPosition;
+        
+        if( TokenIsThisDelimiter( NextToken, DelimiterTypes::CloseParenthesis ) )
+        {
+            TokenPosition++;
+            break;
+        }
+        
+        if( !IndirectCall->Parameters.empty() )
+          ExpectSpecialSymbol( TokenPosition, SpecialSymbolTypes::Comma );
+        
+        IndirectCall->Parameters.push_back( ParseExpression( Parent, TokenPosition ) );
+    }
+    
+    // determine types now so AllocateCallSpace can use them
+    IndirectCall->CalleeExpression->DetermineReturnedType();
+    
+    // allocate call space in the containing stack frame
+    IndirectCall->AllocateCallSpace();
+    
+    return IndirectCall;
 }
 
 // -----------------------------------------------------------------------------

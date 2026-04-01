@@ -64,10 +64,10 @@ void VirconCEmitter::EmitFunctionCall( FunctionCallNode* FunctionCall, RegisterA
     
     while( ArgumentPositionRev != Function->Arguments.rend() )
     {
-        // discard arguments that do not use calls
         ExpressionNode* Parameter = *ParameterPositionRev;
         VariableNode* Argument = *ArgumentPositionRev;
         
+        // discard arguments that do not use calls
         if( Parameter->UsesFunctionCalls() )
         {
             // emit the evaluation of this parameter
@@ -149,6 +149,146 @@ void VirconCEmitter::EmitFunctionCall( FunctionCallNode* FunctionCall, RegisterA
     
     // release the arguments register
     Registers.RegisterUsed[ ParameterRegister ] = false;
+}
+
+// -----------------------------------------------------------------------------
+
+void VirconCEmitter::EmitIndirectCall( IndirectCallNode* IndirectCall, RegisterAllocation& Registers, int ResultRegister )
+{
+    // obtain the called function prototype
+    DataType* CalleeType = IndirectCall->CalleeExpression->ReturnedType;
+    FunctionType* Prototype = (FunctionType*)((PointerType*)CalleeType)->BaseType;
+    
+    // reserve a register for the callee address
+    int CalleeRegister = Registers.FirstFreeRegister();
+    string CalleeRegisterName = "R" + to_string( CalleeRegister );
+    
+    // use a single register for all parameters
+    // (but avoid reserving a register if not needed)
+    int ParameterRegister = 0;
+    
+    if( IndirectCall->Parameters.size() > 0 )
+      ParameterRegister = Registers.FirstFreeRegister();
+    
+    string ParameterRegisterName = "R" + to_string( ParameterRegister );
+    
+    // find the stack frame where this call is allocated
+    StackFrameNode* CallingStackFrame = nullptr;
+    CNode* CurrentParent = IndirectCall->Parent;
+    
+    while( CurrentParent )
+    {
+        if( CurrentParent->HasStackFrame() )
+        {
+            CallingStackFrame = (StackFrameNode*)CurrentParent;
+            break;
+        }
+        
+        CurrentParent = CurrentParent->Parent;
+    }
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // First pass: precalculate and save any parameters that use
+    // function calls and store them in the stack of temporaries
+    // (since stack is LIFO, use reverse iteration order here)
+    auto ArgumentPositionRev = Prototype->ParameterTypes.rbegin();
+    auto ParameterPositionRev = IndirectCall->Parameters.rbegin();
+    
+    while( ArgumentPositionRev != Prototype->ParameterTypes.rend() )
+    {
+        ExpressionNode* Parameter = *ParameterPositionRev;
+        
+        // discard arguments that do not use calls
+        if( Parameter->UsesFunctionCalls() )
+        {
+            // emit the evaluation of this parameter
+            // (which can now be done independently from this call)
+            EmitDependentExpression( Parameter, Registers, ParameterRegister );
+            
+            // perform type promotion where needed
+            DataType* NeededType  = *ArgumentPositionRev;
+            DataType* ProducedType = Parameter->ReturnedType;
+            EmitRegisterTypeConversion( ParameterRegister, ProducedType, NeededType );
+            
+            // save this value in the stack of temporaries
+            // (careful! stack allocation starts at [BP-1])
+            int FirstTemporaryOffset = CallingStackFrame->StackSizeForVariables + 1;
+            int TemporaryOffsetFromBP = FirstTemporaryOffset + Registers.TemporariesStackSize;
+            string TemporaryAddress = (TemporaryOffsetFromBP == 0 ? "[BP]" : "[BP-" + to_string(TemporaryOffsetFromBP) + "]");
+            ProgramLines.push_back( "mov " + TemporaryAddress + ", " + ParameterRegisterName );
+            
+            // mark the used space for this value in the stack of temporaries
+            Registers.TemporariesStackSize += 1;
+        }
+        
+        ArgumentPositionRev++;
+        ParameterPositionRev++;
+    }
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Evaluate the callee expression to get the function address
+    EmitDependentExpression( IndirectCall->CalleeExpression, Registers, CalleeRegister );
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Second pass: process other arguments, and use the precalculated ones
+    auto ArgumentPosition = Prototype->ParameterTypes.begin();
+    auto ParameterPosition = IndirectCall->Parameters.begin();
+    
+    while( ArgumentPosition != Prototype->ParameterTypes.end() )
+    {
+        ExpressionNode* Parameter = *ParameterPosition;
+        DataType* NeededType = *ArgumentPosition;
+        
+        if( Parameter->UsesFunctionCalls() )
+        {
+            // free the used space in the stack of temporaries
+            Registers.TemporariesStackSize -= 1;
+            
+            // load this value from the stack of temporaries
+            // (careful! stack allocation starts at [BP-1])
+            int FirstTemporaryOffset = CallingStackFrame->StackSizeForVariables + 1;
+            int TemporaryOffsetFromBP = FirstTemporaryOffset + Registers.TemporariesStackSize;
+            string TemporaryAddress = (TemporaryOffsetFromBP == 0? "[BP]" : "[BP-" + to_string(TemporaryOffsetFromBP) + "]");
+            ProgramLines.push_back( "mov " + ParameterRegisterName + ", " + TemporaryAddress );
+        }
+        
+        else
+        {
+            // emit the evaluation of this parameter
+            EmitDependentExpression( Parameter, Registers, ParameterRegister );
+            
+            // perform type promotion where needed
+            DataType* ProducedType = Parameter->ReturnedType;
+            EmitRegisterTypeConversion( ParameterRegister, ProducedType, NeededType );
+        }
+        
+        // place the result as a passed parameter (end of the stack frame);
+        // in direct calls we use argument placement to determine the address
+        // but here we only have types, so we determine it as [SP + index]
+        int ParameterIndex = distance( ArgumentPosition, Prototype->ParameterTypes.begin() );
+        string PassingAddress = (ParameterIndex == 0? "SP" : "SP+" + to_string(ParameterIndex));
+        ProgramLines.push_back( "mov [" + PassingAddress + "], " + ParameterRegisterName );
+        
+        ArgumentPosition++;
+        ParameterPosition++;
+    }
+    
+    // emit the indirect call itself
+    ProgramLines.push_back( "call " + CalleeRegisterName );
+    
+    // By calling convention, calls produce their result in R0.
+    // If needed, place the result in the requested register
+    if( ResultRegister != 0 )
+    {
+        string ResultRegisterName = "R" + to_string( ResultRegister );
+        ProgramLines.push_back( "mov " + ResultRegisterName + ", R0" );
+    }
+    
+    // release all used registers
+    Registers.RegisterUsed[ CalleeRegister ] = false;
+    
+    if( IndirectCall->Parameters.size() > 0 )
+      Registers.RegisterUsed[ ParameterRegister ] = false;
 }
 
 // -----------------------------------------------------------------------------

@@ -79,6 +79,7 @@ class VirconCParser
         ExpressionNode* ParseExpression( CNode* Parent, CTokenIterator& TokenPosition, bool Greedy = true );
         ExpressionAtomNode* ParseExpressionAtom( CNode* Parent, CTokenIterator& TokenPosition );
         FunctionCallNode* ParseFunctionCall( CNode* Parent, CTokenIterator& TokenPosition );
+        IndirectCallNode* ParseIndirectCall( CNode* Parent, ExpressionNode* Callee, CTokenIterator& TokenPosition );
         ArrayAccessNode* ParseArrayAccess( CNode* Parent, ExpressionNode* ArrayOperand, CTokenIterator& TokenPosition );
         UnaryOperationNode* ParseUnaryOperation( CNode* Parent, CTokenIterator& TokenPosition );
         BinaryOperationNode* ParseBinaryOperation( CNode* Parent, ExpressionNode* LeftOperand, OperatorToken* Operator, CTokenIterator& TokenPosition );
