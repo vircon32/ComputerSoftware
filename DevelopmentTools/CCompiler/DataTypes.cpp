@@ -355,6 +355,54 @@ EnumerationNode* EnumerationType::GetDeclaration( bool MustHaveBody )
 
 
 // =============================================================================
+//      FUNCTION TYPE
+// =============================================================================
+
+
+FunctionType::FunctionType( DataType* ReturnType_, list< DataType* > ParameterTypes_ )
+{
+    ReturnType = ReturnType_->Clone();
+    
+    for( DataType* ParameterType: ParameterTypes_ )
+      ParameterTypes.push_back( ParameterType->Clone() );
+}
+
+// -----------------------------------------------------------------------------
+
+FunctionType::~FunctionType()
+{
+    delete ReturnType;
+    
+    for( DataType* ParameterType: ParameterTypes )
+      delete ParameterType;
+}
+
+// -----------------------------------------------------------------------------
+
+string FunctionType::ToString()
+{
+    string Result = ReturnType->ToString() + "(";
+    bool ListEmpty = true;
+    
+    for( DataType* ParameterType: ParameterTypes )
+    {
+        if( !ListEmpty ) Result += ", ";
+        Result += ParameterType->ToString();
+        ListEmpty = false;
+    }
+    
+    return Result + ")";
+}
+
+// -----------------------------------------------------------------------------
+
+DataType* FunctionType::Clone()
+{
+    return new FunctionType( ReturnType, ParameterTypes );
+}
+
+
+// =============================================================================
 //      DATA TYPE OPERATION
 // =============================================================================
 
@@ -390,6 +438,32 @@ bool AreEqual( DataType* T1, DataType* T2 )
         
         case DataTypes::Enumeration:
             return ((EnumerationType*)T1)->GetDeclaration( false ) == ((EnumerationType*)T2)->GetDeclaration( false );
+        
+        case DataTypes::Function:
+        {
+            FunctionType* F1 = (FunctionType*)T1;
+            FunctionType* F2 = (FunctionType*)T2;
+            
+            if( !AreEqual( F1->ReturnType, F2->ReturnType ) )
+              return false;
+            
+            if( F1->ParameterTypes.size() != F2->ParameterTypes.size() )
+              return false;
+            
+            auto F1Iterator = F1->ParameterTypes.begin();
+            auto F2Iterator = F2->ParameterTypes.begin();
+            
+            while( F1Iterator != F1->ParameterTypes.end() )
+            {
+                if( !AreEqual( *F1Iterator, *F2Iterator ) )
+                  return false;
+                
+                F1Iterator++;
+                F2Iterator++;
+            }
+            
+            return true;
+        }
         
         default:
             throw runtime_error( "invalid data type" );
@@ -437,4 +511,14 @@ bool TypeIsFloat( DataType* T )
       return false;
     
     return ( ((PrimitiveType*)T)->Which == PrimitiveTypes::Float );
+}
+
+// -----------------------------------------------------------------------------
+
+bool TypeIsFunctionPointer( DataType* T )
+{
+    if( T->Type() != DataTypes::Pointer )
+      return false;
+    
+    return ((PointerType*)T)->BaseType->Type() == DataTypes::Function;
 }
