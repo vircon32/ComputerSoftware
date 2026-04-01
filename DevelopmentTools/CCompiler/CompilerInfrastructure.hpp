@@ -34,7 +34,7 @@ extern int CompilationWarnings;
 // general error functions
 void RaiseWarning( SourceLocation Location, const std::string& Description );
 void RaiseError( SourceLocation Location, const std::string& Description );
-void RaiseFatalError( SourceLocation Location, const std::string& Description ) __attribute__((noreturn));
+[[noreturn]] void RaiseFatalError( SourceLocation Location, const std::string& Description );
 
 
 // =============================================================================

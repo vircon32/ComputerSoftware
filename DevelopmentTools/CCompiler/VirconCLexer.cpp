@@ -497,7 +497,7 @@ LiteralValueToken* VirconCLexer::ReadHexInteger()
         NumberWord.AsBinary = stoul( CurrentDigits, nullptr, 16 );
         return NewIntToken( StartLocation, NumberWord.AsInteger );
     }
-    catch( exception& e )
+    catch( exception& )
     {
         RaiseFatalError( ReadLocation, "number out of range for a 32-bit integer" );
     }
@@ -559,7 +559,7 @@ LiteralValueToken* VirconCLexer::ReadNumber()
         {
             return NewIntToken( StartLocation, stoi( DigitsBeforeDot ) );
         }
-        catch( exception& e )
+        catch( exception& )
         {
             RaiseFatalError( ReadLocation, "number out of range for a 32-bit integer" );
         }
@@ -572,7 +572,7 @@ LiteralValueToken* VirconCLexer::ReadNumber()
         {
             return NewFloatToken( StartLocation, stof( DigitsBeforeDot + '.' + DigitsAfterDot ) );
         }
-        catch( exception& e )
+        catch( exception& )
         {
             RaiseFatalError( ReadLocation, "number out of range for a float" );
         }
