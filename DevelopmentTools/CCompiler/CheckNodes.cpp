@@ -28,6 +28,9 @@ void CheckExpression( ExpressionNode* Expression )
         case CNodeTypes::FunctionCall:
             CheckFunctionCall( (FunctionCallNode*)Expression );
             return;
+        case CNodeTypes::IndirectCall:
+            CheckIndirectCall( (IndirectCallNode*)Expression );
+            return;
         case CNodeTypes::ArrayAccess:
             CheckArrayAccess( (ArrayAccessNode*)Expression );
             return;
@@ -193,6 +196,52 @@ void CheckFunctionCall( FunctionCallNode* FunctionCall )
     while( ParameterIterator != FunctionCall->Parameters.end() )
     {
         CheckAssignmentTypes( (*ParameterIterator)->Location, (*ArgumentIterator)->DeclaredType, *ParameterIterator );
+        
+        ParameterIterator++;
+        ArgumentIterator++;
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+void CheckIndirectCall( IndirectCallNode* IndirectCall )
+{
+    // first, recursively check the callee expression and all parameters
+    CheckExpression( IndirectCall->CalleeExpression );
+    
+    for( ExpressionNode* Parameter: IndirectCall->Parameters )
+      CheckExpression( Parameter );
+    
+    // callee must return a pointer to function
+    DataType* CalleeType = IndirectCall->CalleeExpression->ReturnedType;
+    
+    if( !TypeIsFunctionPointer( CalleeType ) )
+    {
+        RaiseError( IndirectCall->Location, "indirect call requires a function pointer as callee, got " + CalleeType->ToString() );
+        return;
+    }
+    
+    FunctionType* Prototype = (FunctionType*)((PointerType*)CalleeType)->BaseType;
+    
+    // check number of parameters
+    int ExpectedParameters = (int)Prototype->ParameterTypes.size();
+    int ReceivedParameters = (int)IndirectCall->Parameters.size();
+    
+    if( ReceivedParameters != ExpectedParameters )
+    {
+        string Message = "indirect call expects " + to_string( ExpectedParameters );
+        Message += " parameters, " + to_string( ReceivedParameters ) + " were received";
+        RaiseError( IndirectCall->Location, Message );
+        return;
+    }
+    
+    // check type compatibility for each parameter
+    auto ParameterIterator = IndirectCall->Parameters.begin();
+    auto ArgumentIterator = Prototype->ParameterTypes.begin();
+    
+    while( ParameterIterator != IndirectCall->Parameters.end() )
+    {
+        CheckAssignmentTypes( (*ParameterIterator)->Location, *ArgumentIterator, *ParameterIterator );
         
         ParameterIterator++;
         ArgumentIterator++;
