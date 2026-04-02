@@ -92,7 +92,12 @@ void CheckBitwiseNot( UnaryOperationNode* Operation )
 
 void CheckReference( UnaryOperationNode* Operation )
 {
-    // reference can only operate with memory
+    // special case: taking the address of a named function is always valid
+    if( Operation->Operand->Type() == CNodeTypes::ExpressionAtom )
+      if( ((ExpressionAtomNode*)Operation->Operand)->AtomType == AtomTypes::Function )
+        return;
+    
+    // for everything else, reference can only operate with memory
     if( !Operation->Operand->HasMemoryPlacement() )
       RaiseError( Operation->Location, "reference can only be applied to a memory address" );
 }
@@ -107,13 +112,19 @@ void CheckDereference( UnaryOperationNode* Operation )
     if( OperandType->Type() != DataTypes::Pointer )
       RaiseError( Operation->Location, "dereference can only be applied to a pointer" );
       
-    // void* pointers cannot be dereferenced
-    // (since that would produce a void value)
     else
     {
         PointerType* OperandPointerType = (PointerType*)OperandType;
         
+        // void* pointers cannot be dereferenced
+        // (since that would produce a void value)
         if( OperandPointerType->BaseType->Type() == DataTypes::Void )
           RaiseError( Operation->Location, "pointers to void cannot be dereferenced" );
+        
+        // function pointers can only be dereferenced when used directly
+        // as the callee of an indirect call, with call syntax (*fp)()
+        else if( OperandPointerType->BaseType->Type() == DataTypes::Function )
+          if( !Operation->Parent || Operation->Parent->Type() != CNodeTypes::IndirectCall )
+            RaiseError( Operation->Location, "function pointers can only be dereferenced when calling them" );
     }        
 }
