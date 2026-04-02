@@ -158,14 +158,15 @@ void CheckExpressionAtom( ExpressionAtomNode* Atom )
       if( !Atom->ResolvedEnumValue )
         RaiseFatalError( Atom->Location, string("enumeration value \"") + Atom->IdentifierName + "\" has not been resolved" );
     
-    // check that any referenced functions have been resolved and fully defined
+    // check that any referenced functions have been resolved
     if( Atom->AtomType == AtomTypes::Function )
     {
         if( !Atom->ResolvedFunction )
           RaiseFatalError( Atom->Location, string("function \"") + Atom->IdentifierName + "\" has not been resolved" );
         
+        // update the resolved function if it was not fully declared on parse
         if( !Atom->ResolvedFunction->HasBody )
-          RaiseError( Atom->Location, string("function \"") + Atom->IdentifierName + "\" has not been fully defined" );
+          Atom->ResolveIdentifier();
     }
     
     // other atom types are always correct

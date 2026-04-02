@@ -727,17 +727,22 @@ DataType* VirconCParser::ParseType( CNode* Parent, CTokenIterator& TokenPosition
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
-    // keep reading pointer and array modifiers
+    // now keep reading type modifiers to make pointers, arrays and functions
     while( (*TokenPosition)->Type() != CTokenTypes::EndOfFile )
     {
-        // read a pointer modifier
+        // read a pointer modifier: Type*
         if( TokenIsThisOperator( *TokenPosition, OperatorTypes::Asterisk ) )
         {
+            // consume '*'
             TokenPosition++;
+            
+            // expand base type into a pointer to that type
+            DataType* OldParsedType = ParsedType;
             ParsedType = new PointerType( ParsedType );
+            delete OldParsedType;
         }
         
-        // read an array modifier
+        // read an array modifier: Type[...]
         else if( TokenIsThisDelimiter( *TokenPosition, DelimiterTypes::OpenBracket ) )
         {
             // array indices are read from left to right, not the
@@ -776,7 +781,71 @@ DataType* VirconCParser::ParseType( CNode* Parent, CTokenIterator& TokenPosition
             // now keep building arrays in the usual order
             // (as if they had been found right to left)
             for( int Dimension: Dimensions )
-              ParsedType = new ArrayType( ParsedType, Dimension );
+            {
+                // expand base type into an array of that type
+                DataType* OldParsedType = ParsedType;
+                ParsedType = new ArrayType( ParsedType, Dimension );
+                delete OldParsedType;
+            }
+        }
+        
+        // read a function modifier: Type(...)
+        else if( TokenIsThisDelimiter( *TokenPosition, DelimiterTypes::OpenParenthesis ) )
+        {
+            // validate the return type before continuing
+            if( ParsedType->Type() == DataTypes::Array )
+              RaiseFatalError( (*TokenPosition)->Location, "invalid type: functions cannot return arrays, only pointers to them" );
+            
+            if( ParsedType->Type() == DataTypes::Function )
+              RaiseFatalError( (*TokenPosition)->Location, "invalid type: functions cannot return other functions, only pointers to them" );
+            
+            // consume '('
+            TokenPosition++;
+            
+            list< DataType* > ParameterTypes;
+            
+            // special case: '(void)' means no parameters
+            if( TokenIsThisKeyword( *TokenPosition, KeywordTypes::Void )
+            &&  TokenIsThisDelimiter( *Next(TokenPosition), DelimiterTypes::CloseParenthesis ) )
+            {
+                // consume 'void'
+                TokenPosition++;
+            }
+            
+            // parse regular parameter lists
+            else while( !IsLastToken( *TokenPosition ) )
+            {
+                // detect end of list
+                if( TokenIsThisDelimiter( *TokenPosition, DelimiterTypes::CloseParenthesis ) )
+                  break;
+                
+                // parse next parameter type
+                if( !ParameterTypes.empty() )
+                  ExpectSpecialSymbol( TokenPosition, SpecialSymbolTypes::Comma );
+                
+                DataType* ParsedParameterType = ParseType( Parent, TokenPosition );
+                ParameterTypes.push_back( ParsedParameterType );
+                
+                // validate this parameter type before continuing
+                if( ParsedParameterType->Type() == DataTypes::Array )
+                  RaiseFatalError( (*TokenPosition)->Location, "invalid type: functions cannot take arrays as parameters, only pointers to them" );
+                
+                if( ParsedParameterType->Type() == DataTypes::Function )
+                  RaiseFatalError( (*TokenPosition)->Location, "invalid type: functions cannot take other functions as parameters, only pointers to them" );
+            }
+            
+            // consume ')'
+            ExpectDelimiter( TokenPosition, DelimiterTypes::CloseParenthesis );
+            
+            // expand base type into a function returning that type
+            DataType* OldParsedType = ParsedType;
+            ParsedType = new FunctionType( ParsedType, ParameterTypes );
+            delete OldParsedType;
+            
+            // function type clones all parameter types, so now
+            // delete the parameter types we used to build it
+            for( DataType* PT: ParameterTypes )
+              delete PT;
         }
         
         else break;
@@ -1554,24 +1623,42 @@ ExpressionNode* VirconCParser::ParseExpression( CNode* Parent, CTokenIterator& T
           PrimaryExpression = ParseEnclosedExpression( Parent, TokenPosition );
     }
     
-    // CASE 3: String literals
+    // CASE 4: String literals
     if( NextToken->Type() == CTokenTypes::LiteralString )
       PrimaryExpression = ParseLiteralString( Parent, TokenPosition );
     
-    // CASE 4: Unary operator
+    // CASE 5: Unary operator
     else if( TokenIsUnaryOperator( NextToken ) )
       PrimaryExpression = ParseUnaryOperation( Parent, TokenPosition );
     
-    // CASE 5: Function call
+    // CASE 6: Function calls
     else if( NextToken->Type() == CTokenTypes::Identifier )
     {
         CToken* FollowingToken = *Next( TokenPosition );
         
         if( TokenIsThisDelimiter( FollowingToken, DelimiterTypes::OpenParenthesis ) )
-          PrimaryExpression = ParseFunctionCall( Parent, TokenPosition );
+        {
+            // Determine whether the identifier name is a function or a variable.
+            string SymbolName = ((IdentifierToken*)NextToken)->Name;
+            ScopeNode* Scope = Parent->FindClosestScope( true );
+            CNode* Declaration = Scope->ResolveIdentifier( SymbolName );
+            bool IsFunction = (Declaration && Declaration->Type() == CNodeTypes::Function);
+            
+            // CASE 6-A: Direct function call
+            if( IsFunction )
+              PrimaryExpression = ParseFunctionCall( Parent, TokenPosition );
+            
+            // CASE 6-B: Indirect call through a pointer
+            else
+            {
+                // Parse the identifier as an atom, then parse the argument list
+                ExpressionAtomNode* CalleeAtom = ParseExpressionAtom( Parent, TokenPosition );
+                PrimaryExpression = ParseIndirectCall( Parent, CalleeAtom, TokenPosition );
+            }
+        }
     }
     
-    // CASE 6: Atom (all other cases)
+    // CASE 7: Atom (all other cases)
     if( !PrimaryExpression )
       PrimaryExpression = ParseExpressionAtom( Parent, TokenPosition );
     
@@ -1627,6 +1714,11 @@ ExpressionNode* VirconCParser::ParseExpression( CNode* Parent, CTokenIterator& T
             PrimaryExpression->Parent = UnaryOperation;
             PrimaryExpression = UnaryOperation;
         }
+        
+        // CASE 6: Indirect call via '(' after a non-identifier primary
+        // expression, like (*fn_ptr)(...) or ptr_array[i](...)
+        else if( TokenIsThisDelimiter( NextToken, DelimiterTypes::OpenParenthesis ) )
+          PrimaryExpression = ParseIndirectCall( Parent, PrimaryExpression, TokenPosition );
         
         else break;
     }
@@ -1703,6 +1795,7 @@ ExpressionAtomNode* VirconCParser::ParseExpressionAtom( CNode* Parent, CTokenIte
             Atom->FloatValue = Literal->FloatValue;
             return Atom;
         }
+        
         // 1-C: Literal boolean
         else
         {
@@ -1751,20 +1844,19 @@ FunctionCallNode* VirconCParser::ParseFunctionCall( CNode* Parent, CTokenIterato
     FunctionCall->FunctionName = ExpectIdentifier( TokenPosition );
     TokenPosition++;
     
+    // parse the parameter list
     while( !IsLastToken( *TokenPosition ) )
     {
         CToken* NextToken = *TokenPosition;
         
-        // keep adding parameters until
-        // we find a closing parenthesis
+        // keep adding parameters until we find a closing parenthesis
         if( TokenIsThisDelimiter( NextToken, DelimiterTypes::CloseParenthesis ) )
         {
             TokenPosition++;
             break;
         }
         
-        // if this is not the first parameter,
-        // expect a comma as separation
+        // if this is not the first parameter, expect a comma as separation
         if( !FunctionCall->Parameters.empty() )
           ExpectSpecialSymbol( TokenPosition, SpecialSymbolTypes::Comma );
         
@@ -1779,6 +1871,49 @@ FunctionCallNode* VirconCParser::ParseFunctionCall( CNode* Parent, CTokenIterato
     FunctionCall->AllocateCallSpace();
     
     return FunctionCall;
+}
+
+// -----------------------------------------------------------------------------
+
+IndirectCallNode* VirconCParser::ParseIndirectCall( CNode* Parent, ExpressionNode* Callee, CTokenIterator& TokenPosition )
+{
+    IndirectCallNode* IndirectCall = new IndirectCallNode( Parent );
+    IndirectCall->Location = (*TokenPosition)->Location;
+    
+    // take ownership of the callee expression
+    IndirectCall->CalleeExpression = Callee;
+    Callee->Parent = IndirectCall;
+    
+    // here we already know '(' is next; consume it
+    TokenPosition++;
+    
+    // parse the parameter list
+    while( !IsLastToken( *TokenPosition ) )
+    {
+        CToken* NextToken = *TokenPosition;
+        
+        // keep adding parameters until we find a closing parenthesis
+        if( TokenIsThisDelimiter( NextToken, DelimiterTypes::CloseParenthesis ) )
+        {
+            TokenPosition++;
+            break;
+        }
+        
+        // if this is not the first parameter, expect a comma as separation
+        if( !IndirectCall->Parameters.empty() )
+          ExpectSpecialSymbol( TokenPosition, SpecialSymbolTypes::Comma );
+        
+        // expect an expression as next parameter
+        IndirectCall->Parameters.push_back( ParseExpression( Parent, TokenPosition ) );
+    }
+    
+    // determine types now so AllocateCallSpace can use them
+    IndirectCall->CalleeExpression->DetermineReturnedType();
+    
+    // allocate call space in the containing stack frame
+    IndirectCall->AllocateCallSpace();
+    
+    return IndirectCall;
 }
 
 // -----------------------------------------------------------------------------
@@ -2133,9 +2268,6 @@ void VirconCParser::ParseTopLevel( CTokenList& Tokens_ )
             
             if( IT->Name == "const" )
               RaiseFatalError( NextToken->Location, "const variables are not supported in this compiler" );
-            
-            if( IT->Name == "enum" )
-              RaiseFatalError( NextToken->Location, "enumerations are not supported in this compiler" );
         }
         
         // any other cases are not valid
