@@ -90,6 +90,7 @@ string NodeTypeToLabel( CNodeTypes Type )
         case CNodeTypes::AssemblyBlock:         return "assembly_block";
         case CNodeTypes::ExpressionAtom:        return "expression_atom";
         case CNodeTypes::FunctionCall:          return "function_call";
+        case CNodeTypes::IndirectCall:          return "indirect_call";
         case CNodeTypes::ArrayAccess:           return "array_access";
         case CNodeTypes::UnaryOperation:        return "unary_operation";
         case CNodeTypes::BinaryOperation:       return "binary_operation";
@@ -1774,6 +1775,7 @@ ExpressionAtomNode::ExpressionAtomNode( CNode* Parent_ )
 {
     ResolvedVariable = nullptr;
     ResolvedEnumValue = nullptr;
+    ResolvedFunction = nullptr;
 }
 
 // -----------------------------------------------------------------------------
@@ -1791,6 +1793,7 @@ string ExpressionAtomNode::ToXML()
     
     return IdentifierName;
 }
+
 
 // -----------------------------------------------------------------------------
 
@@ -1820,6 +1823,14 @@ void ExpressionAtomNode::ResolveIdentifier()
     {
         AtomType = AtomTypes::EnumValue;
         ResolvedEnumValue = (EnumValueNode*)Declaration;
+        return;
+    }
+    
+    // is it a function name used as a value (for function pointers)?
+    else if( Declaration->Type() == CNodeTypes::Function )
+    {
+        AtomType = AtomTypes::Function;
+        ResolvedFunction = (FunctionNode*)Declaration;
         return;
     }
     
@@ -1866,6 +1877,22 @@ void ExpressionAtomNode::DetermineReturnedType()
             return;
         }
         
+        case AtomTypes::Function:
+        {
+            if( !ResolvedFunction )
+              RaiseFatalError( Location, "to get a function type, it needs to be resolved" );
+            
+            // build a FunctionType from the resolved function's prototype
+            list< DataType* > ParamTypes;
+            
+            for( VariableNode* Arg: ResolvedFunction->Arguments )
+              ParamTypes.push_back( Arg->DeclaredType );
+            
+            FunctionType FnType( ResolvedFunction->ReturnType, ParamTypes );
+            ReturnedType = FnType.Clone();
+            return;
+        }
+        
         default:
             RaiseFatalError( Location, "invalid expression atom type" );
     }
@@ -1875,7 +1902,7 @@ void ExpressionAtomNode::DetermineReturnedType()
 
 bool ExpressionAtomNode::IsStatic()
 {
-    return (AtomType != AtomTypes::Variable);
+    return (AtomType != AtomTypes::Variable && AtomType != AtomTypes::Function);
 }
 
 // -----------------------------------------------------------------------------
@@ -2019,8 +2046,8 @@ void FunctionCallNode::DetermineReturnedType()
     if( ReturnedType ) return;
     
     // first, recursively determine all children
-    for( ExpressionNode* Parameter: Parameters )
-      Parameter->DetermineReturnedType();
+    for( ExpressionNode* P: Parameters )
+      P->DetermineReturnedType();
     
     // now go to the referenced function
     if( !ResolvedFunction )
@@ -2115,7 +2142,7 @@ void FunctionCallNode::AllocateCallSpace()
     // find the needed size for this call
     int SizeForThisCall = ResolvedFunction->Arguments.size();
     
-    // find its parent function, if any
+    // find parent stack frame
     CNode* CurrentParent = Parent;
     
     while( CurrentParent )
@@ -2146,9 +2173,210 @@ void FunctionCallNode::AllocateCallSpace()
         
         CurrentParent = CurrentParent->Parent;
     }
+}
+
+
+// =============================================================================
+//      INDIRECT CALL NODE
+// =============================================================================
+
+
+IndirectCallNode::IndirectCallNode( CNode* Parent_ )
+// - - - - - - - - - - - - - - - - - -
+:   ExpressionNode( Parent_ )
+// - - - - - - - - - - - - - - - - - -
+{
+    CalleeExpression = nullptr;
+}
+
+// -----------------------------------------------------------------------------
+
+IndirectCallNode::~IndirectCallNode()
+{
+    delete CalleeExpression;
     
-    // for calls made in the global scope, do nothing
-    // (the emitter will allocate them)
+    for( auto P: Parameters )
+      delete P;
+}
+
+// -----------------------------------------------------------------------------
+
+string IndirectCallNode::ToXML()
+{
+    string Result = "<indirect-call>";
+    Result += XMLBlock( "callee", CalleeExpression->ToXML() );
+    
+    for( ExpressionNode* P: Parameters )
+      Result += XMLBlock( "parameter", P->ToXML() );
+    
+    return Result + "</indirect-call>";
+}
+
+// -----------------------------------------------------------------------------
+
+void IndirectCallNode::DetermineReturnedType()
+{
+    // don't create types twice
+    if( ReturnedType ) return;
+    
+    // first, recursively determine all children
+    CalleeExpression->DetermineReturnedType();
+    
+    for( ExpressionNode* P: Parameters )
+      P->DetermineReturnedType();
+    
+    // callee must be a function pointer, or a bare function type
+    // produced by dereferencing a function pointer: (*fp)()
+    DataType* CalleeType = CalleeExpression->ReturnedType;
+    FunctionType* Prototype = nullptr;
+    
+    if( TypeIsFunctionPointer( CalleeType ) )
+        Prototype = (FunctionType*)((PointerType*)CalleeType)->BaseType;
+    
+    else if( CalleeType->Type() == DataTypes::Function )
+        Prototype = (FunctionType*)CalleeType;
+    
+    else
+      RaiseFatalError( Location, "indirect call callee must be a function pointer" );
+    
+    ReturnedType = Prototype->ReturnType->Clone();
+}
+
+// -----------------------------------------------------------------------------
+
+bool IndirectCallNode::IsStatic()
+{
+    // functions always have to be called
+    return false;
+}
+
+// -----------------------------------------------------------------------------
+
+StaticValue IndirectCallNode::GetStaticValue()
+{
+    RaiseFatalError( Location, "cannot get the static value of a non-static expression" );
+}
+
+// -----------------------------------------------------------------------------
+
+bool IndirectCallNode::HasSideEffects()
+{
+    // all function calls must be executed,
+    // even if they have no actual side effects
+    return true;
+}
+
+// -----------------------------------------------------------------------------
+
+bool IndirectCallNode::HasMemoryPlacement()
+{
+    return false;
+}
+
+// -----------------------------------------------------------------------------
+
+bool IndirectCallNode::HasStaticPlacement()
+{
+    // even if a function produces a pointer type, it is
+    // still a dynamic value (it cannot return references)
+    return false;
+}
+
+// -----------------------------------------------------------------------------
+
+MemoryPlacement IndirectCallNode::GetStaticPlacement()
+{
+    RaiseFatalError( Location, "indirect call has no static memory placement" );
+}
+
+// -----------------------------------------------------------------------------
+
+bool IndirectCallNode::UsesFunctionCalls()
+{
+    return true;
+}
+
+// -----------------------------------------------------------------------------
+
+int IndirectCallNode::SizeOfNeededTemporaries()
+{
+    int NeededSize = 0;
+    int NestedCallsMaxNeededSize = 0;
+    
+    for( ExpressionNode* P: Parameters )
+    {
+        // every call as a parameter needs 1 temporary
+        if( P->UsesFunctionCalls() )
+          NeededSize += 1;
+        
+        // this parameter call may need temporaries as well
+        int NestedCallNeededSize = P->SizeOfNeededTemporaries();
+        
+        if( NestedCallsMaxNeededSize < NestedCallNeededSize )
+          NestedCallsMaxNeededSize = NestedCallNeededSize;
+    }
+    
+    // calls are made sequentially, so the needed
+    // temporaries are only the largest of these
+    int CallNeededSize = max( NeededSize, NestedCallsMaxNeededSize );
+    
+    // we might also need temporaries to evaluate the callee
+    int CalleeNeededSize = CalleeExpression->SizeOfNeededTemporaries();
+    
+    // we first evaluate callee, then make the call, so
+    // needed temporaries are just the largest of the 2
+    return max( CallNeededSize, CalleeNeededSize );
+}
+
+// -----------------------------------------------------------------------------
+
+void IndirectCallNode::AllocateCallSpace()
+{
+    // access the callee function signature
+    // (callee may be a pointer-to-function or a bare function type from *fp)
+    DataType* CalleeType = CalleeExpression->ReturnedType;
+    FunctionType* Prototype = nullptr;
+    
+    if( TypeIsFunctionPointer( CalleeType ) )
+      Prototype = (FunctionType*)((PointerType*)CalleeType)->BaseType;
+    
+    else
+      Prototype = (FunctionType*)CalleeType;
+    
+    // find the needed size for this call
+    int SizeForThisCall = (int)Prototype->ParameterTypes.size();
+    
+    // find parent stack frame
+    CNode* CurrentParent = Parent;
+    
+    while( CurrentParent )
+    {
+        // CASE 1: call in function stack
+        if( CurrentParent->Type() == CNodeTypes::Function )
+        {
+            FunctionNode* FunctionContext = (FunctionNode*)CurrentParent;
+            
+            // allocate function call
+            if( FunctionContext->StackSizeForFunctionCalls < SizeForThisCall )
+              FunctionContext->StackSizeForFunctionCalls = SizeForThisCall;
+            
+            return;
+        }
+        
+        // CASE 2: call in top-level stack
+        if( CurrentParent->Type() == CNodeTypes::TopLevel )
+        {
+            TopLevelNode* TopLevel = (TopLevelNode*)CurrentParent;
+            
+            // allocate function call
+            if( TopLevel->StackSizeForFunctionCalls < SizeForThisCall )
+              TopLevel->StackSizeForFunctionCalls = SizeForThisCall;
+            
+            return;
+        }
+        
+        CurrentParent = CurrentParent->Parent;
+    }
 }
 
 

@@ -64,6 +64,7 @@ enum class CNodeTypes
     // expressions
     ExpressionAtom,
     FunctionCall,
+    IndirectCall,
     ArrayAccess,
     UnaryOperation,
     BinaryOperation,
@@ -83,7 +84,8 @@ enum class AtomTypes
     LiteralFloat,
     LiteralBoolean,
     EnumValue,
-    Variable
+    Variable,
+    Function
 };
 
 // -----------------------------------------------------------------------------
@@ -1097,6 +1099,7 @@ class ExpressionAtomNode: public ExpressionNode
         // external references
         EnumValueNode* ResolvedEnumValue;
         VariableNode* ResolvedVariable;
+        FunctionNode* ResolvedFunction;
         
     public:
         
@@ -1155,6 +1158,45 @@ class FunctionCallNode: public ExpressionNode
         
         // resolve external references
         void ResolveFunction();
+        
+        // resulting value
+        virtual bool IsStatic();
+        virtual StaticValue GetStaticValue();
+        virtual void DetermineReturnedType();
+        virtual bool HasSideEffects();
+        
+        // resulting memory address
+        virtual bool HasMemoryPlacement();
+        virtual bool HasStaticPlacement();
+        virtual MemoryPlacement GetStaticPlacement();
+        
+        // resource allocation
+        virtual bool UsesFunctionCalls();
+        virtual int SizeOfNeededTemporaries();
+        void AllocateCallSpace();
+};
+
+// -----------------------------------------------------------------------------
+
+class IndirectCallNode: public ExpressionNode
+{
+    public:
+        
+        // node components
+        ExpressionNode* CalleeExpression;
+        std::list< ExpressionNode* > Parameters;
+        
+    public:
+        
+        // instance handling
+        IndirectCallNode( CNode* Parent_ );
+        virtual ~IndirectCallNode();
+        
+        // node classification
+        virtual CNodeTypes Type() { return CNodeTypes::IndirectCall; };
+        
+        // log & debug
+        virtual std::string ToXML();
         
         // resulting value
         virtual bool IsStatic();
