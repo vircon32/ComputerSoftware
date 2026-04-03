@@ -343,8 +343,25 @@ void VirconCEmitter::EmitBitwiseNot( UnaryOperationNode* UnaryOperation, Registe
 
 void VirconCEmitter::EmitReference( UnaryOperationNode* UnaryOperation, RegisterAllocation& Registers, int ResultRegister )
 {
+    // special case: taking the address of a named function emits its label;
+    // we do this here directly instead of calling EmitExpressionAtom because
+    // the only valid use of a function other than being called is being
+    // referenced, so if it is used in some other way it will raise an error    
+    if( UnaryOperation->Operand->Type() == CNodeTypes::ExpressionAtom )
+    {
+        ExpressionAtomNode* Atom = (ExpressionAtomNode*)UnaryOperation->Operand;
+        
+        if( Atom->AtomType == AtomTypes::Function )
+        {
+            string ResultRegisterName = "R" + to_string(ResultRegister);
+            string FunctionLabel = "__function_" + Atom->ResolvedFunction->Name;
+            ProgramLines.push_back( "mov " + ResultRegisterName + ", " + FunctionLabel );
+            return;
+        }
+    }
+    
     // if the operand has side effects, first evaluate it!
-    // if we only take its placement, the sife effects are lost
+    // if we only take its placement, the side effects are lost
     if( UnaryOperation->Operand->HasSideEffects() )
     {
         int TempRegister = Registers.FirstFreeRegister();
