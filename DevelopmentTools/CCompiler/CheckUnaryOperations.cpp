@@ -124,7 +124,22 @@ void CheckDereference( UnaryOperationNode* Operation )
         // function pointers can only be dereferenced when used directly
         // as the callee of an indirect call, with call syntax (*fp)()
         else if( OperandPointerType->BaseType->Type() == DataTypes::Function )
-          if( !Operation->Parent || Operation->Parent->Type() != CNodeTypes::IndirectCall )
+        {
+            CNode* CurrentNode = Operation;
+            
+            while( CurrentNode->Parent && CurrentNode->Parent->IsExpression() )
+            {
+                if( CurrentNode->Parent->Type() == CNodeTypes::IndirectCall )
+                  return;
+                
+                // there could be any number of parenthesis, but nothing else
+                if( CurrentNode->Parent->Type() == CNodeTypes::EnclosedExpression )
+                  CurrentNode = CurrentNode->Parent;
+                
+                else break;
+            }
+            
             RaiseError( Operation->Location, "function pointers can only be dereferenced when calling them" );
+        }
     }        
 }

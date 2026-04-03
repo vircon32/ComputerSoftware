@@ -380,7 +380,16 @@ void VirconCEmitter::EmitDereference( UnaryOperationNode* UnaryOperation, Regist
     // place operand value in result
     EmitDependentExpression( UnaryOperation->Operand, Registers, ResultRegister );
     
-    // obtain value from memory taking previous value as an address
+    // special case: dereferencing a function pointer is actually
+    // just syntactic sugar; indirect calls use the pointer itself,
+    // not the value at that address, so in that case do nothing else
+    DataType* OperandType = UnaryOperation->Operand->ReturnedType;
+    
+    if( OperandType->Type() == DataTypes::Pointer )
+      if( ((PointerType*)OperandType)->BaseType->Type() == DataTypes::Function )
+        return;
+    
+    // for other cases, obtain value from memory taking previous value as an address
     string ResultRegisterName = "R" + to_string(ResultRegister);
     ProgramLines.push_back( "mov " + ResultRegisterName + ", [" + ResultRegisterName + "]" );
 }
