@@ -74,6 +74,7 @@ class VirconCEmitter
         // (sizeof is not needed: it is always static)
         void EmitExpressionAtom     ( ExpressionAtomNode* ExpressionAtom          , RegisterAllocation& Registers, int ResultRegister );
         void EmitFunctionCall       ( FunctionCallNode* FunctionCall              , RegisterAllocation& Registers, int ResultRegister );
+        void EmitIndirectCall       ( IndirectCallNode* IndirectCall              , RegisterAllocation& Registers, int ResultRegister );
         void EmitArrayAccess        ( ArrayAccessNode* ArrayAccess                , RegisterAllocation& Registers, int ResultRegister );
         void EmitUnaryOperation     ( UnaryOperationNode* UnaryOperation          , RegisterAllocation& Registers, int ResultRegister );
         void EmitBinaryOperation    ( BinaryOperationNode* BinaryOperation        , RegisterAllocation& Registers, int ResultRegister );

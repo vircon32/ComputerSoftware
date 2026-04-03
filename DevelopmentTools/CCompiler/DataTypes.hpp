@@ -22,7 +22,8 @@ enum class DataTypes
     Array,
     Structure,
     Union,
-    Enumeration
+    Enumeration,
+    Function
 };
 
 // -----------------------------------------------------------------------------
@@ -247,6 +248,33 @@ class EnumerationType: public DataType
 };
 
 
+// -----------------------------------------------------------------------------
+
+// represents a function signature: return type + parameter types;
+// its size is 0 so that it cannot be evaluated or stored directly
+class FunctionType: public DataType
+{
+    public:
+        
+        DataType* ReturnType;
+        std::list< DataType* > ParameterTypes;
+        
+    public:
+        
+        // instance handling
+        FunctionType( DataType* ReturnType_, std::list< DataType* > ParameterTypes_ );
+        virtual ~FunctionType();
+        
+        // basic properties
+        virtual DataTypes Type() { return DataTypes::Function; }
+        virtual unsigned SizeInWords() { return 0; }
+        virtual std::string ToString();
+        
+        // basic manipulation
+        virtual DataType* Clone();
+};
+
+
 // =============================================================================
 //      DATA TYPE OPERATION
 // =============================================================================
@@ -257,6 +285,7 @@ bool TypeIsThisPrimitive( DataType* T, PrimitiveTypes Primitive );
 bool TypeIsIntegral( DataType* T );
 bool TypeIsNumeric( DataType* T );
 bool TypeIsFloat( DataType* T );
+bool TypeIsFunctionPointer( DataType* T );
 
 
 // *****************************************************************************

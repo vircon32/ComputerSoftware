@@ -146,8 +146,10 @@ int VirconCEmitter::EmitRootExpression( ExpressionNode* Expression )
     // nothing to do if they are not used
     if( !Expression ) return 0;
     
-    // determine if a register other than R0 should be used
+    // determine if register R0 is used internally; then we
+    // should reserve another register to protect its contents
     bool ProtectR0 = (Expression->Type() != CNodeTypes::FunctionCall)
+                  && (Expression->Type() != CNodeTypes::IndirectCall)
                   && Expression->UsesFunctionCalls();
     
     // now begin evaluation of a new expression tree
@@ -211,6 +213,10 @@ void VirconCEmitter::EmitDependentExpression( ExpressionNode* Expression, Regist
             
         case CNodeTypes::FunctionCall:
             EmitFunctionCall( (FunctionCallNode*)Expression, Registers, ResultRegister );
+            break;
+            
+        case CNodeTypes::IndirectCall:
+            EmitIndirectCall( (IndirectCallNode*)Expression, Registers, ResultRegister );
             break;
             
         case CNodeTypes::ArrayAccess:

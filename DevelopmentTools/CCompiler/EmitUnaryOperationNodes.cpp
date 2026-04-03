@@ -343,8 +343,25 @@ void VirconCEmitter::EmitBitwiseNot( UnaryOperationNode* UnaryOperation, Registe
 
 void VirconCEmitter::EmitReference( UnaryOperationNode* UnaryOperation, RegisterAllocation& Registers, int ResultRegister )
 {
+    // special case: taking the address of a named function emits its label;
+    // we do this here directly instead of calling EmitExpressionAtom because
+    // the only valid use of a function other than being called is being
+    // referenced, so if it is used in some other way it will raise an error    
+    if( UnaryOperation->Operand->Type() == CNodeTypes::ExpressionAtom )
+    {
+        ExpressionAtomNode* Atom = (ExpressionAtomNode*)UnaryOperation->Operand;
+        
+        if( Atom->AtomType == AtomTypes::Function )
+        {
+            string ResultRegisterName = "R" + to_string(ResultRegister);
+            string FunctionLabel = "__function_" + Atom->ResolvedFunction->Name;
+            ProgramLines.push_back( "mov " + ResultRegisterName + ", " + FunctionLabel );
+            return;
+        }
+    }
+    
     // if the operand has side effects, first evaluate it!
-    // if we only take its placement, the sife effects are lost
+    // if we only take its placement, the side effects are lost
     if( UnaryOperation->Operand->HasSideEffects() )
     {
         int TempRegister = Registers.FirstFreeRegister();
@@ -363,7 +380,16 @@ void VirconCEmitter::EmitDereference( UnaryOperationNode* UnaryOperation, Regist
     // place operand value in result
     EmitDependentExpression( UnaryOperation->Operand, Registers, ResultRegister );
     
-    // obtain value from memory taking previous value as an address
+    // special case: dereferencing a function pointer is actually
+    // just syntactic sugar; indirect calls use the pointer itself,
+    // not the value at that address, so in that case do nothing else
+    DataType* OperandType = UnaryOperation->Operand->ReturnedType;
+    
+    if( OperandType->Type() == DataTypes::Pointer )
+      if( ((PointerType*)OperandType)->BaseType->Type() == DataTypes::Function )
+        return;
+    
+    // for other cases, obtain value from memory taking previous value as an address
     string ResultRegisterName = "R" + to_string(ResultRegister);
     ProgramLines.push_back( "mov " + ResultRegisterName + ", [" + ResultRegisterName + "]" );
 }
