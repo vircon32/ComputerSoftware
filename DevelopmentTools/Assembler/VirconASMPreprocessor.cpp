@@ -110,6 +110,9 @@ void VirconASMPreprocessor::EmitError( SourceLocation Location, const string& De
 
 void VirconASMPreprocessor::EmitWarning( SourceLocation Location, const string& Description )
 {
+    // ignore warning when needed
+    if( DisableWarnings ) return;
+    
     cerr << Location.FilePath << ':' << Location.Line;
     cerr << ": preprocessor warning: " << Description << endl;
 }

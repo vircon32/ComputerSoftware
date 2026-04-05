@@ -16,6 +16,7 @@
 // debug configuration (for the assembler itself)
 extern bool DebugMode;
 extern bool VerboseMode;
+extern bool DisableWarnings;
 
 // assembler configuration (for the generated binary)
 extern std::string AssemblerFolder;

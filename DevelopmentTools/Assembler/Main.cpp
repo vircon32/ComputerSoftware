@@ -52,6 +52,7 @@ void PrintUsage()
     cout << "  -o <file>    Output file, default name is the same as input" << endl;
     cout << "  -b           Assembles the code as a BIOS" << endl;
     cout << "  -v           Displays additional information (verbose)" << endl;
+    cout << "  -w           Inhibit all warnings" << endl;
     cout << "  -g <ref>     Outputs an additional file with debug info" << endl;
     cout << "The possible reference modes for -g are the following:" << endl;
     cout << "  program --> '-g' addresses in words relative to program start" << endl;
@@ -155,6 +156,12 @@ int main( int NumberOfArguments, char* Arguments[] )
             if( ArgumentsUTF8[i] == string("-v") )
             {
                 VerboseMode = true;
+                continue;
+            }
+            
+            if( ArgumentsUTF8[i] == string("-w") )
+            {
+                DisableWarnings = true;
                 continue;
             }
             

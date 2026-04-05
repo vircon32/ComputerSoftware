@@ -125,6 +125,9 @@ void VirconASMEmitter::EmitError( SourceLocation Location, const string& Descrip
 
 void VirconASMEmitter::EmitWarning( SourceLocation Location, const string& Description )
 {
+    // ignore warning when needed
+    if( DisableWarnings ) return;
+    
     cerr << Location.FilePath << ':' << Location.Line;
     cerr << ": emitter warning: " << Description << endl;
 }

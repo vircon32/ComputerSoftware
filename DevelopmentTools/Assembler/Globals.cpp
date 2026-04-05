@@ -19,6 +19,7 @@
 // debug configuration (for the assembler itself)
 bool DebugMode = false;
 bool VerboseMode = false;
+bool DisableWarnings = false;
 
 // assembler configuration (for the generated binary)
 string AssemblerFolder;

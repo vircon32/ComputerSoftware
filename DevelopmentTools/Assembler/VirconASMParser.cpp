@@ -1,6 +1,7 @@
 // *****************************************************************************
     // include project headers
     #include "VirconASMParser.hpp"
+    #include "Globals.hpp"
     
     // include C/C++ headers
     #include <iostream>         // [ C++ STL ] I/O Streams
@@ -43,6 +44,9 @@ void VirconASMParser::EmitError( SourceLocation Location, const string& Descript
 
 void VirconASMParser::EmitWarning( SourceLocation Location, const string& Description )
 {
+    // ignore warning when needed
+    if( DisableWarnings ) return;
+    
     cerr << Location.FilePath << ':' << Location.Line;
     cerr << ": parser warning: " << Description << endl;
 }
