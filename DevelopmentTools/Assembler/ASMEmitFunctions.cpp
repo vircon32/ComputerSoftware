@@ -617,13 +617,26 @@ void EmitIN( VirconASMEmitter &Emitter, InstructionNode& Node )
     if( Operand1.IsMemoryAddress || Operand1.Base.Type != BasicValueTypes::CPURegister )
       Emitter.EmitError( Node.Location, OpCodeName + " first operand cannot be from memory" );
     
-    // operand 2 must be an I/O port
-    if( Operand2.IsMemoryAddress || Operand2.Base.Type != BasicValueTypes::IOPort )
-      Emitter.EmitError( Node.Location, OpCodeName + " second operand must be an I/O port" );
+    // CASE 1: operand 2 is an I/O port (preferred)
+    if( !Operand2.IsMemoryAddress && Operand2.Base.Type == BasicValueTypes::IOPort )
+      InstructionWord.AsInstruction.PortNumber = (int)Operand2.Base.PortField;
     
-    // emit the instruction
+    // CASE 2: operand 2 is an integer (discouraged)
+    else if( !Operand2.IsMemoryAddress && Operand2.Base.Type == BasicValueTypes::LiteralInteger )
+    {
+        // accept the integer but show a warning
+        Emitter.EmitWarning( Node.Location, OpCodeName + " second operand should be an I/O port" );
+        
+        // the number will need to be truncated to 14 bits, which is
+        // the available space in the port field of an instruction
+        InstructionWord.AsInstruction.PortNumber = Operand2.Base.IntegerField & 0x3FFF;
+    }
+    
+    // any other data is not accepted for the second operand
+    else Emitter.EmitError( Node.Location, OpCodeName + " second operand must be an I/O port (preferred) or an integer" );
+    
+    // now emit the instruction
     InstructionWord.AsInstruction.Register1 = (int)Operand1.Base.RegisterField;
-    InstructionWord.AsInstruction.PortNumber = (int)Operand2.Base.PortField;
     Emitter.ROM.push_back( InstructionWord );
 }
 
@@ -641,9 +654,29 @@ void EmitOUT( VirconASMEmitter &Emitter, InstructionNode& Node )
     InstructionOperand Operand1 = Node.Operands[ 0 ];
     InstructionOperand Operand2 = Node.Operands[ 1 ];
     
-    // operand 1 must be an I/O port
-    if( Operand1.IsMemoryAddress || Operand1.Base.Type != BasicValueTypes::IOPort )
-      Emitter.EmitError( Node.Location, OpCodeName + " first operand must be an I/O port" );
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Treatment of operand 1
+    
+    // CASE 1: operand 1 is an I/O port (preferred)
+    if( !Operand1.IsMemoryAddress && Operand1.Base.Type == BasicValueTypes::IOPort )
+      InstructionWord.AsInstruction.PortNumber = (int)Operand1.Base.PortField;
+    
+    // CASE 2: operand 1 is an integer (discouraged)
+    else if( !Operand1.IsMemoryAddress && Operand1.Base.Type == BasicValueTypes::LiteralInteger )
+    {
+        // accept the integer but show a warning
+        Emitter.EmitWarning( Node.Location, OpCodeName + " first operand should be an I/O port" );
+        
+        // the number will need to be truncated to 14 bits, which is
+        // the available space in the port field of an instruction
+        InstructionWord.AsInstruction.PortNumber = Operand1.Base.IntegerField & 0x3FFF;
+    }
+    
+    // any other data is not accepted for the first operand
+    else Emitter.EmitError( Node.Location, OpCodeName + " first operand must be an I/O port (preferred) or an integer" );
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Treatment of operand 2
     
     // operand 2 cannot be a memory address
     if( Operand2.IsMemoryAddress )
@@ -652,7 +685,6 @@ void EmitOUT( VirconASMEmitter &Emitter, InstructionNode& Node )
     // CASE 1: operand 2 is a literal integer
     if( Operand2.Base.Type == BasicValueTypes::LiteralInteger )
     {
-        InstructionWord.AsInstruction.PortNumber = (int)Operand1.Base.PortField;
         InstructionWord.AsInstruction.UsesImmediate = 1;
         ImmediateWord.AsInteger = Operand2.Base.IntegerField;
         Emitter.ROM.push_back( InstructionWord );
@@ -662,7 +694,6 @@ void EmitOUT( VirconASMEmitter &Emitter, InstructionNode& Node )
     // CASE 2: operand 2 is a literal float
     else if( Operand2.Base.Type == BasicValueTypes::LiteralFloat )
     {
-        InstructionWord.AsInstruction.PortNumber = (int)Operand1.Base.PortField;
         InstructionWord.AsInstruction.UsesImmediate = 1;
         ImmediateWord.AsFloat = Operand2.Base.FloatField;
         Emitter.ROM.push_back( InstructionWord );
@@ -672,7 +703,6 @@ void EmitOUT( VirconASMEmitter &Emitter, InstructionNode& Node )
     // CASE 3: operand 2 is a predefined port value
     else if( Operand2.Base.Type == BasicValueTypes::IOPortValue )
     {
-        InstructionWord.AsInstruction.PortNumber = (int)Operand1.Base.PortField;
         InstructionWord.AsInstruction.UsesImmediate = 1;
         ImmediateWord.AsInteger = (int)Operand2.Base.PortValueField;
         Emitter.ROM.push_back( InstructionWord );
@@ -682,13 +712,12 @@ void EmitOUT( VirconASMEmitter &Emitter, InstructionNode& Node )
     // CASE 4: operand 2 is a register
     else if( Operand2.Base.Type == BasicValueTypes::CPURegister )
     {
-        InstructionWord.AsInstruction.PortNumber = (int)Operand1.Base.PortField;
         InstructionWord.AsInstruction.Register2 = (int)Operand2.Base.RegisterField;
         Emitter.ROM.push_back( InstructionWord );
     }
     
-    else
-      Emitter.EmitError( Node.Location, OpCodeName + " second operand must be a register or a literal (port value/integer/float)" );
+    // any other data is not accepted for the second operand
+    else Emitter.EmitError( Node.Location, OpCodeName + " second operand must be a register or a literal (port value/integer/float)" );
 }
 
 // -----------------------------------------------------------------------------
