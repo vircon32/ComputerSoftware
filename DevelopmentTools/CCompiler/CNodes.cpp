@@ -258,6 +258,10 @@ void ScopeNode::DeclareNewIdentifier( string Name, CNode* NewDeclaration )
             RaiseError( NewDeclaration->Location, "identifier \"" + Name + "\" was already declared" );
             RaiseFatalError( Pair->second->Location, "previously declared here, with a different prototype" );
         }
+        
+        // carry over reference flags to new declarations
+        if( OldFunction->IsReferenced )
+          NewFunction->IsReferenced = true;
     }
     
     // for variable declarations we require that their types match
@@ -271,6 +275,10 @@ void ScopeNode::DeclareNewIdentifier( string Name, CNode* NewDeclaration )
             RaiseError( NewDeclaration->Location, "variable \"" + Name + "\" was already declared with a different type" );
             RaiseFatalError( Pair->second->Location, "previously declared here" );
         }
+        
+        // carry over reference flags to new declarations
+        if( OldVariable->IsReferenced )
+          NewVariable->IsReferenced = true;
     }
     
     // we may repeat a partial definition multiple times
@@ -703,6 +711,7 @@ FunctionNode::FunctionNode( CNode* Parent_ )
     ReturnType = nullptr;
     SizeOfArguments = 0;
     HasBody = false;
+    IsReferenced = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -1815,7 +1824,7 @@ void ExpressionAtomNode::ResolveIdentifier()
         
         // mark the variable as used
         ResolvedVariable->IsReferenced = true;  
-        return;  
+        return;
     }
     
     // is it an enumeration value?
@@ -1826,11 +1835,14 @@ void ExpressionAtomNode::ResolveIdentifier()
         return;
     }
     
-    // is it a function name used as a value (for function pointers)?
+    // is it a function name used as a value? (for function pointers)
     else if( Declaration->Type() == CNodeTypes::Function )
     {
         AtomType = AtomTypes::Function;
         ResolvedFunction = (FunctionNode*)Declaration;
+        
+        // mark the function as used
+        ResolvedFunction->IsReferenced = true;  
         return;
     }
     
@@ -2036,6 +2048,9 @@ void FunctionCallNode::ResolveFunction()
     
     // resolve the function
     ResolvedFunction = (FunctionNode*)Declaration;
+    
+    // mark the function as used
+    ResolvedFunction->IsReferenced = true;  
 }
 
 // -----------------------------------------------------------------------------

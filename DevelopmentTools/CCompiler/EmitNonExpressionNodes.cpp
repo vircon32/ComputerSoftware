@@ -94,8 +94,13 @@ int VirconCEmitter::EmitVariable( VariableNode* Variable )
 int VirconCEmitter::EmitFunction( FunctionNode* Function )
 {
     // emit only if it is a full definition
-    if( !Function->HasBody )
-      return 0;
+    if( !Function->HasBody ) return 0;
+    
+    // emit only functions that the code actually uses
+    // (careful, main function is usually not referenced!)
+    if( !Function->IsReferenced )
+      if( Function->Name != "main" )
+        return 0;
     
     // add info to determine line correspondence
     AddDebugInfo( Function );

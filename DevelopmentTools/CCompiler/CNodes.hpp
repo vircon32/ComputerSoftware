@@ -446,6 +446,9 @@ class FunctionNode: public StackFrameNode
         // allocation of function stack frame
         int SizeOfArguments;            // fixed size
         
+        // external references
+        bool IsReferenced;
+        
     public:
         
         // instance handling
