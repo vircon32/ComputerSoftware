@@ -67,18 +67,33 @@ class ProcessingContext
 
 
 // =============================================================================
+//      FUNCTION-LIKE MACRO DEFINITION
+// =============================================================================
+
+
+struct FunctionMacro
+{
+    // the macro parameter names, in order
+    std::vector< std::string > Parameters;
+    
+    // a copy of the full body of the macro definition;
+    // it also contains all references to the parameters
+    CTokenList Body;
+};
+
+
+// =============================================================================
 //      VIRCON C PREPROCESSOR
 // =============================================================================
 
 
 class VirconCPreprocessor
 {
-    public: // protected:
+    public:
         
         std::list< ProcessingContext > ContextStack;
-        std::map< std::string, CTokenList > Definitions;
-        
-    public:
+        std::map< std::string, CTokenList > Definitions;             // object-like macros
+        std::map< std::string, FunctionMacro > FunctionDefinitions;  // function-like macros
         
         // resulting tokens (all tokens are actually
         // a copy to account for modified locations)
@@ -95,11 +110,19 @@ class VirconCPreprocessor
         bool ReplaceDefinitions( CTokenList& Line );
         void IncludeFile( SourceLocation Location, const std::string& FilePath );
         
+        // function-like macro expansion
+        CTokenIterator ExpandFunctionMacro
+        (
+            CTokenList& Line,               // full line containing the macro call
+            CTokenIterator StartPosition,   // position of the macro name in the line
+            const FunctionMacro& Macro,     // definition of the called macro
+            SourceLocation CallLocation     // location of the call before replacements
+        );
+        
         // processor for a generic line
         void ProcessLine();
         
         // processor functions for specific directives
-        // (they return the new start of the next line)
         void ProcessError( bool WarningOnly );
         void ProcessIf( bool IsIfndef );
         void ProcessInclude();
