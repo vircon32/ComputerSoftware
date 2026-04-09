@@ -903,6 +903,15 @@ void VirconCPreprocessor::RecognizeKeywords()
         KeywordToken* NewToken = NewKeywordToken( T->Location, WhichKeyword( IdentifierName ) );
         delete T;
         T = NewToken;
+        
+        // for better compatibility we will accept additional
+        // integer types but replace them silently with int
+        if( NewToken->Which == KeywordTypes::Char   )  NewToken->Which = KeywordTypes::Int;
+        if( NewToken->Which == KeywordTypes::Short  )  NewToken->Which = KeywordTypes::Int;
+        if( NewToken->Which == KeywordTypes::Long   )  NewToken->Which = KeywordTypes::Int;
+        
+        // replace double with float in the same way
+        if( NewToken->Which == KeywordTypes::Double )  NewToken->Which = KeywordTypes::Float;
     }
 }
 
