@@ -97,9 +97,10 @@ int VirconCEmitter::EmitFunction( FunctionNode* Function )
     if( !Function->HasBody ) return 0;
     
     // emit only functions that the code actually uses
-    // (careful, main function is usually not referenced!)
+    // (careful, special functions such as main and
+    // error_handler are usually not referenced!)
     if( !Function->IsReferenced )
-      if( Function->Name != "main" )
+      if( Function->Name != "main" && Function->Name != "error_handler" )
         return 0;
     
     // add info to determine line correspondence
