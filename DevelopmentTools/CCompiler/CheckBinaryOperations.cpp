@@ -271,6 +271,13 @@ void CheckAssignment( BinaryOperationNode* Operation )
         return;
     }
     
+    // cannot write to a const-qualified location
+    if( ExpressionIsConstLocation( Operation->LeftOperand ) )
+    {
+        RaiseError( Operation->Location, "cannot assign to a const-qualified location" );
+        return;
+    }
+    
     // types of both sides must be compatible
     CheckAssignmentTypes( Operation->Location, Operation->LeftOperand->ReturnedType, Operation->RightOperand );
 }
@@ -283,6 +290,13 @@ void CheckAdditionAssignment( BinaryOperationNode* Operation )
     if( !Operation->LeftOperand->HasMemoryPlacement() )
     {
         RaiseError( Operation->Location, "assignment destination must be have a memory address" );
+        return;
+    }
+    
+    // cannot write to a const-qualified location
+    if( ExpressionIsConstLocation( Operation->LeftOperand ) )
+    {
+        RaiseError( Operation->Location, "cannot assign to a const-qualified location" );
         return;
     }
     
@@ -309,6 +323,13 @@ void CheckSubtractionAssignment( BinaryOperationNode* Operation )
         return;
     }
     
+    // cannot write to a const-qualified location
+    if( ExpressionIsConstLocation( Operation->LeftOperand ) )
+    {
+        RaiseError( Operation->Location, "cannot assign to a const-qualified location" );
+        return;
+    }
+    
     // there is asymmetry! we can do pointer -= integer,
     // but not integer -= pointer
     if( Operation->RightOperand->ReturnedType->Type() == DataTypes::Pointer )
@@ -332,6 +353,13 @@ void CheckProductAssignment( BinaryOperationNode* Operation )
         return;
     }
     
+    // cannot write to a const-qualified location
+    if( ExpressionIsConstLocation( Operation->LeftOperand ) )
+    {
+        RaiseError( Operation->Location, "cannot assign to a const-qualified location" );
+        return;
+    }
+    
     // now just check the non-assignment version
     CheckProduct( Operation );
 }
@@ -344,6 +372,13 @@ void CheckDivisionAssignment( BinaryOperationNode* Operation )
     if( !Operation->LeftOperand->HasMemoryPlacement() )
     {
         RaiseError( Operation->Location, "assignment destination must be have a memory address" );
+        return;
+    }
+    
+    // cannot write to a const-qualified location
+    if( ExpressionIsConstLocation( Operation->LeftOperand ) )
+    {
+        RaiseError( Operation->Location, "cannot assign to a const-qualified location" );
         return;
     }
     
@@ -362,6 +397,13 @@ void CheckModulusAssignment( BinaryOperationNode* Operation )
         return;
     }
     
+    // cannot write to a const-qualified location
+    if( ExpressionIsConstLocation( Operation->LeftOperand ) )
+    {
+        RaiseError( Operation->Location, "cannot assign to a const-qualified location" );
+        return;
+    }
+    
     // now just check the non-assignment version
     CheckModulus( Operation );
 }
@@ -374,6 +416,13 @@ void CheckBitwiseAndAssignment( BinaryOperationNode* Operation )
     if( !Operation->LeftOperand->HasMemoryPlacement() )
     {
         RaiseError( Operation->Location, "assignment destination must be have a memory address" );
+        return;
+    }
+    
+    // cannot write to a const-qualified location
+    if( ExpressionIsConstLocation( Operation->LeftOperand ) )
+    {
+        RaiseError( Operation->Location, "cannot assign to a const-qualified location" );
         return;
     }
     
@@ -392,6 +441,13 @@ void CheckBitwiseOrAssignment( BinaryOperationNode* Operation )
         return;
     }
     
+    // cannot write to a const-qualified location
+    if( ExpressionIsConstLocation( Operation->LeftOperand ) )
+    {
+        RaiseError( Operation->Location, "cannot assign to a const-qualified location" );
+        return;
+    }
+    
     // now just check the non-assignment version
     CheckBitwiseOr( Operation );
 }
@@ -404,6 +460,13 @@ void CheckBitwiseXorAssignment( BinaryOperationNode* Operation )
     if( !Operation->LeftOperand->HasMemoryPlacement() )
     {
         RaiseError( Operation->Location, "assignment destination must be have a memory address" );
+        return;
+    }
+    
+    // cannot write to a const-qualified location
+    if( ExpressionIsConstLocation( Operation->LeftOperand ) )
+    {
+        RaiseError( Operation->Location, "cannot assign to a const-qualified location" );
         return;
     }
     
@@ -422,6 +485,13 @@ void CheckShiftLeftAssignment( BinaryOperationNode* Operation )
         return;
     }
     
+    // cannot write to a const-qualified location
+    if( ExpressionIsConstLocation( Operation->LeftOperand ) )
+    {
+        RaiseError( Operation->Location, "cannot assign to a const-qualified location" );
+        return;
+    }
+    
     // now just check the non-assignment version
     CheckShiftLeft( Operation );
 }
@@ -434,6 +504,13 @@ void CheckShiftRightAssignment( BinaryOperationNode* Operation )
     if( !Operation->LeftOperand->HasMemoryPlacement() )
     {
         RaiseError( Operation->Location, "assignment destination must be have a memory address" );
+        return;
+    }
+    
+    // cannot write to a const-qualified location
+    if( ExpressionIsConstLocation( Operation->LeftOperand ) )
+    {
+        RaiseError( Operation->Location, "cannot assign to a const-qualified location" );
         return;
     }
     

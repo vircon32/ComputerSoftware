@@ -2,6 +2,7 @@
     // include project files
     #include "CheckUnaryOperations.hpp"
     #include "CompilerInfrastructure.hpp"
+    #include "CheckNodes.hpp"
 // *****************************************************************************
 
 
@@ -45,6 +46,10 @@ void CheckIncrement( UnaryOperationNode* Operation )
     // also, the operand must be stored in memory
     if( !Operation->Operand->HasMemoryPlacement() )
       RaiseError( Operation->Location, "increment can only operate on a memory address" );
+    
+    // cannot increment a const-qualified location
+    if( ExpressionIsConstLocation( Operation->Operand ) )
+      RaiseError( Operation->Location, "cannot increment a const-qualified value" );
 }
 
 // -----------------------------------------------------------------------------
@@ -62,6 +67,10 @@ void CheckDecrement( UnaryOperationNode* Operation )
     // also, the operand must be stored in memory
     if( !Operation->Operand->HasMemoryPlacement() )
       RaiseError( Operation->Location, "decrement can only operate on a memory address" );
+    
+    // cannot decrement a const-qualified location
+    if( ExpressionIsConstLocation( Operation->Operand ) )
+      RaiseError( Operation->Location, "cannot decrement a const-qualified value" );
 }
 
 // -----------------------------------------------------------------------------

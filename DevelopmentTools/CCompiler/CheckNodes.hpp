@@ -14,7 +14,8 @@
 
 
 void CheckExpression( ExpressionNode* Expression );
-void CheckAssignmentTypes( SourceLocation Location, DataType* LeftType, ExpressionNode* RightValue );
+void CheckAssignmentTypes( SourceLocation Location, DataType* LeftType, ExpressionNode* RightValue, bool IsInitialization = false );
+bool ExpressionIsConstLocation( ExpressionNode* Expression );
 
 
 // =============================================================================

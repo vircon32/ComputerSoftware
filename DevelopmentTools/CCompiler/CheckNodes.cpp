@@ -65,7 +65,7 @@ void CheckExpression( ExpressionNode* Expression )
 
 // -----------------------------------------------------------------------------
 
-void CheckAssignmentTypes( SourceLocation Location, DataType* LeftType, ExpressionNode* RightValue )
+void CheckAssignmentTypes( SourceLocation Location, DataType* LeftType, ExpressionNode* RightValue, bool IsInitialization )
 {
     // no void types are allowed
     DataType* RightType = RightValue->ReturnedType;
@@ -83,9 +83,15 @@ void CheckAssignmentTypes( SourceLocation Location, DataType* LeftType, Expressi
         return;
     }
     
-    // case 1: they are the same type
+    // case 1: they are the same type (ignoring const)
+    // still need to verify const-compatibility before accepting
     if( AreEqual( LeftType, RightType ) )
-      return;
+    {
+        if( !IsInitialization && !AreConstCompatible( LeftType, RightType ) )
+          RaiseError( Location, "cannot assign " + RightType->ToString() + " to " + LeftType->ToString() + ": discards const qualifier" );
+        
+        return;
+    }
     
     // case 2: all primitives can be converted to one another
     if( ( LeftType->Type() == DataTypes::Primitive)
@@ -121,7 +127,13 @@ void CheckAssignmentTypes( SourceLocation Location, DataType* LeftType, Expressi
     if( (LeftType->Type() == DataTypes::Pointer)
     && (RightType->Type() == DataTypes::Array)
     &&  AreEqual( ((PointerType*)LeftType)->BaseType, ((ArrayType*)RightType)->BaseType ) )
-      return;
+    {
+        // const check: decaying const type[] to type* discards the qualifier
+        if( !AreConstCompatible( ((PointerType*)LeftType)->BaseType, ((ArrayType*)RightType)->BaseType ) )
+          RaiseError( Location, "cannot assign " + RightType->ToString() + " to " + LeftType->ToString() + ": array decay discards const qualifier" );
+        
+        return;
+    }
     
     // case 7: arrays can be assigned to pointers to void
     // (valid because of array decay into a pointer)
@@ -130,6 +142,14 @@ void CheckAssignmentTypes( SourceLocation Location, DataType* LeftType, Expressi
     && (((PointerType*)LeftType)->BaseType->Type() == DataTypes::Void) )
       return;
     
+    // check const-compatibility (skip when this is an initialization,
+    // since initializing a const variable must always be allowed)
+    if( !IsInitialization && !AreConstCompatible( LeftType, RightType ) )
+    {
+        RaiseError( Location, "cannot assign " + RightType->ToString() + " to const-qualified " + LeftType->ToString() );
+        return;
+    }
+
     // if we arrive here, no valid case was met
     RaiseError( Location, "types are not compatible: cannot assign " + RightType->ToString() + " to " + LeftType->ToString() );
 }
@@ -139,6 +159,111 @@ void CheckAssignmentTypes( SourceLocation Location, DataType* LeftType, Expressi
 //      CHECK FUNCTIONS FOR EXPRESSION NODES
 // =============================================================================
 
+
+// helper function to used to determine const-correctness;
+// returns true when an expression is referring to a memory
+// location that is const, meaning it must not be written to
+bool ExpressionIsConstLocation( ExpressionNode* Expression )
+{
+    switch( Expression->Type() )
+    {
+        case CNodeTypes::EnclosedExpression:
+        {
+            // for parenthesis recurse with their contents
+            return ExpressionIsConstLocation( ((EnclosedExpressionNode*)Expression)->InternalExpression );
+        }
+        
+        case CNodeTypes::ExpressionAtom:
+        {
+            // for a variable check its declared type
+            ExpressionAtomNode* Atom = (ExpressionAtomNode*)Expression;
+            
+            if( Atom->AtomType == AtomTypes::Variable && Atom->ResolvedVariable )
+              return Atom->ResolvedVariable->DeclaredType->IsConst;
+            
+            return false;
+        }
+        
+        case CNodeTypes::UnaryOperation:
+        {
+            UnaryOperationNode* Op = (UnaryOperationNode*)Expression;
+            
+            // pre-increment/decrement return the operand's lvalue, so inherit its constness
+            if( Op->Operator == UnaryOperators::PreIncrement || Op->Operator == UnaryOperators::PreDecrement )
+              return ExpressionIsConstLocation( Op->Operand );
+            
+            // dereference: the result is const when the pointer's base type is const
+            if( Op->Operator == UnaryOperators::Dereference )
+            {
+                DataType* OperandType = Op->Operand->ReturnedType;
+                
+                if( OperandType && OperandType->Type() == DataTypes::Pointer )
+                  return ((PointerType*)OperandType)->BaseType->IsConst;
+            }
+            
+            return false;
+        }
+        
+        case CNodeTypes::MemberAccess:
+        {
+            // a struct/union member is const if the group is const, OR the member itself is const
+            MemberAccessNode* MA = (MemberAccessNode*)Expression;
+            
+            if( MA->GroupOperand->ReturnedType && MA->GroupOperand->ReturnedType->IsConst )
+              return true;
+            
+            if( MA->ResolvedMember )
+              return MA->ResolvedMember->DeclaredType->IsConst;
+            
+            return false;
+        }
+        
+        case CNodeTypes::PointedMemberAccess:
+        {
+            // a pointed struct/union member is const if the pointed-to type is const, OR the member itself is const
+            PointedMemberAccessNode* PMA = (PointedMemberAccessNode*)Expression;
+            DataType* OperandType = PMA->GroupOperand->ReturnedType;
+            
+            if( OperandType && OperandType->Type() == DataTypes::Pointer )
+              if( ((PointerType*)OperandType)->BaseType->IsConst )
+                return true;
+            
+            if( PMA->ResolvedMember )
+              return PMA->ResolvedMember->DeclaredType->IsConst;
+            
+            return false;
+        }
+        
+        case CNodeTypes::ArrayAccess:
+        {
+            // array element is const if the base type of the array/pointer is const
+            ArrayAccessNode* AA = (ArrayAccessNode*)Expression;
+            DataType* OperandType = AA->ArrayOperand->ReturnedType;
+            
+            if( OperandType )
+            {
+                if( OperandType->Type() == DataTypes::Array )
+                  return ((ArrayType*)OperandType)->BaseType->IsConst;
+                
+                if( OperandType->Type() == DataTypes::Pointer )
+                  return ((PointerType*)OperandType)->BaseType->IsConst;
+            }
+            
+            return false;
+        }
+        
+        case CNodeTypes::BinaryOperation:
+        {
+            // assignments return an lvalue reference to the left operand
+            BinaryOperationNode* BinOp = (BinaryOperationNode*)Expression;
+            return ExpressionIsConstLocation( BinOp->LeftOperand );
+        }
+        
+        default: return false;
+    }
+}
+
+// -----------------------------------------------------------------------------
 
 void CheckExpressionAtom( ExpressionAtomNode* Atom )
 {

@@ -327,7 +327,7 @@ void VirconCAnalyzer::AnalyzeInitialization( SourceLocation Location, DataType* 
         }
         
         // otherwise it is just a regular single assignment
-        else CheckAssignmentTypes( Location, VariableType, (ExpressionNode*)InitialValue );
+        else CheckAssignmentTypes( Location, VariableType, (ExpressionNode*)InitialValue, true );
     }
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -347,7 +347,7 @@ void VirconCAnalyzer::AnalyzeInitialization( SourceLocation Location, DataType* 
         
         // case 3: a 1-value list and 1-element variable are actually a single assignment
         else if( ValueList->AssignedValues.size() == 1 && FirstValue->IsExpression() )
-          CheckAssignmentTypes( Location, VariableType, (ExpressionNode*)FirstValue );
+          CheckAssignmentTypes( Location, VariableType, (ExpressionNode*)FirstValue, true );
         
         // other cases are not allowed and we signal an error
         else
