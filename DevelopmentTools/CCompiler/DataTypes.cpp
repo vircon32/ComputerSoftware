@@ -19,7 +19,7 @@
 
 unsigned VoidType::SizeInWords()
 {
-     return 0;
+    return 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -33,7 +33,9 @@ string VoidType::ToString()
 
 DataType* VoidType::Clone()
 {
-    return new VoidType();
+    VoidType* Cloned = new VoidType();
+    Cloned->IsConst = IsConst;
+    return Cloned;
 }
 
 
@@ -54,18 +56,20 @@ PrimitiveType::PrimitiveType( PrimitiveTypes Which_ )
 
 unsigned PrimitiveType::SizeInWords()
 {
-     return 1;
+    return 1;
 }
 
 // -----------------------------------------------------------------------------
 
 string PrimitiveType::ToString()
 {
+    string Prefix = IsConst? "const " : "";
+    
     switch( Which )
     {
-        case PrimitiveTypes::Int:    return "int";
-        case PrimitiveTypes::Float:  return "float";
-        case PrimitiveTypes::Bool:   return "bool";
+        case PrimitiveTypes::Int:    return Prefix + "int";
+        case PrimitiveTypes::Float:  return Prefix + "float";
+        case PrimitiveTypes::Bool:   return Prefix + "bool";
     }
     
     // unknown
@@ -76,7 +80,9 @@ string PrimitiveType::ToString()
 
 DataType* PrimitiveType::Clone()
 {
-    return new PrimitiveType( Which );
+    PrimitiveType* Cloned = new PrimitiveType( Which );
+    Cloned->IsConst = IsConst;
+    return Cloned;
 }
 
 
@@ -115,7 +121,9 @@ string PointerType::ToString()
 
 DataType* PointerType::Clone()
 {
-    return new PointerType( BaseType );
+    PointerType* Cloned = new PointerType( BaseType );
+    Cloned->IsConst = IsConst;
+    return Cloned;
 }
 
 
@@ -187,7 +195,9 @@ string ArrayType::ToString()
 
 DataType* ArrayType::Clone()
 {
-    return new ArrayType( BaseType, NumberOfElements );
+    ArrayType* Cloned = new ArrayType( BaseType, NumberOfElements );
+    Cloned->IsConst = IsConst;
+    return Cloned;
 }
 
 
@@ -221,14 +231,17 @@ unsigned StructureType::SizeInWords()
 
 string StructureType::ToString()
 {
-    return "struct " + StructureName;
+    string Prefix = IsConst? "const " : "";
+    return Prefix + "struct " + StructureName;
 }
 
 // -----------------------------------------------------------------------------
 
 DataType* StructureType::Clone()
 {
-    return new StructureType( DeclarationScope, StructureName );
+    StructureType* Cloned = new StructureType( DeclarationScope, StructureName );
+    Cloned->IsConst = IsConst;
+    return Cloned;
 }
 
 // -----------------------------------------------------------------------------
@@ -274,14 +287,17 @@ unsigned UnionType::SizeInWords()
 
 string UnionType::ToString()
 {
-    return "union " + UnionName;
+    string Prefix = IsConst? "const " : "";
+    return Prefix + "union " + UnionName;
 }
 
 // -----------------------------------------------------------------------------
 
 DataType* UnionType::Clone()
 {
-    return new UnionType( DeclarationScope, UnionName );
+    UnionType* Cloned = new UnionType( DeclarationScope, UnionName );
+    Cloned->IsConst = IsConst;
+    return Cloned;
 }
 
 // -----------------------------------------------------------------------------
@@ -338,7 +354,9 @@ string EnumerationType::ToString()
 
 DataType* EnumerationType::Clone()
 {
-    return new EnumerationType( DeclarationScope, EnumerationName );
+    EnumerationType* Cloned = new EnumerationType( DeclarationScope, EnumerationName );
+    Cloned->IsConst = IsConst;
+    return Cloned;
 }
 
 // -----------------------------------------------------------------------------
@@ -398,7 +416,9 @@ string FunctionType::ToString()
 
 DataType* FunctionType::Clone()
 {
-    return new FunctionType( ReturnType, ParameterTypes );
+    FunctionType* Cloned = new FunctionType( ReturnType, ParameterTypes );
+    Cloned->IsConst = IsConst;
+    return Cloned;
 }
 
 
@@ -407,9 +427,13 @@ DataType* FunctionType::Clone()
 // =============================================================================
 
 
-bool AreEqual( DataType* T1, DataType* T2 )
+// by default the comparison ignores const flags, unless CompareConst is set
+bool AreEqual( DataType* T1, DataType* T2, bool CompareConst )
 {
     if( T1->Type() != T2->Type() )
+      return false;
+    
+    if( CompareConst && (T1->IsConst != T2->IsConst) )
       return false;
     
     switch( T1->Type() )
@@ -421,11 +445,11 @@ bool AreEqual( DataType* T1, DataType* T2 )
             return ((PrimitiveType*)T1)->Which == ((PrimitiveType*)T2)->Which;
             
         case DataTypes::Pointer:
-            return AreEqual( ((PointerType*)T1)->BaseType, ((PointerType*)T2)->BaseType );
+            return AreEqual( ((PointerType*)T1)->BaseType, ((PointerType*)T2)->BaseType, CompareConst );
             
         case DataTypes::Array:
         {
-            bool BasesAreEqual = AreEqual( ((ArrayType*)T1)->BaseType, ((ArrayType*)T2)->BaseType );
+            bool BasesAreEqual = AreEqual( ((ArrayType*)T1)->BaseType, ((ArrayType*)T2)->BaseType, CompareConst );
             bool DimensionsAreEqual = (((ArrayType*)T1)->NumberOfElements == ((ArrayType*)T2)->NumberOfElements);
             return( BasesAreEqual && DimensionsAreEqual );
         }
@@ -444,7 +468,7 @@ bool AreEqual( DataType* T1, DataType* T2 )
             FunctionType* F1 = (FunctionType*)T1;
             FunctionType* F2 = (FunctionType*)T2;
             
-            if( !AreEqual( F1->ReturnType, F2->ReturnType ) )
+            if( !AreEqual( F1->ReturnType, F2->ReturnType, CompareConst ) )
               return false;
             
             if( F1->ParameterTypes.size() != F2->ParameterTypes.size() )
@@ -455,7 +479,7 @@ bool AreEqual( DataType* T1, DataType* T2 )
             
             while( F1Iterator != F1->ParameterTypes.end() )
             {
-                if( !AreEqual( *F1Iterator, *F2Iterator ) )
+                if( !AreEqual( *F1Iterator, *F2Iterator, CompareConst ) )
                   return false;
                 
                 F1Iterator++;
@@ -466,7 +490,62 @@ bool AreEqual( DataType* T1, DataType* T2 )
         }
         
         default:
-            throw runtime_error( "invalid data type" );
+            throw runtime_error( "invalid data type to check equality" );
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+// Returns true if a value of RightType can be assigned to a
+// location of LeftType, respecting const-correctness rules
+bool AreConstCompatible( DataType* LeftType, DataType* RightType )
+{
+    if( LeftType->Type() != RightType->Type() )
+      return false;
+    
+    switch( LeftType->Type() )
+    {
+        // non-instantiable base type: no const to check
+        case DataTypes::Void:
+            return true;
+        
+        // for primitives and enumerations, only check the top-level const flag:
+        // assigning non-const to const is OK; the reverse is an error
+        case DataTypes::Primitive:
+        case DataTypes::Enumeration:
+            return ( LeftType->IsConst || !RightType->IsConst );
+        
+        // for pointers: check the pointer's own flag, then recurse into base types
+        // so that e.g. int* cannot accept const int*
+        case DataTypes::Pointer:
+        {
+            if( !LeftType->IsConst && RightType->IsConst )
+              return false;
+            
+            return AreConstCompatible( ((PointerType*)LeftType )->BaseType, ((PointerType*)RightType)->BaseType );
+        }
+        
+        // for arrays: same logic as pointers
+        case DataTypes::Array:
+        {
+            if( !LeftType->IsConst && RightType->IsConst )
+              return false;
+            
+            return AreConstCompatible( ((ArrayType*)LeftType )->BaseType, ((ArrayType*)RightType)->BaseType );
+        }
+        
+        // for structs/unions: only the top-level const flag matters here;
+        // member-level const propagation is handled in DetermineReturnedType
+        case DataTypes::Structure:
+        case DataTypes::Union:
+            return ( LeftType->IsConst || !RightType->IsConst );
+        
+        // for function types: require a full match including all const flags
+        case DataTypes::Function:
+            return AreEqual( LeftType, RightType, true );
+        
+        default:
+            throw std::runtime_error( "invalid data type to check const-correctness" );
     }
 }
 

@@ -2458,7 +2458,11 @@ void ArrayAccessNode::DetermineReturnedType()
     if( ArrayOperand->ReturnedType->Type() == DataTypes::Array )
     {
         // returned type is the array's base type
-        ReturnedType = ((ArrayType*)ArrayOperand->ReturnedType)->BaseType->Clone();
+        ArrayType* AT = (ArrayType*)ArrayOperand->ReturnedType;
+        ReturnedType = AT->BaseType->Clone();
+        
+        // propagate IsConst from the array itself
+        if( AT->IsConst ) ReturnedType->IsConst = true;
     }
     
     // case 2: array operand is a pointer
@@ -2466,6 +2470,7 @@ void ArrayAccessNode::DetermineReturnedType()
     else if( ArrayOperand->ReturnedType->Type() == DataTypes::Pointer )
     {
         // returned type is the pointer's base type
+        // (IsConst is already embedded in the pointer's base type)
         ReturnedType = ((PointerType*)ArrayOperand->ReturnedType)->BaseType->Clone();
     }
     
@@ -3546,6 +3551,10 @@ void MemberAccessNode::DetermineReturnedType()
       RaiseFatalError( Location, "To get a member type, it needs to be resolved" );
     
     ReturnedType = ResolvedMember->DeclaredType->Clone();
+    
+    // if the group itself is const, all its members are transitively const
+    if( GroupOperand->ReturnedType->IsConst )
+      ReturnedType->IsConst = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -3695,6 +3704,12 @@ void PointedMemberAccessNode::DetermineReturnedType()
       RaiseFatalError( Location, "To get a member type, it needs to be resolved" );
     
     ReturnedType = ResolvedMember->DeclaredType->Clone();
+    
+    // if the pointed-to type is const, all its members are transitively const
+    DataType* PointedType = ((PointerType*)GroupOperand->ReturnedType)->BaseType;
+    
+    if( PointedType->IsConst )
+      ReturnedType->IsConst = true;
 }
 
 // -----------------------------------------------------------------------------

@@ -67,7 +67,8 @@ enum class KeywordTypes
     Typedef,
     Asm,
     Embedded,
-    Extern
+    Extern,
+    Const
 };
 
 // -----------------------------------------------------------------------------

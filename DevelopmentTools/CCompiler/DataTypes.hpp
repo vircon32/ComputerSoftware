@@ -45,7 +45,12 @@ class DataType
 {
     public:
         
+        bool IsConst;
+        
+    public:
+        
         // instance handling
+        DataType() : IsConst( false ) {}
         virtual ~DataType() {}
         
         // basic properties
@@ -280,7 +285,8 @@ class FunctionType: public DataType
 // =============================================================================
 
 
-bool AreEqual( DataType* T1, DataType* T2 );
+bool AreEqual( DataType* T1, DataType* T2, bool IncludeConst = false );
+bool AreConstCompatible( DataType* LeftType, DataType* RightType );
 bool TypeIsThisPrimitive( DataType* T, PrimitiveTypes Primitive );
 bool TypeIsIntegral( DataType* T );
 bool TypeIsNumeric( DataType* T );

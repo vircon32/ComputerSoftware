@@ -70,6 +70,10 @@ bool IsValidStartOfStatement( CToken* T )
 
 bool IsValidStartOfType( CToken* T, CNode* Parent )
 {
+    // const is always a valid start of a type
+    if( TokenIsThisKeyword( T, KeywordTypes::Const ) )
+      return true;
+    
     // these are always valid, regardless of the scope context
     if( TokenIsTypeKeyword( T ) )
       return true;
@@ -228,16 +232,7 @@ CNode* VirconCParser::ParseStatement( CNode* Parent, CTokenIterator& TokenPositi
           return ParseLabel( Parent, TokenPosition );
     }
     
-    // CASE 7: give special error messages for non supported features of standard C
-    if( NextToken->Type() == CTokenTypes::Identifier )
-    {
-        IdentifierToken* IT = (IdentifierToken*)NextToken;
-        
-        if( IT->Name == "const" )
-          RaiseFatalError( NextToken->Location, "const variables are not supported in this compiler" );
-    }
-    
-    // CASE 8: Any other case must be an expression.
+    // CASE 7: Any other case must be an expression.
     // Parse it normally but expect a semicolon after it
     CNode* Expression = ParseExpression( Parent, TokenPosition );
     ExpectSpecialSymbol( TokenPosition, SpecialSymbolTypes::Semicolon );
@@ -670,6 +665,15 @@ GotoNode* VirconCParser::ParseGoto( CNode* Parent, CTokenIterator& TokenPosition
 
 DataType* VirconCParser::ParseType( CNode* Parent, CTokenIterator& TokenPosition )
 {
+    // optionally consume a leading "const" qualifier
+    bool HasConst = false;
+    
+    if( TokenIsThisKeyword( *TokenPosition, KeywordTypes::Const ) )
+    {
+        HasConst = true;
+        TokenPosition++;
+    }
+    
     // first, read the base type
     DataType* ParsedType = nullptr;
     CToken* FirstToken = *TokenPosition;
@@ -724,6 +728,10 @@ DataType* VirconCParser::ParseType( CNode* Parent, CTokenIterator& TokenPosition
         // extract type from declaration
         ParsedType = ((TypeNode*)Declaration)->DeclaredType->Clone();
     }
+    
+    // apply const to the base type
+    if( HasConst )
+      ParsedType->IsConst = true;
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
@@ -2259,15 +2267,6 @@ void VirconCParser::ParseTopLevel( CTokenList& Tokens_ )
             VariableListNode* NewVariableList = ParseExternVariableList( ProgramAST, TokenPosition );
             ProgramAST->Statements.push_back( NewVariableList );
             continue;
-        }
-        
-        // give special error messages for non supported features of standard C
-        if( NextToken->Type() == CTokenTypes::Identifier )
-        {
-            IdentifierToken* IT = (IdentifierToken*)NextToken;
-            
-            if( IT->Name == "const" )
-              RaiseFatalError( NextToken->Location, "const variables are not supported in this compiler" );
         }
         
         // any other cases are not valid
