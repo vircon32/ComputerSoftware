@@ -111,12 +111,28 @@ class VirconCPreprocessor
         void IncludeFile( SourceLocation Location, const std::string& FilePath );
         
         // function-like macro expansion
+        void FetchContinuationLines
+        (
+            CTokenList& Line,               // working line to append tokens into
+            bool ContextAlreadyAdvanced     // true if context is already past the starting line
+        );
+        
+        void CollectMacroArguments
+        (
+            CTokenList& Line,                       // working line being built
+            CTokenIterator& Position,               // current scan position (just after '('), modified in place
+            SourceLocation CallLocation,            // location of the call, for error messages
+            std::vector< CTokenList >& Arguments,   // output: one CTokenList per argument
+            bool ContextAlreadyAdvanced             // true if FetchContinuationLines moved the context forward
+        );
+        
         CTokenIterator ExpandFunctionMacro
         (
             CTokenList& Line,               // full line containing the macro call
             CTokenIterator StartPosition,   // position of the macro name in the line
             const FunctionMacro& Macro,     // definition of the called macro
-            SourceLocation CallLocation     // location of the call before replacements
+            SourceLocation CallLocation,    // location of the call before replacements
+            bool ContextAlreadyAdvanced     // true if FetchContinuationLines moved the context forward
         );
         
         // processor for a generic line

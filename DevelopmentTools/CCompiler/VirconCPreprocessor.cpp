@@ -177,46 +177,155 @@ void VirconCPreprocessor::PopContext()
 // =============================================================================
 
 
-// Expands a function-like macro call by replacing the parameter
-// names in its body with the call's tokens for each argument.
-// Since definitions can use other definitions, this method will
-// return an iterator pointing to the start of the inserted
-// expansion, so the caller can resume scanning if necessary
-CTokenIterator VirconCPreprocessor::ExpandFunctionMacro
+// the calls to function-like macros can span multiple lines,
+// so to complete the call this method will fetch and append
+// tokens from the following lines until at least 1 new token
+// is found; it skips lines with directives, which are fully
+// processed for their side-effects
+void VirconCPreprocessor::FetchContinuationLines
 (
-    CTokenList& Line,               // full line containing the macro call
-    CTokenIterator StartPosition,   // position of the macro name in the line
-    const FunctionMacro& Macro,     // definition of the called macro
-    SourceLocation CallLocation     // location of the call before replacements
+    CTokenList& Line,               // working line to append tokens into
+    bool ContextAlreadyAdvanced     // true if context is already past the starting line
 )
 {
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // STEP 1: Erase the macro name and parenthesis
-    // (after this StartPosition points at the first token inside the argument list)
-    StartPosition = Line.erase( StartPosition );  // deletes macro name
-    StartPosition = Line.erase( StartPosition );  // erases opening parenthesis
+    ProcessingContext& Context = ContextStack.back();
     
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // STEP 2: Collect a list of tokens for each argument
-    // (it is allowed for any of these lists to be empty)
-    vector< CTokenList > Arguments;
-    Arguments.emplace_back();   // start the first argument slot
+    // only advance past the current line if we haven't already,
+    // otherwise previous expansions may cause us to skip lines
+    if( !ContextAlreadyAdvanced )
+      Context.Advance();
+    
+    while( true )
+    {
+        if( Context.LinesHaveEnded() )
+          return;
+        
+        CTokenList& NextLine = Context.GetCurrentLine();
+        
+        // skip truly empty lines
+        if( NextLine.empty() )
+        {
+            Context.Advance();
+            continue;
+        }
+        
+        // directive lines are processed normally for their side-effects
+        if( TokenIsThisSymbol( NextLine.front(), SpecialSymbolTypes::Hash ) )
+        {
+            ProcessLine();
+            Context.Advance();
+            continue;
+        }
+        
+        // skip ignored data lines
+        if( !Context.AreAllIfConditionsMet() )
+        {
+            Context.Advance();
+            continue;
+        }
+        
+        // active data line: append its tokens and advance past it;
+        // the caller is responsible for tracking how many extra
+        // lines were consumed beyond the original starting line
+        for( CToken* T: NextLine )
+          Line.push_back( T->Clone() );
+        
+        Context.Advance();
+        return;
+    }
+}
+
+// collects the argument token lists for a function-like macro call;
+// if it spans multiple lines, they were already joint into one here
+// - on entry: Position is at the first token after the opening '('
+// - on exit : Position is at the first token after the closing ')'
+void VirconCPreprocessor::CollectMacroArguments
+(
+    CTokenList& Line,                       // working line being built
+    CTokenIterator& Position,               // current scan position (just after '('), modified in place
+    SourceLocation CallLocation,            // location of the call, for error messages
+    std::vector< CTokenList >& Arguments,   // output: one CTokenList per argument
+    bool ContextAlreadyAdvanced             // true if FetchContinuationLines moved the context forward
+)
+{
     int ParenthesisDepth = 0;
     
     while( true )
     {
-        // running off the end of the line means unterminated call
-        if( StartPosition == Line.end() )
-          RaiseFatalError( CallLocation, "unterminated function-like macro call (missing closing ')')" );
+        // - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        // when we exhaust the current line we need to fetch more
+        // tokens from the following source lines, processing any
+        // directives that appear there, until we find the closing ')'.
+        if( Position == Line.end() )
+        {
+            ProcessingContext& Context = ContextStack.back();
+            
+            // if the context was not advanced yet (FetchContinuationLines
+            // was not called before), advance past the current line first 
+            if( !ContextAlreadyAdvanced )
+            {
+                Context.Advance();
+                ContextAlreadyAdvanced = true;
+            }
+            
+            // Scan subsequent lines until we get a non-directive,
+            // non-ignored data line (or run out of lines entirely).
+            while( true )
+            {
+                if( Context.LinesHaveEnded() )
+                  RaiseFatalError( CallLocation, "unterminated function-like macro call (missing closing ')')" );
+                
+                CTokenList& NextLine = Context.GetCurrentLine();
+                
+                // skip truly empty lines
+                if( NextLine.empty() )
+                {
+                    Context.Advance();
+                    continue;
+                }
+                
+                // if this line is a directive, process it normally
+                // so that #if/#else/#endif etc. take effect
+                if( TokenIsThisSymbol( NextLine.front(), SpecialSymbolTypes::Hash ) )
+                {
+                    ProcessLine();
+                    Context.Advance();
+                    continue;
+                }
+                
+                // skip ignored data lines
+                if( !Context.AreAllIfConditionsMet() )
+                {
+                    Context.Advance();
+                    continue;
+                }
+                
+                // it is an active data line: append its tokens to our working line
+                for( CToken* T: NextLine )
+                  Line.push_back( T->Clone() );
+                
+                // step the iterator back from end() to the first new token
+                Position = Line.end();
+                advance( Position, -(int)NextLine.size() );
+                
+                // this continuation line is now consumed
+                Context.Advance();
+                break;
+            }
+            
+            continue;
+        }
         
-        CToken* T = *StartPosition;
+        // - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        // now we can process macro call tokens normally
+        CToken* T = *Position;
         
         // CASE 1: nested open parenthesis
         if( TokenIsThisDelimiter( T, DelimiterTypes::OpenParenthesis ) )
         {
             ParenthesisDepth++;
             Arguments.back().push_back( T );
-            StartPosition = Line.erase( StartPosition );
+            Position = Line.erase( Position );
             continue;
         }
         
@@ -225,34 +334,57 @@ CTokenIterator VirconCPreprocessor::ExpandFunctionMacro
         {
             if( ParenthesisDepth > 0 )
             {
-                // still inside a nested call - keep as argument token
                 ParenthesisDepth--;
                 Arguments.back().push_back( T );
-                StartPosition = Line.erase( StartPosition );
+                Position = Line.erase( Position );
                 continue;
             }
             
             // this is the closing ')' of the macro call
-            StartPosition = Line.erase( StartPosition );
-            break;
+            Position = Line.erase( Position );
+            return;
         }
         
         // CASE 3: a comma at top level separates arguments
         if( TokenIsThisSymbol( T, SpecialSymbolTypes::Comma ) && ParenthesisDepth == 0 )
         {
             Arguments.emplace_back();
-            StartPosition = Line.erase( StartPosition );
+            Position = Line.erase( Position );
             continue;
         }
         
         // CASE 4: any other token belongs to the current argument
         Arguments.back().push_back( T );
-        StartPosition = Line.erase( StartPosition );
+        Position = Line.erase( Position );
     }
+}
+
+// expands a function-like macro call by replacing the parameter
+// names in its body with the call's tokens for each argument;
+// since definitions can use other definitions, this method will
+// return an iterator pointing to the start of the inserted
+// expansion, so the caller can resume scanning if necessary
+CTokenIterator VirconCPreprocessor::ExpandFunctionMacro
+(
+    CTokenList& Line,               // full line containing the macro call
+    CTokenIterator StartPosition,   // position of the macro name in the line
+    const FunctionMacro& Macro,     // definition of the called macro
+    SourceLocation CallLocation,    // location of the call before replacements
+    bool ContextAlreadyAdvanced     // true if FetchContinuationLines moved the context forward
+)
+{
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // STEP 1: Erase the macro name and parenthesis
+    // (after this StartPosition points at the first token inside the argument list)
+    StartPosition = Line.erase( StartPosition );
+    StartPosition = Line.erase( StartPosition );
     
     // - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // STEP 3: Validate argument count
-    // StartPosition now points at the token right after the closing ')'
+    // STEP 2: Collect a list of tokens for each argument.
+    // Handles multi-line calls and directives between arguments.
+    vector< CTokenList > Arguments;
+    Arguments.emplace_back();   // start the first argument slot
+    CollectMacroArguments( Line, StartPosition, CallLocation, Arguments, ContextAlreadyAdvanced );
     
     // Careful! A no-parameter macro call still produces 1 empty argument slot;
     // so normalize that back to zero arguments so the count check passes.
@@ -260,12 +392,14 @@ CTokenIterator VirconCPreprocessor::ExpandFunctionMacro
       if( Arguments.size() == 1 && Arguments[ 0 ].empty() )
         Arguments.clear();
     
-    // now we can check safely
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // STEP 3: Validate argument count
+    // StartPosition now points at the token right after the closing ')'
     if( Arguments.size() != Macro.Parameters.size() )
     {
         string Message = "wrong number of arguments in function-like macro call: ";
         Message += "expected " + to_string( Macro.Parameters.size() ) + ", ";
-        Message += "received" + to_string( Arguments.size() );
+        Message += "received " + to_string( Arguments.size() );
         
         RaiseFatalError( CallLocation, Message );
     }
@@ -328,12 +462,17 @@ CTokenIterator VirconCPreprocessor::ExpandFunctionMacro
 // =============================================================================
 
 
-// This will perform all replacements in place (copy not made).
-// Returns true if any replacement was actually made
+// this will perform all replacements in place (copy not made);
+// returns true if any replacement was actually made
 bool VirconCPreprocessor::ReplaceDefinitions( CTokenList& Line )
 {
     CTokenIterator Position = Line.begin();
     bool WereReplacementsMade = false;
+    
+    // Capture the context's line position at the start.
+    // If it has moved by the time we expand a macro, the
+    // context is already pointing at the next unread line
+    auto StartLinePosition = ContextStack.back().LinePosition;
     
     // process all tokens in the line
     while( Position != Line.end() )
@@ -357,12 +496,26 @@ bool VirconCPreprocessor::ReplaceDefinitions( CTokenList& Line )
         
         if( FuncPair != FunctionDefinitions.end() )
         {
-            // expand the macro only if the parenthesis follows the name
+            // The '(' may be on a following source line; fetch continuation
+            // lines until we find the next token or run out of lines.
             CTokenIterator NextPosition = Next( Position );
             
+            while( NextPosition == Line.end() && !ContextStack.back().LinesHaveEnded() )
+            {
+                // if the context has moved past the starting line
+                // then it is already pointing to the next unread line
+                bool ContextAlreadyAdvanced = (ContextStack.back().LinePosition != StartLinePosition);
+                FetchContinuationLines( Line, ContextAlreadyAdvanced );
+                NextPosition = Next( Position );
+            }
+            
+            // expand only if the very next token is '('
             if( NextPosition != Line.end() && TokenIsThisDelimiter( *NextPosition, DelimiterTypes::OpenParenthesis ) )
             {
-                Position = ExpandFunctionMacro( Line, Position, FuncPair->second, OriginalLocation );
+                // if the context has moved past the starting line
+                // then it is already pointing to the next unread line
+                bool ContextAlreadyAdvanced = (ContextStack.back().LinePosition != StartLinePosition);
+                Position = ExpandFunctionMacro( Line, Position, FuncPair->second, OriginalLocation, ContextAlreadyAdvanced );
                 WereReplacementsMade = true;
                 continue;
             }
@@ -686,6 +839,11 @@ void VirconCPreprocessor::ProcessDefine()
                 RaiseFatalError( Delimiter->Location, "expected ',' or ')' in macro parameter list" );
             }
         }
+        else
+        {
+            // empty parameter list: still need to advance past the closing ')'
+            TokenPosition++;
+        }
         
         // Collect body tokens until end of line
         while( TokenPosition != DirectiveLine.end() )
@@ -954,11 +1112,17 @@ void VirconCPreprocessor::Preprocess( VirconCLexer& Lexer )
         while( !ContextStack.back().LinesHaveEnded() )
         {
             ProcessingContext& ContextBeingProcessed = ContextStack.back();
+            
+            // record position before processing so we can detect
+            // whether ProcessLine consumed extra continuation lines
+            auto PositionBefore = ContextBeingProcessed.LinePosition;
             ProcessLine();
             
-            // careful! do it this way, otherwise if processing
-            // changes the context we may get incorrect iterations
-            ContextBeingProcessed.Advance();
+            // only advance if ProcessLine did not already move past
+            // this line (e.g. via FetchContinuationLines consuming
+            // the line that follows the macro name)
+            if( ContextBeingProcessed.LinePosition == PositionBefore )
+              ContextBeingProcessed.Advance();
         }
         
         PopContext();
