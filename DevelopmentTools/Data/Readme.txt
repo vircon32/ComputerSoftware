@@ -1,6 +1,6 @@
 ================================================
    PC development tools for Vircon32 console
-  (version 25.10.29). README written by Carra
+  (version 26.04.24). README written by Carra
 ================================================
 
 
@@ -88,15 +88,23 @@ Included programs (reverse tools)
     
 ------------------------------------------------------------
 
-What's new in version 25.10.29?
+What's new in version 26.04.24?
   
-  - Updated build to use more recent versions of C++ compiler
-    and dependencies.
-  - Builds are now 64-bit by default.
-  - Library tinyxml2 is now built from source code.
-  - Fixed compiler bug when applying logical NOT to a constant.
-  - Fixed itoa for negative numbers in bases other than 10.
-  - Modified assembler debug arguments for more flexiblility.
+  - Compiler now supports function pointers.
+  - Compiler now supports const declarations.
+  - Compiler preprocessor now supports function-like macros
+    with arguments.
+  - Compiler will now accept types: char, short and long
+    (treated internally as int) for better compatibility.
+  - Compiler will now accept type double (treated internally
+    as float) for better compatibility.
+  - Compiler will now emit code only for functions that are
+    actually used, instead of always emitting everything.
+  - Assembler now allows writing I/O ports with their
+    numerical values instead of their names (note this will
+    trigger a warning).
+  - Assembler now accepts argument -w to disable warnings.
+  - Fixed a build error in Visual Studio and some warnings.
 
 ------------------------------------------------------------
 
@@ -106,7 +114,7 @@ License
     under the 3-Clause BSD License, which full text is the
     following:
     
-    Copyright 2021-2025 Carra.
+    Copyright 2021-2026 Carra.
     All rights reserved.
     
     Redistribution and use in source and binary forms, with or

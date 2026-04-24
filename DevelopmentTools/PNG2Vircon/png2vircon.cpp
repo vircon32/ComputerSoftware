@@ -175,7 +175,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "png2vircon v25.10.29" << endl;
+    cout << "png2vircon v26.04.24" << endl;
     cout << "Vircon32 PNG file importer by Javier Carracedo" << endl;
 }
 

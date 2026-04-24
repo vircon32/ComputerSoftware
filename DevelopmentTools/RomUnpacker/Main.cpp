@@ -61,7 +61,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "unpackrom v25.10.29" << endl;
+    cout << "unpackrom v26.04.24" << endl;
     cout << "Vircon32 ROM unpacker by Javier Carracedo" << endl;
 }
 
