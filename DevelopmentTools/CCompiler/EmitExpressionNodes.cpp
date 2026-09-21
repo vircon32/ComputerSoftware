@@ -172,6 +172,13 @@ void VirconCEmitter::EmitIndirectCall( IndirectCallNode* IndirectCall, RegisterA
   
     else Prototype = (FunctionType*)CalleeType;
     
+    // reserve a register for the callee address
+    int CalleeRegister = Registers.FirstFreeRegister();
+    string CalleeRegisterName = "R" + to_string( CalleeRegister );
+    
+    // evaluate the callee expression to get the function address
+    EmitDependentExpression( IndirectCall->CalleeExpression, Registers, CalleeRegister );
+    
     // use a single register for all parameters
     // (but avoid reserving a register if not needed)
     int ParameterRegister = 0;
@@ -277,13 +284,6 @@ void VirconCEmitter::EmitIndirectCall( IndirectCallNode* IndirectCall, RegisterA
         ArgumentPosition++;
         ParameterPosition++;
     }
-    
-    // reserve a register for the callee address
-    int CalleeRegister = Registers.FirstFreeRegister();
-    string CalleeRegisterName = "R" + to_string( CalleeRegister );
-    
-    // evaluate the callee expression to get the function address
-    EmitDependentExpression( IndirectCall->CalleeExpression, Registers, CalleeRegister );
     
     // emit the indirect call itself
     ProgramLines.push_back( "call " + CalleeRegisterName );
