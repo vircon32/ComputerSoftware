@@ -1015,12 +1015,10 @@ void ProcessMenuGamepads()
     if( !ImGui::BeginMenu( Texts(TextIDs::Menus_Gamepads) ) )
       return;
     
-    // check if the keyboard is free
-    bool KeyboardIsUsed = false;
-    
-    for( int Gamepad = 0; Gamepad < 4; Gamepad++ )
-      if( Gamepads.MappedGamepads[ Gamepad ].Type == DeviceTypes::Keyboard )
-        KeyboardIsUsed = true;
+    // check if the keyboard is free: it can be used by a single gamepad,
+    // and only as one of its 2 device types (keyboard or v32kbd)
+    bool KeyboardIsUsed = (Gamepads.GetKeyboardGamepad() >= 0);
+    bool V32KbdIsUsed   = (Gamepads.GetV32KbdGamepad()   >= 0);
     
     // show devices for the 4 gamepads
     for( int Gamepad = 0; Gamepad < 4; Gamepad++ )
@@ -1040,7 +1038,7 @@ void ProcessMenuGamepads()
             
             OptionSelected = (Gamepads.MappedGamepads[ Gamepad ].Type == DeviceTypes::Keyboard);
             
-            bool DisableKeyboard = KeyboardIsUsed && !OptionSelected;
+            bool DisableKeyboard = (KeyboardIsUsed || V32KbdIsUsed) && !OptionSelected;
             
             if( DisableKeyboard )
               ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
@@ -1052,7 +1050,24 @@ void ProcessMenuGamepads()
                 Gamepads.AssignInputDevices();
             }
             
-            if( KeyboardIsUsed && Gamepads.MappedGamepads[ Gamepad ].Type != DeviceTypes::Keyboard )
+            if( DisableKeyboard )
+              ImGui::PopStyleVar();
+            
+            // v32kbd follows the same rules as the keyboard
+            OptionSelected = (Gamepads.MappedGamepads[ Gamepad ].Type == DeviceTypes::V32Kbd);
+            
+            bool DisableV32Kbd = (KeyboardIsUsed || V32KbdIsUsed) && !OptionSelected;
+            
+            if( DisableV32Kbd )
+              ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+            
+            if( ImGui::MenuItem( V32KBD_PROFILE_NAME, nullptr, OptionSelected, !DisableV32Kbd ) )
+            {
+                Gamepads.MappedGamepads[ Gamepad ].Type = DeviceTypes::V32Kbd;
+                Gamepads.AssignInputDevices();
+            }
+            
+            if( DisableV32Kbd )
               ImGui::PopStyleVar();
             
             // show every available profile

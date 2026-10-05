@@ -8,6 +8,7 @@
     
     // include C/C++ headers
     #include <map>              // [ C++ STL ] Maps
+    #include <deque>            // [ C++ STL ] Double-ended queues
     #include <string>           // [ C++ STL ] Strings
     
     // include SDL2 headers
@@ -111,8 +112,84 @@ class JoystickMapping
 enum class DeviceTypes
 {
     NoDevice,
-    Keyboard,
-    Joystick
+    Keyboard,       // a few keys mapped to gamepad controls
+    Joystick,
+    V32Kbd          // full keyboard: scancodes encoded as gamepad controls
+};
+
+// -----------------------------------------------------------------------------
+
+// name used for the v32kbd device, both in the
+// gamepads menu and as profile name in settings
+#define V32KBD_PROFILE_NAME "v32kbd"
+
+// A v32kbd device presents itself to the console as a regular gamepad,
+// but its 11 controls are used to report keyboard events:
+//
+//   Start, A, B, X, Y, L, R --> 7-bit key code (Start = bit 0 ... R = bit 6),
+//                               in the same order as their IO ports
+//   Up / Down               --> key action: Up = pressed, Down = released
+//   Left / Right            --> strobe: every new key event alternates
+//                               between Left and Right, beginning by Left
+//
+// The d-pad never has opposite directions pressed together, so this is
+// always a valid gamepad state and no console logic needs to be changed.
+//
+// Key codes identify keys (not characters: no shift is applied). Keys
+// with an ASCII character use it as their code, taking that key in a US
+// layout with no shift: 'a'-'z', '0'-'9', space and  ` - = [ ] \ ; ' , . /
+// The other keys use the codes listed in the enumeration below.
+//
+// Only 1 key event is reported per frame, and controls keep their last
+// reported state until the next event. A new event can be detected when
+// the pressed side (Left/Right) changes. Before the first event, all
+// controls are unpressed.
+namespace V32Kbd
+{
+    enum KeyCodes
+    {
+        Key_None = 0,       // never reported
+        Key_Up = 1,
+        Key_Down,
+        Key_Left,
+        Key_Right,
+        Key_CapsLock = 5,
+        Key_LeftShift,
+        Key_RightShift,
+        Key_Backspace = 8,  // same as ASCII
+        Key_Tab = 9,        // same as ASCII
+        Key_LeftControl = 10,
+        Key_RightControl,
+        Key_LeftAlt = 12,   // Option key on Mac
+        Key_Enter = 13,     // same as ASCII
+        Key_F1 = 14,        // F1 to F12 are consecutive: 14 to 25
+        Key_F12 = 25,
+        Key_RightAlt = 26,  // Option key on Mac
+        Key_Escape = 27,    // same as ASCII
+        Key_LeftGUI = 28,   // Command key on Mac, Windows key on PC
+        Key_RightGUI = 29,
+                            // 30 and 31 are unused
+        Key_Delete = 127    // same as ASCII
+    };
+    
+    // number of bits in a key code
+    const int CodeBits = 7;
+    
+    // pending key events over this limit are discarded
+    const unsigned MaxQueuedEvents = 256;
+    
+    // gamepad control used to report each bit of the key code
+    extern const V32::GamepadControls CodeControls[ CodeBits ];
+    
+    // converts host keys to key codes (Key_None for unsupported keys)
+    int GetKeyCode( SDL_Scancode Scancode );
+}
+
+// a single key event waiting to be reported
+struct V32KbdEvent
+{
+    uint8_t KeyCode;
+    bool Pressed;
 };
 
 // -----------------------------------------------------------------------------
@@ -165,6 +242,9 @@ class GamepadsInput
         // and not part of the console gamepads so handle them separately)
         bool CommandPressed[ V32::Constants::GamepadPorts ];
         
+        // key events pending to be reported by the v32kbd device
+        std::deque< V32KbdEvent > V32KbdQueue;
+        
     public:
         
         // maps {Vircon gamepads} --> {PC devices}
@@ -181,6 +261,7 @@ class GamepadsInput
         void ProcessJoystickButtonUp( SDL_Event Event );
         void ProcessKeyDown( SDL_Event Event );
         void ProcessKeyUp( SDL_Event Event );
+        void ProcessV32KbdKey( SDL_Event Event );
         
     public:
         
@@ -200,6 +281,14 @@ class GamepadsInput
         void OpenAllJoysticks();
         void CloseAllJoysticks();
         void AssignInputDevices();
+        
+        // queries on device usage (-1 = not used in any gamepad)
+        int GetKeyboardGamepad();
+        int GetV32KbdGamepad();
+        
+        // v32kbd device: call this exactly once before every emulated
+        // frame, to report the next pending key event (if there is any)
+        void UpdateV32Kbd();
         
         // processing input events
         void ProcessEvent( SDL_Event Event );

@@ -535,7 +535,16 @@ void LoadSettings( const string& FilePath )
                 continue;
             }
             
-            // CASE C: other names are considered joystick profiles
+            // CASE C: the v32kbd device (this name is reserved, so
+            // it takes priority over a joystick profile named like it)
+            if( ToLowerCase( ProfileName ) == V32KBD_PROFILE_NAME )
+            {
+                Gamepads.MappedGamepads[ Gamepad ].Type = DeviceTypes::V32Kbd;
+                Console.SetGamepadConnection( Gamepad, true );
+                continue;
+            }
+            
+            // CASE D: other names are considered joystick profiles
             JoystickMapping* JoystickProfile = Gamepads.GetJoystickProfile( ProfileName );
             
             if( JoystickProfile )
@@ -709,6 +718,9 @@ void SaveSettings( const string& FilePath )
             
             else if( MappedDevice.Type == DeviceTypes::Keyboard )
               ProfileName = "keyboard";
+            
+            else if( MappedDevice.Type == DeviceTypes::V32Kbd )
+              ProfileName = V32KBD_PROFILE_NAME;
             
             else  // it is a joystick
             {

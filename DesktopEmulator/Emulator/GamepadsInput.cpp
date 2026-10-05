@@ -27,6 +27,91 @@
 // =============================================================================
 
 
+// gamepad control used to report each bit of a v32kbd key code
+const GamepadControls V32Kbd::CodeControls[ V32Kbd::CodeBits ] =
+{
+    // same order as the console's IO ports for these controls
+    GamepadControls::ButtonStart,   // bit 0 (port 0x406)
+    GamepadControls::ButtonA,       // bit 1 (port 0x407)
+    GamepadControls::ButtonB,       // bit 2 (port 0x408)
+    GamepadControls::ButtonX,       // bit 3 (port 0x409)
+    GamepadControls::ButtonY,       // bit 4 (port 0x40A)
+    GamepadControls::ButtonL,       // bit 5 (port 0x40B)
+    GamepadControls::ButtonR        // bit 6 (port 0x40C)
+};
+
+// -----------------------------------------------------------------------------
+
+int V32Kbd::GetKeyCode( SDL_Scancode Scancode )
+{
+    // ranges of consecutive keys
+    if( Scancode >= SDL_SCANCODE_A && Scancode <= SDL_SCANCODE_Z )
+      return 'a' + (Scancode - SDL_SCANCODE_A);
+    
+    if( Scancode >= SDL_SCANCODE_1 && Scancode <= SDL_SCANCODE_9 )
+      return '1' + (Scancode - SDL_SCANCODE_1);
+    
+    if( Scancode >= SDL_SCANCODE_F1 && Scancode <= SDL_SCANCODE_F12 )
+      return Key_F1 + (Scancode - SDL_SCANCODE_F1);
+    
+    if( Scancode >= SDL_SCANCODE_KP_1 && Scancode <= SDL_SCANCODE_KP_9 )
+      return '1' + (Scancode - SDL_SCANCODE_KP_1);
+    
+    // individual keys
+    switch( Scancode )
+    {
+        // keys with an ASCII character (US layout, no shift)
+        case SDL_SCANCODE_0:             return '0';
+        case SDL_SCANCODE_SPACE:         return ' ';
+        case SDL_SCANCODE_GRAVE:         return '`';
+        case SDL_SCANCODE_MINUS:         return '-';
+        case SDL_SCANCODE_EQUALS:        return '=';
+        case SDL_SCANCODE_LEFTBRACKET:   return '[';
+        case SDL_SCANCODE_RIGHTBRACKET:  return ']';
+        case SDL_SCANCODE_BACKSLASH:     return '\\';
+        case SDL_SCANCODE_NONUSHASH:     return '\\';
+        case SDL_SCANCODE_SEMICOLON:     return ';';
+        case SDL_SCANCODE_APOSTROPHE:    return '\'';
+        case SDL_SCANCODE_COMMA:         return ',';
+        case SDL_SCANCODE_PERIOD:        return '.';
+        case SDL_SCANCODE_SLASH:         return '/';
+        
+        // keys with an ASCII control code
+        case SDL_SCANCODE_BACKSPACE:     return Key_Backspace;
+        case SDL_SCANCODE_TAB:           return Key_Tab;
+        case SDL_SCANCODE_RETURN:        return Key_Enter;
+        case SDL_SCANCODE_ESCAPE:        return Key_Escape;
+        case SDL_SCANCODE_DELETE:        return Key_Delete;
+        
+        // keys with no ASCII code
+        case SDL_SCANCODE_UP:            return Key_Up;
+        case SDL_SCANCODE_DOWN:          return Key_Down;
+        case SDL_SCANCODE_LEFT:          return Key_Left;
+        case SDL_SCANCODE_RIGHT:         return Key_Right;
+        case SDL_SCANCODE_CAPSLOCK:      return Key_CapsLock;
+        case SDL_SCANCODE_LSHIFT:        return Key_LeftShift;
+        case SDL_SCANCODE_RSHIFT:        return Key_RightShift;
+        case SDL_SCANCODE_LCTRL:         return Key_LeftControl;
+        case SDL_SCANCODE_RCTRL:         return Key_RightControl;
+        case SDL_SCANCODE_LALT:          return Key_LeftAlt;
+        case SDL_SCANCODE_RALT:          return Key_RightAlt;
+        case SDL_SCANCODE_LGUI:          return Key_LeftGUI;
+        case SDL_SCANCODE_RGUI:          return Key_RightGUI;
+        
+        // numeric keypad: same codes as the equivalent main keys
+        case SDL_SCANCODE_KP_0:          return '0';
+        case SDL_SCANCODE_KP_PERIOD:     return '.';
+        case SDL_SCANCODE_KP_DIVIDE:     return '/';
+        case SDL_SCANCODE_KP_MINUS:      return '-';
+        case SDL_SCANCODE_KP_ENTER:      return Key_Enter;
+        
+        // any other keys are not supported
+        default:                         return Key_None;
+    }
+}
+
+// -----------------------------------------------------------------------------
+
 JoystickControl::JoystickControl()
 {
     Type = JoystickControlTypes::None;
@@ -238,6 +323,10 @@ void GamepadsInput::AssignInputDevices()
     set< SDL_JoystickID > MappedInstanceIDs;
     bool IsKeyboardUsed = false;
     
+    // any change in devices discards pending v32kbd events; that
+    // gamepad gets disconnected here so its controls are all reset
+    V32KbdQueue.clear();
+    
     // update mappings for gamepads
     for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
     {
@@ -256,6 +345,22 @@ void GamepadsInput::AssignInputDevices()
             if( IsKeyboardUsed )
               GamepadDevice->Type = DeviceTypes::NoDevice;
               
+            else
+            {
+                IsKeyboardUsed = true;
+                Console.SetGamepadConnection( Gamepad, true );
+            }
+            
+            continue;
+        }
+        
+        if( GamepadDevice->Type == DeviceTypes::V32Kbd )
+        {
+            // there is a single host keyboard: allow only 1 gamepad
+            // to use it, either as keyboard or as v32kbd (never both)
+            if( IsKeyboardUsed )
+              GamepadDevice->Type = DeviceTypes::NoDevice;
+            
             else
             {
                 IsKeyboardUsed = true;
@@ -290,6 +395,91 @@ void GamepadsInput::AssignInputDevices()
     }
 }
 
+// -----------------------------------------------------------------------------
+
+int GamepadsInput::GetKeyboardGamepad()
+{
+    for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
+      if( MappedGamepads[ Gamepad ].Type == DeviceTypes::Keyboard )
+        return Gamepad;
+    
+    return -1;
+}
+
+// -----------------------------------------------------------------------------
+
+int GamepadsInput::GetV32KbdGamepad()
+{
+    for( int Gamepad = 0; Gamepad < Constants::GamepadPorts; Gamepad++ )
+      if( MappedGamepads[ Gamepad ].Type == DeviceTypes::V32Kbd )
+        return Gamepad;
+    
+    return -1;
+}
+
+
+// =============================================================================
+//      GAMEPADS INPUT: V32KBD DEVICE
+// =============================================================================
+
+
+void GamepadsInput::UpdateV32Kbd()
+{
+    // nothing to do when the device is not in use
+    int Gamepad = GetV32KbdGamepad();
+    
+    if( Gamepad < 0 || !Console.HasGamepad( Gamepad ) )
+    {
+        V32KbdQueue.clear();
+        return;
+    }
+    
+    // with no new events, controls just keep their state
+    if( V32KbdQueue.empty() )
+      return;
+    
+    // report only 1 event per frame
+    V32KbdEvent KeyEvent = V32KbdQueue.front();
+    V32KbdQueue.pop_front();
+    
+    // buttons report the key code
+    for( int Bit = 0; Bit < V32Kbd::CodeBits; Bit++ )
+      Console.SetGamepadControl( Gamepad, V32Kbd::CodeControls[ Bit ], KeyEvent.KeyCode & (1 << Bit) );
+    
+    // vertical d-pad axis reports the key action (pressing
+    // a direction makes the console release the opposite)
+    Console.SetGamepadControl( Gamepad, (KeyEvent.Pressed? GamepadControls::Up : GamepadControls::Down), true );
+    
+    // horizontal d-pad axis is the strobe: switch sides. This is read
+    // from its current state in the console (and not from a variable
+    // of ours) so that it will still be right after loading a state
+    bool LeftIsPressed = (Console.GamepadController.RealTimeGamepadStates[ Gamepad ].Left > 0);
+    Console.SetGamepadControl( Gamepad, (LeftIsPressed? GamepadControls::Right : GamepadControls::Left), true );
+}
+
+// -----------------------------------------------------------------------------
+
+void GamepadsInput::ProcessV32KbdKey( SDL_Event Event )
+{
+    // don't process automatic key retriggers
+    if( Event.key.repeat ) return;
+    
+    // keys with no assigned code are not reported
+    int KeyCode = V32Kbd::GetKeyCode( Event.key.keysym.scancode );
+    
+    if( KeyCode == V32Kbd::Key_None )
+      return;
+    
+    // if the program is not reading events, discard the oldest
+    if( V32KbdQueue.size() >= V32Kbd::MaxQueuedEvents )
+      V32KbdQueue.pop_front();
+    
+    V32KbdEvent KeyEvent;
+    KeyEvent.KeyCode = KeyCode;
+    KeyEvent.Pressed = (Event.type == SDL_KEYDOWN);
+    V32KbdQueue.push_back( KeyEvent );
+}
+
 
 // =============================================================================
 //      GAMEPADS INPUT: PROCESSING INPUT EVENTS
@@ -319,10 +509,19 @@ void GamepadsInput::ProcessEvent( SDL_Event Event )
             ProcessJoystickButtonUp( Event );
             break;
         case SDL_KEYDOWN:
-            ProcessKeyDown( Event );
-            break;
         case SDL_KEYUP:
-            ProcessKeyUp( Event );
+            
+            // when v32kbd is in use it takes every key. It can't
+            // coexist with the keyboard device so there's no overlap
+            if( GetV32KbdGamepad() >= 0 )
+              ProcessV32KbdKey( Event );
+            
+            else if( Event.type == SDL_KEYDOWN )
+              ProcessKeyDown( Event );
+            
+            else
+              ProcessKeyUp( Event );
+            
             break;
     }
 }

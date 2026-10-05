@@ -499,6 +499,9 @@ int main( int NumberOfArguments, char* Arguments[] )
                 
                 while( PendingFrames >= 0.9 )
                 {
+                    // v32kbd reports 1 key event per frame
+                    Gamepads.UpdateV32Kbd();
+                    
                     // run another frame
                     Emulator.RunNextFrame();
                     PendingFrames -= 1;
