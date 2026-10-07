@@ -96,12 +96,7 @@ class VirconCEmitter
         void EmitReference    ( UnaryOperationNode* UnaryOperation, RegisterAllocation& Registers, int ResultRegister );
         void EmitDereference  ( UnaryOperationNode* UnaryOperation, RegisterAllocation& Registers, int ResultRegister );
         
-        // emit functions for individual binary operations
-        void EmitAddition             ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
-        void EmitSubtraction          ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
-        void EmitProduct              ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
-        void EmitDivision             ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
-        void EmitModulus              ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
+        // emit functions for individual binary operations that cannot be extended into a compound
         void EmitEqual                ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
         void EmitNotEqual             ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
         void EmitLessThan             ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
@@ -110,11 +105,22 @@ class VirconCEmitter
         void EmitGreaterOrEqual       ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
         void EmitLogicalOr            ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
         void EmitLogicalAnd           ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
+        
+        // emit functions for individual binary operations that can be extended into a
+        // compound assignment; unlike the previous ones, they need LeftAlreadyEmitted
+        // as a control to prevent the left operand from being evaluated twice
+        void EmitAddition             ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
+        void EmitSubtraction          ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
+        void EmitProduct              ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
+        void EmitDivision             ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
+        void EmitModulus              ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
         void EmitBitwiseOr            ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
         void EmitBitwiseAnd           ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
         void EmitBitwiseXor           ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
         void EmitShiftLeft            ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
         void EmitShiftRight           ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
+        
+        // emit functions for regular and compound assignments
         void EmitAssignment           ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
         void EmitAdditionAssignment   ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
         void EmitSubtractionAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );

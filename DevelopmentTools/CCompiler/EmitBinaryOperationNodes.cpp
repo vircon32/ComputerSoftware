@@ -14,568 +14,9 @@
 
 // =============================================================================
 //      EMIT FUNCTIONS FOR INDIVIDUAL BINARY OPERATIONS
+//      THAT CANNOT BE EXTENDED INTO COMPOUND ASSIGNMENTS
 // =============================================================================
 
-
-// addition is commutative
-// it can also do pointer arithmetic
-void VirconCEmitter::EmitAddition( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
-{
-    // convert result register to string for emission
-    string ResultRegisterName = "R" + to_string( ResultRegister );
-    
-    // gather type information
-    bool LeftIsPointer = (BinaryOperation->LeftOperand->ReturnedType->Type() == DataTypes::Pointer);
-    bool RightIsPointer = (BinaryOperation->RightOperand->ReturnedType->Type() == DataTypes::Pointer);
-    
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // CASE 1: Pointer + int
-    if( LeftIsPointer || RightIsPointer )
-    {
-        // tell which is which
-        ExpressionNode* PointerOperand = (LeftIsPointer? BinaryOperation->LeftOperand : BinaryOperation->RightOperand);
-        ExpressionNode* IntegerOperand = (LeftIsPointer? BinaryOperation->RightOperand : BinaryOperation->LeftOperand);
-        
-        // we will need the size of the pointed type
-        DataType* PointedType = ((PointerType*)PointerOperand->ReturnedType)->BaseType;
-        int PointedSize = PointedType->SizeInWords();
-        
-        // get the pointer value
-        if( !LeftAlreadyEmitted || PointerOperand != BinaryOperation->LeftOperand )
-          EmitDependentExpression( PointerOperand, Registers, ResultRegister );
-        
-        // CASE 1.1: Integer operand is static
-        if( IntegerOperand->IsStatic() )
-        {
-            // obtain the integer value
-            StaticValue IntegerValue = IntegerOperand->GetStaticValue();
-            
-            // pointer arithetic uses pointed type as unit
-            if( PointedSize != 1 )
-              IntegerValue.Word.AsInteger *= PointedSize;
-            
-            // emit the addition
-            ProgramLines.push_back( "iadd " + ResultRegisterName + ", " + IntegerValue.ToString() );
-            return;
-        }
-        
-        // CASE 1.2: Integer operand has to be emitted
-        else
-        {
-            // reserve an additional register
-            int IntegerRegister = Registers.FirstFreeRegister();
-            string IntegerRegisterName = "R" + to_string(IntegerRegister);
-            
-            // place integer value in the additional register
-            EmitDependentExpression( IntegerOperand, Registers, IntegerRegister );
-            
-            // pointer arithetic uses pointed type as unit
-            if( PointedSize != 1 )
-              ProgramLines.push_back( "imul " + IntegerRegisterName + ", " + to_string(PointedSize) );
-            
-            // emit the addition
-            ProgramLines.push_back( "iadd " + ResultRegisterName + ", " + IntegerRegisterName );
-            
-            // release the used register
-            Registers.RegisterUsed[ IntegerRegister ] = false;
-            return;
-        }
-    }
-    
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // CASE 2: primitive + primitive
-    bool LeftIsStatic = BinaryOperation->LeftOperand->IsStatic();
-    bool RightIsStatic = BinaryOperation->RightOperand->IsStatic();
-    
-    // precalculate this for type conversions
-    bool LeftIsFloat  = TypeIsFloat( BinaryOperation->LeftOperand->ReturnedType );
-    bool RightIsFloat = TypeIsFloat( BinaryOperation->RightOperand->ReturnedType );
-    bool ResultIsFloat = (LeftIsFloat || RightIsFloat);
-    
-    // CASE 2.1: One of the operands is static
-    if( LeftIsStatic || RightIsStatic )
-    {
-        // tell which is which
-        ExpressionNode* StaticOperand  = (LeftIsStatic? BinaryOperation->LeftOperand : BinaryOperation->RightOperand);
-        ExpressionNode* DynamicOperand = (LeftIsStatic? BinaryOperation->RightOperand : BinaryOperation->LeftOperand);
-        
-        // precalculate this for type conversions
-        bool DynamicIsFloat = TypeIsFloat( DynamicOperand->ReturnedType );
-        
-        // emit the dynamic value to result register
-        if( !LeftAlreadyEmitted || DynamicOperand != BinaryOperation->LeftOperand )
-          EmitDependentExpression( DynamicOperand, Registers, ResultRegister );
-        
-        // emit type conversion for dynamic value
-        if( ResultIsFloat && !DynamicIsFloat )
-          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
-        
-        // obtain the static value
-        StaticValue Value = StaticOperand->GetStaticValue();
-        
-        // do type conversion for static value
-        if( ResultIsFloat )
-          Value.ConvertToType( PrimitiveTypes::Float );
-        
-        // emit the addition
-        string Instruction = (ResultIsFloat? "fadd" : "iadd");
-        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + Value.ToString() );
-        return;
-    }
-    
-    // CASE 2.2: No operand is static
-    else
-    {
-        // emit left value to result register
-        if( !LeftAlreadyEmitted )
-          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
-        
-        // emit type conversion for left value
-        if( ResultIsFloat && !LeftIsFloat )
-          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
-        
-        // reserve an additional register
-        int RightRegister = Registers.FirstFreeRegister();
-        string RightRegisterName = "R" + to_string(RightRegister);
-        
-        // emit right value to reserved register
-        EmitDependentExpression( BinaryOperation->RightOperand, Registers, RightRegister );
-        
-        // emit type conversion for right value
-        if( ResultIsFloat && !RightIsFloat )
-          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
-        
-        // emit the addition
-        string Instruction = (ResultIsFloat? "fadd" : "iadd");
-        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + RightRegisterName );
-        
-        // release the used register
-        Registers.RegisterUsed[ RightRegister ] = false;
-        return;
-    }
-}
-
-// -----------------------------------------------------------------------------
-
-// subtraction is not commutative, but reversible
-// it can do pointer arithmetic and calculate
-// distance between pointers of equal type
-void VirconCEmitter::EmitSubtraction( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
-{
-    // convert result register to string for emission
-    string ResultRegisterName = "R" + to_string( ResultRegister );
-    
-    // gather type information
-    bool LeftIsPointer = (BinaryOperation->LeftOperand->ReturnedType->Type() == DataTypes::Pointer);
-    bool RightIsPointer = (BinaryOperation->RightOperand->ReturnedType->Type() == DataTypes::Pointer);
-    
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // CASE 1: pointer - pointer
-    if( LeftIsPointer && RightIsPointer )
-    {
-        // emit left pointer value into result register
-        if( !LeftAlreadyEmitted )
-          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
-        
-        // reserve register to emit right pointer value
-        int RightRegister = Registers.FirstFreeRegister();
-        string RightRegisterName = "R" + to_string(RightRegister);
-        
-        // emit right pointer value into reserved register
-        EmitDependentExpression( BinaryOperation->RightOperand, Registers, RightRegister );
-        
-        // emit the subtraction
-        ProgramLines.push_back( "isub " + ResultRegisterName + ", " + RightRegisterName );
-        
-        // release the used register
-        Registers.RegisterUsed[ RightRegister ] = false;
-        
-        // pointer arithetic uses pointed type as unit
-        DataType* LeftType = BinaryOperation->LeftOperand->ReturnedType;
-        int PointedSize = ((PointerType*)LeftType)->BaseType->SizeInWords();
-        
-        if( PointedSize != 1 )
-          ProgramLines.push_back( "idiv " + ResultRegisterName + ", " + to_string(PointedSize) );
-        return;
-    }
-    
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // CASE 2: pointer - int (note that "int - pointer" is illegal)
-    else if( LeftIsPointer )
-    {
-        // tell which is which
-        ExpressionNode* PointerOperand = BinaryOperation->LeftOperand;
-        ExpressionNode* IntegerOperand = BinaryOperation->RightOperand;
-        
-        // we will need the size of the pointed type
-        DataType* PointedType = ((PointerType*)PointerOperand->ReturnedType)->BaseType;
-        int PointedSize = PointedType->SizeInWords();
-        
-        // get the pointer value
-        if( !LeftAlreadyEmitted || PointerOperand != BinaryOperation->LeftOperand )
-          EmitDependentExpression( PointerOperand, Registers, ResultRegister );
-        
-        // CASE 1.1: Integer operand is static
-        if( IntegerOperand->IsStatic() )
-        {
-            // obtain the integer value
-            StaticValue IntegerValue = IntegerOperand->GetStaticValue();
-            
-            // pointer arithetic uses pointed type as unit
-            if( PointedSize != 1 )
-              IntegerValue.Word.AsInteger *= PointedSize;
-            
-            // emit the subtraction
-            ProgramLines.push_back( "isub " + ResultRegisterName + ", " + IntegerValue.ToString() );
-            return;
-        }
-        
-        // CASE 1.2: Integer operand has to be emitted
-        else
-        {
-            // reserve an additional register
-            int IntegerRegister = Registers.FirstFreeRegister();
-            string IntegerRegisterName = "R" + to_string(IntegerRegister);
-            
-            // place integer value in the additional register
-            EmitDependentExpression( IntegerOperand, Registers, IntegerRegister );
-            
-            // pointer arithetic uses pointed type as unit
-            if( PointedSize != 1 )
-              ProgramLines.push_back( "imul " + IntegerRegisterName + ", " + to_string(PointedSize) );
-            
-            // emit the subtraction
-            ProgramLines.push_back( "isub " + ResultRegisterName + ", " + IntegerRegisterName );
-            
-            // release the used register
-            Registers.RegisterUsed[ IntegerRegister ] = false;
-            return;
-        }
-    }
-    
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // CASE 3: primitive - primitive
-    bool LeftIsStatic = BinaryOperation->LeftOperand->IsStatic();
-    bool RightIsStatic = BinaryOperation->RightOperand->IsStatic();
-    
-    // precalculate this for type conversions
-    bool LeftIsFloat  = TypeIsFloat( BinaryOperation->LeftOperand->ReturnedType );
-    bool RightIsFloat = TypeIsFloat( BinaryOperation->RightOperand->ReturnedType );
-    bool ResultIsFloat = (LeftIsFloat || RightIsFloat);
-    
-    // CASE 3.1: Right operand is static
-    // Here we can emit as in an addition
-    if( RightIsStatic )
-    {
-        // emit the dynamic value to result register
-        if( !LeftAlreadyEmitted )
-          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
-        
-        // emit type conversion for dynamic value
-        if( ResultIsFloat && !LeftIsFloat )
-          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
-        
-        // obtain the static value
-        StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
-        
-        // do type conversion for static value
-        if( ResultIsFloat )
-          RightValue.ConvertToType( PrimitiveTypes::Float );
-        
-        // emit the subtraction
-        string Instruction = (ResultIsFloat? "fsub" : "isub");
-        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + RightValue.ToString() );
-        return;
-    }
-    
-    // CASE 3.2: Left operand is static
-    // Here we need to invert "b-a" as "-a+b"
-    else if( LeftIsStatic )
-    {
-        // obtain the static value
-        StaticValue LeftValue = BinaryOperation->LeftOperand->GetStaticValue();
-        
-        // do type conversion for static value
-        if( ResultIsFloat )
-          LeftValue.ConvertToType( PrimitiveTypes::Float );
-        
-        // emit the dynamic value to result register
-        EmitDependentExpression( BinaryOperation->RightOperand, Registers, ResultRegister );
-        
-        // emit type conversion for dynamic value
-        if( ResultIsFloat && !RightIsFloat )
-          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
-        
-        // change sign of dynamic value
-        string SignInstruction = (ResultIsFloat? "fsgn" : "isgn");
-        ProgramLines.push_back( SignInstruction + " " + ResultRegisterName );
-        
-        // now emit an addition instead of subtraction
-        // (since we have already reorganized the operation)
-        string Instruction = (ResultIsFloat? "fadd" : "iadd");
-        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + LeftValue.ToString() );
-        return;
-    }
-    
-    // CASE 3.3: No operand is static
-    // Again, this is analogous to addition
-    else
-    {
-        // emit left value to result register
-        if( !LeftAlreadyEmitted )
-          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
-        
-        // emit type conversion for left value
-        if( ResultIsFloat && !LeftIsFloat )
-          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
-        
-        // reserve an additional register
-        int RightRegister = Registers.FirstFreeRegister();
-        string RightRegisterName = "R" + to_string(RightRegister);
-        
-        // emit right value to reserved register
-        EmitDependentExpression( BinaryOperation->RightOperand, Registers, RightRegister );
-        
-        // emit type conversion for right value
-        if( ResultIsFloat && !RightIsFloat )
-          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
-        
-        // emit the subtraction
-        string Instruction = (ResultIsFloat? "fsub" : "isub");
-        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + RightRegisterName );
-        
-        // release the used register
-        Registers.RegisterUsed[ RightRegister ] = false;
-        return;
-    }
-}
-
-// -----------------------------------------------------------------------------
-
-// similar to addition, but in product
-// we have no pointer arithmetic
-void VirconCEmitter::EmitProduct( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
-{
-    // convert result register to string for emission
-    string ResultRegisterName = "R" + to_string( ResultRegister );
-    
-    // gather operand information
-    bool LeftIsStatic = BinaryOperation->LeftOperand->IsStatic();
-    bool RightIsStatic = BinaryOperation->RightOperand->IsStatic();
-    
-    // precalculate this for type conversions
-    bool LeftIsFloat  = TypeIsFloat( BinaryOperation->LeftOperand->ReturnedType );
-    bool RightIsFloat = TypeIsFloat( BinaryOperation->RightOperand->ReturnedType );
-    bool ResultIsFloat = (LeftIsFloat || RightIsFloat);
-    
-    // CASE 1: One of the operands is static
-    if( LeftIsStatic || RightIsStatic )
-    {
-        // tell which is which
-        ExpressionNode* StaticOperand  = (LeftIsStatic? BinaryOperation->LeftOperand : BinaryOperation->RightOperand);
-        ExpressionNode* DynamicOperand = (LeftIsStatic? BinaryOperation->RightOperand : BinaryOperation->LeftOperand);
-        
-        // precalculate this for type conversions
-        bool DynamicIsFloat = TypeIsFloat( DynamicOperand->ReturnedType );
-        
-        // emit the dynamic value to result register
-        if( !LeftAlreadyEmitted || DynamicOperand != BinaryOperation->LeftOperand )
-          EmitDependentExpression( DynamicOperand, Registers, ResultRegister );
-        
-        // emit type conversion for dynamic value
-        if( ResultIsFloat && !DynamicIsFloat )
-          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
-        
-        // obtain the static value
-        StaticValue Value = StaticOperand->GetStaticValue();
-        
-        // do type conversion for static value
-        if( ResultIsFloat )
-          Value.ConvertToType( PrimitiveTypes::Float );
-        
-        // emit the product
-        string Instruction = (ResultIsFloat? "fmul" : "imul");
-        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + Value.ToString() );
-        return;
-    }
-    
-    // CASE 2: No operand is static
-    else
-    {
-        // emit left value to result register
-        if( !LeftAlreadyEmitted )
-          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
-        
-        // emit type conversion for left value
-        if( ResultIsFloat && !LeftIsFloat )
-          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
-        
-        // reserve an additional register
-        int RightRegister = Registers.FirstFreeRegister();
-        string RightRegisterName = "R" + to_string(RightRegister);
-        
-        // emit right value to reserved register
-        EmitDependentExpression( BinaryOperation->RightOperand, Registers, RightRegister );
-        
-        // emit type conversion for right value
-        if( ResultIsFloat && !RightIsFloat )
-          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
-        
-        // emit the product
-        string Instruction = (ResultIsFloat? "fmul" : "imul");
-        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + RightRegisterName );
-        
-        // release the used register
-        Registers.RegisterUsed[ RightRegister ] = false;
-        return;
-    }
-}
-
-// -----------------------------------------------------------------------------
-
-// Not commutative, and while reversible, we will not do
-// so to avoid imprecision errors. Thus, unlike subtraction,
-// we don't optimize the left-static case.
-// Also, we do static checks for divisions by zero
-void VirconCEmitter::EmitDivision( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
-{
-    // convert result register to string for emission
-    string ResultRegisterName = "R" + to_string( ResultRegister );
-    
-    // gather operand information
-    bool RightIsStatic = BinaryOperation->RightOperand->IsStatic();
-    
-    // precalculate this for type conversions
-    bool LeftIsFloat  = TypeIsFloat( BinaryOperation->LeftOperand->ReturnedType );
-    bool RightIsFloat = TypeIsFloat( BinaryOperation->RightOperand->ReturnedType );
-    bool ResultIsFloat = (LeftIsFloat || RightIsFloat);
-    
-    // CASE 1: Right operand is static
-    if( RightIsStatic )
-    {
-        // emit the dynamic value to result register
-        if( !LeftAlreadyEmitted )
-          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
-        
-        // emit type conversion for dynamic value
-        if( ResultIsFloat && !LeftIsFloat )
-          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
-        
-        // obtain the static value
-        StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
-        
-        // do type conversion for static value
-        if( ResultIsFloat )
-          RightValue.ConvertToType( PrimitiveTypes::Float );
-        
-        // check for divisions by 0
-        if( ResultIsFloat )
-        {
-            if( RightValue.Word.AsFloat == 0 )
-              RaiseFatalError( BinaryOperation->Location, "division by 0" );
-        }
-        
-        else
-        {
-            if( RightValue.Word.AsInteger == 0 )
-              RaiseFatalError( BinaryOperation->Location, "division by 0" );
-        }
-        
-        // emit the division
-        string Instruction = (ResultIsFloat? "fdiv" : "idiv");
-        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + RightValue.ToString() );
-        return;
-    }
-    
-    // CASE 2: Right is not static
-    // (even it left is, we cannot optimize that)
-    else
-    {
-        // emit left value to result register
-        if( !LeftAlreadyEmitted )
-          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
-        
-        // emit type conversion for left value
-        if( ResultIsFloat && !LeftIsFloat )
-          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
-        
-        // reserve an additional register
-        int RightRegister = Registers.FirstFreeRegister();
-        string RightRegisterName = "R" + to_string(RightRegister);
-        
-        // emit right value to reserved register
-        EmitDependentExpression( BinaryOperation->RightOperand, Registers, RightRegister );
-        
-        // emit type conversion for right value
-        if( ResultIsFloat && !RightIsFloat )
-          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
-        
-        // emit the division
-        string Instruction = (ResultIsFloat? "fdiv" : "idiv");
-        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + RightRegisterName );
-        
-        // release the used register
-        Registers.RegisterUsed[ RightRegister ] = false;
-        return;
-    }
-}
-
-// -----------------------------------------------------------------------------
-
-// Same as division, but there cannot be any floats
-// (so type conversions are not needed)
-void VirconCEmitter::EmitModulus( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
-{
-    // convert result register to string for emission
-    string ResultRegisterName = "R" + to_string( ResultRegister );
-    
-    // gather operand information
-    bool RightIsStatic = BinaryOperation->RightOperand->IsStatic();
-    
-    // CASE 1: Right operand is static
-    if( RightIsStatic )
-    {
-        // emit the dynamic value to result register
-        if( !LeftAlreadyEmitted )
-          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
-        
-        // obtain the static value
-        StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
-        
-        // check for modulus by 0
-        if( RightValue.Word.AsInteger == 0 )
-          RaiseFatalError( BinaryOperation->Location, "modulus by 0" );
-        
-        // emit the modulus
-        ProgramLines.push_back( "imod " + ResultRegisterName + ", " + RightValue.ToString() );
-        return;
-    }
-    
-    // CASE 2: Right is not static
-    // (even it left is, we cannot optimize that)
-    else
-    {
-        // emit left value to result register
-        if( !LeftAlreadyEmitted )
-          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
-        
-        // reserve an additional register
-        int RightRegister = Registers.FirstFreeRegister();
-        string RightRegisterName = "R" + to_string(RightRegister);
-        
-        // emit right value to reserved register
-        EmitDependentExpression( BinaryOperation->RightOperand, Registers, RightRegister );
-        
-        // emit the modulus
-        ProgramLines.push_back( "imod " + ResultRegisterName + ", " + RightRegisterName );
-        
-        // release the used register
-        Registers.RegisterUsed[ RightRegister ] = false;
-        return;
-    }
-}
-
-// -----------------------------------------------------------------------------
 
 // Equality is commutative.
 // Pointers are taken as ints
@@ -1261,6 +702,571 @@ void VirconCEmitter::EmitLogicalAnd( BinaryOperationNode* BinaryOperation, Regis
     EmitLabel( ShortCircuitLabel );
 }
 
+
+// =============================================================================
+//      EMIT FUNCTIONS FOR INDIVIDUAL BINARY OPERATIONS
+//      THAT CAN BE EXTENDED INTO COMPOUND ASSIGNMENTS
+// =============================================================================
+
+
+// addition is commutative
+// it can also do pointer arithmetic
+void VirconCEmitter::EmitAddition( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
+{
+    // convert result register to string for emission
+    string ResultRegisterName = "R" + to_string( ResultRegister );
+    
+    // gather type information
+    bool LeftIsPointer = (BinaryOperation->LeftOperand->ReturnedType->Type() == DataTypes::Pointer);
+    bool RightIsPointer = (BinaryOperation->RightOperand->ReturnedType->Type() == DataTypes::Pointer);
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // CASE 1: Pointer + int
+    if( LeftIsPointer || RightIsPointer )
+    {
+        // tell which is which
+        ExpressionNode* PointerOperand = (LeftIsPointer? BinaryOperation->LeftOperand : BinaryOperation->RightOperand);
+        ExpressionNode* IntegerOperand = (LeftIsPointer? BinaryOperation->RightOperand : BinaryOperation->LeftOperand);
+        
+        // we will need the size of the pointed type
+        DataType* PointedType = ((PointerType*)PointerOperand->ReturnedType)->BaseType;
+        int PointedSize = PointedType->SizeInWords();
+        
+        // get the pointer value
+        if( !LeftAlreadyEmitted || PointerOperand != BinaryOperation->LeftOperand )
+          EmitDependentExpression( PointerOperand, Registers, ResultRegister );
+        
+        // CASE 1.1: Integer operand is static
+        if( IntegerOperand->IsStatic() )
+        {
+            // obtain the integer value
+            StaticValue IntegerValue = IntegerOperand->GetStaticValue();
+            
+            // pointer arithetic uses pointed type as unit
+            if( PointedSize != 1 )
+              IntegerValue.Word.AsInteger *= PointedSize;
+            
+            // emit the addition
+            ProgramLines.push_back( "iadd " + ResultRegisterName + ", " + IntegerValue.ToString() );
+            return;
+        }
+        
+        // CASE 1.2: Integer operand has to be emitted
+        else
+        {
+            // reserve an additional register
+            int IntegerRegister = Registers.FirstFreeRegister();
+            string IntegerRegisterName = "R" + to_string(IntegerRegister);
+            
+            // place integer value in the additional register
+            EmitDependentExpression( IntegerOperand, Registers, IntegerRegister );
+            
+            // pointer arithetic uses pointed type as unit
+            if( PointedSize != 1 )
+              ProgramLines.push_back( "imul " + IntegerRegisterName + ", " + to_string(PointedSize) );
+            
+            // emit the addition
+            ProgramLines.push_back( "iadd " + ResultRegisterName + ", " + IntegerRegisterName );
+            
+            // release the used register
+            Registers.RegisterUsed[ IntegerRegister ] = false;
+            return;
+        }
+    }
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // CASE 2: primitive + primitive
+    bool LeftIsStatic = BinaryOperation->LeftOperand->IsStatic();
+    bool RightIsStatic = BinaryOperation->RightOperand->IsStatic();
+    
+    // precalculate this for type conversions
+    bool LeftIsFloat  = TypeIsFloat( BinaryOperation->LeftOperand->ReturnedType );
+    bool RightIsFloat = TypeIsFloat( BinaryOperation->RightOperand->ReturnedType );
+    bool ResultIsFloat = (LeftIsFloat || RightIsFloat);
+    
+    // CASE 2.1: One of the operands is static
+    if( LeftIsStatic || RightIsStatic )
+    {
+        // tell which is which
+        ExpressionNode* StaticOperand  = (LeftIsStatic? BinaryOperation->LeftOperand : BinaryOperation->RightOperand);
+        ExpressionNode* DynamicOperand = (LeftIsStatic? BinaryOperation->RightOperand : BinaryOperation->LeftOperand);
+        
+        // precalculate this for type conversions
+        bool DynamicIsFloat = TypeIsFloat( DynamicOperand->ReturnedType );
+        
+        // emit the dynamic value to result register
+        if( !LeftAlreadyEmitted || DynamicOperand != BinaryOperation->LeftOperand )
+          EmitDependentExpression( DynamicOperand, Registers, ResultRegister );
+        
+        // emit type conversion for dynamic value
+        if( ResultIsFloat && !DynamicIsFloat )
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+        
+        // obtain the static value
+        StaticValue Value = StaticOperand->GetStaticValue();
+        
+        // do type conversion for static value
+        if( ResultIsFloat )
+          Value.ConvertToType( PrimitiveTypes::Float );
+        
+        // emit the addition
+        string Instruction = (ResultIsFloat? "fadd" : "iadd");
+        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + Value.ToString() );
+        return;
+    }
+    
+    // CASE 2.2: No operand is static
+    else
+    {
+        // emit left value to result register
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        
+        // emit type conversion for left value
+        if( ResultIsFloat && !LeftIsFloat )
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+        
+        // reserve an additional register
+        int RightRegister = Registers.FirstFreeRegister();
+        string RightRegisterName = "R" + to_string(RightRegister);
+        
+        // emit right value to reserved register
+        EmitDependentExpression( BinaryOperation->RightOperand, Registers, RightRegister );
+        
+        // emit type conversion for right value
+        if( ResultIsFloat && !RightIsFloat )
+          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+        
+        // emit the addition
+        string Instruction = (ResultIsFloat? "fadd" : "iadd");
+        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + RightRegisterName );
+        
+        // release the used register
+        Registers.RegisterUsed[ RightRegister ] = false;
+        return;
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+// subtraction is not commutative, but reversible
+// it can do pointer arithmetic and calculate
+// distance between pointers of equal type
+void VirconCEmitter::EmitSubtraction( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
+{
+    // convert result register to string for emission
+    string ResultRegisterName = "R" + to_string( ResultRegister );
+    
+    // gather type information
+    bool LeftIsPointer = (BinaryOperation->LeftOperand->ReturnedType->Type() == DataTypes::Pointer);
+    bool RightIsPointer = (BinaryOperation->RightOperand->ReturnedType->Type() == DataTypes::Pointer);
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // CASE 1: pointer - pointer
+    if( LeftIsPointer && RightIsPointer )
+    {
+        // emit left pointer value into result register
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        
+        // reserve register to emit right pointer value
+        int RightRegister = Registers.FirstFreeRegister();
+        string RightRegisterName = "R" + to_string(RightRegister);
+        
+        // emit right pointer value into reserved register
+        EmitDependentExpression( BinaryOperation->RightOperand, Registers, RightRegister );
+        
+        // emit the subtraction
+        ProgramLines.push_back( "isub " + ResultRegisterName + ", " + RightRegisterName );
+        
+        // release the used register
+        Registers.RegisterUsed[ RightRegister ] = false;
+        
+        // pointer arithetic uses pointed type as unit
+        DataType* LeftType = BinaryOperation->LeftOperand->ReturnedType;
+        int PointedSize = ((PointerType*)LeftType)->BaseType->SizeInWords();
+        
+        if( PointedSize != 1 )
+          ProgramLines.push_back( "idiv " + ResultRegisterName + ", " + to_string(PointedSize) );
+        return;
+    }
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // CASE 2: pointer - int (note that "int - pointer" is illegal)
+    else if( LeftIsPointer )
+    {
+        // tell which is which
+        ExpressionNode* PointerOperand = BinaryOperation->LeftOperand;
+        ExpressionNode* IntegerOperand = BinaryOperation->RightOperand;
+        
+        // we will need the size of the pointed type
+        DataType* PointedType = ((PointerType*)PointerOperand->ReturnedType)->BaseType;
+        int PointedSize = PointedType->SizeInWords();
+        
+        // get the pointer value
+        if( !LeftAlreadyEmitted || PointerOperand != BinaryOperation->LeftOperand )
+          EmitDependentExpression( PointerOperand, Registers, ResultRegister );
+        
+        // CASE 1.1: Integer operand is static
+        if( IntegerOperand->IsStatic() )
+        {
+            // obtain the integer value
+            StaticValue IntegerValue = IntegerOperand->GetStaticValue();
+            
+            // pointer arithetic uses pointed type as unit
+            if( PointedSize != 1 )
+              IntegerValue.Word.AsInteger *= PointedSize;
+            
+            // emit the subtraction
+            ProgramLines.push_back( "isub " + ResultRegisterName + ", " + IntegerValue.ToString() );
+            return;
+        }
+        
+        // CASE 1.2: Integer operand has to be emitted
+        else
+        {
+            // reserve an additional register
+            int IntegerRegister = Registers.FirstFreeRegister();
+            string IntegerRegisterName = "R" + to_string(IntegerRegister);
+            
+            // place integer value in the additional register
+            EmitDependentExpression( IntegerOperand, Registers, IntegerRegister );
+            
+            // pointer arithetic uses pointed type as unit
+            if( PointedSize != 1 )
+              ProgramLines.push_back( "imul " + IntegerRegisterName + ", " + to_string(PointedSize) );
+            
+            // emit the subtraction
+            ProgramLines.push_back( "isub " + ResultRegisterName + ", " + IntegerRegisterName );
+            
+            // release the used register
+            Registers.RegisterUsed[ IntegerRegister ] = false;
+            return;
+        }
+    }
+    
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // CASE 3: primitive - primitive
+    bool LeftIsStatic = BinaryOperation->LeftOperand->IsStatic();
+    bool RightIsStatic = BinaryOperation->RightOperand->IsStatic();
+    
+    // precalculate this for type conversions
+    bool LeftIsFloat  = TypeIsFloat( BinaryOperation->LeftOperand->ReturnedType );
+    bool RightIsFloat = TypeIsFloat( BinaryOperation->RightOperand->ReturnedType );
+    bool ResultIsFloat = (LeftIsFloat || RightIsFloat);
+    
+    // CASE 3.1: Right operand is static
+    // Here we can emit as in an addition
+    if( RightIsStatic )
+    {
+        // emit the dynamic value to result register
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        
+        // emit type conversion for dynamic value
+        if( ResultIsFloat && !LeftIsFloat )
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+        
+        // obtain the static value
+        StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
+        
+        // do type conversion for static value
+        if( ResultIsFloat )
+          RightValue.ConvertToType( PrimitiveTypes::Float );
+        
+        // emit the subtraction
+        string Instruction = (ResultIsFloat? "fsub" : "isub");
+        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + RightValue.ToString() );
+        return;
+    }
+    
+    // CASE 3.2: Left operand is static
+    // Here we need to invert "b-a" as "-a+b"
+    else if( LeftIsStatic )
+    {
+        // obtain the static value
+        StaticValue LeftValue = BinaryOperation->LeftOperand->GetStaticValue();
+        
+        // do type conversion for static value
+        if( ResultIsFloat )
+          LeftValue.ConvertToType( PrimitiveTypes::Float );
+        
+        // emit the dynamic value to result register
+        EmitDependentExpression( BinaryOperation->RightOperand, Registers, ResultRegister );
+        
+        // emit type conversion for dynamic value
+        if( ResultIsFloat && !RightIsFloat )
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+        
+        // change sign of dynamic value
+        string SignInstruction = (ResultIsFloat? "fsgn" : "isgn");
+        ProgramLines.push_back( SignInstruction + " " + ResultRegisterName );
+        
+        // now emit an addition instead of subtraction
+        // (since we have already reorganized the operation)
+        string Instruction = (ResultIsFloat? "fadd" : "iadd");
+        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + LeftValue.ToString() );
+        return;
+    }
+    
+    // CASE 3.3: No operand is static
+    // Again, this is analogous to addition
+    else
+    {
+        // emit left value to result register
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        
+        // emit type conversion for left value
+        if( ResultIsFloat && !LeftIsFloat )
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+        
+        // reserve an additional register
+        int RightRegister = Registers.FirstFreeRegister();
+        string RightRegisterName = "R" + to_string(RightRegister);
+        
+        // emit right value to reserved register
+        EmitDependentExpression( BinaryOperation->RightOperand, Registers, RightRegister );
+        
+        // emit type conversion for right value
+        if( ResultIsFloat && !RightIsFloat )
+          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+        
+        // emit the subtraction
+        string Instruction = (ResultIsFloat? "fsub" : "isub");
+        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + RightRegisterName );
+        
+        // release the used register
+        Registers.RegisterUsed[ RightRegister ] = false;
+        return;
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+// similar to addition, but in product
+// we have no pointer arithmetic
+void VirconCEmitter::EmitProduct( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
+{
+    // convert result register to string for emission
+    string ResultRegisterName = "R" + to_string( ResultRegister );
+    
+    // gather operand information
+    bool LeftIsStatic = BinaryOperation->LeftOperand->IsStatic();
+    bool RightIsStatic = BinaryOperation->RightOperand->IsStatic();
+    
+    // precalculate this for type conversions
+    bool LeftIsFloat  = TypeIsFloat( BinaryOperation->LeftOperand->ReturnedType );
+    bool RightIsFloat = TypeIsFloat( BinaryOperation->RightOperand->ReturnedType );
+    bool ResultIsFloat = (LeftIsFloat || RightIsFloat);
+    
+    // CASE 1: One of the operands is static
+    if( LeftIsStatic || RightIsStatic )
+    {
+        // tell which is which
+        ExpressionNode* StaticOperand  = (LeftIsStatic? BinaryOperation->LeftOperand : BinaryOperation->RightOperand);
+        ExpressionNode* DynamicOperand = (LeftIsStatic? BinaryOperation->RightOperand : BinaryOperation->LeftOperand);
+        
+        // precalculate this for type conversions
+        bool DynamicIsFloat = TypeIsFloat( DynamicOperand->ReturnedType );
+        
+        // emit the dynamic value to result register
+        if( !LeftAlreadyEmitted || DynamicOperand != BinaryOperation->LeftOperand )
+          EmitDependentExpression( DynamicOperand, Registers, ResultRegister );
+        
+        // emit type conversion for dynamic value
+        if( ResultIsFloat && !DynamicIsFloat )
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+        
+        // obtain the static value
+        StaticValue Value = StaticOperand->GetStaticValue();
+        
+        // do type conversion for static value
+        if( ResultIsFloat )
+          Value.ConvertToType( PrimitiveTypes::Float );
+        
+        // emit the product
+        string Instruction = (ResultIsFloat? "fmul" : "imul");
+        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + Value.ToString() );
+        return;
+    }
+    
+    // CASE 2: No operand is static
+    else
+    {
+        // emit left value to result register
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        
+        // emit type conversion for left value
+        if( ResultIsFloat && !LeftIsFloat )
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+        
+        // reserve an additional register
+        int RightRegister = Registers.FirstFreeRegister();
+        string RightRegisterName = "R" + to_string(RightRegister);
+        
+        // emit right value to reserved register
+        EmitDependentExpression( BinaryOperation->RightOperand, Registers, RightRegister );
+        
+        // emit type conversion for right value
+        if( ResultIsFloat && !RightIsFloat )
+          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+        
+        // emit the product
+        string Instruction = (ResultIsFloat? "fmul" : "imul");
+        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + RightRegisterName );
+        
+        // release the used register
+        Registers.RegisterUsed[ RightRegister ] = false;
+        return;
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+// Not commutative, and while reversible, we will not do
+// so to avoid imprecision errors. Thus, unlike subtraction,
+// we don't optimize the left-static case.
+// Also, we do static checks for divisions by zero
+void VirconCEmitter::EmitDivision( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
+{
+    // convert result register to string for emission
+    string ResultRegisterName = "R" + to_string( ResultRegister );
+    
+    // gather operand information
+    bool RightIsStatic = BinaryOperation->RightOperand->IsStatic();
+    
+    // precalculate this for type conversions
+    bool LeftIsFloat  = TypeIsFloat( BinaryOperation->LeftOperand->ReturnedType );
+    bool RightIsFloat = TypeIsFloat( BinaryOperation->RightOperand->ReturnedType );
+    bool ResultIsFloat = (LeftIsFloat || RightIsFloat);
+    
+    // CASE 1: Right operand is static
+    if( RightIsStatic )
+    {
+        // emit the dynamic value to result register
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        
+        // emit type conversion for dynamic value
+        if( ResultIsFloat && !LeftIsFloat )
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+        
+        // obtain the static value
+        StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
+        
+        // do type conversion for static value
+        if( ResultIsFloat )
+          RightValue.ConvertToType( PrimitiveTypes::Float );
+        
+        // check for divisions by 0
+        if( ResultIsFloat )
+        {
+            if( RightValue.Word.AsFloat == 0 )
+              RaiseFatalError( BinaryOperation->Location, "division by 0" );
+        }
+        
+        else
+        {
+            if( RightValue.Word.AsInteger == 0 )
+              RaiseFatalError( BinaryOperation->Location, "division by 0" );
+        }
+        
+        // emit the division
+        string Instruction = (ResultIsFloat? "fdiv" : "idiv");
+        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + RightValue.ToString() );
+        return;
+    }
+    
+    // CASE 2: Right is not static
+    // (even it left is, we cannot optimize that)
+    else
+    {
+        // emit left value to result register
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        
+        // emit type conversion for left value
+        if( ResultIsFloat && !LeftIsFloat )
+          EmitRegisterTypeConversion( ResultRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+        
+        // reserve an additional register
+        int RightRegister = Registers.FirstFreeRegister();
+        string RightRegisterName = "R" + to_string(RightRegister);
+        
+        // emit right value to reserved register
+        EmitDependentExpression( BinaryOperation->RightOperand, Registers, RightRegister );
+        
+        // emit type conversion for right value
+        if( ResultIsFloat && !RightIsFloat )
+          EmitRegisterTypeConversion( RightRegister, PrimitiveTypes::Int, PrimitiveTypes::Float );
+        
+        // emit the division
+        string Instruction = (ResultIsFloat? "fdiv" : "idiv");
+        ProgramLines.push_back( Instruction + " " + ResultRegisterName + ", " + RightRegisterName );
+        
+        // release the used register
+        Registers.RegisterUsed[ RightRegister ] = false;
+        return;
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+// Same as division, but there cannot be any floats
+// (so type conversions are not needed)
+void VirconCEmitter::EmitModulus( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
+{
+    // convert result register to string for emission
+    string ResultRegisterName = "R" + to_string( ResultRegister );
+    
+    // gather operand information
+    bool RightIsStatic = BinaryOperation->RightOperand->IsStatic();
+    
+    // CASE 1: Right operand is static
+    if( RightIsStatic )
+    {
+        // emit the dynamic value to result register
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        
+        // obtain the static value
+        StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
+        
+        // check for modulus by 0
+        if( RightValue.Word.AsInteger == 0 )
+          RaiseFatalError( BinaryOperation->Location, "modulus by 0" );
+        
+        // emit the modulus
+        ProgramLines.push_back( "imod " + ResultRegisterName + ", " + RightValue.ToString() );
+        return;
+    }
+    
+    // CASE 2: Right is not static
+    // (even it left is, we cannot optimize that)
+    else
+    {
+        // emit left value to result register
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        
+        // reserve an additional register
+        int RightRegister = Registers.FirstFreeRegister();
+        string RightRegisterName = "R" + to_string(RightRegister);
+        
+        // emit right value to reserved register
+        EmitDependentExpression( BinaryOperation->RightOperand, Registers, RightRegister );
+        
+        // emit the modulus
+        ProgramLines.push_back( "imod " + ResultRegisterName + ", " + RightRegisterName );
+        
+        // release the used register
+        Registers.RegisterUsed[ RightRegister ] = false;
+        return;
+    }
+}
+
 // -----------------------------------------------------------------------------
 
 // Bitwise operations are commutative.
@@ -1534,7 +1540,70 @@ void VirconCEmitter::EmitShiftRight( BinaryOperationNode* BinaryOperation, Regis
     }
 }
 
+
+// =============================================================================
+//      HELPER FUNCTIONS FOR COMPOUND ASSIGNMENTS
+// =============================================================================
+
+
+// helper function to provide compound assignments with an address
+// result already present in a register; we can do this because none
+// of the operators using this allow multi-word operands;
+// returns the reserved address register, or -1 if none was used
+int VirconCEmitter::EmitCompoundAssignmentAddress( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
+{
+    string ResultRegisterName = "R" + to_string(ResultRegister);
+    
+    // static placements do not need a preserved address register
+    if( BinaryOperation->LeftOperand->HasStaticPlacement() )
+    {
+        MemoryPlacement LeftPlacement = BinaryOperation->LeftOperand->GetStaticPlacement();
+        
+        if( BinaryOperation->LeftOperand->HasSideEffects() )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        else
+          ProgramLines.push_back( "mov " + ResultRegisterName + ", [" + LeftPlacement.AccessAddressString() + "]" );
+        
+        return -1;
+    }
+    
+    // dynamic placements must be evaluated only once
+    int AddressRegister = Registers.FirstFreeRegister();
+    string AddressRegisterName = "R" + to_string(AddressRegister);
+    
+    EmitExpressionPlacement( BinaryOperation->LeftOperand, Registers, AddressRegister );
+    ProgramLines.push_back( "mov " + ResultRegisterName + ", [" + AddressRegisterName + "]" );
+    
+    return AddressRegister;
+}
+
 // -----------------------------------------------------------------------------
+
+// helper function to emit the final MOV in compound assignments
+// when a target address was already available in a register
+// (coming from a previous call to EmitCompoundAssignmentAddress)
+void VirconCEmitter::EmitCompoundAssignmentCopy( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, int AddressRegister )
+{
+    string ResultRegisterName = "R" + to_string(ResultRegister);
+    
+    if( AddressRegister == -1 )
+    {
+        MemoryPlacement LeftPlacement = BinaryOperation->LeftOperand->GetStaticPlacement();
+        ProgramLines.push_back( "mov [" + LeftPlacement.AccessAddressString() + "], " + ResultRegisterName );
+        return;
+    }
+    
+    // if an address register was reserved
+    string AddressRegisterName = "R" + to_string(AddressRegister);
+    ProgramLines.push_back( "mov [" + AddressRegisterName + "], " + ResultRegisterName );
+    Registers.RegisterUsed[ AddressRegister ] = false;
+}
+
+
+// =============================================================================
+//      EMIT FUNCTIONS FOR REGULAR AND COMPOUND ASSIGNMENTS
+// =============================================================================
+
 
 void VirconCEmitter::EmitAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
 {
@@ -1621,60 +1690,6 @@ void VirconCEmitter::EmitAssignment( BinaryOperationNode* BinaryOperation, Regis
         // free used register
         Registers.RegisterUsed[ PlacementRegister ] = false;
     }
-}
-
-// -----------------------------------------------------------------------------
-
-// helper function to provide compound assignments with an address
-// result already present in a register; we can do this because none
-// of the operators using this allow multi-word operands;
-// returns the reserved address register, or -1 if none was used
-int VirconCEmitter::EmitCompoundAssignmentAddress( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
-{
-    string ResultRegisterName = "R" + to_string(ResultRegister);
-
-    // static placements do not need a preserved address register
-    if( BinaryOperation->LeftOperand->HasStaticPlacement() )
-    {
-        MemoryPlacement LeftPlacement = BinaryOperation->LeftOperand->GetStaticPlacement();
-
-        if( BinaryOperation->LeftOperand->HasSideEffects() )
-          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
-        else
-          ProgramLines.push_back( "mov " + ResultRegisterName + ", [" + LeftPlacement.AccessAddressString() + "]" );
-
-        return -1;
-    }
-
-    // dynamic placements must be evaluated only once
-    int AddressRegister = Registers.FirstFreeRegister();
-    string AddressRegisterName = "R" + to_string(AddressRegister);
-
-    EmitExpressionPlacement( BinaryOperation->LeftOperand, Registers, AddressRegister );
-    ProgramLines.push_back( "mov " + ResultRegisterName + ", [" + AddressRegisterName + "]" );
-
-    return AddressRegister;
-}
-
-// -----------------------------------------------------------------------------
-
-// helper function to emit the final MOV in compound assignments
-// when a target address was already available in a register
-// (coming from a previous call to EmitCompoundAssignmentAddress)
-void VirconCEmitter::EmitCompoundAssignmentCopy( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, int AddressRegister )
-{
-    string ResultRegisterName = "R" + to_string(ResultRegister);
-
-    if( AddressRegister == -1 )
-    {
-        MemoryPlacement LeftPlacement = BinaryOperation->LeftOperand->GetStaticPlacement();
-        ProgramLines.push_back( "mov [" + LeftPlacement.AccessAddressString() + "], " + ResultRegisterName );
-        return;
-    }
-
-    string AddressRegisterName = "R" + to_string(AddressRegister);
-    ProgramLines.push_back( "mov [" + AddressRegisterName + "], " + ResultRegisterName );
-    Registers.RegisterUsed[ AddressRegister ] = false;
 }
 
 // -----------------------------------------------------------------------------
