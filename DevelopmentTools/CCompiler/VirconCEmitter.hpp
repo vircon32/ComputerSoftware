@@ -97,11 +97,11 @@ class VirconCEmitter
         void EmitDereference  ( UnaryOperationNode* UnaryOperation, RegisterAllocation& Registers, int ResultRegister );
         
         // emit functions for individual binary operations
-        void EmitAddition             ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
-        void EmitSubtraction          ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
-        void EmitProduct              ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
-        void EmitDivision             ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
-        void EmitModulus              ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
+        void EmitAddition             ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
+        void EmitSubtraction          ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
+        void EmitProduct              ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
+        void EmitDivision             ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
+        void EmitModulus              ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
         void EmitEqual                ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
         void EmitNotEqual             ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
         void EmitLessThan             ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
@@ -110,11 +110,11 @@ class VirconCEmitter
         void EmitGreaterOrEqual       ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
         void EmitLogicalOr            ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
         void EmitLogicalAnd           ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
-        void EmitBitwiseOr            ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
-        void EmitBitwiseAnd           ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
-        void EmitBitwiseXor           ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
-        void EmitShiftLeft            ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
-        void EmitShiftRight           ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
+        void EmitBitwiseOr            ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
+        void EmitBitwiseAnd           ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
+        void EmitBitwiseXor           ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
+        void EmitShiftLeft            ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
+        void EmitShiftRight           ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted = false );
         void EmitAssignment           ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
         void EmitAdditionAssignment   ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
         void EmitSubtractionAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
@@ -127,8 +127,9 @@ class VirconCEmitter
         void EmitShiftLeftAssignment  ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
         void EmitShiftRightAssignment ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
         
-        // helper function for all compound assignments
-        void EmitComplementaryAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
+        // helper functions for all compound assignments
+        int EmitCompoundAssignmentAddress( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister );
+        void EmitCompoundAssignmentCopy  ( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, int AddressRegister );
         
         // non-node emission functions
         void EmitLabel( const std::string& LabelName );

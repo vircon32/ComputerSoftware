@@ -19,7 +19,7 @@
 
 // addition is commutative
 // it can also do pointer arithmetic
-void VirconCEmitter::EmitAddition( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
+void VirconCEmitter::EmitAddition( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
 {
     // convert result register to string for emission
     string ResultRegisterName = "R" + to_string( ResultRegister );
@@ -41,7 +41,8 @@ void VirconCEmitter::EmitAddition( BinaryOperationNode* BinaryOperation, Registe
         int PointedSize = PointedType->SizeInWords();
         
         // get the pointer value
-        EmitDependentExpression( PointerOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted || PointerOperand != BinaryOperation->LeftOperand )
+          EmitDependentExpression( PointerOperand, Registers, ResultRegister );
         
         // CASE 1.1: Integer operand is static
         if( IntegerOperand->IsStatic() )
@@ -102,7 +103,8 @@ void VirconCEmitter::EmitAddition( BinaryOperationNode* BinaryOperation, Registe
         bool DynamicIsFloat = TypeIsFloat( DynamicOperand->ReturnedType );
         
         // emit the dynamic value to result register
-        EmitDependentExpression( DynamicOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted || DynamicOperand != BinaryOperation->LeftOperand )
+          EmitDependentExpression( DynamicOperand, Registers, ResultRegister );
         
         // emit type conversion for dynamic value
         if( ResultIsFloat && !DynamicIsFloat )
@@ -125,7 +127,8 @@ void VirconCEmitter::EmitAddition( BinaryOperationNode* BinaryOperation, Registe
     else
     {
         // emit left value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // emit type conversion for left value
         if( ResultIsFloat && !LeftIsFloat )
@@ -157,7 +160,7 @@ void VirconCEmitter::EmitAddition( BinaryOperationNode* BinaryOperation, Registe
 // subtraction is not commutative, but reversible
 // it can do pointer arithmetic and calculate
 // distance between pointers of equal type
-void VirconCEmitter::EmitSubtraction( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
+void VirconCEmitter::EmitSubtraction( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
 {
     // convert result register to string for emission
     string ResultRegisterName = "R" + to_string( ResultRegister );
@@ -171,7 +174,8 @@ void VirconCEmitter::EmitSubtraction( BinaryOperationNode* BinaryOperation, Regi
     if( LeftIsPointer && RightIsPointer )
     {
         // emit left pointer value into result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // reserve register to emit right pointer value
         int RightRegister = Registers.FirstFreeRegister();
@@ -208,7 +212,8 @@ void VirconCEmitter::EmitSubtraction( BinaryOperationNode* BinaryOperation, Regi
         int PointedSize = PointedType->SizeInWords();
         
         // get the pointer value
-        EmitDependentExpression( PointerOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted || PointerOperand != BinaryOperation->LeftOperand )
+          EmitDependentExpression( PointerOperand, Registers, ResultRegister );
         
         // CASE 1.1: Integer operand is static
         if( IntegerOperand->IsStatic() )
@@ -263,7 +268,8 @@ void VirconCEmitter::EmitSubtraction( BinaryOperationNode* BinaryOperation, Regi
     if( RightIsStatic )
     {
         // emit the dynamic value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // emit type conversion for dynamic value
         if( ResultIsFloat && !LeftIsFloat )
@@ -316,7 +322,8 @@ void VirconCEmitter::EmitSubtraction( BinaryOperationNode* BinaryOperation, Regi
     else
     {
         // emit left value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // emit type conversion for left value
         if( ResultIsFloat && !LeftIsFloat )
@@ -347,7 +354,7 @@ void VirconCEmitter::EmitSubtraction( BinaryOperationNode* BinaryOperation, Regi
 
 // similar to addition, but in product
 // we have no pointer arithmetic
-void VirconCEmitter::EmitProduct( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
+void VirconCEmitter::EmitProduct( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
 {
     // convert result register to string for emission
     string ResultRegisterName = "R" + to_string( ResultRegister );
@@ -372,7 +379,8 @@ void VirconCEmitter::EmitProduct( BinaryOperationNode* BinaryOperation, Register
         bool DynamicIsFloat = TypeIsFloat( DynamicOperand->ReturnedType );
         
         // emit the dynamic value to result register
-        EmitDependentExpression( DynamicOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted || DynamicOperand != BinaryOperation->LeftOperand )
+          EmitDependentExpression( DynamicOperand, Registers, ResultRegister );
         
         // emit type conversion for dynamic value
         if( ResultIsFloat && !DynamicIsFloat )
@@ -395,7 +403,8 @@ void VirconCEmitter::EmitProduct( BinaryOperationNode* BinaryOperation, Register
     else
     {
         // emit left value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // emit type conversion for left value
         if( ResultIsFloat && !LeftIsFloat )
@@ -428,7 +437,7 @@ void VirconCEmitter::EmitProduct( BinaryOperationNode* BinaryOperation, Register
 // so to avoid imprecision errors. Thus, unlike subtraction,
 // we don't optimize the left-static case.
 // Also, we do static checks for divisions by zero
-void VirconCEmitter::EmitDivision( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
+void VirconCEmitter::EmitDivision( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
 {
     // convert result register to string for emission
     string ResultRegisterName = "R" + to_string( ResultRegister );
@@ -445,7 +454,8 @@ void VirconCEmitter::EmitDivision( BinaryOperationNode* BinaryOperation, Registe
     if( RightIsStatic )
     {
         // emit the dynamic value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // emit type conversion for dynamic value
         if( ResultIsFloat && !LeftIsFloat )
@@ -482,7 +492,8 @@ void VirconCEmitter::EmitDivision( BinaryOperationNode* BinaryOperation, Registe
     else
     {
         // emit left value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // emit type conversion for left value
         if( ResultIsFloat && !LeftIsFloat )
@@ -513,7 +524,7 @@ void VirconCEmitter::EmitDivision( BinaryOperationNode* BinaryOperation, Registe
 
 // Same as division, but there cannot be any floats
 // (so type conversions are not needed)
-void VirconCEmitter::EmitModulus( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
+void VirconCEmitter::EmitModulus( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
 {
     // convert result register to string for emission
     string ResultRegisterName = "R" + to_string( ResultRegister );
@@ -525,7 +536,8 @@ void VirconCEmitter::EmitModulus( BinaryOperationNode* BinaryOperation, Register
     if( RightIsStatic )
     {
         // emit the dynamic value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // obtain the static value
         StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
@@ -544,7 +556,8 @@ void VirconCEmitter::EmitModulus( BinaryOperationNode* BinaryOperation, Register
     else
     {
         // emit left value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -1252,7 +1265,7 @@ void VirconCEmitter::EmitLogicalAnd( BinaryOperationNode* BinaryOperation, Regis
 
 // Bitwise operations are commutative.
 // Only integral types are allowed, so no type conversions
-void VirconCEmitter::EmitBitwiseOr( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
+void VirconCEmitter::EmitBitwiseOr( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
 {
     // convert result register to string for emission
     string ResultRegisterName = "R" + to_string( ResultRegister );
@@ -1269,7 +1282,8 @@ void VirconCEmitter::EmitBitwiseOr( BinaryOperationNode* BinaryOperation, Regist
         ExpressionNode* DynamicOperand = (LeftIsStatic? BinaryOperation->RightOperand : BinaryOperation->LeftOperand);
         
         // emit the dynamic value to result register
-        EmitDependentExpression( DynamicOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted || DynamicOperand != BinaryOperation->LeftOperand )
+          EmitDependentExpression( DynamicOperand, Registers, ResultRegister );
         
         // obtain the static value
         StaticValue Value = StaticOperand->GetStaticValue();
@@ -1283,7 +1297,8 @@ void VirconCEmitter::EmitBitwiseOr( BinaryOperationNode* BinaryOperation, Regist
     else
     {
         // emit left value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -1304,7 +1319,7 @@ void VirconCEmitter::EmitBitwiseOr( BinaryOperationNode* BinaryOperation, Regist
 // -----------------------------------------------------------------------------
 
 // analogous to bitwise or
-void VirconCEmitter::EmitBitwiseAnd( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
+void VirconCEmitter::EmitBitwiseAnd( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
 {
     // convert result register to string for emission
     string ResultRegisterName = "R" + to_string( ResultRegister );
@@ -1321,7 +1336,8 @@ void VirconCEmitter::EmitBitwiseAnd( BinaryOperationNode* BinaryOperation, Regis
         ExpressionNode* DynamicOperand = (LeftIsStatic? BinaryOperation->RightOperand : BinaryOperation->LeftOperand);
         
         // emit the dynamic value to result register
-        EmitDependentExpression( DynamicOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted || DynamicOperand != BinaryOperation->LeftOperand )
+          EmitDependentExpression( DynamicOperand, Registers, ResultRegister );
         
         // obtain the static value
         StaticValue Value = StaticOperand->GetStaticValue();
@@ -1335,7 +1351,8 @@ void VirconCEmitter::EmitBitwiseAnd( BinaryOperationNode* BinaryOperation, Regis
     else
     {
         // emit left value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -1356,7 +1373,7 @@ void VirconCEmitter::EmitBitwiseAnd( BinaryOperationNode* BinaryOperation, Regis
 // -----------------------------------------------------------------------------
 
 // analogous to bitwise or
-void VirconCEmitter::EmitBitwiseXor( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
+void VirconCEmitter::EmitBitwiseXor( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
 {
     // convert result register to string for emission
     string ResultRegisterName = "R" + to_string( ResultRegister );
@@ -1373,7 +1390,8 @@ void VirconCEmitter::EmitBitwiseXor( BinaryOperationNode* BinaryOperation, Regis
         ExpressionNode* DynamicOperand = (LeftIsStatic? BinaryOperation->RightOperand : BinaryOperation->LeftOperand);
         
         // emit the dynamic value to result register
-        EmitDependentExpression( DynamicOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted || DynamicOperand != BinaryOperation->LeftOperand )
+          EmitDependentExpression( DynamicOperand, Registers, ResultRegister );
         
         // obtain the static value
         StaticValue Value = StaticOperand->GetStaticValue();
@@ -1387,7 +1405,8 @@ void VirconCEmitter::EmitBitwiseXor( BinaryOperationNode* BinaryOperation, Regis
     else
     {
         // emit left value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -1409,7 +1428,7 @@ void VirconCEmitter::EmitBitwiseXor( BinaryOperationNode* BinaryOperation, Regis
 
 // Bit shifts are not commutative nor reversible.
 // Only integral types are allowed, so no type conversions
-void VirconCEmitter::EmitShiftLeft( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
+void VirconCEmitter::EmitShiftLeft( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
 {
     // convert result register to string for emission
     string ResultRegisterName = "R" + to_string( ResultRegister );
@@ -1421,7 +1440,8 @@ void VirconCEmitter::EmitShiftLeft( BinaryOperationNode* BinaryOperation, Regist
     if( RightIsStatic )
     {
         // emit the dynamic value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // obtain the static value
         StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
@@ -1436,7 +1456,8 @@ void VirconCEmitter::EmitShiftLeft( BinaryOperationNode* BinaryOperation, Regist
     else
     {
         // emit left value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -1458,7 +1479,7 @@ void VirconCEmitter::EmitShiftLeft( BinaryOperationNode* BinaryOperation, Regist
 
 // Analogous to shift left, but since the CPU
 // can only do shift left we change shift sign
-void VirconCEmitter::EmitShiftRight( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
+void VirconCEmitter::EmitShiftRight( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, bool LeftAlreadyEmitted )
 {
     // convert result register to string for emission
     string ResultRegisterName = "R" + to_string( ResultRegister );
@@ -1470,7 +1491,8 @@ void VirconCEmitter::EmitShiftRight( BinaryOperationNode* BinaryOperation, Regis
     if( RightIsStatic )
     {
         // emit the dynamic value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // obtain the static value
         StaticValue RightValue = BinaryOperation->RightOperand->GetStaticValue();
@@ -1489,7 +1511,8 @@ void VirconCEmitter::EmitShiftRight( BinaryOperationNode* BinaryOperation, Regis
     else
     {
         // emit left value to result register
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        if( !LeftAlreadyEmitted )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         
         // reserve an additional register
         int RightRegister = Registers.FirstFreeRegister();
@@ -1602,48 +1625,56 @@ void VirconCEmitter::EmitAssignment( BinaryOperationNode* BinaryOperation, Regis
 
 // -----------------------------------------------------------------------------
 
-// not an operation per se, just a helper function for
-// compound assignments to use the previous result
-// already present in the register; none of the
-// operators using this allow for multi-word operands
-void VirconCEmitter::EmitComplementaryAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
+// helper function to provide compound assignments with an address
+// result already present in a register; we can do this because none
+// of the operators using this allow multi-word operands;
+// returns the reserved address register, or -1 if none was used
+int VirconCEmitter::EmitCompoundAssignmentAddress( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
 {
-    // do some common precalculations
     string ResultRegisterName = "R" + to_string(ResultRegister);
-    
-    // if the left side has side effects, first evaluate it!
-    // if we only take its placement, the sife effects are lost
-    if( BinaryOperation->LeftOperand->HasSideEffects() )
-    {
-        int TempRegister = Registers.FirstFreeRegister();
-        EmitDependentExpression( BinaryOperation->LeftOperand, Registers, TempRegister );
-        Registers.RegisterUsed[ TempRegister ] = false;
-    }
-    
-    // CASE 1: left operand has a static address
+
+    // static placements do not need a preserved address register
     if( BinaryOperation->LeftOperand->HasStaticPlacement() )
     {
-        // perform assignment to the static placement
+        MemoryPlacement LeftPlacement = BinaryOperation->LeftOperand->GetStaticPlacement();
+
+        if( BinaryOperation->LeftOperand->HasSideEffects() )
+          EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
+        else
+          ProgramLines.push_back( "mov " + ResultRegisterName + ", [" + LeftPlacement.AccessAddressString() + "]" );
+
+        return -1;
+    }
+
+    // dynamic placements must be evaluated only once
+    int AddressRegister = Registers.FirstFreeRegister();
+    string AddressRegisterName = "R" + to_string(AddressRegister);
+
+    EmitExpressionPlacement( BinaryOperation->LeftOperand, Registers, AddressRegister );
+    ProgramLines.push_back( "mov " + ResultRegisterName + ", [" + AddressRegisterName + "]" );
+
+    return AddressRegister;
+}
+
+// -----------------------------------------------------------------------------
+
+// helper function to emit the final MOV in compound assignments
+// when a target address was already available in a register
+// (coming from a previous call to EmitCompoundAssignmentAddress)
+void VirconCEmitter::EmitCompoundAssignmentCopy( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister, int AddressRegister )
+{
+    string ResultRegisterName = "R" + to_string(ResultRegister);
+
+    if( AddressRegister == -1 )
+    {
         MemoryPlacement LeftPlacement = BinaryOperation->LeftOperand->GetStaticPlacement();
         ProgramLines.push_back( "mov [" + LeftPlacement.AccessAddressString() + "], " + ResultRegisterName );
         return;
     }
-    
-    // CASE 2: general case (unoptimized)
-    else
-    {
-        // we need an extra register
-        int AddressRegister = Registers.FirstFreeRegister();
-        string AddressRegisterName = "R" + to_string(AddressRegister);
-        
-        // perform the assignment using the reserved register
-        EmitExpressionPlacement( BinaryOperation->LeftOperand, Registers, AddressRegister );
-        ProgramLines.push_back( "mov [" + AddressRegisterName + "], " + ResultRegisterName );
-        
-        // free used register
-        Registers.RegisterUsed[ AddressRegister ] = false;
-        return;
-    }
+
+    string AddressRegisterName = "R" + to_string(AddressRegister);
+    ProgramLines.push_back( "mov [" + AddressRegisterName + "], " + ResultRegisterName );
+    Registers.RegisterUsed[ AddressRegister ] = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -1655,8 +1686,9 @@ void VirconCEmitter::EmitComplementaryAssignment( BinaryOperationNode* BinaryOpe
 // of additional code we will not do it for now
 void VirconCEmitter::EmitAdditionAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
 {
-    // emit the non-compound operation + a complementary assigment
-    EmitAddition( BinaryOperation, Registers, ResultRegister );
+    // evaluate the target once, then emit the non-compound operation
+    int AddressRegister = EmitCompoundAssignmentAddress( BinaryOperation, Registers, ResultRegister );
+    EmitAddition( BinaryOperation, Registers, ResultRegister, true );
     
     // however we may have to convert type before assignment,
     // if we have situations such as int += float; this only
@@ -1669,15 +1701,16 @@ void VirconCEmitter::EmitAdditionAssignment( BinaryOperationNode* BinaryOperatio
       EmitRegisterTypeConversion( ResultRegister, RightType, LeftType );
     
     // now we can safely assign
-    EmitComplementaryAssignment( BinaryOperation, Registers, ResultRegister );
+    EmitCompoundAssignmentCopy( BinaryOperation, Registers, ResultRegister, AddressRegister );
 }
 
 // -----------------------------------------------------------------------------
 
 void VirconCEmitter::EmitSubtractionAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
 {
-    // emit the non-compound operation + a complementary assigment
-    EmitSubtraction( BinaryOperation, Registers, ResultRegister );
+    // evaluate the target once, then emit the non-compound operation
+    int AddressRegister = EmitCompoundAssignmentAddress( BinaryOperation, Registers, ResultRegister );
+    EmitSubtraction( BinaryOperation, Registers, ResultRegister, true );
     
     // however we may have to convert type before assignment,
     // if we have situations such as int += float; this only
@@ -1690,15 +1723,16 @@ void VirconCEmitter::EmitSubtractionAssignment( BinaryOperationNode* BinaryOpera
       EmitRegisterTypeConversion( ResultRegister, RightType, LeftType );
     
     // now we can safely assign
-    EmitComplementaryAssignment( BinaryOperation, Registers, ResultRegister );
+    EmitCompoundAssignmentCopy( BinaryOperation, Registers, ResultRegister, AddressRegister );
 }
 
 // -----------------------------------------------------------------------------
 
 void VirconCEmitter::EmitProductAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
 {
-    // emit the non-compound operation + a complementary assigment
-    EmitProduct( BinaryOperation, Registers, ResultRegister );
+    // evaluate the target once, then emit the non-compound operation
+    int AddressRegister = EmitCompoundAssignmentAddress( BinaryOperation, Registers, ResultRegister );
+    EmitProduct( BinaryOperation, Registers, ResultRegister, true );
     
     // however we may have to convert type before assignment,
     // if we have situations such as int += float; this only
@@ -1711,15 +1745,16 @@ void VirconCEmitter::EmitProductAssignment( BinaryOperationNode* BinaryOperation
       EmitRegisterTypeConversion( ResultRegister, RightType, LeftType );
     
     // now we can safely assign
-    EmitComplementaryAssignment( BinaryOperation, Registers, ResultRegister );
+    EmitCompoundAssignmentCopy( BinaryOperation, Registers, ResultRegister, AddressRegister );
 }
 
 // -----------------------------------------------------------------------------
 
 void VirconCEmitter::EmitDivisionAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
 {
-    // emit the non-compound operation + a complementary assigment
-    EmitDivision( BinaryOperation, Registers, ResultRegister );
+    // evaluate the target once, then emit the non-compound operation
+    int AddressRegister = EmitCompoundAssignmentAddress( BinaryOperation, Registers, ResultRegister );
+    EmitDivision( BinaryOperation, Registers, ResultRegister, true );
     
     // however we may have to convert type before assignment,
     // if we have situations such as int += float; this only
@@ -1732,59 +1767,65 @@ void VirconCEmitter::EmitDivisionAssignment( BinaryOperationNode* BinaryOperatio
       EmitRegisterTypeConversion( ResultRegister, RightType, LeftType );
     
     // now we can safely assign
-    EmitComplementaryAssignment( BinaryOperation, Registers, ResultRegister );
+    EmitCompoundAssignmentCopy( BinaryOperation, Registers, ResultRegister, AddressRegister );
 }
 
 // -----------------------------------------------------------------------------
 
 void VirconCEmitter::EmitModulusAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
 {
-    // emit the non-compound operation + a complementary assigment
-    EmitModulus( BinaryOperation, Registers, ResultRegister );
-    EmitComplementaryAssignment( BinaryOperation, Registers, ResultRegister );
+    // evaluate the target once, then emit the non-compound operation
+    int AddressRegister = EmitCompoundAssignmentAddress( BinaryOperation, Registers, ResultRegister );
+    EmitModulus( BinaryOperation, Registers, ResultRegister, true );
+    EmitCompoundAssignmentCopy( BinaryOperation, Registers, ResultRegister, AddressRegister );
 }
 
 // -----------------------------------------------------------------------------
 
 void VirconCEmitter::EmitBitwiseAndAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
 {
-    // emit the non-compound operation + a complementary assigment
-    EmitBitwiseAnd( BinaryOperation, Registers, ResultRegister );
-    EmitComplementaryAssignment( BinaryOperation, Registers, ResultRegister );
+    // evaluate the target once, then emit the non-compound operation
+    int AddressRegister = EmitCompoundAssignmentAddress( BinaryOperation, Registers, ResultRegister );
+    EmitBitwiseAnd( BinaryOperation, Registers, ResultRegister, true );
+    EmitCompoundAssignmentCopy( BinaryOperation, Registers, ResultRegister, AddressRegister );
 }
 
 // -----------------------------------------------------------------------------
 
 void VirconCEmitter::EmitBitwiseOrAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
 {
-    // emit the non-compound operation + a complementary assigment
-    EmitBitwiseOr( BinaryOperation, Registers, ResultRegister );
-    EmitComplementaryAssignment( BinaryOperation, Registers, ResultRegister );
+    // evaluate the target once, then emit the non-compound operation
+    int AddressRegister = EmitCompoundAssignmentAddress( BinaryOperation, Registers, ResultRegister );
+    EmitBitwiseOr( BinaryOperation, Registers, ResultRegister, true );
+    EmitCompoundAssignmentCopy( BinaryOperation, Registers, ResultRegister, AddressRegister );
 }
 
 // -----------------------------------------------------------------------------
 
 void VirconCEmitter::EmitBitwiseXorAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
 {
-    // emit the non-compound operation + a complementary assigment
-    EmitBitwiseXor( BinaryOperation, Registers, ResultRegister );
-    EmitComplementaryAssignment( BinaryOperation, Registers, ResultRegister );
+    // evaluate the target once, then emit the non-compound operation
+    int AddressRegister = EmitCompoundAssignmentAddress( BinaryOperation, Registers, ResultRegister );
+    EmitBitwiseXor( BinaryOperation, Registers, ResultRegister, true );
+    EmitCompoundAssignmentCopy( BinaryOperation, Registers, ResultRegister, AddressRegister );
 }
 
 // -----------------------------------------------------------------------------
 
 void VirconCEmitter::EmitShiftLeftAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
 {
-    // emit the non-compound operation + a complementary assigment
-    EmitShiftLeft( BinaryOperation, Registers, ResultRegister );
-    EmitComplementaryAssignment( BinaryOperation, Registers, ResultRegister );
+    // evaluate the target once, then emit the non-compound operation
+    int AddressRegister = EmitCompoundAssignmentAddress( BinaryOperation, Registers, ResultRegister );
+    EmitShiftLeft( BinaryOperation, Registers, ResultRegister, true );
+    EmitCompoundAssignmentCopy( BinaryOperation, Registers, ResultRegister, AddressRegister );
 }
 
 // -----------------------------------------------------------------------------
 
 void VirconCEmitter::EmitShiftRightAssignment( BinaryOperationNode* BinaryOperation, RegisterAllocation& Registers, int ResultRegister )
 {
-    // emit the non-compound operation + a complementary assigment
-    EmitShiftRight( BinaryOperation, Registers, ResultRegister );
-    EmitComplementaryAssignment( BinaryOperation, Registers, ResultRegister );
+    // evaluate the target once, then emit the non-compound operation
+    int AddressRegister = EmitCompoundAssignmentAddress( BinaryOperation, Registers, ResultRegister );
+    EmitShiftRight( BinaryOperation, Registers, ResultRegister, true );
+    EmitCompoundAssignmentCopy( BinaryOperation, Registers, ResultRegister, AddressRegister );
 }

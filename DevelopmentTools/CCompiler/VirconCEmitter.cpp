@@ -531,7 +531,7 @@ void VirconCEmitter::EmitExpressionPlacement( ExpressionNode* Expression, Regist
         if( UnaryOperation->Operator == UnaryOperators::Dereference )
         {
             // for pointer arithmetic values obtained on the fly:
-            if( !UnaryOperation->Operand->HasMemoryPlacement() )
+            if( UnaryOperation->Operand->HasSideEffects() || !UnaryOperation->Operand->HasMemoryPlacement() )
             {
                 EmitDependentExpression( UnaryOperation->Operand, Registers, ResultRegister );
             }
