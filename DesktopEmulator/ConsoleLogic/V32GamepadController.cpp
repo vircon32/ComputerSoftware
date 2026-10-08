@@ -41,7 +41,10 @@ namespace V32
         
         // global ports
         if( LocalPort == (int32_t)INP_LocalPorts::SelectedGamepad )
-          Result.AsInteger = SelectedGamepad;
+        {
+            Result.AsInteger = SelectedGamepad;
+            return true;
+        }
         
         // gamepad-specific ports
         V32Word* PortArray = (V32Word*)(&ProvidedGamepadStates[ SelectedGamepad ]);
