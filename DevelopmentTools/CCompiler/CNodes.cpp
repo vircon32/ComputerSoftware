@@ -2757,6 +2757,11 @@ bool UnaryOperationNode::HasSideEffects()
         case UnaryOperators::PostDecrement:
             return false;
         
+        // the same holds for a dereference: emitting
+        // its placement already evaluates its operand
+        case UnaryOperators::Dereference:
+            return false;
+        
         // in other cases, check if operands has side effects
         default:
             return Operand->HasSideEffects();
@@ -3716,7 +3721,9 @@ void PointedMemberAccessNode::DetermineReturnedType()
 
 bool PointedMemberAccessNode::HasSideEffects()
 {
-    return GroupOperand->HasSideEffects();
+    // like a dereference: emitting this placement
+    // already evaluates the pointer operand
+    return false;
 }
 
 // -----------------------------------------------------------------------------
