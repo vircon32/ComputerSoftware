@@ -185,6 +185,7 @@ class ExpressionNode: public CNode
         virtual StaticValue GetStaticValue() = 0;
         virtual void DetermineReturnedType() = 0;
         virtual bool HasSideEffects() = 0;
+        virtual bool NeedsPreevaluationForPlacement() = 0;
         
         // resulting memory address
         virtual bool HasMemoryPlacement() = 0;
@@ -1123,6 +1124,7 @@ class ExpressionAtomNode: public ExpressionNode
         virtual StaticValue GetStaticValue();
         virtual void DetermineReturnedType();
         virtual bool HasSideEffects();
+        virtual bool NeedsPreevaluationForPlacement();
         
         // resulting memory address
         virtual bool HasMemoryPlacement();
@@ -1167,6 +1169,7 @@ class FunctionCallNode: public ExpressionNode
         virtual StaticValue GetStaticValue();
         virtual void DetermineReturnedType();
         virtual bool HasSideEffects();
+        virtual bool NeedsPreevaluationForPlacement();
         
         // resulting memory address
         virtual bool HasMemoryPlacement();
@@ -1206,6 +1209,7 @@ class IndirectCallNode: public ExpressionNode
         virtual StaticValue GetStaticValue();
         virtual void DetermineReturnedType();
         virtual bool HasSideEffects();
+        virtual bool NeedsPreevaluationForPlacement();
         
         // resulting memory address
         virtual bool HasMemoryPlacement();
@@ -1245,6 +1249,7 @@ class ArrayAccessNode: public ExpressionNode
         virtual StaticValue GetStaticValue();
         virtual void DetermineReturnedType();
         virtual bool HasSideEffects();
+        virtual bool NeedsPreevaluationForPlacement();
         
         // resulting memory address
         virtual bool HasMemoryPlacement();
@@ -1283,6 +1288,7 @@ class UnaryOperationNode: public ExpressionNode
         virtual StaticValue GetStaticValue();
         virtual void DetermineReturnedType();
         virtual bool HasSideEffects();
+        virtual bool NeedsPreevaluationForPlacement();
         
         // resulting memory address
         virtual bool HasMemoryPlacement();
@@ -1322,6 +1328,7 @@ class BinaryOperationNode: public ExpressionNode
         virtual StaticValue GetStaticValue();
         virtual void DetermineReturnedType();
         virtual bool HasSideEffects();
+        virtual bool NeedsPreevaluationForPlacement();
         
         // resulting memory address
         virtual bool HasMemoryPlacement();
@@ -1359,6 +1366,7 @@ class EnclosedExpressionNode: public ExpressionNode
         virtual StaticValue GetStaticValue();
         virtual void DetermineReturnedType();
         virtual bool HasSideEffects();
+        virtual bool NeedsPreevaluationForPlacement();
         
         // resulting memory address
         virtual bool HasMemoryPlacement();
@@ -1403,6 +1411,7 @@ class MemberAccessNode: public ExpressionNode
         virtual StaticValue GetStaticValue();
         virtual void DetermineReturnedType();
         virtual bool HasSideEffects();
+        virtual bool NeedsPreevaluationForPlacement();
         
         // resulting memory address
         virtual bool HasMemoryPlacement();
@@ -1447,6 +1456,7 @@ class PointedMemberAccessNode: public ExpressionNode
         virtual StaticValue GetStaticValue();
         virtual void DetermineReturnedType();
         virtual bool HasSideEffects();
+        virtual bool NeedsPreevaluationForPlacement();
         
         // resulting memory address
         virtual bool HasMemoryPlacement();
@@ -1485,6 +1495,7 @@ class SizeOfNode: public ExpressionNode
         virtual StaticValue GetStaticValue();
         virtual void DetermineReturnedType();
         virtual bool HasSideEffects();
+        virtual bool NeedsPreevaluationForPlacement();
         
         // resulting memory address
         virtual bool HasMemoryPlacement();
@@ -1521,6 +1532,7 @@ class LiteralStringNode: public ExpressionNode
         virtual StaticValue GetStaticValue();
         virtual void DetermineReturnedType();
         virtual bool HasSideEffects();
+        virtual bool NeedsPreevaluationForPlacement();
         
         // resulting memory address
         virtual bool HasMemoryPlacement();
@@ -1559,6 +1571,7 @@ class TypeConversionNode: public ExpressionNode
         virtual StaticValue GetStaticValue();
         virtual void DetermineReturnedType();
         virtual bool HasSideEffects();
+        virtual bool NeedsPreevaluationForPlacement();
         
         // resulting memory address
         virtual bool HasMemoryPlacement();

@@ -537,9 +537,8 @@ void VirconCEmitter::EmitEnclosedExpression( EnclosedExpressionNode* EnclosedExp
 
 void VirconCEmitter::EmitMemberAccess( MemberAccessNode* MemberAccess, RegisterAllocation& Registers, int ResultRegister )
 {
-    // if the group operand has side effects, first evaluate it!
-    // if we only take its placement, the sife effects are lost
-    if( MemberAccess->GroupOperand->HasSideEffects() )
+    // if needed, first evaluate the group before taking its placement
+    if( MemberAccess->GroupOperand->NeedsPreevaluationForPlacement() )
     {
         int TempRegister = Registers.FirstFreeRegister();
         EmitDependentExpression( MemberAccess->GroupOperand, Registers, TempRegister );

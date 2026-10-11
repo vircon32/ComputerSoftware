@@ -1559,7 +1559,7 @@ int VirconCEmitter::EmitCompoundAssignmentAddress( BinaryOperationNode* BinaryOp
     {
         MemoryPlacement LeftPlacement = BinaryOperation->LeftOperand->GetStaticPlacement();
         
-        if( BinaryOperation->LeftOperand->HasSideEffects() )
+        if( BinaryOperation->LeftOperand->NeedsPreevaluationForPlacement() )
           EmitDependentExpression( BinaryOperation->LeftOperand, Registers, ResultRegister );
         else
           ProgramLines.push_back( "mov " + ResultRegisterName + ", [" + LeftPlacement.AccessAddressString() + "]" );
@@ -1657,9 +1657,8 @@ void VirconCEmitter::EmitAssignment( BinaryOperationNode* BinaryOperation, Regis
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // STEP 2: Assign to left address
     
-    // if the left side has side effects, first evaluate it!
-    // if we only take its placement, the sife effects are lost
-    if( BinaryOperation->LeftOperand->HasSideEffects() )
+    // if needed, first evaluate the left side before taking its placement
+    if( BinaryOperation->LeftOperand->NeedsPreevaluationForPlacement() )
     {
         int TempRegister = Registers.FirstFreeRegister();
         EmitDependentExpression( BinaryOperation->LeftOperand, Registers, TempRegister );

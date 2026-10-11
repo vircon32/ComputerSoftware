@@ -53,9 +53,8 @@ void VirconCEmitter::EmitPreIncrement( UnaryOperationNode* UnaryOperation, Regis
         Value = to_string( PointedSize );
     }
     
-    // if the operand has side effects, first evaluate it!
-    // if we only take its placement, the side effects are lost
-    if( UnaryOperation->Operand->HasSideEffects() )
+    // if needed, first evaluate the operand before taking its placement
+    if( UnaryOperation->Operand->NeedsPreevaluationForPlacement() )
     {
         int TempRegister = Registers.FirstFreeRegister();
         EmitDependentExpression( UnaryOperation->Operand, Registers, TempRegister );
@@ -113,9 +112,8 @@ void VirconCEmitter::EmitPreDecrement( UnaryOperationNode* UnaryOperation, Regis
         Value = to_string( PointedSize );
     }
     
-    // if the operand has side effects, first evaluate it!
-    // if we only take its placement, the side effects are lost
-    if( UnaryOperation->Operand->HasSideEffects() )
+    // if needed, first evaluate the operand before taking its placement
+    if( UnaryOperation->Operand->NeedsPreevaluationForPlacement() )
     {
         int TempRegister = Registers.FirstFreeRegister();
         EmitDependentExpression( UnaryOperation->Operand, Registers, TempRegister );
@@ -173,9 +171,8 @@ void VirconCEmitter::EmitPostIncrement( UnaryOperationNode* UnaryOperation, Regi
         Value = to_string( PointedSize );
     }
     
-    // if the operand has side effects, first evaluate it!
-    // if we only take its placement, the side effects are lost
-    if( UnaryOperation->Operand->HasSideEffects() )
+    // if needed, first evaluate the operand before taking its placement
+    if( UnaryOperation->Operand->NeedsPreevaluationForPlacement() )
     {
         int TempRegister = Registers.FirstFreeRegister();
         EmitDependentExpression( UnaryOperation->Operand, Registers, TempRegister );
@@ -248,9 +245,8 @@ void VirconCEmitter::EmitPostDecrement( UnaryOperationNode* UnaryOperation, Regi
         Value = to_string( PointedSize );
     }
     
-    // if the operand has side effects, first evaluate it!
-    // if we only take its placement, the side effects are lost
-    if( UnaryOperation->Operand->HasSideEffects() )
+    // if needed, first evaluate the operand before taking its placement
+    if( UnaryOperation->Operand->NeedsPreevaluationForPlacement() )
     {
         int TempRegister = Registers.FirstFreeRegister();
         EmitDependentExpression( UnaryOperation->Operand, Registers, TempRegister );
@@ -360,9 +356,8 @@ void VirconCEmitter::EmitReference( UnaryOperationNode* UnaryOperation, Register
         }
     }
     
-    // if the operand has side effects, first evaluate it!
-    // if we only take its placement, the side effects are lost
-    if( UnaryOperation->Operand->HasSideEffects() )
+    // if needed, first evaluate the operand before taking its placement
+    if( UnaryOperation->Operand->NeedsPreevaluationForPlacement() )
     {
         int TempRegister = Registers.FirstFreeRegister();
         EmitDependentExpression( UnaryOperation->Operand, Registers, TempRegister );

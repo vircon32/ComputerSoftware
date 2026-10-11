@@ -1952,6 +1952,13 @@ bool ExpressionAtomNode::HasSideEffects()
 
 // -----------------------------------------------------------------------------
 
+bool ExpressionAtomNode::NeedsPreevaluationForPlacement()
+{
+    return false;
+}
+
+// -----------------------------------------------------------------------------
+
 bool ExpressionAtomNode::HasMemoryPlacement()
 {
     return (AtomType == AtomTypes::Variable);
@@ -2093,6 +2100,13 @@ bool FunctionCallNode::HasSideEffects()
     // all function calls must be executed,
     // even if they have no actual side effects
     return true;
+}
+
+// -----------------------------------------------------------------------------
+
+bool FunctionCallNode::NeedsPreevaluationForPlacement()
+{
+    return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -2279,6 +2293,13 @@ bool IndirectCallNode::HasSideEffects()
     // all function calls must be executed,
     // even if they have no actual side effects
     return true;
+}
+
+// -----------------------------------------------------------------------------
+
+bool IndirectCallNode::NeedsPreevaluationForPlacement()
+{
+    return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -2482,6 +2503,14 @@ void ArrayAccessNode::DetermineReturnedType()
 
 bool ArrayAccessNode::HasSideEffects()
 {
+    return (ArrayOperand->HasSideEffects() || IndexOperand->HasSideEffects());
+}
+
+// -----------------------------------------------------------------------------
+
+bool ArrayAccessNode::NeedsPreevaluationForPlacement()
+{
+    // obtaining the placement already evaluates both operands
     return false;
 }
 
@@ -2744,27 +2773,35 @@ bool UnaryOperationNode::HasSideEffects()
         // ++ and -- do have side effects
         case UnaryOperators::PreIncrement:
         case UnaryOperators::PreDecrement:
-            return true;
-        
-        // however, in the case of post operators
-        // we should actually lie and return false
-        // because when their parent expressions
-        // emit their placements, they are already
-        // evaluated; being deemed as having side
-        // effects would cause them to be evaluated
-        // twice, giving a wrong final value
         case UnaryOperators::PostIncrement:
         case UnaryOperators::PostDecrement:
-            return false;
+            return true;
         
-        // the same holds for a dereference: emitting
-        // its placement already evaluates its operand
+        // in other cases, check if operand has side effects
+        default:
+            return Operand->HasSideEffects();
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+bool UnaryOperationNode::NeedsPreevaluationForPlacement()
+{
+    switch( Operator )
+    {
+        // here, their placement is only that of their operand, so we
+        // need to preevaluate or the increment/decrement would be lost
+        case UnaryOperators::PreIncrement:
+        case UnaryOperators::PreDecrement:
+            return true;
+        
+        // dereference already evaluates its operand to obtain placement
         case UnaryOperators::Dereference:
             return false;
         
-        // in other cases, check if operands has side effects
+        // other unary operations have no memory placement
         default:
-            return Operand->HasSideEffects();
+            return false;
     }
 }
 
@@ -3276,7 +3313,7 @@ bool BinaryOperationNode::HasSideEffects()
 {
     switch( Operator )
     {
-        // assignments do have side effects
+        // all assignments have side effects
         case BinaryOperators::Assignment:
         case BinaryOperators::AdditionAssignment:
         case BinaryOperators::SubtractionAssignment:
@@ -3293,6 +3330,33 @@ bool BinaryOperationNode::HasSideEffects()
         // in other cases, check if operands have side effects
         default:
             return (LeftOperand->HasSideEffects() || RightOperand->HasSideEffects());
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+bool BinaryOperationNode::NeedsPreevaluationForPlacement()
+{
+    switch( Operator )
+    {
+        // assignment placement is only the left operand placement,
+        // so only obtaining that would omit the assignment itself
+        case BinaryOperators::Assignment:
+        case BinaryOperators::AdditionAssignment:
+        case BinaryOperators::SubtractionAssignment:
+        case BinaryOperators::ProductAssignment:
+        case BinaryOperators::DivisionAssignment:
+        case BinaryOperators::ModulusAssignment:
+        case BinaryOperators::BitwiseAndAssignment:
+        case BinaryOperators::BitwiseOrAssignment:
+        case BinaryOperators::BitwiseXorAssignment:
+        case BinaryOperators::ShiftLeftAssignment:
+        case BinaryOperators::ShiftRightAssignment:
+            return true;
+
+        // other binary operations have no memory placement
+        default:
+            return false;
     }
 }
 
@@ -3426,6 +3490,13 @@ void EnclosedExpressionNode::DetermineReturnedType()
 bool EnclosedExpressionNode::HasSideEffects()
 {
     return InternalExpression->HasSideEffects();
+}
+
+// -----------------------------------------------------------------------------
+
+bool EnclosedExpressionNode::NeedsPreevaluationForPlacement()
+{
+    return InternalExpression->NeedsPreevaluationForPlacement();
 }
 
 // -----------------------------------------------------------------------------
@@ -3567,6 +3638,13 @@ void MemberAccessNode::DetermineReturnedType()
 bool MemberAccessNode::HasSideEffects()
 {
     return GroupOperand->HasSideEffects();
+}
+
+// -----------------------------------------------------------------------------
+
+bool MemberAccessNode::NeedsPreevaluationForPlacement()
+{
+    return GroupOperand->NeedsPreevaluationForPlacement();
 }
 
 // -----------------------------------------------------------------------------
@@ -3721,8 +3799,14 @@ void PointedMemberAccessNode::DetermineReturnedType()
 
 bool PointedMemberAccessNode::HasSideEffects()
 {
-    // like a dereference: emitting this placement
-    // already evaluates the pointer operand
+    return GroupOperand->HasSideEffects();
+}
+
+// -----------------------------------------------------------------------------
+
+bool PointedMemberAccessNode::NeedsPreevaluationForPlacement()
+{
+    // obtaining the placement already evaluates the group pointer
     return false;
 }
 
@@ -3842,6 +3926,13 @@ bool SizeOfNode::HasSideEffects()
 
 // -----------------------------------------------------------------------------
 
+bool SizeOfNode::NeedsPreevaluationForPlacement()
+{
+    return false;
+}
+
+// -----------------------------------------------------------------------------
+
 bool SizeOfNode::HasMemoryPlacement()
 {
     return false;
@@ -3928,6 +4019,13 @@ void LiteralStringNode::DetermineReturnedType()
 // -----------------------------------------------------------------------------
 
 bool LiteralStringNode::HasSideEffects()
+{
+    return false;
+}
+
+// -----------------------------------------------------------------------------
+
+bool LiteralStringNode::NeedsPreevaluationForPlacement()
 {
     return false;
 }
@@ -4052,6 +4150,14 @@ void TypeConversionNode::DetermineReturnedType()
 bool TypeConversionNode::HasSideEffects()
 {
     return ConvertedExpression->HasSideEffects();
+}
+
+// -----------------------------------------------------------------------------
+
+bool TypeConversionNode::NeedsPreevaluationForPlacement()
+{
+    // type conversions never have memory placement
+    return false;
 }
 
 // -----------------------------------------------------------------------------
