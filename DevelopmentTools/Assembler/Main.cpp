@@ -48,7 +48,6 @@ void PrintUsage()
     cout << "Options:" << endl;
     cout << "  --help       Displays this information" << endl;
     cout << "  --version    Displays program version" << endl;
-    cout << "  --debugmode  Creates files with results of internal stages" << endl;
     cout << "  -o <file>    Output file, default name is the same as input" << endl;
     cout << "  -b           Assembles the code as a BIOS" << endl;
     cout << "  -v           Displays additional information (verbose)" << endl;

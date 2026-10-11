@@ -56,9 +56,8 @@ void PrintUsage()
     cout << "  -v           Displays additional information (verbose)" << endl;
     cout << "  -g           Outputs an additional file with debug info" << endl;
     cout << "  -w           Inhibit all warnings" << endl;
-    cout << "  -Wall        Enable all warnings" << endl;
     cout << "Also, the following options are accepted for compatibility" << endl;
-    cout << "but have no effect: -c,-s,-O1,-O2,-O3" << endl;
+    cout << "but have no effect: -c,-s,-O1,-O2,-O3,-Wall" << endl;
 }
 
 // -----------------------------------------------------------------------------
@@ -175,12 +174,6 @@ int main( int NumberOfArguments, char* Arguments[] )
                 continue;
             }
             
-            if( ArgumentsUTF8[i] == string("-Wall") )
-            {
-                EnableAllWarnings = true;
-                continue;
-            }
-            
             if( ArgumentsUTF8[i] == string("-g") )
             {
                 CreateDebugVersion = true;
@@ -207,10 +200,11 @@ int main( int NumberOfArguments, char* Arguments[] )
             }
             
             // these options are accepted but have no effect
-            if( ArgumentsUTF8[i] == string("-s")  )  continue;
-            if( ArgumentsUTF8[i] == string("-O1") )  continue;
-            if( ArgumentsUTF8[i] == string("-O2") )  continue;
-            if( ArgumentsUTF8[i] == string("-O3") )  continue;
+            if( ArgumentsUTF8[i] == string("-s"   ) )  continue;
+            if( ArgumentsUTF8[i] == string("-O1"  ) )  continue;
+            if( ArgumentsUTF8[i] == string("-O2"  ) )  continue;
+            if( ArgumentsUTF8[i] == string("-O3"  ) )  continue;
+            if( ArgumentsUTF8[i] == string("-Wall") )  continue;
             
             // discard any other parameters starting with '-'
             if( ArgumentsUTF8[i][0] == '-' )

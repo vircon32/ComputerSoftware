@@ -216,7 +216,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         // replace the extension in the input
         if( OutputFolder.empty() )
         {
-            OutputFolder = string(".") + PathSeparator;
+            OutputFolder = string(".");
             
             if( VerboseMode )
               cout << "using output folder: \"" << OutputFolder << "\"" << endl;
@@ -284,7 +284,7 @@ int main( int NumberOfArguments, char* Arguments[] )
         {
             // read its name
             string LayerName = GetRequiredStringAttribute( MapLayer, "name" );
-            string FilePath = OutputFolder + LayerName + ".vmap";
+            string FilePath = OutputFolder + PathSeparator + LayerName + ".vmap";
             
             cout << "Saving layer \"" << FilePath << "\"" << endl;
             

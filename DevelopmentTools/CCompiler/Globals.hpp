@@ -16,7 +16,6 @@
 extern std::string CompilerFolder;
 extern bool CompileOnly;
 extern bool DisableWarnings;
-extern bool EnableAllWarnings;
 
 
 // =============================================================================

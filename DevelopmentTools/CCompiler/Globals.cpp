@@ -15,7 +15,6 @@
 string CompilerFolder;
 bool CompileOnly = false;
 bool DisableWarnings = false;
-bool EnableAllWarnings = false;
 
 
 // =============================================================================
