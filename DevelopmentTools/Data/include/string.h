@@ -426,6 +426,15 @@ void ftoa( float value, int* result_text )
         "pop R1"
     }
     
+    // it may happen that for numbers from X.999995 to X.999999,
+    // (decimal_part * 100000) gets rounded up to 100000; prevent 
+    // this by carrying that to the integer part
+    if( decimal_part >= 100000 )
+    {
+        ++integer_part;
+        decimal_part -= 100000;
+    }
+    
     // write the integer part using itoa
     itoa( integer_part, result_text, 10 );
     
