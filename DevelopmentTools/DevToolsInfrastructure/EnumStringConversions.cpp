@@ -213,7 +213,7 @@ const map< IOPortValues, string > PortValueNames =
     { IOPortValues::SPUCommand_StopAllChannels,      "SPUCommand_StopAllChannels"      },
     
     { IOPortValues::SPUChannelState_Stopped,         "SPUChannelState_Stopped"         },
-    { IOPortValues::SPUChannelState_Paused,          "SPUChannelState_Paused "         },
+    { IOPortValues::SPUChannelState_Paused,          "SPUChannelState_Paused"          },
     { IOPortValues::SPUChannelState_Playing,         "SPUChannelState_Playing"         }
 };
 
