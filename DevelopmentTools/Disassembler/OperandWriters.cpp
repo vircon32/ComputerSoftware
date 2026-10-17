@@ -271,7 +271,7 @@ string WriteMOV( VirconDisassembler& Disassembler, CPUInstruction Instruction, V
     AddressingModes Mode = (AddressingModes)Instruction.AddressingMode;
     CPURegisters Register1 = (CPURegisters)Instruction.Register1;
     CPURegisters Register2 = (CPURegisters)Instruction.Register2;
-    bool PositiveOffset = (ImmediateValue.AsInteger > 0);
+    bool NegativeOffset = (ImmediateValue.AsInteger < 0);
     
     switch( Mode )
     {
@@ -288,7 +288,7 @@ string WriteMOV( VirconDisassembler& Disassembler, CPUInstruction Instruction, V
             return " " + RegisterToString( Register1 ) + ", [" + RegisterToString( Register2 ) + "]";
             
         case AddressingModes::RegisterFromAddressOffset:
-            return " " + RegisterToString( Register1 ) + ", [" + RegisterToString( Register2 ) + (PositiveOffset? "+" : "") + to_string( ImmediateValue.AsInteger ) + "]";
+            return " " + RegisterToString( Register1 ) + ", [" + RegisterToString( Register2 ) + (NegativeOffset? "" : "+") + to_string( ImmediateValue.AsInteger ) + "]";
             
         case AddressingModes::ImmediateAddressFromRegister:
             return " [" + Hex( ImmediateValue.AsBinary, 8 ) + "], " + RegisterToString( Register2 );
@@ -297,7 +297,7 @@ string WriteMOV( VirconDisassembler& Disassembler, CPUInstruction Instruction, V
             return " [" + RegisterToString( Register1 ) + "], " + RegisterToString( Register2 );
             
         case AddressingModes::AddressOffsetFromRegister:
-            return " [" + RegisterToString( Register1 ) + (PositiveOffset? "+" : "") + to_string( ImmediateValue.AsInteger ) + "], " + RegisterToString( Register2 );
+            return " [" + RegisterToString( Register1 ) + (NegativeOffset? "" : "+") + to_string( ImmediateValue.AsInteger ) + "], " + RegisterToString( Register2 );
         
         default: return "";
     }
@@ -317,8 +317,8 @@ string WriteLEA( VirconDisassembler& Disassembler, CPUInstruction Instruction, V
     // case 1: [R2 + imm]
     if( Instruction.UsesImmediate )
     {
-        bool PositiveOffset = (ImmediateValue.AsInteger > 0);
-        return " " + RegisterName1 + ", [" + RegisterName2 + (PositiveOffset? "+" : "") + to_string( ImmediateValue.AsInteger ) + "]";
+        bool NegativeOffset = (ImmediateValue.AsInteger < 0);
+        return " " + RegisterName1 + ", [" + RegisterName2 + (NegativeOffset? "" : "+") + to_string( ImmediateValue.AsInteger ) + "]";
     }
     
     // case 2: [R2]
