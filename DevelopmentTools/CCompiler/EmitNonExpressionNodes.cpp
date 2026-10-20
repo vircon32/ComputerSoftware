@@ -7,6 +7,9 @@
     #include "CheckNodes.hpp"
     #include "CompilerInfrastructure.hpp"
     
+    // include C/C++ headers
+    #include <cstdlib>      // [ ANSI C ] Standard library
+    
     // declare used namespaces
     using namespace std;
     using namespace V32;
