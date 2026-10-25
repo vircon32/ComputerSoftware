@@ -193,7 +193,7 @@ namespace V32
         for( int j = 0; j < Constants::GPURegionsPerTexture; j++ )
         {
             CartridgeTextures[ i ].Regions[ j ].MinX     = 0;
-            CartridgeTextures[ i ].Regions[ j ].MinX     = 0;
+            CartridgeTextures[ i ].Regions[ j ].MinY     = 0;
             CartridgeTextures[ i ].Regions[ j ].MaxX     = 0;
             CartridgeTextures[ i ].Regions[ j ].MaxY     = 0;
             CartridgeTextures[ i ].Regions[ j ].HotspotX = 0;
@@ -204,7 +204,7 @@ namespace V32
         for( int j = 0; j < Constants::GPURegionsPerTexture; j++ )
         {
             BiosTexture.Regions[ j ].MinX     = 0;
-            BiosTexture.Regions[ j ].MinX     = 0;
+            BiosTexture.Regions[ j ].MinY     = 0;
             BiosTexture.Regions[ j ].MaxX     = 0;
             BiosTexture.Regions[ j ].MaxY     = 0;
             BiosTexture.Regions[ j ].HotspotX = 0;

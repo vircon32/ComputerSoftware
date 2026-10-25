@@ -111,7 +111,7 @@ namespace V32
             
             // unknown blending mode codes are just ignored
             // (the value is not written either)
-            return true;
+            default: return true;
         }
         
         // for valid modes, notify the video library

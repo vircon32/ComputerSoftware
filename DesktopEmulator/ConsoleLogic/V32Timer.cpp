@@ -93,7 +93,7 @@ namespace V32
             
             // check if we should change year
             int Year = CurrentDate >> 16;
-            bool IsLeapYear = ( ((Year % 4) == 0) && ((Year % 100) != 0) );
+            bool IsLeapYear = ( (((Year % 4) == 0) && ((Year % 100) != 0)) || (Year % 400 == 0) );
             int DaysThisYear = (IsLeapYear? 366 : 365);
             int Days = CurrentDate & 0xFFFF;
             

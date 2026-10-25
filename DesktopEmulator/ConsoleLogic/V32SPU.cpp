@@ -219,7 +219,7 @@ namespace V32
         // case 1: for a stopped channel, set the initial play
         if( TargetChannel.State == IOPortValues::SPUChannelState_Stopped )
         {
-            SPUSound* ChannelSound = GetChannelSound( PointedChannel );
+            SPUSound* ChannelSound = GetChannelSound( &TargetChannel );
             TargetChannel.LoopEnabled = ChannelSound->PlayWithLoop;
             TargetChannel.Position = 0;
         }
@@ -228,7 +228,7 @@ namespace V32
         // (same actions as case 1, but keep it separate)
         else if( TargetChannel.State == IOPortValues::SPUChannelState_Playing )
         {
-            SPUSound* ChannelSound = GetChannelSound( PointedChannel );
+            SPUSound* ChannelSound = GetChannelSound( &TargetChannel );
             TargetChannel.LoopEnabled = ChannelSound->PlayWithLoop;
             TargetChannel.Position = 0;
         }
