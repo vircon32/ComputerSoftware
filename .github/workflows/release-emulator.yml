@@ -1,0 +1,440 @@
+name: Release Desktop Emulator
+
+# Builds the Vircon32 DesktopEmulator (the emulator and its EditControls tool)
+# for Windows and Linux on x86_64 and arm64 and macOS on arm64 (Apple Silicon),
+# and packages every target as one complete, portable zip:
+#
+#     Vircon32-DesktopEmulator-<version>-<os>-<arch>.zip
+#         Emulator/Vircon32[.exe]       the emulator
+#         Emulator/EditControls[.exe]   the input controls editor
+#         Emulator/Bios, Config-*.xml, Images, GuiFont.ttf, Readme ...
+#         Emulator/*.dll                (Windows only) SDL2, libpng and friends
+#
+# The Emulator/ folder mirrors the installer layout, so the zip can be extracted
+# anywhere or straight into the Vircon32 folder beside DevTools/ from the
+# DevelopmentTools release. The emulator finds its data next to itself.
+#
+# A `release` run also creates the GitHub release "emulator-v<version>", named
+# after the version in DesktopEmulator/CMakeLists.txt. The Development Tools have
+# their own workflow, version and release (release-devtools.yml).
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Purpose of this build run'
+        type: choice
+        required: true
+        default: 'test'
+        options:
+          - 'test'
+          - 'release'
+      publish_release:
+        description: 'Release runs only: publish the GitHub release at once, instead of leaving it as a draft to review'
+        type: boolean
+        required: false
+        default: false
+
+run-name: >-
+  Desktop Emulator ${{ inputs.build_type }}${{ inputs.build_type == 'release'
+  && (inputs.publish_release && ' (publish)' || ' (draft)') || '' }}
+
+# Read-only by default; only the release job below can write (create the
+# release and attach the zips).
+permissions:
+  contents: read
+
+env:
+  # Prefix of every package and artifact
+  PACKAGE_NAME: Vircon32-DesktopEmulator
+  # Folder of the emulator sources inside this repository
+  SOURCE_DIR: DesktopEmulator
+  # Names of the executables (see set(EMULATOR_BINARY_NAME ...) and
+  # set(EDITCONTROLS_BINARY_NAME ...) in DesktopEmulator/CMakeLists.txt)
+  EMULATOR_BINARY: Vircon32
+  EDITCONTROLS_BINARY: EditControls
+  # Targets without which a release must not go out. Any other target is
+  # "optional" (see `optional:` in the build matrix) and only produces a warning
+  # if it is missing.
+  REQUIRED_TARGETS: windows-x86_64 linux-x86_64 macos-arm64
+
+jobs:
+  # Reads the version once, for every build job and the release. The emulator
+  # has no version header: it is the three set(PROJECT_VERSION_*) lines of
+  # DesktopEmulator/CMakeLists.txt, which are parsed here (anchored, so a
+  # comment that mentions them is not picked up) and written the way the
+  # emulator's own Readme writes it: 26.02.18. The places that repeat the
+  # version by hand are checked against it: a mismatch is a warning on test
+  # builds and an error on release builds.
+  version:
+    name: Read Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.parse.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Parse and Check Version
+        id: parse
+        shell: bash
+        run: |
+          CMAKE_FILE="${SOURCE_DIR}/CMakeLists.txt"
+          part() {
+            sed -n "s/^set(PROJECT_VERSION_$1[[:space:]][[:space:]]*\([0-9][0-9]*\)).*/\1/p" "$CMAKE_FILE" | head -n 1
+          }
+          MAJOR=$(part MAJOR); MINOR=$(part MINOR); PATCH=$(part PATCH)
+          if [ -z "$MAJOR" ] || [ -z "$MINOR" ] || [ -z "$PATCH" ]; then
+            echo "::error file=$CMAKE_FILE::could not read PROJECT_VERSION_MAJOR/MINOR/PATCH from $CMAKE_FILE"
+            exit 1
+          fi
+          # 10# keeps bash from reading a leading zero ("08") as octal
+          VERSION=$(printf '%d.%02d.%02d' "$((10#$MAJOR))" "$((10#$MINOR))" "$((10#$PATCH))")
+          echo "Version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          if [ "${{ inputs.build_type }}" = "release" ]; then LEVEL=error; else LEVEL=warning; fi
+          STALE=0
+
+          CPACK=$(sed -n 's/^[[:space:]]*set(CPACK_PACKAGE_VERSION[[:space:]]*"\([^"]*\)").*/\1/p' "$CMAKE_FILE" | head -n 1)
+          if [ "$CPACK" != "$VERSION" ]; then
+            echo "::$LEVEL file=$CMAKE_FILE::CPACK_PACKAGE_VERSION is '$CPACK', but PROJECT_VERSION_* says $VERSION"
+            STALE=1
+          fi
+          for f in "${SOURCE_DIR}/Data/Readme.txt" "${SOURCE_DIR}/Emulator/Languages.cpp" "${SOURCE_DIR}/ControlsEditor/Languages.cpp"; do
+            if ! grep -qF "$VERSION" "$f"; then
+              echo "::$LEVEL file=$f::$f does not mention version $VERSION"
+              STALE=1
+            fi
+          done
+          if [ "$STALE" = 1 ] && [ "$LEVEL" = error ]; then exit 1; fi
+
+  build:
+    name: Build (${{ matrix.os }}-${{ matrix.arch }})
+    needs: version
+    runs-on: ${{ matrix.os-runner }}
+
+    # Targets that nobody has run yet are "optional": if one of them fails the
+    # job still counts as passed, so the release goes ahead with every package
+    # that did build (the release job warns about what is missing). Delete the
+    # `optional: true` line of a target once it has proven itself.
+    continue-on-error: ${{ matrix.optional == true }}
+
+    defaults:
+      run:
+        shell: ${{ matrix.os == 'windows' && 'msys2 {0}' || 'bash' }}
+
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Windows: MSYS2 UCRT64 (gcc) on the x64 runner, CLANGARM64 (clang) on
+          # GitHub's native Windows ARM64 runner (free for public repositories).
+          # The DLLs in DesktopEmulator/Runtime are x64 and built against an
+          # older C runtime, so they are not used: the DLLs each build needs
+          # are taken from the MSYS2 environment it was built in.
+          - os: windows
+            arch: x86_64
+            os-runner: windows-latest
+            msystem: UCRT64
+            msys-packages: >-
+              mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja
+              mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-libpng zip unzip
+          - os: windows
+            arch: arm64
+            os-runner: windows-11-arm
+            msystem: CLANGARM64
+            msys-packages: >-
+              mingw-w64-clang-aarch64-clang mingw-w64-clang-aarch64-cmake mingw-w64-clang-aarch64-ninja
+              mingw-w64-clang-aarch64-SDL2 mingw-w64-clang-aarch64-libpng zip unzip
+            optional: true
+
+          # Linux: native builds, on the oldest Ubuntu runner still offered so
+          # the binary needs the oldest glibc (it is linked against the
+          # system's SDL2, GTK3 and libpng).
+          - os: linux
+            arch: x86_64
+            os-runner: ubuntu-22.04
+          - os: linux
+            arch: arm64
+            os-runner: ubuntu-22.04-arm
+            optional: true
+
+          # macOS: native build on Apple Silicon (macos-latest) against Homebrew's
+          # SDL2 and libpng. There is no Intel build: GitHub and Homebrew are
+          # dropping x86_64 macOS support.
+          - os: macos
+            arch: arm64
+            os-runner: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # --- ENVIRONMENT TOOLCHAIN SETUP ---
+      - name: Setup MSYS2 Toolchain (Windows)
+        if: matrix.os == 'windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          update: true
+          install: ${{ matrix.msys-packages }}
+
+      - name: Install Dependencies (Linux)
+        if: matrix.os == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build pkg-config zip unzip \
+            libsdl2-dev libgtk-3-dev libpng-dev libgl1-mesa-dev
+
+      - name: Install Dependencies (macOS)
+        if: matrix.os == 'macos'
+        run: |
+          brew update
+          brew install sdl2 libpng cmake
+
+      # --- CONFIGURE AND BUILD ---
+      # Both executables (the emulator and EditControls) come from the one
+      # CMake project. CMAKE_POLICY_VERSION_MINIMUM lets CMake 4 read the older
+      # cmake_minimum_required lines of the bundled libraries.
+      - name: Build (Windows)
+        if: matrix.os == 'windows'
+        run: |
+          if [ "${{ matrix.arch }}" = "x86_64" ]; then
+            export CC=gcc CXX=g++
+          else
+            export CC=clang CXX=clang++
+          fi
+          cmake -S "$SOURCE_DIR" -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+          # (not stripped: the project's post-build step writes the icon and
+          # version info into the .exe files, which are left exactly as built)
+          cmake --build build
+
+      - name: Build (Linux)
+        if: matrix.os == 'linux'
+        run: |
+          cmake -S "$SOURCE_DIR" -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+          cmake --build build
+          strip "build/$EMULATOR_BINARY" "build/$EDITCONTROLS_BINARY"
+
+      # The emulator's CMake finds libpng's library but not its header, so
+      # Homebrew's include folder (/opt/homebrew/include on Apple Silicon, not
+      # searched by default) is added by hand. CMAKE_CXX_FLAGS cannot be used for this: on macOS the project's
+      # CMakeLists resets it to empty. CPATH is read by clang directly.
+      - name: Build (macOS)
+        if: matrix.os == 'macos'
+        run: |
+          BREW="$(brew --prefix)"
+          ls -l "$BREW/include/png.h" "$BREW/include/SDL2/SDL.h"
+          export CPATH="$BREW/include"
+          export LIBRARY_PATH="$BREW/lib"
+          cmake -S "$SOURCE_DIR" -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$BREW" \
+            -DCMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES="$BREW/include" \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+          cmake --build build -j "$(sysctl -n hw.ncpu)"
+          strip "build/$EMULATOR_BINARY" "build/$EDITCONTROLS_BINARY"
+          # stripping invalidates the linker's ad-hoc signature, and an
+          # unsigned arm64 binary is killed on launch: sign it again
+          codesign --force --sign - "build/$EMULATOR_BINARY"
+          codesign --force --sign - "build/$EDITCONTROLS_BINARY"
+
+      # --- CHECK WHAT THE BINARIES NEED ---
+      # The emulator exits with status 1 and a usage line when given two
+      # arguments, before it opens a window: enough to prove that it starts
+      # and that every shared library it needs was found.
+      - name: Check Dependencies and Start-up
+        run: |
+          EXT=""; if [ "${{ matrix.os }}" = "windows" ]; then EXT=".exe"; fi
+          EMU="build/$EMULATOR_BINARY$EXT"
+          EDIT="build/$EDITCONTROLS_BINARY$EXT"
+          ls -l "$EMU" "$EDIT"
+
+          case "${{ matrix.os }}" in
+            linux)
+              for b in "$EMU" "$EDIT"; do
+                ldd "$b"
+                if ldd "$b" | grep -q "not found"; then
+                  echo "::error::$b has unresolved shared libraries"; exit 1
+                fi
+              done ;;
+            macos)
+              otool -L "$EMU" "$EDIT" ;;
+            windows)
+              # every DLL the binaries need that does not come with Windows
+              mapfile -t DLLS < <(for b in "$EMU" "$EDIT"; do ldd "$b"; done \
+                | awk '/=>/ {print $3}' | grep -i "^$MSYSTEM_PREFIX/" | sort -u)
+              printf 'needs: %s\n' "${DLLS[@]}"
+              printf '%s\n' "${DLLS[@]}" > build/needed-dlls.txt ;;
+          esac
+
+          set +e
+          "$EMU" a b
+          STATUS=$?
+          set -e
+          if [ "$STATUS" != 1 ]; then
+            echo "::error::start-up check: expected exit status 1, got $STATUS"; exit 1
+          fi
+
+      # --- PACKAGING ---
+      # One folder, Emulator/, with the executables, the Data files at its top
+      # level (Bios/, Config-*.xml, GuiFont.ttf, Images/, Cards/, Savestates/,
+      # Screenshots/, Readme) and, on Windows, the DLLs.
+      # (Default shell on Windows: MSYS2's bash, which has the zip package
+      # installed above; Git Bash, the runner's own "bash", has no zip.)
+      - name: Create Zip Archive
+        run: |
+          EXT=""; if [ "${{ matrix.os }}" = "windows" ]; then EXT=".exe"; fi
+
+          if [ "${{ inputs.build_type }}" = "test" ]; then
+            ZIP_NAME="$PACKAGE_NAME-${VERSION}-test-${{ matrix.os }}-${{ matrix.arch }}.zip"
+          else
+            ZIP_NAME="$PACKAGE_NAME-${VERSION}-${{ matrix.os }}-${{ matrix.arch }}.zip"
+          fi
+          echo "Packaging: $ZIP_NAME"
+
+          rm -rf stage dist
+          mkdir -p stage/Emulator dist
+          cp "build/$EMULATOR_BINARY$EXT" "build/$EDITCONTROLS_BINARY$EXT" stage/Emulator/
+          cp -R "$SOURCE_DIR/Data/." stage/Emulator/
+          if [ "${{ matrix.os }}" = "windows" ]; then
+            while read -r dll; do [ -n "$dll" ] && cp "$dll" stage/Emulator/; done < build/needed-dlls.txt
+          fi
+          if [ -f LICENSE ]; then cp LICENSE stage/Emulator/; elif [ -f License.md ]; then cp License.md stage/Emulator/; fi
+
+          ls stage/Emulator/Bios/*.v32 >/dev/null 2>&1 || {
+            echo "::error::no BIOS file was packaged"; exit 1; }
+
+          (cd stage && zip -r "../dist/$ZIP_NAME" Emulator)
+          unzip -l "dist/$ZIP_NAME"
+
+      # --- STAGE ZIP INTERNALLY ---
+      - name: Upload Compressed Target Release Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          # Named per target to avoid collisions across jobs
+          name: ${{ env.PACKAGE_NAME }}-package-${{ matrix.os }}-${{ matrix.arch }}
+          path: dist/*.zip
+          if-no-files-found: error
+          # test runs are throwaways; 0 = the repository's default retention
+          retention-days: ${{ inputs.build_type == 'test' && 2 || 0 }}
+
+  # The release page. For a `release` run this attaches every platform's zip
+  # to a GitHub release "emulator-v<VERSION>", together with a SHA256SUMS.txt.
+  #
+  #   - Unless `publish_release` is ticked the release is created as a DRAFT,
+  #     visible only to people who can write to the repository, so the text and
+  #     the zips can be reviewed first: press "Publish release" on the Releases
+  #     page.
+  #   - It is created for the commit that was built (target_commitish), not for
+  #     whatever the default branch holds when the draft is published: the tag
+  #     emulator-v<VERSION> is made at that commit.
+  #   - It is never marked "Latest": this repository has two release streams
+  #     (emulator-v* and devtools-v*), so either would otherwise take the badge
+  #     away from the other on every run.
+  #   - Running it again for the same version updates that release and replaces
+  #     the zips of the same names.
+  #   - This is the only job that can write to the repository. A release made
+  #     with the built-in GITHUB_TOKEN does not itself start other workflows
+  #     (an `on: release` workflow would not fire); GitHub does this on purpose.
+  release:
+    name: ${{ inputs.publish_release && 'Publish Release' || 'Create Draft Release' }}
+    needs: [version, build]
+    if: inputs.build_type == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      # Only the emulator's Readme is needed from the repository (for the
+      # "What's new" text).
+      - name: Checkout the Readme
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: ${{ env.SOURCE_DIR }}/Data
+
+      - name: Download all zip packages from build jobs
+        uses: actions/download-artifact@v7
+        with:
+          path: artifacts
+          pattern: ${{ env.PACKAGE_NAME }}-package-*
+          merge-multiple: true
+
+      # A missing required target stops the release; a missing optional one is
+      # only a warning (and is left out of the release text).
+      - name: Check the Packages
+        shell: bash
+        run: |
+          MISSING=0
+          for target in windows-x86_64 windows-arm64 linux-x86_64 linux-arm64 macos-arm64; do
+            zip="artifacts/$PACKAGE_NAME-${VERSION}-${target}.zip"
+            [ -f "$zip" ] && continue
+            case " $REQUIRED_TARGETS " in
+              *" $target "*) echo "::error::$zip is missing"; MISSING=1 ;;
+              *)             echo "::warning::$zip is missing (optional target, release goes ahead without it)" ;;
+            esac
+          done
+          [ "$MISSING" = 0 ]
+          ls -l artifacts
+
+      - name: Write the Checksums and the Release Text
+        shell: bash
+        run: |
+          (cd artifacts && sha256sum -- *.zip > SHA256SUMS.txt && cat SHA256SUMS.txt)
+
+          # the "What's new in version X?" block of the emulator's Readme
+          WHATS_NEW=$(awk -v v="$VERSION" '
+            $0 ~ "^What.s new in version " v "\\?" { on = 1; next }
+            on && /^-----/ { exit }
+            on { sub(/^  /, ""); print }' "$SOURCE_DIR/Data/Readme.txt" | sed -e :a -e '/^[[:space:]]*$/{$d;N;ba' -e '}' | sed '/./,$!d')
+
+          {
+            echo "Vircon32 desktop emulator **$VERSION** (with EditControls), built from commit ${GITHUB_SHA::10}."
+            if [ -n "$WHATS_NEW" ]; then
+              echo
+              echo "## What's new"
+              echo
+              echo '```text'
+              echo "$WHATS_NEW"
+              echo '```'
+            fi
+            echo
+            echo "## Which download"
+            echo
+            echo "Pick the zip for your system, extract it anywhere and run \`Emulator/Vircon32\`. Each one is complete and portable: it includes the BIOS, the settings and EditControls. The \`Emulator/\` folder matches the installer layout, so it can also be extracted into the Vircon32 folder next to \`DevTools/\` from the Development Tools release."
+            echo
+            echo "- **Windows** (\`windows-x86_64\`, or \`windows-arm64\` for Windows on Arm): nothing else to install, the needed DLLs are included."
+            echo "- **Linux** (\`linux-x86_64\`, \`linux-arm64\`): needs SDL2, GTK 3, libpng and OpenGL. On Debian/Ubuntu: \`sudo apt install libsdl2-2.0-0 libgtk-3-0 libpng16-16 libgl1\`."
+            echo "- **macOS** (\`macos-arm64\`, Apple Silicon only; Intel Macs are not supported, build from source instead): needs \`brew install sdl2 libpng\`. The binaries are not notarized: if macOS refuses to open them, run \`xattr -dr com.apple.quarantine Emulator\` once in the extracted folder."
+            echo
+            echo "## Included in this release"
+            echo
+            for f in artifacts/*.zip; do echo "- \`$(basename "$f")\`"; done
+            echo
+            echo "Windows arm64 and Linux arm64 are built on a best-effort basis: a target missing from the list above failed to build. \`SHA256SUMS.txt\` has the checksum of every zip."
+          } > release-notes.md
+          cat release-notes.md
+
+      - name: Create the GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: emulator-v${{ needs.version.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          name: "Vircon32 Desktop Emulator ${{ needs.version.outputs.version }}"
+          body_path: release-notes.md
+          draft: ${{ !inputs.publish_release }}
+          prerelease: false
+          make_latest: false
+          fail_on_unmatched_files: true
+          files: |
+            artifacts/*.zip
+            artifacts/SHA256SUMS.txt
