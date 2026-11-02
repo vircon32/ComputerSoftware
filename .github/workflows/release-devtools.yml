@@ -1,88 +1,70 @@
-name: Release Development Tools
+name: Build Development Tools Binaries
 
-# Builds the Vircon32 DevelopmentTools (C compiler, assembler, ROM packer,
-# PNG/WAV/Tiled importers, PNG joiner and the "reverse" tools) for Windows,
-# Linux on x86_64 and arm64 and macOS on arm64 (Apple Silicon), and packages
-# every target as one zip:
-#
-#     Vircon32-DevelopmentTools-<version>-<os>-<arch>.zip
-#         DevTools/compile, assemble, packrom, png2vircon, wav2vircon,
-#                 tiled2vircon, joinpngs, disassemble, unpackrom,
-#                 vircon2png, vircon2wav     (.exe on Windows)
-#         DevTools/include/*.h               the C library the compiler needs
-#         DevTools/Readme.txt
-#         DevTools/*.dll                     (Windows only) SDL2, libpng and friends
-#
-# The DevTools/ folder mirrors the installer layout, so the zip can be extracted
-# anywhere or straight into the Vircon32 folder beside Emulator/ from the
-# Desktop Emulator release. The compiler finds its include/ folder next to
-# itself.
-#
-# A `release` run also creates the GitHub release "devtools-v<version>", named
-# after the version in DevelopmentTools/CMakeLists.txt. The Desktop Emulator has
-# its own workflow, version and release (release-emulator.yml).
-
+# Manual builds only: Windows ZIP, macOS tar.gz and Linux DEB.
 on:
   workflow_dispatch:
-    inputs:
-      build_type:
-        description: 'Purpose of this build run'
-        type: choice
-        required: true
-        default: 'test'
-        options:
-          - 'test'
-          - 'release'
-      publish_release:
-        description: 'Release runs only: publish the GitHub release at once, instead of leaving it as a draft to review'
-        type: boolean
-        required: false
-        default: false
 
-run-name: >-
-  Development Tools ${{ inputs.build_type }}${{ inputs.build_type == 'release'
-  && (inputs.publish_release && ' (publish)' || ' (draft)') || '' }}
-
-# Read-only by default; only the release job below can write (create the
-# release and attach the zips).
 permissions:
   contents: read
 
 env:
-  # Prefix of every package and artifact
   PACKAGE_NAME: Vircon32-DevelopmentTools
-  # Folder of the tools' sources inside this repository
   SOURCE_DIR: DevelopmentTools
-  # Names of every executable (the *_BINARY_NAME lines of
-  # DevelopmentTools/CMakeLists.txt)
   TOOLS: >-
     compile assemble packrom png2vircon wav2vircon tiled2vircon joinpngs
     disassemble unpackrom vircon2png vircon2wav
-  # Targets without which a release must not go out. Any other target is
-  # "optional" (see `optional:` in the build matrix) and only produces a warning
-  # if it is missing.
-  REQUIRED_TARGETS: windows-x86_64 linux-x86_64 macos-arm64
 
 jobs:
-  # Reads the version once, for every build job and the release. The tools have
-  # no version header: it is the three set(PROJECT_VERSION_*) lines of
-  # DevelopmentTools/CMakeLists.txt, which are parsed here (anchored, so a
-  # comment that mentions them is not picked up) and written the way the tools'
-  # own Readme writes it: 26.04.24. The places that repeat the version by hand
-  # (including what every tool prints for --version) are checked against it: a
-  # mismatch is a warning on test builds and an error on release builds.
-  version:
-    name: Read Version
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.parse.outputs.version }}
+  build:
+    name: Build (${{ matrix.os }}-${{ matrix.arch }})
+    runs-on: ${{ matrix.os-runner }}
+    defaults:
+      run:
+        shell: ${{ matrix.os == 'windows' && 'msys2 {0}' || 'bash' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows
+            arch: x86_64
+            os-runner: windows-latest
+            msystem: UCRT64
+            msys-packages: >-
+              mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja
+              mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-libpng unzip
+          - os: windows
+            arch: arm64
+            os-runner: windows-11-arm
+            msystem: CLANGARM64
+            msys-packages: >-
+              mingw-w64-clang-aarch64-clang mingw-w64-clang-aarch64-cmake mingw-w64-clang-aarch64-ninja
+              mingw-w64-clang-aarch64-SDL2 mingw-w64-clang-aarch64-libpng unzip
+
+          - os: linux
+            arch: x86_64
+            os-runner: ubuntu-24.04
+          - os: linux
+            arch: arm64
+            os-runner: ubuntu-24.04-arm
+
+          - os: macos
+            arch: arm64
+            os-runner: macos-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Parse and Check Version
-        id: parse
-        shell: bash
+      - name: Setup MSYS2 Toolchain (Windows)
+        if: matrix.os == 'windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          update: true
+          install: ${{ matrix.msys-packages }}
+
+      - name: Read Version
         run: |
           CMAKE_FILE="${SOURCE_DIR}/CMakeLists.txt"
           part() {
@@ -93,109 +75,15 @@ jobs:
             echo "::error file=$CMAKE_FILE::could not read PROJECT_VERSION_MAJOR/MINOR/PATCH from $CMAKE_FILE"
             exit 1
           fi
-          # 10# keeps bash from reading a leading zero ("04", "08") as octal
           VERSION=$(printf '%d.%02d.%02d' "$((10#$MAJOR))" "$((10#$MINOR))" "$((10#$PATCH))")
           echo "Version: $VERSION"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-          if [ "${{ inputs.build_type }}" = "release" ]; then LEVEL=error; else LEVEL=warning; fi
-          STALE=0
-
-          CPACK=$(sed -n 's/^[[:space:]]*set(CPACK_PACKAGE_VERSION[[:space:]]*"\([^"]*\)").*/\1/p' "$CMAKE_FILE" | head -n 1)
-          if [ "$CPACK" != "$VERSION" ]; then
-            echo "::$LEVEL file=$CMAKE_FILE::CPACK_PACKAGE_VERSION is '$CPACK', but PROJECT_VERSION_* says $VERSION"
-            STALE=1
-          fi
-          if ! grep -qF "version $VERSION" "${SOURCE_DIR}/Data/Readme.txt"; then
-            echo "::$LEVEL file=${SOURCE_DIR}/Data/Readme.txt::the Readme does not mention version $VERSION"
-            STALE=1
-          fi
-          # every tool prints `cout << "<tool> v26.04.24"` for --version
-          while IFS=: read -r file line text; do
-            echo "::$LEVEL file=$file,line=$line::prints '$(echo "$text" | sed 's/.*"\(.*\)".*/\1/')', not v$VERSION"
-            STALE=1
-          done < <(grep -rnE --include='*.cpp' 'cout << "[a-z0-9]+ v[0-9]+\.[0-9]+\.[0-9]+"' "$SOURCE_DIR" | grep -vF "v$VERSION\"")
-          if [ "$STALE" = 1 ] && [ "$LEVEL" = error ]; then exit 1; fi
-
-  build:
-    name: Build (${{ matrix.os }}-${{ matrix.arch }})
-    needs: version
-    runs-on: ${{ matrix.os-runner }}
-
-    # Targets that nobody has run yet are "optional": if one of them fails the
-    # job still counts as passed, so the release goes ahead with every package
-    # that did build (the release job warns about what is missing). Delete the
-    # `optional: true` line of a target once it has proven itself.
-    continue-on-error: ${{ matrix.optional == true }}
-
-    defaults:
-      run:
-        shell: ${{ matrix.os == 'windows' && 'msys2 {0}' || 'bash' }}
-
-    env:
-      VERSION: ${{ needs.version.outputs.version }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # Windows: MSYS2 UCRT64 (gcc) on the x64 runner, CLANGARM64 (clang) on
-          # GitHub's native Windows ARM64 runner (free for public repositories).
-          # The DLLs in DevelopmentTools/Runtime are x64 and built against an
-          # older C runtime, so they are not used: the DLLs each build needs
-          # are taken from the MSYS2 environment it was built in.
-          - os: windows
-            arch: x86_64
-            os-runner: windows-latest
-            msystem: UCRT64
-            msys-packages: >-
-              mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja
-              mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-libpng zip unzip
-          - os: windows
-            arch: arm64
-            os-runner: windows-11-arm
-            msystem: CLANGARM64
-            msys-packages: >-
-              mingw-w64-clang-aarch64-clang mingw-w64-clang-aarch64-cmake mingw-w64-clang-aarch64-ninja
-              mingw-w64-clang-aarch64-SDL2 mingw-w64-clang-aarch64-libpng zip unzip
-            optional: true
-
-          # Linux: native builds, on the oldest Ubuntu runner still offered so
-          # the binaries need the oldest glibc (they are linked against the
-          # system's SDL2 and libpng).
-          - os: linux
-            arch: x86_64
-            os-runner: ubuntu-22.04
-          - os: linux
-            arch: arm64
-            os-runner: ubuntu-22.04-arm
-            optional: true
-
-          # macOS: native build on Apple Silicon (macos-latest) against Homebrew's
-          # SDL2 and libpng. There is no Intel build: GitHub and Homebrew are
-          # dropping x86_64 macOS support.
-          - os: macos
-            arch: arm64
-            os-runner: macos-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      # --- ENVIRONMENT TOOLCHAIN SETUP ---
-      - name: Setup MSYS2 Toolchain (Windows)
-        if: matrix.os == 'windows'
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: ${{ matrix.msystem }}
-          update: true
-          install: ${{ matrix.msys-packages }}
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: Install Dependencies (Linux)
         if: matrix.os == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build pkg-config zip unzip \
+          sudo apt-get install -y cmake ninja-build pkg-config dpkg-dev \
             libsdl2-dev libpng-dev
 
       - name: Install Dependencies (macOS)
@@ -204,9 +92,6 @@ jobs:
           brew update
           brew install sdl2 libpng cmake
 
-      # --- CONFIGURE AND BUILD ---
-      # CMAKE_POLICY_VERSION_MINIMUM lets CMake 4 read the older
-      # cmake_minimum_required lines of the bundled libraries.
       - name: Build (Windows)
         if: matrix.os == 'windows'
         run: |
@@ -217,8 +102,12 @@ jobs:
             export CC=clang CXX=clang++
             STRIP=llvm-strip
           fi
+          # Use matching MSYS2 DLLs instead of the bundled x64 runtime.
+          mkdir -p build/empty-runtime
           cmake -S "$SOURCE_DIR" -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$(pwd)/stage/Vircon32" \
+            -DRUNTIME_DIR=../build/empty-runtime \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5
           cmake --build build
           for t in $TOOLS; do "$STRIP" "build/$t.exe"; done
@@ -228,38 +117,31 @@ jobs:
         run: |
           cmake -S "$SOURCE_DIR" -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr/local \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5
           cmake --build build
           for t in $TOOLS; do strip "build/$t"; done
 
-      # libpng's header is not found by the project's CMake on its own, so
-      # Homebrew's include folder (/opt/homebrew/include on Apple Silicon, not
-      # searched by default) is added by hand. CMAKE_CXX_FLAGS cannot be used for this: the project's CMakeLists
-      # overwrites it. CPATH is read by clang directly.
       - name: Build (macOS)
         if: matrix.os == 'macos'
         run: |
+          # CMake does not find Homebrew libpng headers automatically.
           BREW="$(brew --prefix)"
           ls -l "$BREW/include/png.h" "$BREW/include/SDL2/SDL.h"
           export CPATH="$BREW/include"
           export LIBRARY_PATH="$BREW/lib"
           cmake -S "$SOURCE_DIR" -B build \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$(pwd)/stage" \
             -DCMAKE_PREFIX_PATH="$BREW" \
             -DCMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES="$BREW/include" \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5
           cmake --build build -j "$(sysctl -n hw.ncpu)"
           for t in $TOOLS; do
             strip "build/$t"
-            # stripping invalidates the linker's ad-hoc signature, and an
-            # unsigned arm64 binary is killed on launch: sign it again
             codesign --force --sign - "build/$t"
           done
 
-      # --- CHECK WHAT THE BINARIES NEED ---
-      # Every tool prints its version for --version before doing anything
-      # else: enough to prove that it starts, that every shared library it
-      # needs was found, and that it reports the version being released.
       - name: Check Dependencies and Start-up
         run: |
           EXT=""; if [ "${{ matrix.os }}" = "windows" ]; then EXT=".exe"; fi
@@ -286,163 +168,61 @@ jobs:
             macos)
               otool -L "build/compile" ;;
             windows)
-              # every DLL the binaries need that does not come with Windows
               mapfile -t DLLS < <(for t in $TOOLS; do ldd "build/$t$EXT"; done \
                 | awk '/=>/ {print $3}' | grep -i "^$MSYSTEM_PREFIX/" | sort -u)
               printf 'needs: %s\n' "${DLLS[@]}"
               printf '%s\n' "${DLLS[@]}" > build/needed-dlls.txt ;;
           esac
 
-      # --- PACKAGING ---
-      # One folder, DevTools/, with the executables, the Data files at its top
-      # level (include/, Readme.txt) and, on Windows, the DLLs.
-      # (Default shell on Windows: MSYS2's bash, which has the zip package
-      # installed above; Git Bash, the runner's own "bash", has no zip.)
-      - name: Create Zip Archive
+      - name: Install and Package (Linux)
+        if: matrix.os == 'linux'
         run: |
-          EXT=""; if [ "${{ matrix.os }}" = "windows" ]; then EXT=".exe"; fi
+          sudo cmake --install build
+          # DESTDIR includes absolute destinations such as /usr/share as well.
+          # The CMake install scripts also chmod the installed files.
+          sudo cpack --config build/CPackConfig.cmake -G DEB -B build/package \
+            -D CPACK_SET_DESTDIR=ON \
+            -D "CPACK_PACKAGE_FILE_NAME=$PACKAGE_NAME-$VERSION-linux-${{ matrix.arch }}"
+          mkdir -p dist
+          cp build/package/*.deb dist/
+          for package in dist/*.deb; do
+            dpkg-deb --info "$package"
+            dpkg-deb --contents "$package"
+          done
 
-          if [ "${{ inputs.build_type }}" = "test" ]; then
-            ZIP_NAME="$PACKAGE_NAME-${VERSION}-test-${{ matrix.os }}-${{ matrix.arch }}.zip"
-          else
-            ZIP_NAME="$PACKAGE_NAME-${VERSION}-${{ matrix.os }}-${{ matrix.arch }}.zip"
-          fi
-          echo "Packaging: $ZIP_NAME"
-
-          rm -rf stage dist
-          mkdir -p stage/DevTools dist
-          for t in $TOOLS; do cp "build/$t$EXT" stage/DevTools/; done
-          cp -R "$SOURCE_DIR/Data/." stage/DevTools/
+      - name: Install and Package (Windows and macOS)
+        if: matrix.os != 'linux'
+        run: |
+          cmake --install build
+          DEST="stage/Vircon32/DevTools"
           if [ "${{ matrix.os }}" = "windows" ]; then
-            while read -r dll; do [ -n "$dll" ] && cp "$dll" stage/DevTools/; done < build/needed-dlls.txt
+            while IFS= read -r dll; do
+              [ -z "$dll" ] || cp "$dll" "$DEST/"
+            done < build/needed-dlls.txt
           fi
-          if [ -f LICENSE ]; then cp LICENSE stage/DevTools/; elif [ -f License.md ]; then cp License.md stage/DevTools/; fi
+          if [ -f LICENSE ]; then
+            cp LICENSE "$DEST/"
+          elif [ -f License.md ]; then
+            cp License.md "$DEST/"
+          fi
+          ls "$DEST/include/"*.h > /dev/null
 
-          ls stage/DevTools/include/*.h >/dev/null 2>&1 || {
-            echo "::error::no include files were packaged"; exit 1; }
+          mkdir -p dist
+          ARCHIVE="$PACKAGE_NAME-$VERSION-${{ matrix.os }}-${{ matrix.arch }}"
+          if [ "${{ matrix.os }}" = "windows" ]; then
+            # CMake's ZIP implementation avoids needing a separate zip utility.
+            (cd stage && cmake -E tar cf "../dist/$ARCHIVE.zip" --format=zip Vircon32)
+            unzip -l "dist/$ARCHIVE.zip"
+          else
+            # tar preserves the executable bits on macOS.
+            tar -czf "dist/$ARCHIVE.tar.gz" -C stage Vircon32
+            tar -tzf "dist/$ARCHIVE.tar.gz"
+          fi
 
-          (cd stage && zip -r "../dist/$ZIP_NAME" DevTools)
-          unzip -l "dist/$ZIP_NAME"
-
-      # --- STAGE ZIP INTERNALLY ---
-      - name: Upload Compressed Target Release Artifact
+      - name: Upload Package
         uses: actions/upload-artifact@v7
         with:
-          # Named per target to avoid collisions across jobs
-          name: ${{ env.PACKAGE_NAME }}-package-${{ matrix.os }}-${{ matrix.arch }}
-          path: dist/*.zip
+          path: dist/*
           if-no-files-found: error
-          # test runs are throwaways; 0 = the repository's default retention
-          retention-days: ${{ inputs.build_type == 'test' && 2 || 0 }}
-
-  # The release page. For a `release` run this attaches every platform's zip
-  # to a GitHub release "devtools-v<VERSION>", together with a SHA256SUMS.txt.
-  #
-  #   - Unless `publish_release` is ticked the release is created as a DRAFT,
-  #     visible only to people who can write to the repository, so the text and
-  #     the zips can be reviewed first: press "Publish release" on the Releases
-  #     page.
-  #   - It is created for the commit that was built (target_commitish), not for
-  #     whatever the default branch holds when the draft is published: the tag
-  #     devtools-v<VERSION> is made at that commit.
-  #   - It is never marked "Latest": this repository has two release streams
-  #     (emulator-v* and devtools-v*), so either would otherwise take the badge
-  #     away from the other on every run.
-  #   - Running it again for the same version updates that release and replaces
-  #     the zips of the same names.
-  #   - This is the only job that can write to the repository. A release made
-  #     with the built-in GITHUB_TOKEN does not itself start other workflows
-  #     (an `on: release` workflow would not fire); GitHub does this on purpose.
-  release:
-    name: ${{ inputs.publish_release && 'Publish Release' || 'Create Draft Release' }}
-    needs: [version, build]
-    if: inputs.build_type == 'release'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    env:
-      VERSION: ${{ needs.version.outputs.version }}
-    steps:
-      # Only the tools' Readme is needed from the repository (for the
-      # "What's new" text).
-      - name: Checkout the Readme
-        uses: actions/checkout@v7
-        with:
-          sparse-checkout: ${{ env.SOURCE_DIR }}/Data
-
-      - name: Download all zip packages from build jobs
-        uses: actions/download-artifact@v7
-        with:
-          path: artifacts
-          pattern: ${{ env.PACKAGE_NAME }}-package-*
-          merge-multiple: true
-
-      # A missing required target stops the release; a missing optional one is
-      # only a warning (and is left out of the release text).
-      - name: Check the Packages
-        shell: bash
-        run: |
-          MISSING=0
-          for target in windows-x86_64 windows-arm64 linux-x86_64 linux-arm64 macos-arm64; do
-            zip="artifacts/$PACKAGE_NAME-${VERSION}-${target}.zip"
-            [ -f "$zip" ] && continue
-            case " $REQUIRED_TARGETS " in
-              *" $target "*) echo "::error::$zip is missing"; MISSING=1 ;;
-              *)             echo "::warning::$zip is missing (optional target, release goes ahead without it)" ;;
-            esac
-          done
-          [ "$MISSING" = 0 ]
-          ls -l artifacts
-
-      - name: Write the Checksums and the Release Text
-        shell: bash
-        run: |
-          (cd artifacts && sha256sum -- *.zip > SHA256SUMS.txt && cat SHA256SUMS.txt)
-
-          # the "What's new in version X?" block of the tools' Readme
-          WHATS_NEW=$(awk -v v="$VERSION" '
-            $0 ~ "^What.s new in version " v "\\?" { on = 1; next }
-            on && /^-----/ { exit }
-            on { sub(/^  /, ""); print }' "$SOURCE_DIR/Data/Readme.txt" | sed -e :a -e '/^[[:space:]]*$/{$d;N;ba' -e '}' | sed '/./,$!d')
-
-          {
-            echo "Vircon32 development tools **$VERSION**, built from commit ${GITHUB_SHA::10}."
-            if [ -n "$WHATS_NEW" ]; then
-              echo
-              echo "## What's new"
-              echo
-              echo '```text'
-              echo "$WHATS_NEW"
-              echo '```'
-            fi
-            echo
-            echo "## Which download"
-            echo
-            echo "Pick the zip for your system and extract it anywhere. It contains a \`DevTools/\` folder with \`compile\`, \`assemble\`, \`packrom\`, \`png2vircon\`, \`wav2vircon\`, \`tiled2vircon\`, \`joinpngs\` and the reverse tools \`disassemble\`, \`unpackrom\`, \`vircon2png\` and \`vircon2wav\`, plus the C library headers (\`include/\`) the compiler needs. Add that folder to your PATH so the tools can be run from anywhere. The folder matches the installer layout, so it can also be extracted into the Vircon32 folder next to \`Emulator/\` from the Desktop Emulator release."
-            echo
-            echo "- **Windows** (\`windows-x86_64\`, or \`windows-arm64\` for Windows on Arm): nothing else to install, the needed DLLs are included."
-            echo "- **Linux** (\`linux-x86_64\`, \`linux-arm64\`): needs SDL2 and libpng. On Debian/Ubuntu: \`sudo apt install libsdl2-2.0-0 libpng16-16\`."
-            echo "- **macOS** (\`macos-arm64\`, Apple Silicon only; Intel Macs are not supported, build from source instead): needs \`brew install sdl2 libpng\`. The binaries are not notarized: if macOS refuses to run them, run \`xattr -dr com.apple.quarantine DevTools\` once in the extracted folder."
-            echo
-            echo "## Included in this release"
-            echo
-            for f in artifacts/*.zip; do echo "- \`$(basename "$f")\`"; done
-            echo
-            echo "Windows arm64 and Linux arm64 are built on a best-effort basis: a target missing from the list above failed to build. \`SHA256SUMS.txt\` has the checksum of every zip."
-          } > release-notes.md
-          cat release-notes.md
-
-      - name: Create the GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: devtools-v${{ needs.version.outputs.version }}
-          target_commitish: ${{ github.sha }}
-          name: "Vircon32 Development Tools ${{ needs.version.outputs.version }}"
-          body_path: release-notes.md
-          draft: ${{ !inputs.publish_release }}
-          prerelease: false
-          make_latest: false
-          fail_on_unmatched_files: true
-          files: |
-            artifacts/*.zip
-            artifacts/SHA256SUMS.txt
+          # Upload the single package directly, without wrapping it in another ZIP.
+          archive: false
