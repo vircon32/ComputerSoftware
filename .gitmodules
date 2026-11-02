@@ -1,0 +1,9 @@
+[submodule "ExtendedDevTools/v32lua"]
+	path = ExtendedDevTools/v32lua
+	url = https://github.com/wedge1020/v32lua.git
+[submodule "ExtendedDevTools/v32cxx"]
+	path = ExtendedDevTools/v32cxx
+	url = https://github.com/wedge1020/v32cxx.git
+[submodule "ExtendedDevTools/v32opt"]
+	path = ExtendedDevTools/v32opt
+	url = https://github.com/wedge1020/v32opt.git
