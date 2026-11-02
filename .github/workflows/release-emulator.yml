@@ -104,7 +104,7 @@ jobs:
           cmake -S "$SOURCE_DIR" -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX="$(pwd)/stage/Vircon32" \
-            -DRUNTIME_DIR=../build/empty-runtime \
+            -DRUNTIME_DIR:STRING=../build/empty-runtime \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5
           cmake --build build
 
