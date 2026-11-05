@@ -1,6 +1,6 @@
 ================================================
    PC development tools for Vircon32 console
-  (version 26.04.24). README written by Carra
+  (version 26.11.05). README written by Carra
 ================================================
 
 
@@ -88,23 +88,16 @@ Included programs (reverse tools)
     
 ------------------------------------------------------------
 
-What's new in version 26.04.24?
+What's new in version 26.11.05?
   
-  - Compiler now supports function pointers.
-  - Compiler now supports const declarations.
-  - Compiler preprocessor now supports function-like macros
-    with arguments.
-  - Compiler will now accept types: char, short and long
-    (treated internally as int) for better compatibility.
-  - Compiler will now accept type double (treated internally
-    as float) for better compatibility.
-  - Compiler will now emit code only for functions that are
-    actually used, instead of always emitting everything.
-  - Assembler now allows writing I/O ports with their
-    numerical values instead of their names (note this will
-    trigger a warning).
-  - Assembler now accepts argument -w to disable warnings.
-  - Fixed a build error in Visual Studio and some warnings.
+  - Binaries are now built with YML GitHub workflows.
+  - Fix compiler bug in indirect function calls overwriting [SP].
+  - Fix double evaluation of lvalue in compound assignments.
+  - Fix expressions with side effects being evaluated twice.
+  - Fix small problems with input arguments in some of the tools.
+  - Fix ftoa bug causing X.99999f to X.999999 result in "X.1".
+  - Fix bad parsing of SPUChannelState_Paused in assembler.
+  - Fix bad disassembler output when specifying offset of 0.
 
 ------------------------------------------------------------
 

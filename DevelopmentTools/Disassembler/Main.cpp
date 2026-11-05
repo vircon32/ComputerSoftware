@@ -51,7 +51,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "disassemble v26.04.24" << endl;
+    cout << "disassemble v26.11.05" << endl;
     cout << "Vircon32 disassembler by Javier Carracedo" << endl;
 }
 

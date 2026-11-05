@@ -69,8 +69,8 @@ project("Vircon32")
 
 # Define version
 set(PROJECT_VERSION_MAJOR 26)
-set(PROJECT_VERSION_MINOR 04)
-set(PROJECT_VERSION_PATCH 24)
+set(PROJECT_VERSION_MINOR 11)
+set(PROJECT_VERSION_PATCH 05)
 
 # Set names for final executables
 set(C_COMPILER_BINARY_NAME "compile")
@@ -540,7 +540,7 @@ if(TARGET_OS STREQUAL "linux")
 
     # define base package info
     set(CPACK_PACKAGE_NAME "vircon32-devtools")
-    set(CPACK_PACKAGE_VERSION "26.04.24")
+    set(CPACK_PACKAGE_VERSION "26.11.05")
     set(CPACK_PACKAGE_VENDOR "Carra")
     set(CPACK_PACKAGE_MAINTAINER "Carra")
     set(CPACK_PACKAGE_LICENSE "BSD-3-Clause")

@@ -64,7 +64,7 @@ void PrintUsage()
 
 void PrintVersion()
 {
-    cout << "compile v26.04.24" << endl;
+    cout << "compile v26.11.05" << endl;
     cout << "Vircon32 C compiler by Javier Carracedo" << endl;
 }
 
