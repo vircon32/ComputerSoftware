@@ -1,6 +1,6 @@
 ﻿============================================================
         Archivo README para el emulador de Vircon32
-           (versión 26.02.18) escrito por Carra
+           (versión 26.11.05) escrito por Carra
 ============================================================
 
 ¿Qué es esto?
@@ -179,10 +179,14 @@ Cómo usar savestates
     
 ------------------------------------------------------------
 
-Novedades en la versión 26.02.18
-    
-  - Arreglado un error que impedía cambiar la posición de
-    reproducción en los canales de sonido.
+Novedades en la versión 26.11.05
+  
+  - Los binarios ahora se compilan con workflows GitHub en YML.
+  - El mando seleccionado ya se puede leer correctamente.
+  - Arreglados bugs menores o latentes relacionados con puertos.
+  - Al reiniciar, la Y mínima de regiones ya se pone a cero.
+  - Las fechas ahora también consideran bisiestos los años
+    divisibles por 400.
 
 ------------------------------------------------------------
 

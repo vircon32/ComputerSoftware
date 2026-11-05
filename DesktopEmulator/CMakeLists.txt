@@ -27,8 +27,8 @@ project("Vircon32" LANGUAGES C CXX)
 
 # Define version
 set(PROJECT_VERSION_MAJOR 26)
-set(PROJECT_VERSION_MINOR 2)
-set(PROJECT_VERSION_PATCH 18)
+set(PROJECT_VERSION_MINOR 11)
+set(PROJECT_VERSION_PATCH 05)
 
 # Set names for final executables
 set(EMULATOR_BINARY_NAME "Vircon32")
@@ -415,7 +415,7 @@ if(TARGET_OS STREQUAL "linux")
 
     # define base package info
     set(CPACK_PACKAGE_NAME "vircon32-emulator")
-    set(CPACK_PACKAGE_VERSION "26.02.18")
+    set(CPACK_PACKAGE_VERSION "26.11.05")
     set(CPACK_PACKAGE_VENDOR "Carra")
     set(CPACK_PACKAGE_MAINTAINER "Carra")
     set(CPACK_PACKAGE_LICENSE "BSD-3-Clause")

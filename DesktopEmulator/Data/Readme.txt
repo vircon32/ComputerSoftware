@@ -1,6 +1,6 @@
 ============================================================
              README file for Vircon32 emulator
-            (version 26.02.18) written by Carra
+            (version 26.11.05) written by Carra
 ============================================================
 
 What is this?
@@ -172,10 +172,14 @@ How to use savestates
     
 ------------------------------------------------------------
 
-What's new in version 26.02.18?
+What's new in version 26.11.05?
   
-  - Fixed a bug that preventing setting playback position
-    in sound channels.
+  - Binaries are now built with YML GitHub workflows.
+  - Fix emulation bug when reading selected gamepad port.
+  - Fix some port-related minor or latent emulation bugs.
+  - On reset, region minimum Y is now set to 0 correcrly.
+  - Dates now correctly consider a leap year if the year
+    is divisible by 400.
 
 ------------------------------------------------------------
 
